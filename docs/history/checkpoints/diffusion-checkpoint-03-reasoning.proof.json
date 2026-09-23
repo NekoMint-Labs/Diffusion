@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-09-13T09:56:53.249036+00:00",
+  "SOURCE_SNAPSHOT": "/mnt/data/delivery/diffusion-checkpoint-03-reasoning.zip",
+  "SOURCE_SNAPSHOT_SHA256": "1466e4eb281b19aa162e85e8914c27a7d42eb594e3e46d8dad011215965353e5",
+  "SOURCE_SNAPSHOT_VERIFIED": "PASS",
+  "SOURCE_ROOT": "/mnt/data/diffusion-explorer",
+  "files": 70,
+  "CONTENTS_CHECK": [
+    "package.json",
+    "README.md",
+    "STATUS.md",
+    "src/main.tsx",
+    "src/",
+    "tests/"
+  ],
+  "NOTE": "Archive verification only. See STATUS.md for build/runtime verification."
+}

@@ -1,0 +1,55 @@
+[package]
+name = "diffusion-explorer"
+version = "0.3.0"
+description = "A quiet field for thoughts before commitment"
+authors = ["Diffusion Explorer contributors"]
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "diffusion_explorer_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# The desktop provider transport. This is the only place a plaintext AI credential exists: the
+# webview hands over the request, this process reads the key from the OS store and signs it.
+#
+# TLS is pure Rust on purpose. `rustls-no-provider` plus an explicit `ring` provider is deliberate:
+# reqwest's default rustls path pulls `aws-lc-rs`, which needs cmake and NASM on Windows, and
+# `default-tls` would link the platform OpenSSL on Linux. This combination adds no system build
+# requirement to any platform, which is the same rule the credential store below follows. The feature
+# list must stay valid for the version this workspace's lock pins: a feature the pinned `reqwest` does
+# not have fails the build, and a newer reqwest can drop one (0.13.5 no longer provides
+# `webpki-roots`, and `rustls-no-provider` sources trust roots itself).
+reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider", "http2"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }
+# `sync` for the cancellation channel, `macros` for the `select!` that races a request against it.
+tokio = { version = "1", features = ["sync", "macros"] }
+
+# OS-backed credential storage for provider and discovery keys. `default-features = false` plus an
+# explicit backend list is deliberate: the default Linux backend links libdbus through pkg-config,
+# which would add a system build dependency to every desktop build. `async-secret-service` with
+# `crypto-rust` speaks the same Secret Service protocol over a pure-Rust implementation instead, so
+# the only build requirement stays the one Tauri already has.
+keyring = { version = "3", default-features = false, features = [
+    "apple-native",
+    "windows-native",
+    "async-secret-service",
+    "crypto-rust",
+    "tokio",
+] }
+
+[dev-dependencies]
+# The native request module's own tests need a runtime, timers and a multi-threaded flavour (one
+# task sends while another cancels). The library itself needs neither.
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }

@@ -1,0 +1,94 @@
+/* Shared application chrome. Base UI owns behavior; Diffusion owns pixels. */
+.ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex: none;
+  max-width: 100%;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  color: var(--ink-secondary);
+  font: 500 var(--type-label-size)/1 var(--ui-font);
+  letter-spacing: .002em;
+  white-space: nowrap;
+  transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease, border-color var(--motion-instant) ease, box-shadow var(--motion-instant) ease, opacity var(--motion-instant) ease;
+}
+.ui-button-md { min-height: var(--control-lg); padding: 0 12px; }
+.ui-button-sm { min-height: var(--control-md); padding: 0 9px; font-size: var(--type-helper-size); }
+.ui-button-ghost { background: transparent; }
+.ui-button-ghost:hover:not(:disabled), .ui-button-ghost[data-highlighted] { color: var(--ink-primary); background: color-mix(in srgb, var(--surface-2) 66%, transparent); }
+.ui-button-outline { border-color: var(--boundary); background: color-mix(in srgb, var(--surface-1) 74%, transparent); }
+.ui-button-outline:hover:not(:disabled) { color: var(--ink-primary); border-color: color-mix(in srgb, var(--ink-tertiary) 44%, var(--boundary)); background: var(--surface-2); }
+.ui-button-solid { color: var(--ink-primary); border-color: color-mix(in srgb, var(--boundary) 82%, transparent); background: var(--surface-2); box-shadow: 0 1px 2px color-mix(in srgb, var(--ink-primary) 5%, transparent); }
+.ui-button-solid:hover:not(:disabled) { background: color-mix(in srgb, var(--surface-2) 76%, var(--surface-1)); border-color: color-mix(in srgb, var(--attention) 24%, var(--boundary)); }
+.ui-button-attention.ui-button-solid { border-color: color-mix(in srgb, var(--attention) 34%, var(--boundary)); background: color-mix(in srgb, var(--attention) 10%, var(--surface-1)); }
+.ui-button-attention.ui-button-solid:hover:not(:disabled) { background: color-mix(in srgb, var(--attention) 15%, var(--surface-1)); border-color: color-mix(in srgb, var(--attention) 48%, var(--boundary)); }
+.ui-button-danger { color: var(--system-danger); }
+.ui-button-danger.ui-button-outline { border-color: color-mix(in srgb, var(--system-danger) 28%, var(--boundary)); }
+.ui-button:active:not(:disabled) { opacity: .7; }
+.ui-button:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+
+.ui-switch-wrap { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-secondary); font: var(--type-label-size)/1 var(--ui-font); }
+.ui-switch { position: relative; display: inline-flex; align-items: center; width: 30px; height: 18px; padding: 2px; border: 1px solid var(--boundary); border-radius: 999px; background: color-mix(in srgb, var(--surface-2) 72%, transparent); cursor: pointer; transition: background-color var(--motion-micro) ease, border-color var(--motion-micro) ease; }
+.ui-switch[data-checked] { border-color: color-mix(in srgb, var(--active-control) 46%, var(--boundary)); background: color-mix(in srgb, var(--active-control) 13%, var(--surface-2)); }
+.ui-switch[data-disabled] { opacity: .44; cursor: not-allowed; }
+.ui-switch:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+.ui-switch-thumb { display: block; width: 12px; height: 12px; border-radius: 50%; background: var(--ink-tertiary); box-shadow: 0 1px 2px color-mix(in srgb, var(--ink-primary) 12%, transparent); transform: translateX(0); transition: transform var(--motion-micro) var(--ease-out-ui), background-color var(--motion-micro) ease; }
+.ui-switch[data-checked] .ui-switch-thumb { transform: translateX(12px); background: var(--active-control); }
+.ui-switch-label { color: var(--ink-helper); }
+
+.ui-setting-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-5); min-height: 52px; padding: 10px 12px; }
+.ui-setting-row + .ui-setting-row { border-top: 1px solid color-mix(in srgb, var(--boundary) 70%, transparent); }
+.ui-setting-copy { display: grid; gap: 2px; min-width: 0; }
+.ui-setting-label { color: var(--ink-primary); font: 400 var(--type-label-size)/var(--type-label-line) var(--ui-font); }
+.ui-setting-description { max-width: 54ch; color: var(--ink-helper); font: var(--type-helper-size)/1.55 var(--ui-font); }
+.ui-setting-control { display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; }
+.ui-setting-control > input { width: min(300px, 38vw); min-width: 180px; }
+.ui-setting-control .settings-key-row { width: min(420px, 44vw); }
+.ui-setting-control .ui-select-trigger { min-width: 150px; }
+
+.ui-surface-group { overflow: hidden; border: 1px solid color-mix(in srgb, var(--boundary) 78%, transparent); border-radius: var(--radius-surface); background: color-mix(in srgb, var(--surface-1) 84%, transparent); }
+.ui-surface-group + .ui-surface-group { margin-top: var(--space-4); }
+.ui-surface-group-heading { display: grid; gap: 3px; padding: 12px 12px 10px; border-bottom: 1px solid color-mix(in srgb, var(--boundary) 70%, transparent); }
+.ui-surface-group-heading h4 { margin: 0; color: var(--ink-primary); font: 500 var(--type-label-size)/1.45 var(--ui-font); }
+.ui-surface-group-heading p { margin: 0; color: var(--ink-helper); font: var(--type-helper-size)/1.55 var(--ui-font); }
+.ui-surface-group-content { min-width: 0; }
+
+@media (max-width: 640px) {
+  .ui-setting-row { grid-template-columns: minmax(0, 1fr); gap: 8px; align-items: stretch; }
+  .ui-setting-control { justify-content: flex-start; }
+}
+
+.ui-checkbox-wrap { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-secondary); font: var(--type-label-size)/1.45 var(--ui-font); cursor: pointer; }
+.ui-checkbox { display: grid; place-items: center; width: 17px; height: 17px; padding: 0; border: 1px solid var(--boundary); border-radius: 4px; background: color-mix(in srgb, var(--surface-sunken) 72%, transparent); color: var(--surface-raised); transition: border-color var(--motion-instant) ease, background-color var(--motion-instant) ease; }
+.ui-checkbox[data-checked] { border-color: color-mix(in srgb, var(--active-control) 56%, var(--boundary)); background: var(--active-control); }
+.ui-checkbox[data-disabled] { opacity: .42; cursor: not-allowed; }
+.ui-checkbox:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+.ui-checkbox-indicator { font: 10px/1 var(--ui-font); }
+
+/* --- One Select -----------------------------------------------------------
+   Base UI owns the behaviour; this is the product's only dropdown material, shared by every surface
+   so a select in Settings and a select in a form read as the same control. */
+.ui-select-trigger { display: inline-flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--control-md); min-width: 132px; max-width: 100%; padding: 5px 9px; border: 1px solid var(--boundary); border-radius: var(--radius-control); background: color-mix(in srgb, var(--surface-2) 45%, transparent); color: var(--ink-primary); font: inherit; font-size: calc(var(--type-label-size) * 12.5 / 12); text-align: left; cursor: pointer; transition: background-color var(--motion-instant) ease, border-color var(--motion-instant) ease, color var(--motion-instant) ease; }
+.ui-select-trigger:hover { background: var(--surface-2); border-color: color-mix(in srgb, var(--boundary) 60%, var(--ink-tertiary)); }
+.ui-select-trigger:focus-visible { outline: var(--focus-ring); outline-offset: 1px; border-color: var(--attention); }
+.ui-select-trigger[data-popup-open] { background: var(--surface-1); border-color: var(--attention); }
+.ui-select-trigger[data-disabled] { opacity: .45; cursor: not-allowed; }
+.ui-select-icon { flex: none; font-size: 9px; line-height: 1; color: var(--ink-tertiary); }
+.ui-select-positioner { z-index: var(--layer-surface); }
+.ui-select-popup { min-width: 150px; max-width: min(320px, calc(100vw - 24px)); max-height: min(340px, var(--available-height, 340px)); overflow: auto; overscroll-behavior: contain; padding: 5px; border: 1px solid var(--boundary); border-radius: var(--radius-surface); background: var(--surface-1); box-shadow: var(--shadow-panel); outline: none; transform-origin: var(--transform-origin); transition: opacity var(--motion-micro) var(--ease-enter), transform var(--motion-micro) var(--ease-enter); }
+.ui-select-popup[data-width="trigger"] { min-width: var(--anchor-width); }
+.ui-select-popup[data-starting-style], .ui-select-popup[data-ending-style] { opacity: 0; transform: scale(.98); }
+.ui-select-list { display: flex; flex-direction: column; gap: 1px; }
+.ui-select-item { display: flex; align-items: center; gap: var(--space-3); min-height: var(--control-md); padding: 6px 9px; border-radius: var(--radius-control); color: var(--ink-secondary); font-size: calc(var(--type-label-size) * 12.5 / 12); cursor: pointer; user-select: none; outline: none; }
+.ui-select-item[data-highlighted] { background: var(--surface-2); color: var(--ink-primary); }
+.ui-select-item[data-selected] { color: var(--ink-primary); }
+.ui-select-check { margin-left: auto; font-size: 10px; color: var(--attention); opacity: 0; }
+.ui-select-item[data-selected] .ui-select-check { opacity: 1; }
+
+/* The model field is a real text field with optional suggestions, so it is a combobox in the same
+   popup material as the one Select — not a second dropdown system, and not a control that replaces
+   typing with a menu. */
+.ui-combobox-input { flex: 1 1 auto; min-width: 0; }
+.ui-combobox-empty { padding: 6px 9px; color: var(--ink-tertiary); font-size: var(--type-status-size); max-width: 30ch; }

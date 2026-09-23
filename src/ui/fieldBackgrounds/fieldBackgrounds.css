@@ -1,0 +1,29 @@
+/* Viewport paint only. The camera-owned world, Thoughts, relations, HUD, and menus are siblings. */
+.field-background-layer {
+  position: absolute;
+  inset: 0;
+  z-index: var(--layer-background);
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+  pointer-events: none;
+}
+.field-background-layer > *,
+.field-background-renderer,
+.field-background-layer .threads-container,
+.field-background-layer .topography-container,
+.field-background-layer .silk-container {
+  position: absolute !important;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.field-background-layer canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+}
+.field-background-layer .silk-container { opacity: .25; }

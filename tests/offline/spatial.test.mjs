@@ -1,0 +1,11 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import { GridIndex } from '../../src/field/spatial/index.ts';
+import { screenToWorld, worldToScreen, zoomCameraAt, scaleLevel, distanceBetween } from '../../src/field/spatial/geometry.ts';
+import { focusFor } from '../../src/field/spatial/focus.ts';
+import { demoProject, performanceProject } from '../../src/core/demo.ts';
+import { emptySession } from '../../src/core/model.ts';
+test('camera coordinate round trip and cursor-anchored zoom',()=>{const c={x:143,y:-230,zoom:.61};const p={x:724,y:290};const w=screenToWorld(p,c);assert.deepEqual(worldToScreen(w,c),p);const next=zoomCameraAt(c,p,1.4);const after=screenToWorld(p,next);assert.ok(Math.abs(w.x-after.x)<1e-10);assert.ok(Math.abs(w.y-after.y)<1e-10);});
+test('grid culling handles negative coordinates, boundary intersection and removal',()=>{const g=new GridIndex(100);g.set('a',{x:-50,y:-30,width:100,height:100});g.set('b',{x:1000,y:1000,width:50,height:50});assert.deepEqual(g.query({x:-60,y:-40,width:120,height:120}),['a']);g.delete('a');assert.deepEqual(g.query({x:-60,y:-40,width:120,height:120}),[]);});
+test('5000 total thoughts do not imply 5000 visible records',()=>{const p=performanceProject(5000);const g=new GridIndex();for(const t of Object.values(p.thoughts))g.set(t.id,{x:t.x,y:t.y,width:250,height:100});const visible=g.query({x:0,y:0,width:1440,height:900});assert.ok(visible.length<60);assert.equal(g.count,5000);});
+test('selection wakes only existing relations and never changes positions',()=>{const p=demoProject();const before=JSON.stringify(p);const f=focusFor(p,emptySession(),['attention']);assert.deepEqual([...f.direct],['structure']);assert.equal(f.activeRelations.length,1);assert.equal(JSON.stringify(p),before);assert.equal(focusFor(p,emptySession(),[]).activeRelations.length,0);});
+test('semantic zoom tiers and proximity are deterministic local functions',()=>{assert.equal(scaleLevel(1),'local');assert.equal(scaleLevel(.4),'neighborhood');assert.equal(scaleLevel(.15),'atlas');assert.equal(distanceBetween({x:0,y:0,width:20,height:20},{x:25,y:0,width:20,height:20}),5);});

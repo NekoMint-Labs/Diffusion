@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-09-13T10:18:44.249325+00:00",
+  "SOURCE_SNAPSHOT": "/mnt/data/delivery/diffusion-checkpoint-06-recovery-desktop.zip",
+  "SOURCE_SNAPSHOT_SHA256": "ba1b0134f843d8c8c8d6a8bb6f1fbff2b7fd15e3beab88c20fbd6f0bde82f93c",
+  "SOURCE_SNAPSHOT_VERIFIED": "PASS",
+  "SOURCE_ROOT": "/mnt/data/diffusion-explorer",
+  "files": 123,
+  "CONTENTS_CHECK": [
+    "package.json",
+    "README.md",
+    "STATUS.md",
+    "src/main.tsx",
+    "src/",
+    "tests/"
+  ],
+  "NOTE": "Archive verification only. See STATUS.md for build/runtime verification."
+}

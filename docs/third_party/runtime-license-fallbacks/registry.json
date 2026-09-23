@@ -1,0 +1,1015 @@
+{
+  "note": "Reviewed license-text fallbacks and MPL Source Code Form locations, used only for dependencies whose installed package or crate publishes no usable license text, and for dependencies whose license requires recipients of an executable distribution to be told where the corresponding source can be obtained. Generated output is offline: the generator reads these committed files and the exact-version rules below. Entries are keyed by ecosystem + name + version, and each entry re-validates the declared license expression, so a dependency upgrade fails loudly instead of inheriting an old review.",
+  "groups": {
+    "objc2": {
+      "repository": "madsmtm/objc2",
+      "reason": "The published crates ship no license files, and the repository carried only the LICENSE.md pointer document at the four revisions those crates were built from (recorded per crate in .cargo_vcs_info.json): LICENSE.md is taken from those revisions, byte-identical at all four. The project added the standalone MIT, Apache-2.0 and Zlib texts upstream later; they are taken from the recorded later commit of the same repository. LICENSE.md also notes that the crates are derived from Apple SDKs and that working with them requires Xcode and its license.",
+      "files": {
+        "LICENSE.md": {
+          "url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "revisions": [
+            "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+            "8852b424193ca41602281b3d7540d7c8ed51e49a",
+            "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+            "b4167b582b2f75f9a1be75495c41b765344fd03c"
+          ],
+          "verifiedRevisions": [
+            "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+            "8852b424193ca41602281b3d7540d7c8ed51e49a",
+            "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+            "b4167b582b2f75f9a1be75495c41b765344fd03c"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54"
+        },
+        "LICENSE-MIT.txt": {
+          "url": "https://raw.githubusercontent.com/madsmtm/objc2/1adc004a387af7491d30209063c9570cddb75981/LICENSE-MIT.txt",
+          "revisions": [
+            "1adc004a387af7491d30209063c9570cddb75981"
+          ],
+          "verifiedRevisions": [
+            "1adc004a387af7491d30209063c9570cddb75981"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "f6a2e783669a0dd7a2c3b8a4f76db40ae49033e66e1bdc30f3aa25fe5577b070"
+        },
+        "LICENSE-APACHE.txt": {
+          "url": "https://raw.githubusercontent.com/madsmtm/objc2/1adc004a387af7491d30209063c9570cddb75981/LICENSE-APACHE.txt",
+          "revisions": [
+            "1adc004a387af7491d30209063c9570cddb75981"
+          ],
+          "verifiedRevisions": [
+            "1adc004a387af7491d30209063c9570cddb75981"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "0c9a5f6fe28e27015e12506ffe58c9e007cead169af9670ec15c1df0d14e4f2a"
+        },
+        "LICENSE-ZLIB.txt": {
+          "url": "https://raw.githubusercontent.com/madsmtm/objc2/1adc004a387af7491d30209063c9570cddb75981/LICENSE-ZLIB.txt",
+          "revisions": [
+            "1adc004a387af7491d30209063c9570cddb75981"
+          ],
+          "verifiedRevisions": [
+            "1adc004a387af7491d30209063c9570cddb75981"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "fced3e7fedc235fa83ed0108b0df74d86b435d06436356f46917a903cbadd80a"
+        }
+      }
+    },
+    "unic": {
+      "repository": "open-i18n/rust-unic",
+      "reason": "The published crates ship no license files; texts taken from the upstream workspace at the revisions recorded in each crate (.cargo_vcs_info.json), byte-identical at both revisions.",
+      "files": {
+        "LICENSE-MIT": {
+          "url": "https://raw.githubusercontent.com/open-i18n/rust-unic/8a6ce83063d90b91ae2ce59eddb803edd393fca9/LICENSE-MIT",
+          "revisions": [
+            "8a6ce83063d90b91ae2ce59eddb803edd393fca9",
+            "5878605364af97a3358368a6eaef02104af2e016"
+          ],
+          "verifiedRevisions": [
+            "8a6ce83063d90b91ae2ce59eddb803edd393fca9",
+            "5878605364af97a3358368a6eaef02104af2e016"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3"
+        },
+        "LICENSE-APACHE": {
+          "url": "https://raw.githubusercontent.com/open-i18n/rust-unic/8a6ce83063d90b91ae2ce59eddb803edd393fca9/LICENSE-APACHE",
+          "revisions": [
+            "8a6ce83063d90b91ae2ce59eddb803edd393fca9",
+            "5878605364af97a3358368a6eaef02104af2e016"
+          ],
+          "verifiedRevisions": [
+            "8a6ce83063d90b91ae2ce59eddb803edd393fca9",
+            "5878605364af97a3358368a6eaef02104af2e016"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+        }
+      }
+    },
+    "webview2-rs": {
+      "repository": "wravery/webview2-rs",
+      "reason": "The published crates ship no license file; the upstream repository LICENSE (MIT) is byte-identical at the revisions the published crates were built from.",
+      "files": {
+        "LICENSE": {
+          "url": "https://raw.githubusercontent.com/wravery/webview2-rs/b74dc5e2b394044bea5191052868ce7a106c202c/LICENSE",
+          "revisions": [
+            "b74dc5e2b394044bea5191052868ce7a106c202c",
+            "dffa41a8a46d3f5565eefbff2de57d38d399f158"
+          ],
+          "verifiedRevisions": [
+            "b74dc5e2b394044bea5191052868ce7a106c202c",
+            "dffa41a8a46d3f5565eefbff2de57d38d399f158"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "0dcf41516e608bbcb6cdc5229feb7b86fe4a643b85e7df251133c93408fdac73"
+        }
+      }
+    },
+    "winapi-rs": {
+      "repository": "retep998/winapi-rs",
+      "reason": "The 0.4.0 target-crate packages publish no license files and no vcs revision. Texts taken from the repository revision recorded by the winapi 0.3.9 package of the same project (.cargo_vcs_info.json); both files are byte-identical to the copies shipped inside the installed winapi 0.3.9 package.",
+      "files": {
+        "LICENSE-MIT": {
+          "url": "https://raw.githubusercontent.com/retep998/winapi-rs/796a8e6c2971dc2ff1bcff166e6671284f9b5b6b/LICENSE-MIT",
+          "revisions": [
+            "796a8e6c2971dc2ff1bcff166e6671284f9b5b6b"
+          ],
+          "verifiedRevisions": [
+            "796a8e6c2971dc2ff1bcff166e6671284f9b5b6b"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "ce7bc3499fee93d5022ef430d5e4201e79a6d9154f3974e42f41349f0569e09b"
+        },
+        "LICENSE-APACHE": {
+          "url": "https://raw.githubusercontent.com/retep998/winapi-rs/796a8e6c2971dc2ff1bcff166e6671284f9b5b6b/LICENSE-APACHE",
+          "revisions": [
+            "796a8e6c2971dc2ff1bcff166e6671284f9b5b6b"
+          ],
+          "verifiedRevisions": [
+            "796a8e6c2971dc2ff1bcff166e6671284f9b5b6b"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1"
+        }
+      }
+    },
+    "ndk": {
+      "repository": "rust-mobile/ndk",
+      "reason": "The published crates ship no license files; texts taken from the upstream repository revision recorded in each crate (.cargo_vcs_info.json).",
+      "files": {
+        "LICENSE-MIT": {
+          "url": "https://raw.githubusercontent.com/rust-mobile/ndk/49bbbba16c58ff63cb8a0ad0eca5a9fb7ecaec25/LICENSE-MIT",
+          "revisions": [
+            "49bbbba16c58ff63cb8a0ad0eca5a9fb7ecaec25"
+          ],
+          "verifiedRevisions": [
+            "49bbbba16c58ff63cb8a0ad0eca5a9fb7ecaec25"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "508a77d2e7b51d98adeed32648ad124b7b30241a8e70b2e72c99f92d8e5874d1"
+        },
+        "LICENSE-APACHE": {
+          "url": "https://raw.githubusercontent.com/rust-mobile/ndk/49bbbba16c58ff63cb8a0ad0eca5a9fb7ecaec25/LICENSE-APACHE",
+          "revisions": [
+            "49bbbba16c58ff63cb8a0ad0eca5a9fb7ecaec25"
+          ],
+          "verifiedRevisions": [
+            "49bbbba16c58ff63cb8a0ad0eca5a9fb7ecaec25"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+        }
+      }
+    },
+    "dlopen2": {
+      "repository": "OpenByteDev/dlopen2",
+      "reason": "The published crates ship no license file; the upstream repository LICENSE (MIT) is taken from the revision recorded in both crates (.cargo_vcs_info.json).",
+      "files": {
+        "LICENSE": {
+          "url": "https://raw.githubusercontent.com/OpenByteDev/dlopen2/cc80e4a0a90d499b677fdf7743699b4b3a43a989/LICENSE",
+          "revisions": [
+            "cc80e4a0a90d499b677fdf7743699b4b3a43a989"
+          ],
+          "verifiedRevisions": [
+            "cc80e4a0a90d499b677fdf7743699b4b3a43a989"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "39fa265207450e77c62e90c5594a06c085b655d8374c7ced4bf7894b6bd95dd2"
+        }
+      }
+    },
+    "jni-rs": {
+      "repository": "jni-rs/jni-rs",
+      "reason": "The published crates ship no license files; texts taken from the upstream repository at the revisions recorded in each crate (.cargo_vcs_info.json), byte-identical at both revisions.",
+      "files": {
+        "LICENSE-MIT": {
+          "url": "https://raw.githubusercontent.com/jni-rs/jni-rs/5ae9458a4ec44c5318f37ddc7569c1d4ae8a69e7/LICENSE-MIT",
+          "revisions": [
+            "5ae9458a4ec44c5318f37ddc7569c1d4ae8a69e7",
+            "33045a124105c939d1e2cbdcb5a39e5d868ffa03"
+          ],
+          "verifiedRevisions": [
+            "5ae9458a4ec44c5318f37ddc7569c1d4ae8a69e7",
+            "33045a124105c939d1e2cbdcb5a39e5d868ffa03"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "fea1d5bf3dd71605ce5d7d2ff695c1837e914c77195e523a86b5391716477960"
+        },
+        "LICENSE-APACHE": {
+          "url": "https://raw.githubusercontent.com/jni-rs/jni-rs/5ae9458a4ec44c5318f37ddc7569c1d4ae8a69e7/LICENSE-APACHE",
+          "revisions": [
+            "5ae9458a4ec44c5318f37ddc7569c1d4ae8a69e7",
+            "33045a124105c939d1e2cbdcb5a39e5d868ffa03"
+          ],
+          "verifiedRevisions": [
+            "5ae9458a4ec44c5318f37ddc7569c1d4ae8a69e7",
+            "33045a124105c939d1e2cbdcb5a39e5d868ffa03"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+        }
+      }
+    },
+    "jni-sys": {
+      "repository": "jni-rs/jni-sys",
+      "reason": "The published crate ships no license files; texts taken from the upstream repository revision recorded in the crate (.cargo_vcs_info.json).",
+      "files": {
+        "LICENSE-MIT": {
+          "url": "https://raw.githubusercontent.com/jni-rs/jni-sys/64d77b7a5f119d7b55b4e2c169a4668067ff59e6/LICENSE-MIT",
+          "revisions": [
+            "64d77b7a5f119d7b55b4e2c169a4668067ff59e6"
+          ],
+          "verifiedRevisions": [
+            "64d77b7a5f119d7b55b4e2c169a4668067ff59e6"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "1d85bd754b04ceec93e98e890edd1fa3c6a22e81bcb32135806beeccefa51cd1"
+        },
+        "LICENSE-APACHE": {
+          "url": "https://raw.githubusercontent.com/jni-rs/jni-sys/64d77b7a5f119d7b55b4e2c169a4668067ff59e6/LICENSE-APACHE",
+          "revisions": [
+            "64d77b7a5f119d7b55b4e2c169a4668067ff59e6"
+          ],
+          "verifiedRevisions": [
+            "64d77b7a5f119d7b55b4e2c169a4668067ff59e6"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08"
+        }
+      }
+    },
+    "libappindicator-rs": {
+      "repository": "tauri-apps/libappindicator-rs",
+      "reason": "The published sys crate ships no license files. The repository is identified by the commit links in the crate's own CHANGELOG; texts taken from the revision recorded in the crate (.cargo_vcs_info.json) and are byte-identical to the LICENSE files shipped inside the sibling libappindicator 0.9.0 package.",
+      "files": {
+        "LICENSE-MIT": {
+          "url": "https://raw.githubusercontent.com/tauri-apps/libappindicator-rs/eafd1e3682a1247f595410266091e9684021cb6f/LICENSE-MIT",
+          "revisions": [
+            "eafd1e3682a1247f595410266091e9684021cb6f"
+          ],
+          "verifiedRevisions": [
+            "eafd1e3682a1247f595410266091e9684021cb6f"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "eb227437252b2a7a9c1fc342c93ade1f3d7ce38cc6dd754f613db07d53ceff0b"
+        },
+        "LICENSE-APACHE": {
+          "url": "https://raw.githubusercontent.com/tauri-apps/libappindicator-rs/eafd1e3682a1247f595410266091e9684021cb6f/LICENSE-APACHE",
+          "revisions": [
+            "eafd1e3682a1247f595410266091e9684021cb6f"
+          ],
+          "verifiedRevisions": [
+            "eafd1e3682a1247f595410266091e9684021cb6f"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+        }
+      }
+    },
+    "defmt": {
+      "repository": "knurling-rs/defmt",
+      "reason": "The published crate ships no license files; texts taken from the upstream workspace revision recorded in the crate (.cargo_vcs_info.json).",
+      "files": {
+        "LICENSE-MIT": {
+          "url": "https://raw.githubusercontent.com/knurling-rs/defmt/4a8cdb44891ed57b8ff5a023b6bec7137c48708f/LICENSE-MIT",
+          "revisions": [
+            "4a8cdb44891ed57b8ff5a023b6bec7137c48708f"
+          ],
+          "verifiedRevisions": [
+            "4a8cdb44891ed57b8ff5a023b6bec7137c48708f"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "2710a622a896bba67356913d4d0492cab5465f61b2ecce6d880aeb483834fb50"
+        },
+        "LICENSE-APACHE": {
+          "url": "https://raw.githubusercontent.com/knurling-rs/defmt/4a8cdb44891ed57b8ff5a023b6bec7137c48708f/LICENSE-APACHE",
+          "revisions": [
+            "4a8cdb44891ed57b8ff5a023b6bec7137c48708f"
+          ],
+          "verifiedRevisions": [
+            "4a8cdb44891ed57b8ff5a023b6bec7137c48708f"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "8173d5c29b4f956d532781d2b86e4e30f83e6b7878dce18c919451d6ba707c90"
+        }
+      }
+    },
+    "alloc-no-stdlib": {
+      "repository": "dropbox/rust-alloc-no-stdlib",
+      "reason": "The published crate ships no license file; the upstream repository LICENSE (BSD-3-Clause) is taken from the revision recorded in the crate (.cargo_vcs_info.json).",
+      "files": {
+        "LICENSE": {
+          "url": "https://raw.githubusercontent.com/dropbox/rust-alloc-no-stdlib/ae42d22078b98549e987d2f03d12df7b984fde47/LICENSE",
+          "revisions": [
+            "ae42d22078b98549e987d2f03d12df7b984fde47"
+          ],
+          "verifiedRevisions": [
+            "ae42d22078b98549e987d2f03d12df7b984fde47"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "c0c56f26d9c051cac4d200c34c84e7ae9aaa853e01a982a1df08b09931e518ae"
+        }
+      }
+    },
+    "rustls-platform-verifier": {
+      "repository": "rustls/rustls-platform-verifier",
+      "reason": "The published android crate ships no license files and records no vcs revision; texts taken from the upstream repository at the default-branch commit resolved on the review date.",
+      "files": {
+        "LICENSE-MIT": {
+          "url": "https://raw.githubusercontent.com/rustls/rustls-platform-verifier/027c029f1523ac8b75eca7996c72c2efb4b69b0b/LICENSE-MIT",
+          "revisions": [
+            "027c029f1523ac8b75eca7996c72c2efb4b69b0b"
+          ],
+          "verifiedRevisions": [
+            "027c029f1523ac8b75eca7996c72c2efb4b69b0b"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "1c7cf76689c837a68ed8d704994e52a0f2940c087958f860d17f3186afbdcc0c"
+        },
+        "LICENSE-APACHE": {
+          "url": "https://raw.githubusercontent.com/rustls/rustls-platform-verifier/027c029f1523ac8b75eca7996c72c2efb4b69b0b/LICENSE-APACHE",
+          "revisions": [
+            "027c029f1523ac8b75eca7996c72c2efb4b69b0b"
+          ],
+          "verifiedRevisions": [
+            "027c029f1523ac8b75eca7996c72c2efb4b69b0b"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+        }
+      }
+    },
+    "selectors": {
+      "repository": "servo/stylo",
+      "revisions": [
+        "635e1a19d02960588a00e189bd4bd5bdb150ec3d"
+      ],
+      "reason": "The selectors crate declares MPL-2.0 but neither the published crate nor the upstream repository carries a license file. The bundled text is Mozilla's own published copy of the Mozilla Public License 2.0, the license steward's canonical text.",
+      "files": {
+        "MPL-2.0.txt": {
+          "url": "https://www.mozilla.org/media/MPL/2.0/index.txt",
+          "revisions": [],
+          "verifiedRevisions": [],
+          "fetched": "2026-09-22",
+          "sha256": "3f3d9e0024b1921b067d6f7f88deb4a60cbe7a78e76c64e3f1d7fc3b779b9d04"
+        }
+      },
+      "sourceLabel": "servo/stylo (no license file upstream; Mozilla's MPL 2.0 text from mozilla.org)"
+    },
+    "gsap": {
+      "repository": "greensock/GSAP",
+      "revisions": [],
+      "reason": "Neither the published packages nor the upstream repository carry license text: gsap and @gsap/react declare the terms only by URL. The bundled text is the complete \"Standard No Charge GSAP License\" from the official licensing page that both packages name, converted from the page HTML without rewording. The title's \"no charge\" is the license's own name, not a condition; the grant covers commercial and non-commercial use for the defined Permitted Uses, and the substantive restriction is the defined \"Prohibited Uses\" concerning no-code tools that compete with Webflow's visual animation-building capabilities. GSAP's terms are not an SPDX license, are not MIT or Apache-2.0, and are not represented as open source; no compatibility conclusion is drawn here.",
+      "files": {
+        "GSAP-STANDARD-LICENSE.txt": {
+          "url": "https://gsap.com/standard-license",
+          "revisions": [],
+          "verifiedRevisions": [],
+          "fetched": "2026-09-22",
+          "sourceSha256": "c955809a46fa2830dbf9de2300639411ffc2f4f987284e849321fd9dc2f8cf19",
+          "transformation": "html-to-text, wording untouched: drop script/style/comments, turn block ends and <br> into line breaks, drop remaining tags, decode &quot; &#34; &#39; &#x27; &rsquo; &amp; &lt; &gt; &nbsp; &#160; &copy;, collapse whitespace, drop empty lines, then keep the lines from \"Standard \\\"No Charge\\\" GSAP License\" up to (excluding) the FAQ line.",
+          "sha256": "caebcf3a57bd278569c3c45eb67db340aabd90fa03d130d935a5972f5d777c5e"
+        }
+      },
+      "sourceLabel": "greensock/GSAP (no license file upstream; terms published at gsap.com/standard-license)"
+    },
+    "react-three-fiber": {
+      "repository": "pmndrs/react-three-fiber",
+      "revisions": [
+        "e53d667aa0326024be2772558a7a593e2bb825d3"
+      ],
+      "reason": "The published npm package ships no license file. The text is the upstream LICENSE at the revision npm records as the publish source (gitHead) for @react-three/fiber 9.3.0.",
+      "files": {
+        "LICENSE": {
+          "url": "https://raw.githubusercontent.com/pmndrs/react-three-fiber/e53d667aa0326024be2772558a7a593e2bb825d3/LICENSE",
+          "revisions": [
+            "e53d667aa0326024be2772558a7a593e2bb825d3"
+          ],
+          "verifiedRevisions": [
+            "e53d667aa0326024be2772558a7a593e2bb825d3"
+          ],
+          "fetched": "2026-09-22",
+          "sha256": "9c35b5de7b7493a707fffe4eb23bd2f7f449153c1911f7c6eefb4e591fd5349a"
+        }
+      }
+    }
+  },
+  "entries": [
+    {
+      "ecosystem": "rust",
+      "name": "objc2",
+      "version": "0.6.4",
+      "declaredLicense": "MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "objc2-encode",
+      "version": "4.1.0",
+      "declaredLicense": "MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "objc2-foundation",
+      "version": "0.3.2",
+      "declaredLicense": "MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "block2",
+      "version": "0.6.2",
+      "declaredLicense": "MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "objc2-core-foundation",
+      "version": "0.3.2",
+      "declaredLicense": "Zlib OR Apache-2.0 OR MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt",
+        "LICENSE-APACHE.txt",
+        "LICENSE-ZLIB.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "objc2-exception-helper",
+      "version": "0.1.1",
+      "declaredLicense": "Zlib OR Apache-2.0 OR MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt",
+        "LICENSE-APACHE.txt",
+        "LICENSE-ZLIB.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "dispatch2",
+      "version": "0.3.1",
+      "declaredLicense": "Zlib OR Apache-2.0 OR MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt",
+        "LICENSE-APACHE.txt",
+        "LICENSE-ZLIB.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "objc2-app-kit",
+      "version": "0.3.2",
+      "declaredLicense": "Zlib OR Apache-2.0 OR MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt",
+        "LICENSE-APACHE.txt",
+        "LICENSE-ZLIB.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "objc2-core-graphics",
+      "version": "0.3.2",
+      "declaredLicense": "Zlib OR Apache-2.0 OR MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt",
+        "LICENSE-APACHE.txt",
+        "LICENSE-ZLIB.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "objc2-io-surface",
+      "version": "0.3.2",
+      "declaredLicense": "Zlib OR Apache-2.0 OR MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt",
+        "LICENSE-APACHE.txt",
+        "LICENSE-ZLIB.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "objc2-web-kit",
+      "version": "0.3.2",
+      "declaredLicense": "Zlib OR Apache-2.0 OR MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt",
+        "LICENSE-APACHE.txt",
+        "LICENSE-ZLIB.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "objc2-ui-kit",
+      "version": "0.3.2",
+      "declaredLicense": "Zlib OR Apache-2.0 OR MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt",
+        "LICENSE-APACHE.txt",
+        "LICENSE-ZLIB.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "objc2-user-notifications",
+      "version": "0.3.2",
+      "declaredLicense": "Zlib OR Apache-2.0 OR MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt",
+        "LICENSE-APACHE.txt",
+        "LICENSE-ZLIB.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "objc2-quartz-core",
+      "version": "0.3.2",
+      "declaredLicense": "Zlib OR Apache-2.0 OR MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt",
+        "LICENSE-APACHE.txt",
+        "LICENSE-ZLIB.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "objc2-core-text",
+      "version": "0.3.2",
+      "declaredLicense": "Zlib OR Apache-2.0 OR MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt",
+        "LICENSE-APACHE.txt",
+        "LICENSE-ZLIB.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "objc2-core-location",
+      "version": "0.3.2",
+      "declaredLicense": "Zlib OR Apache-2.0 OR MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt",
+        "LICENSE-APACHE.txt",
+        "LICENSE-ZLIB.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "objc2-core-image",
+      "version": "0.3.2",
+      "declaredLicense": "Zlib OR Apache-2.0 OR MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt",
+        "LICENSE-APACHE.txt",
+        "LICENSE-ZLIB.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "objc2-core-data",
+      "version": "0.3.2",
+      "declaredLicense": "Zlib OR Apache-2.0 OR MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt",
+        "LICENSE-APACHE.txt",
+        "LICENSE-ZLIB.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "objc2-cloud-kit",
+      "version": "0.3.2",
+      "declaredLicense": "Zlib OR Apache-2.0 OR MIT",
+      "group": "objc2",
+      "files": [
+        "LICENSE-MIT.txt",
+        "LICENSE-APACHE.txt",
+        "LICENSE-ZLIB.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "unic-ucd-ident",
+      "version": "0.9.0",
+      "declaredLicense": "MIT/Apache-2.0",
+      "group": "unic",
+      "files": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "unic-ucd-version",
+      "version": "0.9.0",
+      "declaredLicense": "MIT/Apache-2.0",
+      "group": "unic",
+      "files": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "unic-common",
+      "version": "0.9.0",
+      "declaredLicense": "MIT/Apache-2.0",
+      "group": "unic",
+      "files": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "unic-char-range",
+      "version": "0.9.0",
+      "declaredLicense": "MIT/Apache-2.0",
+      "group": "unic",
+      "files": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "unic-char-property",
+      "version": "0.9.0",
+      "declaredLicense": "MIT/Apache-2.0",
+      "group": "unic",
+      "files": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "webview2-com",
+      "version": "0.38.2",
+      "declaredLicense": "MIT",
+      "group": "webview2-rs",
+      "files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "webview2-com-sys",
+      "version": "0.38.2",
+      "declaredLicense": "MIT",
+      "group": "webview2-rs",
+      "files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "webview2-com-macros",
+      "version": "0.8.1",
+      "declaredLicense": "MIT",
+      "group": "webview2-rs",
+      "files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "winapi-x86_64-pc-windows-gnu",
+      "version": "0.4.0",
+      "declaredLicense": "MIT/Apache-2.0",
+      "group": "winapi-rs",
+      "files": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "winapi-i686-pc-windows-gnu",
+      "version": "0.4.0",
+      "declaredLicense": "MIT/Apache-2.0",
+      "group": "winapi-rs",
+      "files": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "ndk",
+      "version": "0.9.0",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "group": "ndk",
+      "files": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "ndk-sys",
+      "version": "0.6.0+11769913",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "group": "ndk",
+      "files": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "dlopen2",
+      "version": "0.8.2",
+      "declaredLicense": "MIT",
+      "group": "dlopen2",
+      "files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "dlopen2_derive",
+      "version": "0.4.3",
+      "declaredLicense": "MIT",
+      "group": "dlopen2",
+      "files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "jni",
+      "version": "0.22.4",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "group": "jni-rs",
+      "files": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "jni-macros",
+      "version": "0.22.4",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "group": "jni-rs",
+      "files": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "jni-sys-macros",
+      "version": "0.4.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "group": "jni-sys",
+      "files": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "libappindicator-sys",
+      "version": "0.9.0",
+      "declaredLicense": "Apache-2.0 OR MIT",
+      "group": "libappindicator-rs",
+      "files": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "defmt-parser",
+      "version": "1.0.0",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "group": "defmt",
+      "files": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "selectors",
+      "version": "0.36.1",
+      "declaredLicense": "MPL-2.0",
+      "group": "selectors",
+      "files": [
+        "MPL-2.0.txt"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "alloc-stdlib",
+      "version": "0.2.4",
+      "declaredLicense": "BSD-3-Clause",
+      "group": "alloc-no-stdlib",
+      "files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "rustls-platform-verifier-android",
+      "version": "0.1.1",
+      "declaredLicense": "MIT OR Apache-2.0",
+      "group": "rustls-platform-verifier",
+      "files": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE"
+      ]
+    },
+    {
+      "ecosystem": "rust",
+      "name": "r-efi",
+      "version": "5.3.0",
+      "declaredLicense": "MIT OR Apache-2.0 OR LGPL-2.1-or-later",
+      "extract": {
+        "file": "AUTHORS",
+        "sections": [
+          {
+            "bundled": "MIT.txt",
+            "startMarker": "AUTHORS-MIT:",
+            "endMarker": "AUTHORS-ASL:",
+            "sha256": "08febe9a79bf6f4b8fec27ced6ca258a653f0db42bc0b8d25d4b9011139f2c9c"
+          },
+          {
+            "bundled": "COPYRIGHT.txt",
+            "startMarker": "COPYRIGHT: (ordered alphabetically)",
+            "endMarker": "AUTHORS: (ordered alphabetically)",
+            "sha256": "8a3c9100a8a89fe0fc6bfa8c0e67294d965b2349ddede4e5a88d3ab80530067d"
+          }
+        ]
+      },
+      "reason": "Upstream publishes no license file: the crate's own AUTHORS file carries the complete MIT text and the project's copyright holders, which is what this extraction bundles. The crate declares a triple license; the Apache-2.0 and LGPL-2.1 texts are not published as text by upstream."
+    },
+    {
+      "ecosystem": "rust",
+      "name": "r-efi",
+      "version": "6.0.0",
+      "declaredLicense": "MIT OR Apache-2.0 OR LGPL-2.1-or-later",
+      "extract": {
+        "file": "AUTHORS",
+        "sections": [
+          {
+            "bundled": "MIT.txt",
+            "startMarker": "AUTHORS-MIT:",
+            "endMarker": "AUTHORS-ASL:",
+            "sha256": "08febe9a79bf6f4b8fec27ced6ca258a653f0db42bc0b8d25d4b9011139f2c9c"
+          },
+          {
+            "bundled": "COPYRIGHT.txt",
+            "startMarker": "COPYRIGHT: (ordered alphabetically)",
+            "endMarker": "AUTHORS: (ordered alphabetically)",
+            "sha256": "8a3c9100a8a89fe0fc6bfa8c0e67294d965b2349ddede4e5a88d3ab80530067d"
+          }
+        ]
+      },
+      "reason": "Upstream publishes no license file: the crate's own AUTHORS file carries the complete MIT text and the project's copyright holders, which is what this extraction bundles. The crate declares a triple license; the Apache-2.0 and LGPL-2.1 texts are not published as text by upstream."
+    },
+    {
+      "ecosystem": "javascript",
+      "name": "@react-three/fiber",
+      "version": "9.3.0",
+      "declaredLicense": "MIT",
+      "group": "react-three-fiber",
+      "files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "ecosystem": "javascript",
+      "name": "gsap",
+      "version": "3.15.0",
+      "declaredLicense": "Standard 'no charge' license: https://gsap.com/standard-license.",
+      "group": "gsap",
+      "files": [
+        "GSAP-STANDARD-LICENSE.txt"
+      ]
+    },
+    {
+      "ecosystem": "javascript",
+      "name": "@gsap/react",
+      "version": "2.1.2",
+      "declaredLicense": "SEE LICENSE AT https://gsap.com/standard-license",
+      "group": "gsap",
+      "files": [
+        "GSAP-STANDARD-LICENSE.txt"
+      ]
+    },
+    {
+      "ecosystem": "javascript",
+      "name": "ogl",
+      "version": "1.0.11",
+      "declaredLicense": "Unlicense",
+      "extract": {
+        "file": "README.md",
+        "sections": [
+          {
+            "bundled": "UNLICENSE.txt",
+            "startMarker": "## Unlicense",
+            "endMarker": null,
+            "sha256": "6b0382b16279f26ff69014300541967a356a666eb0b91b422f6862f6b7dad17e"
+          }
+        ]
+      },
+      "reason": "The package ships no license file; its installed README carries the complete Unlicense text as a standalone section."
+    }
+  ],
+  "sourceCodeForm": [
+    {
+      "ecosystem": "rust",
+      "name": "selectors",
+      "version": "0.36.1",
+      "license": "MPL-2.0",
+      "revision": "635e1a19d02960588a00e189bd4bd5bdb150ec3d",
+      "locations": [
+        "https://crates.io/api/v1/crates/selectors/0.36.1/download",
+        "https://github.com/servo/stylo/tree/635e1a19d02960588a00e189bd4bd5bdb150ec3d/selectors"
+      ],
+      "note": "The published crate ships no license text, so the MPL-2.0 text itself is bundled as a reviewed fallback. The crate's own Cargo.toml records https://github.com/servo/stylo as its repository and .cargo_vcs_info.json records this revision with path_in_vcs \"selectors\"; the published package is the immutable source of the exact version."
+    },
+    {
+      "ecosystem": "rust",
+      "name": "cssparser",
+      "version": "0.36.0",
+      "license": "MPL-2.0",
+      "revision": "9339ddd71443463dfb85d1185ad50cd98b34bc8f",
+      "locations": [
+        "https://crates.io/api/v1/crates/cssparser/0.36.0/download",
+        "https://github.com/servo/rust-cssparser/tree/9339ddd71443463dfb85d1185ad50cd98b34bc8f"
+      ],
+      "note": "The published crate ships LICENSE (MPL-2.0). The repository and revision are the ones recorded by the crate itself."
+    },
+    {
+      "ecosystem": "rust",
+      "name": "cssparser-macros",
+      "version": "0.6.1",
+      "license": "MPL-2.0",
+      "revision": "0ebd17bcd13808f087b083f34d2f816e380b5155",
+      "locations": [
+        "https://crates.io/api/v1/crates/cssparser-macros/0.6.1/download",
+        "https://github.com/servo/rust-cssparser/tree/0ebd17bcd13808f087b083f34d2f816e380b5155/macros"
+      ],
+      "note": "The published crate ships LICENSE (MPL-2.0). The repository and revision are the ones recorded by the crate itself, in the repository's \"macros\" directory."
+    },
+    {
+      "ecosystem": "rust",
+      "name": "dtoa-short",
+      "version": "0.3.5",
+      "license": "MPL-2.0",
+      "revision": "2d905cdb8b2e08163dc0d015f529877fe657b4ef",
+      "locations": [
+        "https://crates.io/api/v1/crates/dtoa-short/0.3.5/download",
+        "https://github.com/upsuper/dtoa-short/tree/2d905cdb8b2e08163dc0d015f529877fe657b4ef"
+      ],
+      "note": "The published crate ships LICENSE (MPL-2.0). The repository and revision are the ones recorded by the crate itself."
+    },
+    {
+      "ecosystem": "rust",
+      "name": "option-ext",
+      "version": "0.2.0",
+      "license": "MPL-2.0",
+      "revision": "272f22fc9ea1ac6b08f01704af52c4ac338df4e2",
+      "locations": [
+        "https://crates.io/api/v1/crates/option-ext/0.2.0/download",
+        "https://github.com/soc/option-ext/tree/272f22fc9ea1ac6b08f01704af52c4ac338df4e2"
+      ],
+      "note": "The published crate ships LICENSE.txt (MPL-2.0). The repository and revision are the ones recorded by the crate itself."
+    }
+  ]
+}

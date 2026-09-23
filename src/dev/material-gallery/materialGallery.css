@@ -1,0 +1,78 @@
+.material-gallery {
+  --field-bg: #f0efeb; --surface-1: #f8f6f2; --surface-2: #e7e5e1; --surface-raised: #fcfaf7;
+  --boundary: #c8c5c0; --boundary-strong: #b8b5b0; --ink-primary: #292825; --ink-secondary: #68645d;
+  --ink-tertiary: #969087; --attention: #b85f52; --selection-accent: #b85f52; --focus-accent: #b85f52;
+  --ghost-ink: #5e5a54; --pencil-trace: #827d75; --source-ink: #66645e; --source-rule: #aaa69e;
+  --crystal-mark: #66645e; --trace-muted: #bfc6c8; --relation: #838987; --thought-rest-material: 66%;
+  --thought-rest-boundary: 52%; color-scheme: light; display: grid; grid-template-columns: 268px minmax(0, 1fr);
+  width: 100%; height: 100%; background: var(--field-bg); color: var(--ink-primary); font: var(--type-label-size)/1.55 var(--ui-font);
+}
+.material-gallery[data-theme="graphite"] {
+  --field-bg: #171819; --surface-1: #202124; --surface-2: #27292b; --surface-raised: #2b2d30;
+  --boundary: #383a3e; --boundary-strong: #4a4c50; --ink-primary: #e7e3dc; --ink-secondary: #b4b0aa;
+  --ink-tertiary: #797976; --attention: #c47b6b; --selection-accent: #c47b6b; --focus-accent: #c47b6b;
+  --ghost-ink: #c7c1b8; --pencil-trace: #87837d; --source-ink: #aaa69f; --source-rule: #555650;
+  --crystal-mark: #aaa69f; --trace-muted: #444649; --relation: #8d8b87; --thought-rest-material: 68%;
+  --thought-rest-boundary: 62%; color-scheme: dark;
+}
+.material-gallery-controls { position: relative; z-index: 10; overflow: auto; padding: 24px 20px; border-right: 1px solid var(--boundary); background: color-mix(in srgb, var(--surface-1) 96%, transparent); }
+.material-gallery-header { display: grid; gap: 6px; margin-bottom: 26px; }
+.material-gallery-eyebrow, .material-gallery-controls h2 { font: 500 var(--type-eyebrow-size)/1.5 var(--ui-font); letter-spacing: var(--type-eyebrow-track); text-transform: uppercase; color: var(--ink-tertiary); }
+.material-gallery-header h1 { margin: 0; font: 400 var(--type-ui-title-size)/1.35 var(--ui-font); }
+.material-gallery-header p { margin: 0; color: var(--ink-secondary); font-size: var(--type-helper-size); }
+.material-gallery-controls section { margin: 0 0 22px; }
+.material-gallery-controls h2 { margin: 0 0 8px; }
+.material-gallery-options { display: grid; gap: 2px; }
+.material-gallery-options button, .material-gallery-segmented button { min-height: 32px; padding: 5px 8px; border: 1px solid transparent; border-radius: var(--radius-control); color: var(--ink-secondary); text-align: left; font-size: var(--type-label-size); }
+.material-gallery-options button:hover, .material-gallery-segmented button:hover { color: var(--ink-primary); background: var(--surface-2); }
+.material-gallery-options button[data-active], .material-gallery-segmented button[data-active] { border-color: color-mix(in srgb, var(--attention) 58%, var(--boundary)); background: var(--surface-2); color: var(--ink-primary); }
+.material-gallery-segmented { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.material-gallery-segmented button { text-align: center; }
+.material-gallery-sliders { display: grid; gap: 13px; }
+.material-gallery-sliders label { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 5px 10px; color: var(--ink-secondary); }
+.material-gallery-sliders output { color: var(--ink-tertiary); font-variant-numeric: tabular-nums; }
+.material-gallery-sliders input { grid-column: 1 / -1; width: 100%; accent-color: var(--attention); }
+.material-gallery-reduced { margin: 0; color: var(--ink-tertiary); font-size: var(--type-helper-size); }
+.material-gallery-meta { display: grid; gap: 7px; margin: 0; padding-top: 14px; border-top: 1px solid var(--boundary); color: var(--ink-tertiary); font-size: var(--type-helper-size); }
+.material-gallery-meta div { display: flex; justify-content: space-between; gap: 8px; }
+.material-gallery-meta dt, .material-gallery-meta dd { margin: 0; }
+.material-gallery-stage { position: relative; min-width: 0; overflow: hidden; isolation: isolate; background: var(--field-bg); }
+.material-gallery-background { position: absolute; z-index: 0; inset: 0; overflow: hidden; isolation: isolate; pointer-events: none; transition: opacity var(--motion-control) var(--ease-settle); }
+.material-gallery-background > *, .material-renderer, .field-background-renderer, .threads-container, .topography-container, .silk-container { position: absolute !important; inset: 0; width: 100%; height: 100%; overflow: hidden; }
+.material-gallery-background canvas { display: block; width: 100% !important; height: 100% !important; pointer-events: none !important; }
+.material-gallery-identity { position: absolute; z-index: 3; top: 30px; left: 38px; display: grid; gap: 4px; pointer-events: none; }
+.material-gallery-identity span { font: 500 var(--type-eyebrow-size)/1.5 var(--ui-font); letter-spacing: var(--type-eyebrow-track); color: var(--ink-tertiary); }
+.material-gallery-identity strong { font: 400 var(--type-identity-size)/1.35 var(--thought-font); }
+.material-gallery-placeholder { position: absolute; z-index: 2; inset: 50% auto auto 50%; translate: -50% -50%; margin: 0; color: var(--ink-tertiary); font: var(--type-helper-size)/1.5 var(--ui-font); }
+@media (max-width: 760px) {
+  .material-gallery { grid-template-columns: 220px minmax(0, 1fr); }
+  .material-gallery-controls { padding: 18px 14px; }
+  .material-gallery-identity { left: 24px; top: 22px; }
+}
+
+/* Gallery-only Thought exploration. Production Thought geometry and state rules remain untouched. */
+.material-gallery-field { z-index: 1; pointer-events: none; }
+.material-gallery-field .material-gallery-thought { transform: none; cursor: default; }
+.material-gallery-field .material-gallery-thought:hover { opacity: inherit; }
+.material-gallery-thought .material-gallery-state-label { position: absolute; left: 8px; top: calc(100% + 5px); color: var(--ink-tertiary); font: 500 var(--type-meta-size)/1.4 var(--ui-font); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.material-gallery-thought[data-selected="true"] { box-shadow: inset 0 0 0 1px var(--selection-accent), 0 2px 4px -3px color-mix(in srgb, var(--ink-primary) 18%, transparent); }
+.material-gallery-selected-dot { position: absolute; right: 7px; top: 7px; width: 4px; height: 4px; border-radius: 50%; background: var(--selection-accent); opacity: .84; }
+.material-gallery-field .thought.editing { width: 256px; min-height: 76px; background: color-mix(in srgb, var(--surface-1) 98%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--focus-accent) 48%, var(--boundary)), 0 3px 7px -5px color-mix(in srgb, var(--ink-primary) 28%, transparent); }
+.material-gallery-field .thought.editing textarea { min-height: 60px; }
+.material-gallery-field .thought.ghost:not(.editing) { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pencil-trace) 58%, transparent); }
+.material-gallery-field .thought.ghost:not(.editing)::after { content: ""; position: absolute; inset: 0; border: 1px dashed color-mix(in srgb, var(--pencil-trace) 42%, transparent); border-radius: inherit; pointer-events: none; }
+.material-gallery-field .thought.crystal::before { content: "◆"; }
+.material-gallery-field .thought.source .thought-meta { opacity: .56; }
+.material-gallery-relations { inset: 0; width: 100%; height: 100%; }
+.material-gallery-relations .relation path { vector-effect: non-scaling-stroke; opacity: .2; }
+.material-gallery-relations .relation.gallery-relation-active path { stroke: color-mix(in srgb, var(--relation) 84%, transparent); opacity: .52; }
+@media (max-width: 1080px) {
+  .material-gallery-field .material-gallery-thought { scale: .88; transform-origin: left top; }
+  .material-gallery-field .thought.source { left: 68% !important; }
+}
+@media (max-width: 760px) {
+  .material-gallery-field .material-gallery-thought { scale: .72; }
+  .material-gallery-field .thought.editing { left: 61% !important; }
+}
+
+.material-gallery-background .silk-container { opacity: .25; }

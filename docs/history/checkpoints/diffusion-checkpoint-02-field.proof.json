@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-09-13T09:53:23.006665+00:00",
+  "SOURCE_SNAPSHOT": "/mnt/data/delivery/diffusion-checkpoint-02-field.zip",
+  "SOURCE_SNAPSHOT_SHA256": "f7b6e8ae6cd5b078b3022b3b4e95dd38918749d1f2e99e7213115e5041e2a253",
+  "SOURCE_SNAPSHOT_VERIFIED": "PASS",
+  "SOURCE_ROOT": "/mnt/data/diffusion-explorer",
+  "files": 52,
+  "CONTENTS_CHECK": [
+    "package.json",
+    "README.md",
+    "STATUS.md",
+    "src/main.tsx",
+    "src/",
+    "tests/"
+  ],
+  "NOTE": "Archive verification only. See STATUS.md for build/runtime verification."
+}

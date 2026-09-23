@@ -1,0 +1,33 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createProject,makeThought } from '../../src/core/model.ts';
+import { ProjectController } from '../../src/core/controller.ts';
+import { AIRuntime } from '../../src/ai/runtime.ts';
+import { DiffuseSession } from '../../src/ai/diffuse.ts';
+import { readCandidate } from '../../src/evidence/pipeline.ts';
+import { compileContext } from '../../src/ai/context.ts';
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function until(fn){for(let i=0;i<300;i++){if(fn())return;await wait(3);}throw Error('Condition not reached');}
+function setup(providerOverride){const p=createProject('test');p.thoughts.a=makeThought('A question?',{x:0,y:0},1,'a');const controller=new ProjectController(p,async()=>{});let calls=0;const packets=[];const provider={label:'Test fixture',mock:true,respond:async(packet,intent,signal)=>{calls++;packets.push(packet);return providerOverride?providerOverride(packet,intent,signal):{providerLabel:'Test fixture',mock:true,intents:[{type:'surface_possibility',text:'Possibility '+calls}]};}};const runtime=new AIRuntime(controller,()=>provider,{pending:()=>{},notice:()=>{},route:()=>{throw Error('Diffuse must not open a reasoning surface');},anchor:()=>({x:400,y:0})});return{controller,runtime,calls:()=>calls,packets};}
+const config={scopeIds:['a'],prompt:'Explore the question',steps:3,seconds:30,projectSources:false,web:false};
+test('Diffuse rejects missing scope, excessive budgets, Ghost scope and unauthorized web',()=>{
+ const{controller,runtime}=setup();const d=new DiffuseSession(controller,runtime,()=>null,0);try{for(const patch of[{scopeIds:[]},{scopeIds:['unclaimed']},{steps:7},{seconds:181},{web:true}])assert.throws(()=>d.start({...config,...patch}));assert.equal(runtime.requestCount,0);}finally{d.dispose();runtime.dispose();}
+});
+test('Diffuse makes exactly its bounded calls and never uses unclaimed Ghosts as scope',async()=>{
+ const{controller,runtime,calls,packets}=setup();const d=new DiffuseSession(controller,runtime,()=>null,1);try{d.start(config);await until(()=>d.getSnapshot().phase==='complete');assert.equal(calls(),3);assert.equal(d.getSnapshot().used,3);assert.equal(Object.keys(controller.getSnapshot().project.thoughts).length,1);assert.ok(packets.every(p=>p.scope.length===1&&p.scope[0].id==='a'));await wait(20);assert.equal(calls(),3);}finally{d.dispose();runtime.dispose();}
+});
+test('claiming a Ghost ends autonomous territory immediately',async()=>{
+ const{controller,runtime,calls}=setup();const d=new DiffuseSession(controller,runtime,()=>null,100);try{d.start(config);await until(()=>Object.keys(controller.getSnapshot().session.ghosts).length===1);const key=Object.keys(controller.getSnapshot().session.ghosts)[0];controller.claim(key);assert.equal(d.getSnapshot().phase,'stopped');assert.match(d.getSnapshot().reason,/claimed/);await wait(120);assert.equal(calls(),1);assert.ok(controller.getSnapshot().project.thoughts[key]);}finally{d.dispose();runtime.dispose();}
+});
+test('Pause prevents further calls; Resume consumes only the remaining budget',async()=>{
+ const{controller,runtime,calls}=setup();const d=new DiffuseSession(controller,runtime,()=>null,40);try{d.start(config);await until(()=>calls()===1);d.pause();await wait(70);assert.equal(calls(),1);assert.equal(d.getSnapshot().phase,'paused');d.resume();await until(()=>d.getSnapshot().phase==='complete');assert.equal(calls(),3);}finally{d.dispose();runtime.dispose();}
+});
+test('web permission allows one discovery search but no unread snippets enter model context',async()=>{
+ const{controller,runtime,packets}=setup();let searches=0;const evidence={search:async()=>{searches++;return[{id:'candidate',title:'Counterexample',url:'https://example.com',excerpt:'A bounded snippet',outcome:'challenge',inspected:'Search snippet only.'}];}};const d=new DiffuseSession(controller,runtime,()=>evidence,1);try{d.start({...config,web:true});await until(()=>d.getSnapshot().phase==='complete');assert.equal(searches,1);assert.ok(packets.every(p=>p.permissions.web&&p.retrieved.sources.length===0));assert.equal(Object.keys(controller.getSnapshot().project.sources).length,0);assert.equal(d.getSnapshot().evidence.length,1);}finally{d.dispose();runtime.dispose();}
+});
+test('external evidence requires permission and preserves URL provenance without automatic Source creation',async()=>{
+ const discovery={id:'web-candidate',title:'Example',url:'https://example.com/page',excerpt:'Snippet',outcome:'inconclusive',inspected:'Snippet only.'};const candidate=await readCandidate({label:'Fixture reader',fetch:async()=>({url:discovery.url,title:'Example',text:'This is a fetched passage, not a discovery snippet.',inspected:'Bounded body'}),extract:async()=>[{text:'This is a fetched passage, not a discovery snippet.',locator:'paragraph 1',inspected:'Paragraph one'}]},discovery,'Claim');const{controller,runtime}=setup(async()=>({providerLabel:'Test',mock:true,intents:[{type:'surface_evidence',sourceId:'web-candidate',outcome:'inconclusive',text:'Not enough evidence.'}]}));assert.throws(()=>compileContext(controller.getSnapshot().project,['a'],{evidence:[candidate]}),/permission/);try{await runtime.run('diffuse','Inspect',['a'],{web:true,evidence:[candidate],runId:'authorized-run'});const ghost=Object.values(controller.getSnapshot().session.ghosts)[0];assert.equal(ghost.origin.url,candidate.url);assert.equal(ghost.origin.sourceId,undefined);controller.claim(ghost.id);assert.equal(controller.getSnapshot().project.thoughts[ghost.id].origin.url,candidate.url);assert.equal(Object.keys(controller.getSnapshot().project.sources).length,0);}finally{runtime.dispose();}
+});
+test('scope edit stops Diffuse; a drag during an ordinary request does not invalidate content',async()=>{
+ const{controller,runtime}=setup(async()=>{await wait(15);return{providerLabel:'Test',mock:true,intents:[{type:'surface_possibility',text:'Still a possibility'}]};});const d=new DiffuseSession(controller,runtime,()=>null,1);try{d.start(config);controller.dispatch({type:'thought.edit',id:'a',text:'New wording'});assert.equal(d.getSnapshot().phase,'stopped');await wait(25);assert.equal(Object.keys(controller.getSnapshot().session.ghosts).length,0);const request=runtime.run('ask','Think',['a']);controller.dispatch({type:'thought.move',positions:{a:{x:900,y:300}}});const result=await request;assert.equal(result.status,'completed');assert.equal(Object.keys(controller.getSnapshot().session.ghosts).length,1);assert.equal(controller.getSnapshot().project.thoughts.a.x,900);}finally{d.dispose();runtime.dispose();}
+});

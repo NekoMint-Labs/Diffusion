@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-09-13T12:07:22.215884+00:00",
+  "SOURCE_SNAPSHOT": "/mnt/data/work/delivery/diffusion-explorer-v0.2-checkpoint-c.zip",
+  "SOURCE_SNAPSHOT_SHA256": "150a0c3a36a6f6247144f70b46b1ebb53b08074b1ea2c142318dfb6ae0565ccf",
+  "SOURCE_SNAPSHOT_VERIFIED": "PASS",
+  "SOURCE_ROOT": "/mnt/data/work/diffusion-explorer",
+  "files": 185,
+  "bytes": 666547,
+  "CONTENTS_CHECK": [
+    "package.json",
+    "README.md",
+    "STATUS.md",
+    ".env.example",
+    "tsconfig.json",
+    "src/main.tsx",
+    "src/core/reducer.ts",
+    "src-tauri/tauri.conf.json",
+    "server/app.ts",
+    "src/",
+    "tests/",
+    "_checkpoints/"
+  ],
+  "VERIFICATION": "ZIP list, CRC, single root, exclusions, extraction and every-file byte comparison",
+  "NOTE": "Archive verification only. Runtime/build verification is separate in STATUS.md."
+}

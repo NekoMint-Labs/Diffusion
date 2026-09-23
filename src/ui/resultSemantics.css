@@ -1,0 +1,116 @@
+/* Stage B — semantic presentation only. No rule in this file changes ownership or canonical state. */
+
+/* Every Ghost carries one stable pencil trace. The action may tune the trace, but never changes
+   the fact that this is provisional material. */
+.thought.ghost:not(.editing)::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 7px;
+  bottom: 7px;
+  width: 1px;
+  background: color-mix(in srgb, var(--pencil-trace) 82%, transparent);
+  opacity: .78;
+}
+.thought.ghost[data-proposal-action="continue"]::before {
+  background: color-mix(in srgb, var(--pencil-trace) 92%, transparent);
+}
+.thought.ghost[data-proposal-action="angle"]::before {
+  width: 0;
+  background: none;
+  border-left: 1px dashed color-mix(in srgb, var(--pencil-trace) 86%, transparent);
+}
+.thought.ghost:not(.editing) .thought-preview { color: inherit; }
+.thought.ghost .ghost-label { color: var(--ink-tertiary); letter-spacing: .01em; }
+
+/* A generated question stays a proposal, and its unresolved posture is visible before metadata. */
+.thought.ghost[data-proposal-kind="question"]::before {
+  opacity: .5;
+}
+.thought.ghost[data-proposal-kind="question"]:not(.editing) .thought-preview {
+  font-style: italic;
+  color: color-mix(in srgb, var(--ghost-ink) 88%, var(--ink-secondary));
+}
+.question-mark {
+  position: absolute;
+  left: -23px;
+  top: 8px;
+  font: 500 15px/1 var(--thought-font);
+  color: var(--pencil-trace);
+  opacity: .82;
+}
+
+/* Source is an editorial reference/footnote. The tiny rule is decorative and deliberately quiet. */
+.thought.source:not(.editing)::before {
+  content: "";
+  position: absolute;
+  left: -13px;
+  top: 13px;
+  width: 7px;
+  height: 1px;
+  background: var(--source-rule);
+  opacity: .62;
+}
+.thought.source > .thought-meta {
+  opacity: .52;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: var(--type-meta-size);
+}
+.thought.source:hover > .thought-meta, .thought.source:focus-visible > .thought-meta { opacity: .82; }
+
+.structure-overlay rect { fill: none; stroke: color-mix(in srgb, var(--attention) 28%, var(--boundary)); stroke-width: 1; stroke-dasharray: 5 7; vector-effect: non-scaling-stroke; }
+.structure-overlay text { fill: var(--ink-secondary); font: 11px/1.2 var(--ui-font); paint-order: stroke; stroke: var(--field-bg); stroke-width: 5px; stroke-linejoin: round; }
+@media (prefers-reduced-motion: reduce) {
+  .thought.ghost[data-proposal-action="continue"], .thought.ghost[data-proposal-action="angle"], .thought.ghost[data-proposal-kind="question"] { animation: none; }
+}
+
+/* Phase 2 — causal lineage is a structural trajectory, never a semantic Relation. The visual path
+   is ~1px; a separate 12px hit path reserves future provenance/edit affordances without taking
+   pointer ownership today. */
+.causal-trace-layer { z-index: var(--layer-relation); }
+.causal-trace { --causal-presence: var(--causal-sleep-presence); }
+.causal-trace[data-causal-state="parent"] { --causal-presence: .38; }
+.causal-trace[data-causal-state="wake"] { --causal-presence: .56; }
+.causal-trace-visual {
+  fill: none;
+  stroke: var(--trace);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  opacity: var(--causal-presence);
+  transition: opacity var(--motion-attention) var(--ease-attention), stroke-width var(--motion-control) var(--ease-out-ui);
+}
+.causal-trace-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 12;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.causal-trace[data-causal-action="angle"] .causal-trace-visual { stroke-width: 1.2; }
+.causal-trace[data-causal-action="question"] .causal-trace-visual { stroke-dasharray: 2 7; opacity: var(--causal-presence); }
+.causal-trace-terminal { fill: var(--trace); opacity: var(--causal-presence); transition: opacity var(--motion-attention) var(--ease-attention); }
+.causal-trace-question { fill: var(--trace); opacity: .58; font: 500 11px/1 var(--thought-font); paint-order: stroke; stroke: var(--field-bg); stroke-width: 4px; stroke-linejoin: round; }
+.field[data-dragging="true"] .causal-trace-visual, .field[data-dragging="true"] .causal-trace-terminal { transition: none; }
+
+/* A kept generated question stays visibly unresolved after it becomes canonical. This is posture,
+   not a new semantic color or a permanent AI badge. */
+.thought[data-generation-action="question"]:not(.ghost):not(.editing) .thought-preview { font-style: italic; }
+
+@media (prefers-reduced-motion: reduce) {
+  .causal-trace-visual, .causal-trace-terminal { transition: none; }
+}
+
+
+/* Phase 4 semantic zoom keeps Region disclosure legible; Field geometry and Thought ink live in
+   `field.css`, so they are not restated here. */
+.region-label[data-active="true"] { color: var(--ink-primary); }
+
+/* Causal wake remains a directional provenance cue, independent of Region presentation. */
+.field[data-level="neighborhood"] .causal-trace[data-causal-state="sleep"] { --causal-presence: calc(var(--causal-sleep-presence) * .8); }
+.causal-trace[data-causal-state="wake"] .causal-trace-visual { animation: causal-trace-wake var(--motion-spatial) var(--ease-attention) both; }
+@keyframes causal-trace-wake { from { opacity: .12; stroke-dashoffset: 10; } to { opacity: var(--causal-presence); stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .causal-trace[data-causal-state="wake"] .causal-trace-visual { animation: none; }
+}

@@ -1,0 +1,7 @@
+# Byte-pinned reviewed texts and canonical distribution resources must survive Windows checkout unchanged.
+/LICENSE text eol=lf
+/internal/discovery-engine/LICENSE.smartsearch text eol=lf
+/docs/third_party/REACT_BITS_MATERIALS_LICENSE.md text eol=lf
+/docs/third_party/PAPER_SHADERS_LICENSE.txt text eol=lf
+/docs/third_party/PAPER_SHADERS_NOTICE.md text eol=lf
+/docs/third_party/runtime-license-fallbacks/** text eol=lf

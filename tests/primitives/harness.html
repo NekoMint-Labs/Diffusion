@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Isolated primitive regression fixture</title><link rel="stylesheet" href="./css/theme.css"></head>
+<body><main class="app" data-active-surface="none"><header class="identity"><h1>Isolated test fixture</h1><p>Actual camera + CSS only. Not the React application.</p></header><div class="field" id="viewport"><div class="world" id="world">
+<article id="thought" class="thought" data-kind="thought" data-emphasis="normal" data-selected="false" style="transform:translate(180px,170px)"><p>There should be room for an unfinished thought.</p></article>
+<article id="context" class="thought" data-kind="thought" data-emphasis="normal" style="transform:translate(570px,340px)"><p>The rest of the Field remains spatially present.</p></article>
+<article id="ghost" class="thought ghost" data-kind="ghost" style="transform:translate(870px,180px)"><p>A test possibility, not a model response.</p></article>
+<article id="source" class="thought source" data-kind="source" style="transform:translate(890px,440px)"><p>An authored reference</p><span class="thought-meta">source / fixture only</span></article>
+<article id="crystal" class="thought crystal" data-kind="crystal" style="transform:translate(170px,530px)"><p>Preserve what has become clear.</p></article>
+</div></div></main>
+<script type="module">
+import { CameraController } from './modules/field/camera/controller.js';
+const world=document.querySelector('#world');
+const state={frames:0,commits:0};
+const camera=new CameraController(world,{x:0,y:0,zoom:1},()=>state.commits++,()=>state.frames++);
+window.fixture={camera,state};
+</script></body></html>

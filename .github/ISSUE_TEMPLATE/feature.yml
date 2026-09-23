@@ -1,0 +1,58 @@
+name: Feature or design request
+description: Propose an improvement by describing the workflow and unmet need
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Start with the problem and desired behavior. You do not need to design the implementation architecture.
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Workflow or problem
+      description: What is the person trying to do, and where does the current flow break down?
+    validations:
+      required: true
+  - type: textarea
+    id: desired
+    attributes:
+      label: Desired behavior
+      description: Describe the outcome from the user's point of view.
+    validations:
+      required: true
+  - type: textarea
+    id: insufficient
+    attributes:
+      label: Why is existing behavior insufficient?
+      description: Explain what cannot be achieved cleanly today.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Product area
+      options:
+        - Field and spatial interaction
+        - Thoughts, relations, Regions, or Crystals
+        - Threads, Deep Dive, or thinking workflows
+        - Appearance and Field materials
+        - Sources, discovery, or evidence
+        - AI providers or gateway
+        - Persistence, import, or export
+        - Tauri desktop
+        - Documentation or contributor workflow
+        - Other or cross-cutting
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional workarounds or simpler approaches you have tried.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Mockups or examples are welcome; remove private content and credentials.

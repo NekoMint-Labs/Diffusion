@@ -1,0 +1,50 @@
+name: Technical debt
+description: Track maintainability, flaky tests, performance, or boundary cleanup with evidence
+title: "debt: "
+labels:
+  - technical-debt
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Core and canonical state
+        - Field, camera, or geometry
+        - UI, surfaces, or focus
+        - Appearance, materials, or motion
+        - AI providers or gateway
+        - Discovery or evidence
+        - Storage and migration
+        - Tauri or platform adapters
+        - Tests and CI
+        - Documentation or tooling
+        - Cross-cutting
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Current cost or problem
+      description: What makes changes slower, riskier, less reliable, or more expensive?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Link failures, measurements, duplicated ownership, maintenance incidents, or reproducible examples.
+    validations:
+      required: true
+  - type: textarea
+    id: direction
+    attributes:
+      label: Suggested direction
+      description: Optional. Describe a likely direction without prescribing speculative architecture.
+  - type: textarea
+    id: risk
+    attributes:
+      label: Regression risk
+      description: Which contracts, tests, migrations, platforms, or user workflows could be affected?
+    validations:
+      required: true

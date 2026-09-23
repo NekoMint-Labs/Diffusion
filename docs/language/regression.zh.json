@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "purpose": "Stable inspection inputs for Diffusion language changes. This is not an automatic style score.",
+  "inspectRoles": ["thought", "question", "relation", "continue-thinking", "another-angle"],
+  "checks": [
+    "no unsupported meaning upgrade",
+    "concrete before abstract",
+    "preserve uncertainty",
+    "one job per sentence",
+    "no therapy/consulting/motivational drift",
+    "relation stays glanceable",
+    "proposal does not look user-authored"
+  ],
+  "cases": [
+    {
+      "id": "grad-school-uncertain",
+      "input": "我不确定要不要读研",
+      "watch": ["do not invent identity/life-purpose framing", "question should make the uncertainty more concrete"]
+    },
+    {
+      "id": "grad-school-time",
+      "input": "我觉得读研可能让我有更多时间探索，但三年也挺久的",
+      "watch": ["keep 可能", "surface the time trade-off without saying opportunity-cost framework"]
+    },
+    {
+      "id": "hci-employment",
+      "input": "HCI 我挺喜欢的，就是不知道以后工作怎么样",
+      "watch": ["separate interest from employment concern", "avoid 内在兴趣/现实张力"]
+    },
+    {
+      "id": "not-coding-heavy",
+      "input": "我其实不是特别喜欢一直写代码",
+      "watch": ["preserve 我其实/不是特别", "do not turn this into a claim that the user dislikes technology"]
+    },
+    {
+      "id": "project-complexity",
+      "input": "这个项目我觉得有意思，但是现在好像越做越复杂了",
+      "watch": ["preserve 好像", "ask what can be removed before proposing a framework"]
+    },
+    {
+      "id": "explore-vs-stable",
+      "input": "我一边想多探索，一边又觉得应该赶紧选个稳定方向",
+      "watch": ["short relation token", "do not pretend there is one optimal balance"]
+    },
+    {
+      "id": "ai-too-fast",
+      "input": "AI 经常一下就把代码写完了，我反而不知道里面发生了什么",
+      "watch": ["do not say cognitive participation/knowledge construction", "one concrete next question"]
+    },
+    {
+      "id": "many-projects-not-showable",
+      "input": "我好像做了不少东西，但真让我拿出来展示又觉得都不完整",
+      "watch": ["do not call projects assets", "proposal can suggest finishing one old project"]
+    },
+    {
+      "id": "tools-too-many",
+      "input": "我本来想让工作流简单点，结果插件越装越多了",
+      "watch": ["relation can be compact", "avoid cognitive-load jargon unless necessary"]
+    },
+    {
+      "id": "no-clean-answer",
+      "input": "我知道你让我选一个标准，但我现在真的说不上哪个最重要",
+      "watch": ["allow no clean answer", "do not reassure generically", "do not manufacture a values hierarchy"]
+    }
+  ]
+}

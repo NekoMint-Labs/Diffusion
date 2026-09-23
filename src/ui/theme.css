@@ -1,0 +1,268 @@
+@import url("./field.css");
+@import url("./resultSemantics.css");
+@import url("./motion/spatialActivity.css");
+@import url("./tutorial/firstFieldTutorial.css");
+@import url("./primitives/primitives.css");
+@import url("./materials.css");
+@import url("./surfaces/surfaces.css");
+:root {
+  color-scheme: light;
+  --field-bg: #f0efeb;
+  --interaction-mask: var(--field-bg);
+  --layer-field: 0;
+  --layer-background: 0;
+  --layer-relation: 1;
+  --layer-thought: 2;
+  --layer-selection: 3;
+  --layer-scope: 4;
+  --layer-speak: 5;
+  --layer-surface: 6;
+  --surface-1: #f8f6f2;
+  --surface-2: #e7e5e1;
+  --surface-raised: #fcfaf7;
+  --surface-sunken: #e4e2df;
+  --boundary-strong: #b8b5b0;
+  --surface-rest: var(--surface-1);
+  --surface-hover: var(--surface-2);
+  --surface-active: var(--surface-1);
+  --ink-primary: #292825;
+  --ink-secondary: #68645d;
+  --ink-tertiary: #969087;
+  /* Helper copy sits on a *surface*, where `--ink-secondary` measures as low as 4.22:1 — just under
+     WCAG AA for normal text. This is the same warm ink darkened until the helper role clears 4.5:1
+     on every surface it is used on (5.84:1 on --surface-1, 5.20:1 on --surface-2, 5.74:1 on
+     --field-bg). Dark already clears it with 7.9:1, so the override there is an alias, not a second
+     colour. */
+  --ink-helper: #625f59;
+  --attention: #a45e4c;
+  --attention-soft: color-mix(in srgb, var(--attention) 7%, transparent);
+  --selection-accent: var(--attention);
+  --focus-accent: var(--attention);
+  --active-control: var(--attention);
+  --boundary: #c8c5c0;
+  --trace: #6f8290;
+  --relation: #838987;
+  --trace-muted: #bfc6c8;
+  --ghost-ink: #5e5a54;
+  --pencil-trace: #827d75;
+  --pencil-trace-muted: #b8b0a5;
+  --recall-ink: var(--ink-primary);
+  --source-ink: #66645e;
+  --source-rule: #aaa69e;
+  --crystal-mark: #66645e;
+  --system-danger: #9d5a4b;
+  --system-warning: #8b7554;
+  --shadow: 0 10px 35px #2728240a;
+  --shadow-panel: 0 24px 60px -18px #1d1e1a24, 0 2px 6px #1d1e1a0a;
+  --shadow-float: 0 18px 48px -24px #1d1e1a33, 0 1px 4px #1d1e1a10;
+  --shadow-control: 0 1px 2px #1d1e1a0a;
+  --ui-font: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --thought-font-serif: Georgia, "Noto Serif CJK SC", "Songti SC", "SimSun", serif;
+  --thought-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --thought-font: var(--thought-font-serif);
+  --thread-width: clamp(340px, 34vw, 540px);
+  /* ==========================================================================
+     ONE EDITORIAL HIERARCHY, shared by Paper Day and Graphite Night.
+
+     A role names what a piece of text *is* — identity, Thought, ui-title, section-title, label,
+     helper, metadata, shortcut hint, status — and deliberately fixes its family, size, weight,
+     leading, tracking and presence together. A surface picks a role instead of inventing a size,
+     which is how the product avoids dozens of arbitrary token values that drift apart.
+
+     Two axes scale it and nothing else:
+       `--ui-scale`         the chrome (Settings, menus, palette, labels, hints). Set from Settings.
+       `--thought-size`     what the person wrote (Thought, Crystal, Ghost, Recall, editor).
+     `--thought-scale` is the same Thought size as a unitless ratio, for semantic-zoom rules that
+     must keep the user's chosen size while still counter-scaling the camera.
+     ========================================================================== */
+  --ui-scale: 1;
+  --thought-size: 18px;
+  --thought-scale: 1;
+  --type-identity-size: calc(18px * var(--ui-scale));
+  --type-identity-line: 1.34;
+  --type-identity-track: -.012em;
+  --type-eyebrow-size: calc(10px * var(--ui-scale));
+  --type-eyebrow-track: .16em;
+  --type-ui-title-size: calc(17px * var(--ui-scale));
+  --type-ui-title-line: 1.4;
+  --type-section-title-size: calc(13px * var(--ui-scale));
+  --type-label-size: calc(12px * var(--ui-scale));
+  --type-label-line: 1.6;
+  --type-helper-size: calc(11px * var(--ui-scale));
+  --type-helper-line: 1.75;
+  --type-meta-size: calc(10px * var(--ui-scale));
+  --type-meta-track: .12em;
+  --type-hint-size: calc(10px * var(--ui-scale));
+  --type-hint-track: .02em;
+  --type-status-size: calc(11.5px * var(--ui-scale));
+  --type-status-line: 1.6;
+  --type-composer-size: calc(16px * var(--ui-scale));
+  --type-composer-line: 1.62;
+  /* The composer's placeholder is a hint, not a heading: it is one step below the writing it
+     invites, so a centred serif sentence cannot read as a title. Only the placeholder takes it;
+     the writing keeps its own size in every state. */
+  --type-composer-hint-size: calc(13px * var(--ui-scale));
+  /* Presence is part of a role, not a decision per call site. */
+  --type-thought-line: 1.5;
+  --type-presence-rest: .82;
+  --type-presence-faint: .45;
+  /* Motion roles. The authoritative values live in src/ui/motion/tokens.ts; these are the same
+     numbers in milliseconds, for the pointer-frequency micro-states CSS owns (Motion and GSAP
+     own everything slower). Never animate a property here that Motion animates on the same
+     element. */
+  --motion-instant: 90ms;
+  --motion-micro: 140ms;
+  --motion-control: 200ms;
+  --motion-surface: 220ms;
+  --motion-spatial: 340ms;
+  --motion-settle: 400ms;
+  --motion-signature: 620ms;
+  --motion-attention: 200ms;
+  /* Easing roles, matching MOTION_EASE in the token module. */
+  --ease-enter: cubic-bezier(.22,1,.36,1);
+  --ease-exit: cubic-bezier(.4,0,1,1);
+  --ease-move: cubic-bezier(.32,.72,0,1);
+  --ease-settle: cubic-bezier(.16,1,.3,1);
+  --ease-attention: cubic-bezier(.3,.9,.24,1);
+  --ease-signature: cubic-bezier(.16,.84,.24,1);
+  --ease-out-ui: cubic-bezier(.22,1,.36,1);
+  /* One spacing scale, one control scale, one radius scale. A surface picks from these; it does
+     not invent a number. `--space-*` is a rhythm (gaps, padding), `--control-*` is a target size,
+     `--radius-*` is depth (a resting thing is less round than a lifted one). */
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 22px;
+  --space-6: 28px;
+  --control-md: 32px;
+  --control-lg: 38px;
+  --radius-hair: 3px;
+  --radius-control: 6px;
+  --radius-surface: 10px;
+  --radius-place: 14px;
+  --focus-ring: 1px solid var(--focus-accent);
+  /* ---------------------------------------------------------------------------
+     Thought material recipe.
+
+     A palette states two numbers: how much surface a resting Thought takes
+     (`--thought-rest-material`) and how strong its edge is (`--thought-rest-boundary`).
+     `src/ui/materials.css` owns the single state ladder derived from those two, so a profile
+     tunes *presence* while a state names *a rung*. No other file may restate this ladder.
+
+     Both numbers are polarity-specific. The body stays present at every attention rung; `field.css`
+     independently tunes the ink inside it. Dark material needs enough fill and edge to remain legible
+     against textured Fields, while Graphite Night keeps its own stronger recipe because its Field and
+     Surface sit closest together.
+
+     `--thought-image-material` is the one exception. An Image Atmosphere background is busy
+     behind a Thought, so that state needs a fixed, fuller fill regardless of the resting recipe.
+     --------------------------------------------------------------------------- */
+  --thought-rest-material: 66%;
+  --thought-rest-boundary: 56%;
+  --thought-image-material: 78%;
+  --causal-sleep-presence: .18;
+  font-family: var(--ui-font);
+  font-synthesis: none;
+}
+:root[data-thought-typography="sans"] { --thought-font: var(--thought-font-sans); }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --field-bg: #171819;
+  --ink-helper: var(--ink-secondary);
+  --surface-1: #1b1c1e;
+  --surface-2: #222326;
+  --surface-raised: #202124;
+  --surface-sunken: #151618;
+  --boundary-strong: #414349;
+  --ink-primary: #e7e3dc;
+  --ink-secondary: #b4b0aa;
+  --ink-tertiary: #797976;
+  --attention: #b68b7b;
+  --attention-soft: color-mix(in srgb, var(--attention) 6%, transparent);
+  --boundary: #303237;
+  --trace: #8c8d8b;
+  --relation: #8d8b87;
+  --trace-muted: #444649;
+  --ghost-ink: #c7c1b8;
+  --pencil-trace: #87837d;
+  --pencil-trace-muted: #555650;
+  --source-ink: #aaa69f;
+  --source-rule: #555650;
+  --crystal-mark: #aaa69f;
+  --system-danger: #cf9b8b;
+  --system-warning: #bba581;
+  --shadow: 0 10px 35px #00000012;
+  --shadow-panel: 0 28px 70px -20px #0000005c, 0 2px 8px #0000002e;
+  --shadow-float: 0 22px 54px -24px #00000075, 0 1px 5px #00000038;
+  --shadow-control: 0 1px 2px #00000030;
+  --thought-rest-material: 60%;
+  --thought-rest-boundary: 58%;
+  --thought-image-material: 74%;
+  --causal-sleep-presence: .2;
+}
+/* Phase 3 — Style Profiles. A profile is a coherent token set, never semantic data.
+   Editorial Warm is the base recipe above; the other selectors only remap presentation roles. */
+:root[data-style-profile="studio-slate"][data-theme="light"] {
+  --field-bg: #eceff0; --surface-1: #f5f7f7; --surface-2: #e4e8e9; --surface-raised: #fafbfb; --surface-sunken: #e1e5e6;
+  --boundary: #cfd5d6; --boundary-strong: #bcc5c7; --ink-primary: #292d30; --ink-secondary: #697075; --ink-tertiary: #929a9d; --ink-helper: #5f666a;
+  --attention: #986858; --trace: #687f91; --relation: #7b878c; --trace-muted: #bec8cc; --ghost-ink: #5f6668; --pencil-trace: #7c8588; --pencil-trace-muted: #b2babd;
+  --source-ink: #62696b; --source-rule: #9da7aa; --crystal-mark: #5f696e;
+}
+:root[data-style-profile="studio-slate"][data-theme="dark"] {
+  --field-bg: #171a1c; --surface-1: #1c2022; --surface-2: #24292c; --surface-raised: #212629; --surface-sunken: #141719;
+  --boundary: #31373b; --boundary-strong: #434b50; --ink-primary: #e6e8e6; --ink-secondary: #b3b8b7; --ink-tertiary: #777f82; --ink-helper: #b3b8b7;
+  --attention: #b17d6c; --trace: #8297a7; --relation: #8b9396; --trace-muted: #444d52; --ghost-ink: #c6c9c5; --pencil-trace: #83898a; --pencil-trace-muted: #545b5d;
+  --source-ink: #a9afad; --source-rule: #535b5e; --crystal-mark: #b2b7b5;
+}
+:root[data-style-profile="quiet-forest"][data-theme="light"] {
+  --field-bg: #eeebe2; --surface-1: #f6f3e9; --surface-2: #e6e4da; --surface-raised: #fbf8ef; --surface-sunken: #e2dfd5;
+  --boundary: #d1cec1; --boundary-strong: #bfbcad; --ink-primary: #30332d; --ink-secondary: #6c7066; --ink-tertiary: #93968a; --ink-helper: #60645b;
+  --attention: #9a6651; --trace: #77887b; --relation: #808477; --trace-muted: #bec5ba; --ghost-ink: #5f6259; --pencil-trace: #7d8175; --pencil-trace-muted: #b5b4a8;
+  --source-ink: #64675f; --source-rule: #9fa196; --crystal-mark: #5d665c;
+}
+:root[data-style-profile="quiet-forest"][data-theme="dark"] {
+  --field-bg: #191b18; --surface-1: #1e211d; --surface-2: #262a24; --surface-raised: #232721; --surface-sunken: #151714;
+  --boundary: #343931; --boundary-strong: #474e42; --ink-primary: #e7e4da; --ink-secondary: #b6b7ad; --ink-tertiary: #7c8075; --ink-helper: #b6b7ad;
+  --attention: #b67a61; --trace: #8b9d8e; --relation: #929488; --trace-muted: #485148; --ghost-ink: #c8c6bc; --pencil-trace: #87877c; --pencil-trace-muted: #565a51;
+  --source-ink: #acaea4; --source-rule: #565b52; --crystal-mark: #afb5a9;
+}
+/* Graphite Night is intentionally a real dark material, not an inverted light palette. It owns
+   its lighting regardless of the legacy lighting preference. */
+:root[data-style-profile="graphite-night"] {
+  color-scheme: dark; --field-bg: #141617; --surface-1: #1f2224; --surface-2: #272b2d; --surface-raised: #242829; --surface-sunken: #111314;
+  --boundary: #303438; --boundary-strong: #454b50; --ink-primary: #eee9e0; --ink-secondary: #bbb5ac; --ink-tertiary: #817d77; --ink-helper: #bbb5ac;
+  --attention: #b67b61; --trace: #8094a5; --relation: #8e8c88; --trace-muted: #42494f; --ghost-ink: #cbc4ba; --pencil-trace: #8b867f; --pencil-trace-muted: #545651;
+  --source-ink: #aaa49c; --source-rule: #555750; --crystal-mark: #d1c8bc; --system-danger: #cf9b8b; --system-warning: #baa47f;
+  --shadow: 0 10px 35px #00000018; --shadow-panel: 0 28px 70px -20px #00000066, 0 2px 8px #00000030; --shadow-float: 0 22px 54px -24px #00000078, 0 1px 5px #0000003b;
+  /* Graphite Night is the profile whose Field and Surface sit closest in tone, so both are pulled
+     apart (a lighter surface, a deeper Field) and the ladder leans hardest on a full resting fill
+     and a strong edge rather than on a percentage that would disappear into the graphite. */
+  --thought-rest-material: 68%;
+  --thought-rest-boundary: 62%;
+  --thought-image-material: 80%;
+  --causal-sleep-presence: .22;
+ }
+* { box-sizing: border-box; }
+html, body, #root { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+body { background: var(--field-bg); color: var(--ink-primary); }
+button, input, textarea, select { font: inherit; color: inherit; }
+/* Shortcut hints are product UI in this app, not browser chrome. */
+kbd { font: var(--type-hint-size)/1.6 var(--ui-font); letter-spacing: var(--type-hint-track); color: var(--ink-tertiary); border: 1px solid var(--surface-2); border-radius: var(--radius-hair); padding: 0 5px; background: color-mix(in srgb, var(--surface-2) 62%, transparent); }
+button { cursor: pointer; border: 0; background: none; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+button:hover:not(:disabled) { color: var(--attention); }
+button:focus-visible, a:focus-visible { outline: 1px solid var(--focus-accent); outline-offset: 4px; border-radius: var(--radius-hair); }
+input, textarea, select { accent-color: var(--active-control); }
+a { color: var(--attention); text-underline-offset: 3px; }
+.muted { color: var(--ink-secondary); }
+.tiny { font-size: var(--type-label-size); line-height: 1.65; color: var(--ink-helper); }
+.eyebrow { font: var(--type-eyebrow-size)/1.5 var(--ui-font); letter-spacing: var(--type-eyebrow-track); color: var(--ink-secondary); }
+.warning { color: var(--system-warning); }
+@media (prefers-reduced-motion: reduce) {
+  /* One deliberate exception, and it is not a product path: the development-only Motion Lab sets
+     `data-motion-preview="normal"` on the document element so a reviewer can see the real
+     choreography on a machine whose OS asks for reduced motion (which is exactly the situation
+     that made a previous visual review compare two different motion modes without knowing it).
+     Nothing in production ever sets that attribute, so the product always honours the preference. */
+  :root:not([data-motion-preview="normal"]), :root:not([data-motion-preview="normal"]) *, :root:not([data-motion-preview="normal"]) *::before, :root:not([data-motion-preview="normal"]) *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

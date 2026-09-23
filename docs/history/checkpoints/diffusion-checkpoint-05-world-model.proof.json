@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-09-13T10:11:55.894544+00:00",
+  "SOURCE_SNAPSHOT": "/mnt/data/delivery/diffusion-checkpoint-05-world-model.zip",
+  "SOURCE_SNAPSHOT_SHA256": "2917a078e76c7f2d18433d29c139fa1598d4578bb03ca22ecddfe0e7152934a3",
+  "SOURCE_SNAPSHOT_VERIFIED": "PASS",
+  "SOURCE_ROOT": "/mnt/data/diffusion-explorer",
+  "files": 103,
+  "CONTENTS_CHECK": [
+    "package.json",
+    "README.md",
+    "STATUS.md",
+    "src/main.tsx",
+    "src/",
+    "tests/"
+  ],
+  "NOTE": "Archive verification only. See STATUS.md for build/runtime verification."
+}

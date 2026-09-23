@@ -1,0 +1,66 @@
+name: Bug report
+description: Report reproducible behavior that differs from the current product contract
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Do not include API keys, gateway tokens, private prompts, or private source content.
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened?
+      description: Describe the observed behavior and its impact.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Include the smallest reliable sequence, starting state, and whether it reproduces consistently.
+      placeholder: |
+        1. Open ...
+        2. Select ...
+        3. Press ...
+    validations:
+      required: true
+  - type: dropdown
+    id: runtime
+    attributes:
+      label: Runtime
+      options:
+        - Browser
+        - Tauri desktop
+        - Gateway/server
+        - Discovery engine
+        - Other or unknown
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Platform and version
+      description: OS, browser/WebView, Node version, and relevant commit or build.
+      placeholder: Windows 11, Tauri WebView2, commit abc1234
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots or video
+      description: Attach visual evidence when useful. Remove private content first.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Paste only sanitized errors or test output. Never include credentials or private source content.
+      render: shell

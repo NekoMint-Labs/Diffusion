@@ -1,0 +1,114 @@
+name: Playwright E2E
+
+# Blocking mounted-application gate. Each runner keeps one worker and zero retries
+# from playwright.config.ts; diagnose failures instead of weakening or hiding them.
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  interaction:
+    name: Interaction ${{ matrix.shard }}/3
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.4.2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run interaction shard
+        run: pnpm exec playwright test --project=interaction --shard=${{ matrix.shard }}/3
+
+      - name: Upload Playwright diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-interaction-${{ matrix.shard }}-${{ github.run_id }}
+          if-no-files-found: ignore
+          retention-days: 14
+          path: |
+            playwright-report/
+            test-results/
+
+  production-backgrounds:
+    name: Production backgrounds
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.4.2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run production backgrounds
+        run: pnpm exec playwright test --project=production-backgrounds
+
+      - name: Upload Playwright diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-production-backgrounds-${{ github.run_id }}
+          if-no-files-found: ignore
+          retention-days: 14
+          path: |
+            playwright-report/
+            test-results/
+
+  e2e-gate:
+    name: E2E gate
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [interaction, production-backgrounds]
+    steps:
+      - name: Require every E2E job to succeed
+        env:
+          INTERACTION_RESULT: ${{ needs.interaction.result }}
+          BACKGROUNDS_RESULT: ${{ needs.production-backgrounds.result }}
+        run: |
+          echo "Interaction: $INTERACTION_RESULT; backgrounds: $BACKGROUNDS_RESULT"
+          test "$INTERACTION_RESULT" = success && test "$BACKGROUNDS_RESULT" = success

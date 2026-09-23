@@ -1,0 +1,18 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { AIRuntime, intentAllowedForAction } from '../../src/ai/runtime.ts';
+import { UNKNOWN_CAPABILITIES } from '../../src/ai/contracts.ts';
+import { createProject, makeThought } from '../../src/core/model.ts';
+import { ProjectController } from '../../src/core/controller.ts';
+
+function project(){const p=createProject('phase3a','Phase 3A',1);p.thoughts.a=makeThought('A',{x:0,y:0},1,'a');p.thoughts.b=makeThought('B',{x:400,y:0},1,'b');return p;}
+function provider(respond){return {label:'Runtime fixture',mock:false,capabilities:async()=>UNKNOWN_CAPABILITIES,respond,structured:async request=>({value:request.input,providerLabel:'Runtime fixture',mock:false})};}
+function deferred(){let resolve;const promise=new Promise(r=>{resolve=r;});return {promise,resolve};}
+
+test('Phase 3A probe output permissions cannot switch interaction modes',()=>{assert.equal(intentAllowedForAction('probe','surface_relation'),true);assert.equal(intentAllowedForAction('probe','request_deep_dive'),false);assert.equal(intentAllowedForAction('probe','request_thread'),false);assert.equal(intentAllowedForAction('probe','request_crystal_preview'),false);});
+
+test('Phase 3A probe drops globally legal Deep Dive intent and only surfaces relation candidate',async()=>{const controller=new ProjectController(project(),async()=>{});const routed=[];const runtime=new AIRuntime(controller,async()=>provider(async()=>({providerLabel:'Runtime fixture',mock:false,intents:[{type:'request_deep_dive',text:'Go elsewhere'},{type:'surface_relation',a:'a',b:'b',kind:'tension',label:'candidate'}]})),{pending:()=>{},notice:()=>{},route:kind=>routed.push(kind),anchor:()=>({x:0,y:0})});const result=await runtime.run('probe','Find a relation',['a','b']);assert.deepEqual(result,{status:'completed',emitted:1});assert.deepEqual(routed,[]);assert.equal(Object.keys(controller.getSnapshot().session.phenomena).length,1);assert.equal(Object.keys(controller.getSnapshot().project.relations).length,0);});
+
+test('Phase 3A stale completion cannot settle a newer operation',async()=>{const first=deferred(),second=deferred();let call=0;const operations=[],pending=[];const runtime=new AIRuntime(new ProjectController(project(),async()=>{}),async()=>provider(async()=>++call===1?first.promise:second.promise),{pending:value=>pending.push(value),operation:value=>operations.push(value),notice:()=>{},route:()=>{},anchor:()=>({x:0,y:0})});const older=runtime.run('ask','first',['a']);const newer=runtime.run('ask','second',['b']);first.resolve({intents:[],providerLabel:'Runtime fixture',mock:false});assert.equal((await older).status,'cancelled');assert.equal(operations.at(-1)?.phase,'pending');assert.equal(pending.at(-1),true);second.resolve({intents:[],providerLabel:'Runtime fixture',mock:false});assert.equal((await newer).status,'completed');assert.equal(operations.at(-1)?.phase,'completed');assert.equal(pending.at(-1),false);});
+
+test('Phase 3A cancellation settles the matching operation when provider ignores AbortSignal',async()=>{const response=deferred(),operations=[],pending=[];const runtime=new AIRuntime(new ProjectController(project(),async()=>{}),async()=>provider(async()=>response.promise),{pending:value=>pending.push(value),operation:value=>operations.push(value),notice:()=>{},route:()=>{},anchor:()=>({x:0,y:0})});const run=runtime.run('ask','question',['a']);runtime.cancel();response.resolve({intents:[],providerLabel:'Runtime fixture',mock:false});assert.equal((await run).status,'cancelled');assert.equal(operations.at(-1)?.phase,'cancelled');assert.equal(pending.at(-1),false);});

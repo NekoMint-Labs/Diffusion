@@ -1,0 +1,286 @@
+/* ==========================================================================
+   The Field — the spatial medium itself.
+
+   This file owns: the world and camera presentation, the Field's own layout, Field-local identity,
+   Thought *geometry and ink*, marquee and selection geometry, relation/scope layer positioning, the
+   composer, and the base screen-space positioning of Field overlays.
+
+   It does NOT own application surfaces. A surface (window, split panel, anchored decision, bar),
+   Settings, the command menu and palette, History, Thread/Deep Dive, lists, notices and status lines
+   all live in `surfaces/surfaces.css`. Thought *material* states live in `materials.css`; Thought
+   causal-trace identity and Ghost typography live in `resultSemantics.css`; the palette lives in
+   `theme.css`. Canonical coordinates are never changed by attention.
+   ========================================================================== */
+
+.app { width: 100%; height: 100%; position: relative; isolation: isolate; }
+
+/* The top-left anchor: field identity. Decorative copy never takes pointer ownership; only the
+   title itself is an interactive element. Identity is a page identity, not app chrome: quiet, but
+   with a deliberate editorial rhythm and enough contrast to stay legible over both materials.
+   The Latin FIELD eyebrow uses wide tracking; Chinese keeps a compact editorial rhythm. */
+.identity { position: absolute; z-index: var(--layer-selection); left: 40px; top: 30px; max-width: min(58vw, 600px); pointer-events: none; display: flex; flex-direction: column; gap: 5px; }
+.identity-eyebrow { font: 500 var(--type-eyebrow-size)/1.5 var(--ui-font); letter-spacing: var(--type-eyebrow-track); text-transform: uppercase; color: var(--ink-tertiary); opacity: .78; }
+html[lang^="zh"] .identity-eyebrow { letter-spacing: .08em; }
+html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
+.identity-row { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.identity h1 { margin: 0; min-width: 0; font: 400 var(--type-identity-size)/var(--type-identity-line) var(--thought-font); letter-spacing: var(--type-identity-track); color: color-mix(in srgb, var(--ink-primary) 92%, var(--ink-secondary)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.identity-detail { margin-top: 1px; font-size: var(--type-helper-size); color: var(--ink-tertiary); }
+/* The title rests as identity, not as a bare input: a quiet label that reveals its own affordance on
+   hover, focus, or while its own menu is open. Renaming happens where the title is, not in a dialog. */
+.identity button.identity-title { pointer-events: auto; position: relative; max-width: 100%; padding: 1px 4px 2px 0; border-radius: var(--radius-hair); font: inherit; color: inherit; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color var(--motion-micro) var(--ease-out-ui); }
+.identity button.identity-title::after { content: ""; position: absolute; left: 0; right: 22px; bottom: 0; height: 1px; background: currentColor; opacity: 0; transform: scaleX(.34); transform-origin: left center; transition: opacity var(--motion-micro) var(--ease-out-ui), transform var(--motion-micro) var(--ease-out-ui); }
+.identity button.identity-title:hover { color: var(--ink-primary); }
+.identity button.identity-title:hover::after, .identity button.identity-title:focus-visible::after, .identity button.identity-title[aria-expanded="true"]::after { opacity: .42; transform: scaleX(1); }
+.identity button.identity-title:focus-visible { outline-offset: 2px; }
+.identity-rename-shell { pointer-events: auto; display: flex; flex-direction: column; gap: 2px; width: min(420px, 48vw); }
+.identity-rename { width: 100%; padding: 1px 0 2px; border: 0; border-bottom: 1px solid var(--attention); background: transparent; font: 400 15px/1.4 var(--ui-font); letter-spacing: -.004em; color: var(--ink-primary); outline: none; }
+.identity-rename::selection { background: color-mix(in srgb, var(--attention) 26%, transparent); }
+.identity-rename-hint { margin: 0; font: 10px/1.4 var(--ui-font); letter-spacing: .02em; color: var(--ink-tertiary); }
+.identity-arrival { pointer-events: none; font: 11px/1.5 var(--ui-font); color: var(--ink-tertiary); }
+.field-arrival { position: absolute; z-index: var(--layer-scope); inset: 0; background: var(--field-bg); pointer-events: none; opacity: 0; }
+
+.global-actions { position: absolute; z-index: var(--layer-surface); top: 18px; right: 24px; }
+.global-actions button { display: grid; place-items: center; min-width: 34px; min-height: 34px; border-radius: var(--radius-control); color: var(--ink-secondary); font-size: 16px; letter-spacing: .1em; transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease, opacity var(--motion-instant) ease; }
+.global-actions button:hover:not(:disabled) { background: var(--surface-2); color: var(--ink-primary); }
+.global-actions button:focus-visible { outline-offset: 1px; }
+.global-actions button:active { opacity: .62; }
+
+.field { position: absolute; inset: 0; overflow: hidden; outline: none; touch-action: none; }
+/* Settings and Help are places arriving over the Field, so the Field gives up presence for as long
+   as one of them is the active place, and takes it back when the place closes. Opacity only, and one
+   named property only: the Field's own pointer math reads its rect, so a held transform here would
+   move the interaction rather than just the paint. GSAP owns only the arrival *beat* of the
+   transform for Settings (`settingsRecedeSequence`, a dip that always resolves and clears its
+   props); Help's descent is its surface arrival, so it needs no sequence of its own. */
+.field { transition: opacity var(--motion-surface) var(--ease-settle); }
+.app[data-active-surface="settings"] > .field, .app[data-active-surface="help"] > .field { opacity: .88; }
+.world { position: absolute; z-index: var(--layer-field); top: 0; left: 0; width: 100%; height: 100%; transform-origin: 0 0; }
+
+/* --- Thought: geometry and ink --------------------------------------------
+   Base geometry, base ink weight and the attention presence of a Thought's contents. Its *material*
+   — the fill and the edge of every state — belongs to `materials.css` and never fades with attention. */
+.thought { position: absolute; z-index: var(--layer-thought); left: 0; top: 0; width: 256px; padding: 8px; border: 0; background: none; color: var(--ink-primary); font: 400 var(--thought-size)/var(--type-thought-line) var(--thought-font); cursor: grab; user-select: none; touch-action: none; overflow: visible; opacity: 1; --thought-ink-presence: .88; transition: color var(--motion-instant) ease; outline: none; }
+.thought-preview { opacity: var(--thought-ink-presence); transition: opacity var(--motion-attention) var(--ease-out-ui) 45ms; }
+.thought[data-size="compact"] { width: 176px; }
+.thought[data-size="regular"] { width: 256px; }
+.thought[data-size="wide"] { width: 328px; }
+.thought p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; line-break: strict; }
+.thought:hover { --thought-ink-presence: .96; }
+.thought[data-selected="true"] { z-index: var(--layer-selection); --thought-ink-presence: 1; color: var(--ink-primary); }
+.thought[data-emphasis="direct"] { --thought-ink-presence: .96; color: var(--ink-primary); }
+.thought[data-emphasis="nearby"] { --thought-ink-presence: .84; }
+.thought[data-emphasis="receded"] { --thought-ink-presence: .6; color: var(--ink-secondary); }
+.thought[data-emphasis="peripheral"] { --thought-ink-presence: .46; color: var(--ink-secondary); }
+.thought[data-emphasis="receded"]:hover, .thought[data-emphasis="peripheral"]:hover { --thought-ink-presence: .78; color: var(--ink-primary); }
+.thought[data-life="cooling"][data-emphasis="normal"] { --thought-ink-presence: .68; }
+.thought[data-life="peripheral"][data-emphasis="normal"] { --thought-ink-presence: .5; color: var(--ink-secondary); }
+.thought.crystal { width: 276px; padding: 10px 12px; font-size: calc(var(--thought-size) * 20 / 18); font-weight: 500; line-height: 1.48; letter-spacing: -.008em; --thought-ink-presence: 1; }
+.thought.crystal::before { content: "\25c6"; position: absolute; left: -16px; top: 14px; font: 11px/1 var(--ui-font); color: var(--crystal-mark); opacity: .82; }
+.thought.crystal[data-emphasis="receded"], .thought.crystal[data-emphasis="peripheral"] { --thought-ink-presence: .78; }
+.thought.crystal[data-emphasis="nearby"] { --thought-ink-presence: .9; }
+.thought.ghost { --thought-ink-presence: .76; color: var(--ghost-ink); }
+.thought.ghost:hover, .thought.ghost[data-selected="true"] { --thought-ink-presence: .94; color: var(--ink-primary); }
+.thought.ghost[data-emphasis="receded"], .thought.ghost[data-emphasis="peripheral"] { --thought-ink-presence: .56; }
+.thought.recall { --thought-ink-presence: .58; }
+.thought-meta { position: absolute; left: 8px; top: calc(100% + 3px); font: var(--type-helper-size)/1.4 var(--ui-font); color: var(--ink-secondary); opacity: 0; transition: opacity var(--motion-micro) ease; pointer-events: none; }
+.thought:hover .thought-meta, .thought:focus-visible .thought-meta { opacity: 1; }
+.kept-mark { position: absolute; right: 0; top: 4px; font-size: 13px; opacity: 0; }
+.thought:hover .kept-mark { opacity: .55; }
+.thought.source { width: 236px; font-family: var(--ui-font); font-size: calc(var(--thought-size) * 14 / 18); line-height: 1.62; color: var(--source-ink); letter-spacing: .006em; --thought-ink-presence: .8; }
+.thought.source:hover, .thought.source[data-selected="true"] { --thought-ink-presence: .96; }
+.thought.source > .thought-meta { top: calc(100% + 5px); }
+.thought.editing { opacity: 1; --thought-ink-presence: 1; background: var(--surface-1); border-radius: var(--radius-control); outline: 1px solid var(--boundary); user-select: text; cursor: text; box-shadow: var(--shadow); }
+/* Entering the editor is a state change that has to be visible on its own terms: the writing surface
+   takes material (fill and depth) while the words themselves resolve under the authored placement
+   sequence. Only these two properties transition — never `transform`, which belongs to the Field's
+   world transform, and never a property an authored sequence animates. Leaving the editor is
+   deliberately instant: a committed Thought is not a surface any more. */
+.thought.editing { transition: background-color var(--motion-control) var(--ease-out-ui), box-shadow var(--motion-control) var(--ease-out-ui), color var(--motion-instant) ease; }
+.thought textarea { display: block; width: 100%; font: inherit; line-height: inherit; border: 0; outline: none; background: none; padding: 0; margin: 0; resize: none; min-height: calc(var(--thought-size) * 1.5); overflow-y: auto; }
+/* Field text is a bounded representation. Canonical text stays untouched and editing reveals it. */
+.thought:not(.editing) .thought-preview { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; max-height: calc(1.45em * 4); }
+.proposal-reject { position: absolute; top: 7px; right: 7px; width: 22px; height: 22px; padding: 0; border: 0; background: transparent; color: var(--ink-tertiary); opacity: 0; cursor: pointer; }
+.thought.ghost:hover .proposal-reject, .thought.ghost[data-selected="true"] .proposal-reject, .proposal-reject:focus-visible { opacity: .72; }
+.proposal-reject:hover { color: var(--ink-primary); opacity: 1; }
+
+/* --- Phenomena layers: positioning only -----------------------------------
+   The visuals of a Relation and of a causal trace are owned by `materials.css` and
+   `resultSemantics.css`. What lives here is where their SVG layer sits in the Field and what the
+   pointer is allowed to reach. */
+.phenomena { position: absolute; overflow: visible; inset: 0; width: 1px; height: 1px; pointer-events: none; }
+.relation-phenomena { z-index: var(--layer-relation); }
+.relation-label-overlay { z-index: var(--layer-selection); }
+.selection-phenomena { z-index: var(--layer-selection); }
+.probe-cue text { font: 18px var(--thought-font); text-anchor: middle; fill: var(--trace); }
+.relation-label { font: var(--type-helper-size) var(--ui-font) !important; }
+.relation-label-overlay { position: absolute; top: 0; left: 0; transform-origin: 0 0; display: flex; align-items: center; min-width: 0; padding: 0; border: 1px solid transparent; border-radius: 3px; background: color-mix(in srgb, var(--field-bg) 64%, transparent); box-shadow: none; color: color-mix(in srgb, var(--ink-secondary) 76%, transparent); font: 400 var(--type-helper-size)/1.2 var(--ui-font); user-select: none; transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease, border-color var(--motion-instant) ease, opacity var(--motion-micro) ease; }
+.relation-label-overlay[data-status="tentative"] { border-style: dashed; border-color: color-mix(in srgb, var(--attention) 38%, var(--boundary)); background: color-mix(in srgb, var(--field-bg) 88%, var(--attention-soft)); color: var(--ink-secondary); }
+.relation-label-overlay:hover, .relation-label-overlay:focus-within { color: var(--ink-primary); background: color-mix(in srgb, var(--surface-1) 94%, transparent); border-color: color-mix(in srgb, var(--attention) 42%, var(--boundary)); }
+.relation-label-overlay:focus-within { box-shadow: var(--shadow-control); }
+.relation-token-label { width: 100%; min-width: 0; min-height: 28px; padding: 4px 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit; font: inherit; text-align: center; }
+.relation-token-label:focus-visible { outline: 1px dotted var(--trace-muted); outline-offset: 2px; }
+.relation-token-input { width: 100%; min-height: 28px; border: 0; outline: 0; padding: 4px 8px; background: transparent; color: var(--ink-primary); font: inherit; }
+.relation-token-actions { position: absolute; z-index: var(--layer-scope); left: 50%; top: calc(100% - 1px); padding-top: 5px; display: flex; gap: 2px; padding: 3px; transform: translateX(-50%); border: 1px solid var(--boundary); border-radius: var(--radius-control); background: var(--surface-1); box-shadow: var(--shadow); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity var(--motion-instant) ease; white-space: nowrap; }
+.relation-token-overlay:hover .relation-token-actions, .relation-token-overlay:focus-within .relation-token-actions { opacity: 1; visibility: visible; pointer-events: auto; }
+.relation-token-actions button { min-height: 28px; padding: 3px 7px; color: var(--ink-secondary); font: 500 var(--type-hint-size)/1 var(--ui-font); }
+.relation-token-actions button:hover, .relation-token-actions button:focus-visible { color: var(--ink-primary); background: var(--surface-2); outline: none; }
+.lasso { fill: var(--attention-soft); stroke: var(--attention); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.context-actions { z-index: var(--layer-scope); display: flex; align-items: center; gap: 10px; font-size: var(--type-label-size); color: var(--ink-secondary); animation: settle-actions var(--motion-micro) var(--ease-out-ui) both; }
+.context-actions button { padding: 5px 2px; min-height: 28px; }
+.field[data-dragging="true"] .relations, .field[data-dragging="true"] .relation-label-overlay, .field[data-camera-moving="true"] .context-actions { visibility: hidden; }
+.field[data-panning="true"] { cursor: grab; }
+.field[data-panning="true"][data-dragging="true"] { cursor: grabbing; }
+@keyframes settle-actions { from { opacity: 0; transform: translateY(2px); } }
+
+/* --- Field-local labels --------------------------------------------------- */
+.region-label { position: absolute; z-index: var(--layer-thought); left: 0; top: 0; transform-origin: 0 0; padding: 0; text-align: left; font: 400 calc(var(--thought-size) * 21 / 18)/1.4 var(--thought-font); color: var(--ink-secondary); max-width: 230px; text-shadow: 0 0 18px var(--field-bg), 0 0 8px var(--field-bg); }
+.region-label small { display: block; margin-top: 6px; font: var(--type-helper-size) var(--ui-font); color: var(--ink-tertiary); }
+.frontier-label { position: absolute; z-index: var(--layer-thought); left: 0; top: 0; transform-origin: 0 0; width: 210px; font: calc(var(--thought-size) * 14 / 18)/var(--type-thought-line) var(--thought-font); text-align: left; color: var(--ink-secondary); }
+.frontier-label span { margin-right: 7px; }
+/* Spatial labels stay labels: they are deliberately excluded from the Thought material vocabulary. */
+.region-label:hover, .frontier-label:hover { color: var(--ink-primary); }
+.carry-banner { position: absolute; z-index: var(--layer-scope); bottom: 30px; left: 30px; max-width: 280px; color: var(--ink-secondary); font-size: var(--type-label-size); }
+.carry-preview { position: absolute; z-index: var(--layer-selection); pointer-events: none; left: 45%; top: 40%; width: 230px; opacity: .4; font: var(--thought-size)/var(--type-thought-line) var(--thought-font); }
+.recall-edge { position: absolute; z-index: var(--layer-selection); text-align: left; width: 150px; font: var(--type-label-size)/1.5 var(--ui-font); color: var(--ink-secondary); max-width: 150px; }
+.find-edge { position: absolute; z-index: var(--layer-selection); width: 150px; max-width: 150px; text-align: left; font: var(--type-label-size)/1.5 var(--ui-font); color: var(--ink-secondary); }
+.find-edge[data-current="true"] { color: var(--ink-primary); }
+
+/* Find in Field: matching content becomes clearer, its context recedes, nothing leaves space. */
+.thought[data-find="dim"] { --thought-ink-presence: .3; color: var(--ink-tertiary); }
+.thought[data-find="match"] { --thought-ink-presence: .96; color: var(--ink-primary); }
+.thought[data-find="current"] { --thought-ink-presence: 1; color: var(--ink-primary); }
+.thought[data-find="dim"]:hover { --thought-ink-presence: .62; color: var(--ink-primary); }
+.thought[data-find="current"]::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: 2px; height: 1px; background: var(--attention); opacity: .5; }
+
+/* Semantic zoom preserves the same compact / regular / wide hierarchy while counter-scaling type. */
+.field[data-level="neighborhood"] .thought[data-size] .thought-preview { max-width: 31ch; }
+.field[data-level="atlas"] .thought .thought-meta, .field[data-level="neighborhood"] .thought .thought-meta { display: none; }
+.field[data-level="atlas"] .thought:not(.crystal) { font-size: calc(13px * var(--thought-scale) * var(--inverse-zoom)); padding: calc(4px * var(--inverse-zoom)); --thought-ink-presence: .68; }
+.field[data-level="atlas"] .thought[data-size="compact"] { width: calc(140px * var(--inverse-zoom)); }
+.field[data-level="atlas"] .thought[data-size="regular"] { width: calc(205px * var(--inverse-zoom)); }
+.field[data-level="atlas"] .thought[data-size="wide"] { width: calc(258px * var(--inverse-zoom)); }
+.field[data-level="atlas"] .thought[data-selected="true"]:not(.crystal) { --thought-ink-presence: .96; }
+.field[data-level="neighborhood"] .thought { font-size: calc(14px * var(--thought-scale) * var(--inverse-zoom)); padding: calc(5px * var(--inverse-zoom)); line-height: var(--type-thought-line); }
+.field[data-level="neighborhood"] .thought[data-size="compact"] { width: calc(160px * var(--inverse-zoom)); }
+.field[data-level="neighborhood"] .thought[data-size="regular"] { width: calc(228px * var(--inverse-zoom)); }
+.field[data-level="neighborhood"] .thought[data-size="wide"] { width: calc(292px * var(--inverse-zoom)); }
+.field[data-level="neighborhood"] .thought.source { width: calc(210px * var(--inverse-zoom)); }
+.field[data-level="atlas"] .thought.source { width: calc(190px * var(--inverse-zoom)); }
+.field[data-level="neighborhood"] .thought.crystal { width: calc(248px * var(--inverse-zoom)); font-size: calc(16px * var(--thought-scale) * var(--inverse-zoom)); }
+.field[data-level="atlas"] .thought.crystal { font-size: calc(18px * var(--thought-scale) * var(--inverse-zoom)); width: calc(240px * var(--inverse-zoom)); line-height: 1.4; }
+.field[data-level="atlas"] .thought.crystal::before { font-size: calc(13px * var(--inverse-zoom)); left: calc(-16px * var(--inverse-zoom)); }
+
+/* --- First-use invitation -------------------------------------------------
+   Decoration only, and it lives with the input it points at rather than in the middle of the Field,
+   so a blank-field gesture stays a Field gesture. No outer container in this rule may take pointer
+   ownership or text selection. Motion is never declared here: an authored GSAP sequence owns this
+   block's reveal, its contraction and its release, so a CSS transition on the same properties would
+   be a second animation owner writing the same element. */
+.empty-invitation { display: flex; flex-direction: column; align-items: center; gap: 9px; max-width: min(440px, calc(100vw - 64px)); text-align: center; pointer-events: none; user-select: none; -webkit-user-select: none; transform-origin: center bottom; }
+.empty-invitation-eyebrow { margin: 0; font: 400 var(--type-eyebrow-size)/1.5 var(--ui-font); letter-spacing: var(--type-eyebrow-track); text-transform: uppercase; color: var(--ink-tertiary); }
+.empty-invitation-line { margin: 0; font: 400 calc(var(--thought-size) * 23 / 18)/1.42 var(--thought-font); color: var(--ink-secondary); text-wrap: balance; }
+.empty-invitation-hint { margin: 0; max-width: 36ch; font: 400 var(--type-status-size)/var(--type-helper-line) var(--ui-font); color: var(--ink-tertiary); }
+.empty-invitation-mark { margin-top: 1px; font: 400 var(--type-label-size)/1 var(--ui-font); color: var(--trace-muted); }
+
+/* --- Scope Hub: screen-space positioning ----------------------------------
+   The strip belongs to the selected scope and is placed in screen space from the selection's own
+   bounds. Its material, its actions and its hover descriptions belong to `materials.css`; what stays
+   here is that it is a fixed overlay the Field positions, and that only its buttons take pointer. */
+.scope-hub { position: fixed; z-index: var(--layer-scope); isolation: isolate; display: flex; align-items: center; max-width: calc(100vw - 32px); font: var(--type-label-size)/1.4 var(--ui-font); pointer-events: none; }
+.scope-hub::before { content: ""; position: absolute; z-index: -1; inset: -5px -10px; background: radial-gradient(ellipse at center, var(--interaction-mask) 72%, color-mix(in srgb, var(--interaction-mask) 94%, transparent) 84%, transparent 100%); pointer-events: none; }
+.scope-count { color: var(--ink-tertiary); white-space: nowrap; }
+.scope-count::before { content: ""; display: inline-block; width: 4px; height: 4px; margin-right: 6px; border-radius: 50%; background: var(--attention); opacity: .75; }
+.scope-actions { display: flex; align-items: center; gap: 6px; }
+/* The action's own size belongs to `materials.css`; this rule keeps only what the toolbar's
+   behaviour needs — each action owns its own pointer. */
+.scope-actions button { padding: 6px 10px; border-radius: var(--radius-hair); color: var(--ink-secondary); pointer-events: auto; transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease, opacity var(--motion-instant) ease; }
+.scope-actions button:hover:not(:disabled) { color: var(--ink-primary); background: var(--attention-soft); }
+.scope-actions button:active:not(:disabled) { opacity: .62; }
+.scope-actions button:focus-visible { color: var(--ink-primary); outline-offset: 1px; }
+.scope-actions button:last-child { color: var(--ink-tertiary); letter-spacing: .08em; }
+
+
+/* --- The Quiet Composer ---------------------------------------------------
+   Idle it is a line in the Field with a caret mark; focused it *materializes* into a thin writing
+   surface; scoped it states what the next thinking action acts on. The states are decided once in
+   `Speak.tsx` (`composerState`) and rendered as `data-state`, so the visual vocabulary and the state
+   machine cannot drift.
+
+   The composer never becomes a chat box: 480px wide at most, a 108px textarea, compact padding, one
+   bounded material. Its keyboard contract stays in the Shortcuts reference and Help; only Shift+Enter
+   appears as tertiary copy in the focused writing row. */
+.speak-positioner { position: absolute; z-index: var(--layer-speak); left: 0; right: 0; bottom: 34px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; pointer-events: none; }
+.speak { position: relative; width: min(250px, calc(100vw - 48px)); min-height: 40px; pointer-events: auto; cursor: text; }
+.speak[data-composing="true"] { width: min(480px, calc(100vw - 48px)); }
+.speak-shell { position: relative; isolation: isolate; display: flex; flex-direction: column; min-width: 0; min-height: 40px; padding: 7px 8px; background: transparent; transform-origin: center bottom; cursor: text; }
+.speak-shell { transition: opacity var(--motion-control) var(--ease-out-ui); }
+/* Idle, the field's full-width hairline is gone: one short centred tick is the whole anchor. It is a
+   mark, not an underline — it strengthens on hover or focus — and it retracts entirely once the
+   material arrives, because the surface underneath then does the framing. (The composing rule keeps a
+   literal value and hides the mark rather than un-declaring it, so the still-frame contract reads one
+   value in every state.) */
+.speak-shell::after { content: ""; position: absolute; left: 50%; bottom: 0; width: 20px; height: 1px; margin-left: -10px; background: var(--boundary); opacity: 0.16; transition: opacity var(--motion-micro) ease; pointer-events: none; }
+.speak:hover .speak-shell::after, .speak:focus-within .speak-shell::after { opacity: 0.34; }
+.speak[data-composing="true"] .speak-shell::after { visibility: hidden; }
+.speak-mark { flex: none; width: 1px; height: 17px; margin-bottom: 3px; background: var(--boundary); transform: scaleY(.765); transform-origin: center bottom; transition: background-color var(--motion-micro) ease, transform var(--motion-micro) var(--ease-out-ui); }
+/* Height is a layout property, so the mark's growth is a transform: it must never reflow the writing
+   row it sits in front of. `.765 * 17px` is the 13px it rests at. */
+.speak:hover .speak-mark, .speak:focus-within .speak-mark { background: var(--attention); transform: scaleY(1); }
+.speak-row { display: flex; min-width: 0; gap: 14px; align-items: flex-end; }
+.speak textarea { display: block; flex: 1 1 auto; min-width: 0; width: 100%; box-sizing: border-box; min-height: 24px; max-height: 108px; resize: none; padding: 0; margin: 0; border: 0; outline: 0; background: none; overflow-y: hidden; scrollbar-width: none; font: var(--type-composer-size)/var(--type-composer-line) var(--thought-font); text-align: center; color: var(--ink-tertiary); transition: color var(--motion-instant) ease; }
+.speak textarea[data-overflowing="true"] { overflow-y: auto; }
+.speak textarea::-webkit-scrollbar { width: 0; height: 0; }
+.speak textarea::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+.speak[data-composing="true"] textarea { text-align: left; color: var(--ink-primary); }
+.speak textarea::placeholder { color: var(--ink-tertiary); font-size: var(--type-composer-hint-size); line-height: calc(var(--type-composer-line) * var(--type-composer-size)); }
+/* Focused, the surface is one row: writing, the optional cue, and the compact action. Its 24px
+   input, 8px vertical padding, and border keep the visible material at 42px; multiline text alone
+   increases that footprint. */
+.speak[data-composing="true"] .speak-shell { display: flex; flex-direction: column; padding: 8px 10px; background: color-mix(in srgb, var(--surface-1) 97%, transparent); border: 1px solid color-mix(in srgb, var(--boundary) 82%, transparent); border-radius: var(--radius-surface); box-shadow: 0 16px 40px -28px color-mix(in srgb, var(--ink-primary) 36%, transparent), 0 1px 3px color-mix(in srgb, var(--ink-primary) 7%, transparent); }
+.speak[data-composing="true"] .speak-shell::before { display: none; }
+.speak[data-composing="true"] .speak-row { gap: 8px; }
+.speak[data-state="submitting"] .speak-shell { opacity: .68; }
+.speak-light { position: absolute; z-index: -1; inset: 0; border-radius: inherit; background: radial-gradient(120% 96% at 42% -6%, color-mix(in srgb, var(--attention) 6%, transparent) 0%, transparent 62%); opacity: 0; pointer-events: none; transition: opacity var(--motion-control) var(--ease-out-ui); }
+.speak[data-composing="true"] .speak-light { background: color-mix(in srgb, var(--attention) 3%, transparent); opacity: .7; }
+/* The action is text-level commitment rather than a second card. */
+.speak-action { display: inline-flex; align-items: center; gap: 3px; flex: none; min-height: 26px; padding: 3px 4px; border: 0; border-radius: var(--radius-control); background: transparent; color: var(--ink-tertiary); font: var(--type-label-size)/1 var(--ui-font); white-space: nowrap; transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease; }
+.speak-action:hover:not(:disabled), .speak-action:focus-visible { color: var(--ink-primary); background: color-mix(in srgb, var(--surface-2) 54%, transparent); }
+.speak-action-key { color: var(--ink-tertiary); }
+/* Shortcut copy participates in the writing row, reserves no vertical space when it is hidden, and is
+   only visible while the textarea itself owns focus. */
+.speak-shortcut { display: none; align-items: center; gap: 3px; flex: none; color: var(--ink-tertiary); font: var(--type-hint-size)/1 var(--ui-font); white-space: nowrap; pointer-events: none; }
+.speak textarea:focus ~ .speak-shortcut { display: inline-flex; }
+.speak-shortcut kbd { border-color: transparent; background: transparent; padding: 0; color: inherit; }
+.speak-scope { display: flex; align-items: center; gap: 6px; margin: 0 5px 6px; color: var(--ink-tertiary); font: var(--type-helper-size)/1.5 var(--ui-font); animation: settle-actions var(--motion-micro) var(--ease-out-ui) both; }
+.speak-scope::before { content: ""; flex: none; width: 4px; height: 4px; border-radius: 50%; background: var(--attention); opacity: .75; }
+
+
+/* A screen-reader-only utility used across the Field and its overlays. */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+
+/* --- The Field yields to a place ------------------------------------------ */
+.app[data-active-surface="thread"] .field { right: calc(var(--thread-width) + 28px); }
+.app[data-active-surface="thread"] .speak-positioner { right: calc(var(--thread-width) + 28px); }
+.app[data-active-surface="thread"] .speak { width: min(460px, calc(100vw - var(--thread-width) - 70px)); }
+.app[data-active-surface="thread"] .global-actions { right: calc(var(--thread-width) + 42px); }
+.app[data-active-surface="thread-focus"] > .field, .app[data-active-surface="thread-focus"] > .identity, .app[data-active-surface="thread-focus"] > .global-actions { visibility: hidden; }
+
+@media (max-width: 900px) {
+  :root { --thread-width: 330px; }
+  .identity { left: 24px; top: 22px; }
+}
+@media (max-width: 720px) { .identity { max-width: calc(100vw - 92px); } }
+@media (max-width: 640px) {
+  :root { --thread-width: calc(100vw - 28px); }
+  .app[data-active-surface="thread"] .field { right: 0; }
+  .app[data-active-surface="thread"] .speak-positioner { visibility: hidden; }
+  .app[data-active-surface="thread"] .global-actions { right: 28px; }
+  .empty-invitation { gap: 8px; }
+  .empty-invitation-line { font-size: 20px; }
+  .speak-positioner { bottom: 30px; }
+  .speak-shortcut { display: none !important; }
+}
+
+/* Attention stays in the existing Thought emphasis ladder; the Field supplies no local wash. */
+.field[data-scope="true"] .thought[data-emphasis="peripheral"] { --thought-ink-presence: .42; }
+.field[data-scope="true"] .thought[data-emphasis="direct"] { --thought-ink-presence: 1; }

@@ -1,0 +1,47 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "types": []
+  },
+  "include": [
+    "src/vite-env.d.ts",
+    "src/core/**/*.ts",
+    "src/field/spatial/**/*.ts",
+    "src/field/camera/**/*.ts",
+    "src/ai/contracts.ts",
+    "src/ai/errors.ts",
+    "src/ai/providers.ts",
+    "src/ai/wire.ts",
+    "src/ai/prompt.ts",
+    "src/ai/schemas.ts",
+    "src/ai/mock.ts",
+    "src/ai/context.ts",
+    "src/ai/runtime.ts",
+    "src/ai/diffuse.ts",
+    "src/discovery/contracts.ts",
+    "src/discovery/config.ts",
+    "src/discovery/envelope.ts",
+    "src/discovery/engine.ts",
+    "src/evidence/contracts.ts",
+    "src/evidence/extract.ts",
+    "src/evidence/importer.ts",
+    "src/evidence/pipeline.ts",
+    "src/platform/contracts.ts",
+    "src/storage/repository.ts",
+    "src/storage/migrations.ts",
+    "src/shared/manuscript.ts",
+    "server/config.ts",
+    "server/provider.ts"
+  ]
+}

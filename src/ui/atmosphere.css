@@ -1,0 +1,137 @@
+/* Phase 3 — Field material system.
+ *
+ * The atmosphere remains presentation-only and pointer-inert. Style Profiles supply semantic color
+ * tokens in theme.css; this file derives its light from those tokens so a profile changes the whole
+ * place coherently. Field Style is independent from the optional Image Atmosphere. Only the custom
+ * image layer may use blur, and only from the user's Softness control. The ordinary Field keeps the
+ * same cheap transform-only ambient drift as v0.4.
+ */
+:root {
+  --atmos-lift: var(--surface-raised);
+  --atmos-depth: var(--surface-sunken);
+  --atmos-warm: var(--atmos-depth);
+  --atmos-vignette: var(--ink-primary);
+  --atmos-lift-strength: 46%;
+  --atmos-depth-strength: 16%;
+  --atmos-warm-strength: var(--atmos-depth-strength);
+  --atmos-vignette-strength: 3.5%;
+  --atmos-grain-opacity: var(--presence-grain-paper, .044);
+  --atmos-layer-presence: var(--atmos-material-presence, .82);
+  --atmos-lift-x: 40%;
+  --atmos-lift-y: 34%;
+  --atmos-depth-x: 78%;
+  --atmos-depth-y: 82%;
+  --atmos-warm-x: var(--atmos-depth-x);
+  --atmos-warm-y: var(--atmos-depth-y);
+  --atmos-drift-x: calc(var(--ambient-motion, .5) * 30px);
+  --atmos-drift-y: calc(var(--ambient-motion, .5) * -34.5px);
+  --atmos-drift: 24s;
+}
+:root[data-theme="dark"] {
+  --atmos-lift-strength: 34%;
+  --atmos-depth-strength: 21%;
+  --atmos-vignette-strength: 8%;
+}
+:root[data-style-profile="graphite-night"] {
+  --atmos-lift-strength: 34%;
+  --atmos-depth-strength: 21%;
+  --atmos-vignette-strength: 8%;
+}
+
+/* Field Style owns its atmosphere recipe. */
+:root:is([data-field-style="paper-texture"], [data-field-style="silk"]) {
+  --atmos-grain-opacity: var(--presence-grain-paper, .044);
+  --atmos-layer-presence: var(--atmos-material-presence, .82);
+}
+:root:is([data-field-style="topography"], [data-field-style="threads"], [data-field-style="waves"]) {
+  --atmos-grain-opacity: var(--presence-grain-studio, .017);
+  --atmos-layer-presence: .72;
+  --atmos-vignette-strength: 4.5%;
+}
+
+.atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+  background-color: var(--field-bg);
+}
+.atmosphere::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: -8% -6% -10% -6%;
+  opacity: var(--atmos-layer-presence);
+  background-image:
+    radial-gradient(120% 105% at var(--atmos-lift-x) var(--atmos-lift-y), color-mix(in srgb, var(--atmos-lift) var(--atmos-lift-strength), transparent) 0%, transparent 86%),
+    radial-gradient(115% 100% at var(--atmos-warm-x) var(--atmos-warm-y), color-mix(in srgb, var(--atmos-warm) var(--atmos-warm-strength), transparent) 0%, transparent 90%);
+  transform: translate3d(0, 0, 0);
+  animation: atmosphere-drift var(--atmos-drift) ease-in-out infinite;
+}
+.atmosphere::after {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, color-mix(in srgb, var(--atmos-vignette) var(--atmos-vignette-strength), transparent) 0%, transparent 30%),
+    linear-gradient(to top, color-mix(in srgb, var(--atmos-vignette) var(--atmos-vignette-strength), transparent) 0%, transparent 34%);
+}
+
+/* Image Atmosphere is cover-cropped and controlled independently from Theme and Field Style. */
+.atmosphere-image {
+  position: absolute;
+  z-index: 1;
+  inset: -18px;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  transform-origin: 50% 50%;
+  pointer-events: none;
+}
+.atmosphere-image-tone {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  /* Readability protection independent of the user's darken/lighten trim: the image is always
+     pulled part-way toward the active Field material, so bright and dark source images both stay
+     subordinate to content. */
+  background: var(--field-bg);
+  opacity: 0;
+}
+.atmosphere-grain {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  opacity: var(--atmos-grain-opacity);
+  mix-blend-mode: soft-light;
+  background-repeat: repeat;
+  background-size: 160px 160px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23f)'/%3E%3C/svg%3E");
+}
+
+/* Attention changes where the same material is lit. No pulse, no global flash. */
+.atmosphere[data-atmosphere="attention"] {
+  --atmos-lift-x: 34%;
+  --atmos-lift-y: 58%;
+  --atmos-depth-x: 64%;
+  --atmos-depth-y: 66%;
+  --atmos-lift-strength: 56%;
+  --atmos-depth-strength: 23%;
+}
+:root[data-theme="dark"] .atmosphere[data-atmosphere="attention"],
+:root[data-style-profile="graphite-night"] .atmosphere[data-atmosphere="attention"] {
+  --atmos-lift-strength: 37%;
+  --atmos-depth-strength: 24%;
+}
+@keyframes atmosphere-drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(var(--atmos-drift-x), var(--atmos-drift-y), 0); }
+}
+:root[data-field-motion="off"] .atmosphere::before { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion-preview="normal"]) .atmosphere::before { animation: none !important; }
+}

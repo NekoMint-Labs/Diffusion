@@ -1,0 +1,5 @@
+# pnpm 12 dependency build policy. Keep dependency lifecycle scripts explicit.
+strictDepBuilds: true
+allowBuilds:
+  esbuild: true
+  fsevents: true

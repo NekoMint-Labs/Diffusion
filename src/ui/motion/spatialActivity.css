@@ -1,0 +1,46 @@
+/* Phase 3C — one presentation-only spatial activity layer. Activity never owns input or semantics. */
+.spatial-activity-layer { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.spatial-nonsemantic-activity { position: absolute; inset: 0; pointer-events: none; }
+.input-seed { position: absolute; width: min(360px, 48vw); min-width: 190px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--boundary) 65%, transparent); border-radius: var(--radius-control); background: color-mix(in srgb, var(--surface-1) 84%, transparent); color: var(--ink-secondary); box-shadow: 0 8px 24px -22px color-mix(in srgb, var(--ink-primary) 30%, transparent); transform-origin: 0 0; transition: opacity var(--motion-control) var(--ease-out-ui); }
+.input-seed[data-phase="settling"] { opacity: 0; }
+.input-seed p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: var(--type-helper-size)/1.55 var(--thought-font); }
+.input-seed [data-provenance-highlight="true"] { color: var(--ink-primary); background: color-mix(in srgb, var(--attention) 9%, transparent); border-radius: 2px; }
+.seed-breath { position: absolute; inset: -9px; border: 1px solid color-mix(in srgb, var(--boundary) 46%, transparent); border-radius: calc(var(--radius-control) + 3px); opacity: 0; animation: seed-breathe 1500ms var(--ease-out-ui) infinite; }
+@keyframes seed-breathe { 0%, 100% { opacity: .1; transform: scale(.99); } 50% { opacity: .34; transform: scale(1.015); } }
+.activity-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.activity-svg line { stroke: var(--ink-tertiary); stroke-width: 1; vector-effect: non-scaling-stroke; fill: none; }
+.provenance-activity line { opacity: .25; stroke-dasharray: 2 8; animation: activity-drift 1350ms linear infinite; }
+.bridge-activity line { opacity: .4; stroke-dasharray: 2 9; stroke-linecap: round; animation: activity-drift 1350ms linear infinite; }
+.converge-traces line { opacity: .2; stroke-dasharray: 1 10; stroke-linecap: round; animation: converge-trace var(--motion-spatial) var(--ease-settle) both; }
+@keyframes converge-trace { from { stroke-dashoffset: 20; opacity: .08; } 55% { opacity: .28; } to { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes activity-drift { to { stroke-dashoffset: -22; } }
+.radiate-activity { position: absolute; width: 1px; height: 1px; }
+.radiate-activity i { position: absolute; width: 5px; height: 5px; margin: -2.5px; border: 1px solid var(--ink-tertiary); border-radius: 50%; opacity: .3; animation: radiate-mark 1450ms var(--ease-out-ui) infinite; }
+.radiate-activity i:nth-child(1) { --rx: 48px; --ry: -28px; animation-delay: -420ms; }
+.radiate-activity i:nth-child(2) { --rx: -54px; --ry: 12px; animation-delay: -820ms; }
+.radiate-activity i:nth-child(3) { --rx: 24px; --ry: 46px; animation-delay: -1160ms; }
+@keyframes radiate-mark { 0%, 100% { transform: translate(calc(var(--rx) * .72), calc(var(--ry) * .72)); opacity: .08; } 50% { transform: translate(var(--rx), var(--ry)); opacity: .36; } }
+.anchor-activity { position: absolute; display: flex; align-items: center; width: 34px; height: 1px; border-top: 1px solid color-mix(in srgb, var(--ink-tertiary) 44%, transparent); }
+.anchor-activity span { width: 6px; height: 6px; margin-left: auto; border: 1px solid var(--ink-tertiary); border-radius: 50%; background: var(--surface-1); }
+.spatial-transition { position: absolute; width: 44px; height: 44px; margin: -22px; border: 1px solid color-mix(in srgb, var(--ink-tertiary) 36%, transparent); border-radius: 50%; opacity: 0; animation: spatial-transition var(--motion-spatial) var(--ease-settle) both; }
+.spatial-transition.converge { animation-name: spatial-converge; }
+.spatial-transition.dissolve { animation-duration: 160ms; }
+.spatial-transition.arrive { border-radius: var(--radius-control); }
+@keyframes spatial-transition { 0% { opacity: .4; transform: scale(1.18); } 100% { opacity: 0; transform: scale(.88); } }
+@keyframes spatial-converge { 0% { opacity: 0; transform: scale(1.7); } 42% { opacity: .34; } 100% { opacity: 0; transform: scale(.78); } }
+@media (prefers-reduced-motion: reduce) {
+  .seed-breath, .provenance-activity, .bridge-activity, .radiate-activity, .converge-traces, .spatial-transition { animation: none !important; }
+  .input-seed { transition: none; }
+}
+
+/* Stage E — the acknowledgement is local to the scope. The mark appears immediately; copy waits
+   long enough that a fast request does not flash a status label. */
+.spatial-operation-feedback { position: absolute; z-index: 6; display: flex; align-items: center; gap: 7px; min-height: 28px; max-width: 320px; padding: 4px 7px; border: 1px solid color-mix(in srgb, var(--boundary) 52%, transparent); border-radius: var(--radius-control); background: color-mix(in srgb, var(--surface-1) 91%, transparent); box-shadow: 0 8px 22px -20px color-mix(in srgb, var(--ink-primary) 35%, transparent); color: var(--ink-secondary); font: var(--type-helper-size)/1.35 var(--ui-font); transform: translate(22px, -42px) scale(var(--inverse-zoom)); transform-origin: left bottom; pointer-events: auto; }
+.operation-feedback-mark { width: 7px; height: 7px; flex: 0 0 auto; border: 1px solid color-mix(in srgb, var(--attention) 76%, var(--ink-tertiary)); border-radius: 50%; background: var(--surface-1); opacity: .92; }
+.spatial-operation-feedback[data-phase="pending"] .operation-feedback-mark { animation: operation-pulse 1100ms var(--ease-out-ui) infinite; }
+.spatial-operation-feedback[data-phase="failed"] { border-color: color-mix(in srgb, var(--danger) 34%, var(--boundary)); }
+.spatial-operation-feedback[data-phase="completed"] .operation-feedback-mark { border-radius: 2px; transform: rotate(45deg) scale(.72); }
+.operation-feedback-copy { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.operation-stop { margin-left: 2px; }
+@keyframes operation-pulse { 0%, 100% { opacity: .38; transform: scale(.82); } 50% { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .spatial-operation-feedback[data-phase="pending"] .operation-feedback-mark { animation: none !important; } }

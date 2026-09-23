@@ -1,0 +1,15 @@
+.first-field-tutorial { position: fixed; inset: 0; z-index: 45; pointer-events: none; }
+.tutorial-coach { position: absolute; left: 24px; bottom: 22px; width: min(390px, calc(100vw - 48px)); padding: 14px 15px 12px; border: 1px solid color-mix(in srgb, var(--boundary) 72%, transparent); border-radius: var(--radius-control); background: color-mix(in srgb, var(--surface-1) 94%, transparent); box-shadow: 0 18px 42px -34px color-mix(in srgb, var(--ink-primary) 52%, transparent); color: var(--ink-primary); pointer-events: auto; }
+.tutorial-kicker { display: block; margin-bottom: 7px; color: var(--attention); font: 600 var(--type-tiny-size)/1.2 var(--ui-font); letter-spacing: .09em; text-transform: uppercase; }
+.tutorial-coach strong { display: block; font: 600 var(--type-ui-size)/1.35 var(--ui-font); }
+.tutorial-coach p { margin: 5px 0 9px; color: var(--ink-secondary); font: var(--type-helper-size)/1.45 var(--ui-font); }
+.tutorial-actions { display: flex; align-items: center; gap: 5px; justify-content: flex-end; }
+.tutorial-settled-fragment { position: fixed; width: min(300px, 38vw); padding: 7px 9px; border-left: 1px solid color-mix(in srgb, var(--attention) 38%, var(--boundary)); background: color-mix(in srgb, var(--surface-1) 84%, transparent); transform: translate(-6px, -8px); animation: tutorial-settle 620ms var(--ease-settle) both; pointer-events: none; }
+.tutorial-settled-fragment p { margin: 0; color: var(--ink-primary); font: var(--type-thought-size)/1.45 var(--thought-font); }
+@keyframes tutorial-settle { 0% { opacity: .55; transform: translate(-6px, -8px) scale(.985); } 42% { opacity: 1; } 100% { opacity: 0; transform: translate(-6px, -8px) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .tutorial-settled-fragment { animation-duration: 1ms; } }
+@media (max-width: 620px) { .tutorial-coach { left: 12px; bottom: 12px; width: calc(100vw - 24px); } }
+.progressive-tutorial-coach { position: fixed; right: 18px; bottom: 18px; z-index: 42; width: min(330px, calc(100vw - 36px)); padding: 11px 12px 9px; border: 1px solid color-mix(in srgb, var(--boundary) 66%, transparent); border-radius: var(--radius-control); background: color-mix(in srgb, var(--surface-1) 94%, transparent); box-shadow: 0 14px 34px -30px color-mix(in srgb, var(--ink-primary) 45%, transparent); }
+.progressive-tutorial-coach strong { display: block; font: 600 var(--type-helper-size)/1.35 var(--ui-font); }
+.progressive-tutorial-coach p { margin: 4px 0 6px; color: var(--ink-secondary); font: var(--type-tiny-size)/1.45 var(--ui-font); }
+.progressive-tutorial-coach .ui-button { float: right; }

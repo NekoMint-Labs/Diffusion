@@ -1,0 +1,98 @@
+/* Motion Lab chrome (development only). Lab-only styling lives here; it reuses the app's
+   CSS custom properties so the lab reads as the same product. The authored-sequence frames render
+   the *production* class names (`.empty-invitation`, `.speak-positioner`, `.field`, `.thought`,
+   `.settings-*`, `.history-*`, `.atmosphere`) and so inherit the product's own stylesheet
+   (field.css / theme.css, imported by main.tsx); only fixture layout and wrappers live here. */
+.lab { display: flex; width: 100%; height: 100%; overflow: hidden; background: var(--field-bg); color: var(--ink-primary); font: 13px/1.6 var(--ui-font); }
+.lab button:hover:not(:disabled) { color: var(--ink-primary); }
+
+/* --- Navigation column --- */
+.lab-nav { flex-shrink: 0; width: 306px; padding: 22px 18px; overflow: auto; background: var(--surface-1); border-right: 1px solid var(--boundary); }
+.lab-nav-head { display: flex; flex-direction: column; gap: 6px; margin-bottom: 22px; }
+.lab-eyebrow { font: 400 10px/1.5 var(--ui-font); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-tertiary); }
+.lab-title { margin: 0; font: 400 17px/1.3 var(--ui-font); letter-spacing: -.004em; }
+.lab-lead { margin: 2px 0 6px; font-size: 11px; line-height: 1.55; color: var(--ink-secondary); }
+.lab-toggles, .lab-mode-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.lab-mode-row { margin-bottom: 4px; }
+.lab-toggle { padding: 5px 9px; border: 1px solid var(--boundary); border-radius: 6px; background: var(--surface-1); color: var(--ink-secondary); font-size: 11px; transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease, border-color var(--motion-instant) ease; }
+.lab-toggle:hover:not(:disabled) { border-color: var(--ink-tertiary); }
+.lab-toggle[data-on] { color: var(--ink-primary); border-color: var(--attention); background: var(--attention-soft); }
+.lab-nav-label { margin: 0; font: 400 10px/1.5 var(--ui-font); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-tertiary); }
+.lab-nav-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
+.lab-nav-item { display: flex; align-items: baseline; gap: 8px; width: 100%; padding: 6px 8px; text-align: left; border-radius: 5px; color: var(--ink-secondary); font-size: 12px; transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease; }
+.lab-nav-item:hover:not(:disabled) { background: var(--surface-2); color: var(--ink-primary); }
+.lab-nav-item[data-active] { background: var(--surface-2); color: var(--ink-primary); }
+.lab-nav-index { min-width: 14px; font: 10px/1.6 var(--ui-font); color: var(--ink-tertiary); }
+.lab-readout { margin: 0; font: 11px/1.6 var(--ui-font); color: var(--ink-tertiary); }
+
+/* --- Right pane --- */
+.lab-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 22px 26px 64px; overflow: auto; }
+.lab-toolbar { display: flex; flex-direction: column; gap: 8px; }
+.lab-variant-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* --- The frame: its own name, its motion role, and either its duration or the production
+       function(s) it executes with the real roles/durations/eases --- */
+.lab-frame { margin: 0; border: 1px solid var(--boundary); border-radius: 10px; background: var(--surface-1); box-shadow: var(--shadow); overflow: hidden; }
+.lab-frame-cap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--surface-2); }
+.lab-frame-name { font: 400 13px/1.4 var(--ui-font); color: var(--ink-primary); }
+.lab-chip { padding: 1px 7px; border: 1px solid var(--boundary); border-radius: 999px; font: 10px/1.6 var(--ui-font); letter-spacing: .02em; color: var(--ink-secondary); }
+.lab-chip-sec { border-style: dashed; color: var(--ink-tertiary); }
+.lab-chip-mode { color: var(--attention); border-color: var(--attention); }
+.lab-chip-fn { color: var(--attention); border-color: var(--attention-soft); font-weight: 500; }
+.lab-roles { margin: 0; padding: 6px 14px; border-bottom: 1px solid var(--surface-2); font: 11px/1.6 var(--ui-font); color: var(--ink-tertiary); white-space: pre-wrap; }
+.lab-stage-inner { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; min-height: 140px; padding: 22px; }
+.lab-blurb { margin: 0; padding: 10px 14px; border-top: 1px solid var(--surface-2); font-size: 11px; line-height: 1.55; color: var(--ink-secondary); }
+
+/* --- The always-visible diagnostic: OS preference + current preview mode --- */
+.lab-diagnostic { position: fixed; right: 10px; bottom: 8px; z-index: 20; margin: 0; padding: 3px 9px; border: 1px solid var(--boundary); border-radius: 999px; background: var(--surface-1); font: 11px/1.6 var(--ui-font); color: var(--ink-secondary); box-shadow: var(--shadow); pointer-events: none; }
+
+/* --- Shared controls --- */
+.lab-button { padding: 8px 14px; border: 1px solid var(--boundary); border-radius: 7px; background: var(--surface-1); color: var(--ink-primary); font-size: 13px; transition: color var(--motion-instant) ease, border-color var(--motion-instant) ease; }
+.lab-button:hover:not(:disabled) { border-color: var(--ink-tertiary); }
+.lab-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.lab-play { padding: 6px 12px; border: 1px solid var(--boundary); border-radius: 7px; background: var(--surface-2); color: var(--ink-primary); font-size: 12px; }
+.lab-play:hover:not(:disabled) { border-color: var(--ink-tertiary); }
+.lab-row { display: flex; align-items: center; gap: 12px; }
+
+/* --- Context menu surface --- */
+.lab-surface-target { display: grid; place-items: center; width: 100%; min-height: 96px; border: 1px dashed var(--boundary); border-radius: 8px; color: var(--ink-secondary); font-size: 12px; user-select: none; }
+
+/* --- Close control --- */
+.lab-close-cell { display: inline-flex; align-items: center; justify-content: center; padding: 14px 22px; border: 1px solid var(--surface-2); border-radius: 8px; background: var(--surface-2); }
+.lab-force-hover .surface-close, .lab-force-focus .surface-close { color: var(--ink-primary); background: var(--surface-1); }
+.lab-force-focus .surface-close { outline: 1px solid var(--attention); outline-offset: 2px; }
+.lab-disabled { margin: 0; padding: 0; border: 0; min-inline-size: auto; }
+
+/* --- Settings section swapping (production .settings-* classes, lab rows inside) --- */
+.lab-settings-layout { width: 100%; }
+.lab-setting-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--surface-2); }
+.lab-setting-label { font-size: 13px; color: var(--ink-primary); }
+.lab-setting-row .lab-readout { grid-column: 1 / -1; }
+
+/* --- Title identity --- */
+.lab-identity { display: flex; flex-direction: column; gap: 3px; }
+.lab-identity-eyebrow { font: 400 10px/1.5 var(--ui-font); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-tertiary); }
+.lab-identity-title { font: 400 16px/1.4 var(--ui-font); color: var(--ink-secondary); }
+.lab-identity-input { padding: 2px 6px; border: 1px solid var(--boundary); border-radius: 4px; background: var(--surface-1); color: var(--ink-primary); font: inherit; outline: none; }
+.lab-identity-input:focus { border-color: var(--attention); }
+
+/* --- Field mock used by the in-place Motion beats --- */
+.lab-field-mock { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 124px; padding: 18px; overflow: hidden; border: 1px solid var(--surface-2); border-radius: 8px; background: var(--field-bg); }
+.lab-thought { max-width: 320px; padding: 8px 10px; font: 400 16px/1.5 var(--thought-font); color: var(--ink-primary); text-align: center; }
+.lab-ghost { opacity: .4; }
+.lab-crystal { position: relative; font-weight: 500; }
+.lab-crystal::before { content: "\25c7"; position: absolute; left: -14px; top: 8px; font: 14px/1.5 var(--ui-font); color: var(--ink-secondary); }
+
+/* --- Fixtures for the authored-sequence frames: a positioned box that hosts production DOM --- */
+.lab-fixture { position: relative; width: 100%; min-height: 220px; overflow: hidden; border: 1px solid var(--surface-2); border-radius: 8px; background: var(--field-bg); }
+.lab-fixture-field { min-height: 300px; }
+.lab-fixture-speak { min-height: 250px; }
+.lab-scope-chip { padding: 1px 8px; border: 1px solid var(--boundary); border-radius: 999px; font: 11px/1.7 var(--ui-font); color: var(--ink-secondary); }
+
+/* --- Feedback notice --- */
+.lab-notice { padding: 6px 12px; border: 1px solid var(--boundary); border-radius: 8px; background: var(--surface-2); color: var(--ink-primary); font-size: 12px; }
+.lab-notice[data-secondary="demo"] { color: var(--ink-secondary); }
+
+/* --- Atmosphere --- */
+.lab-atmosphere-host { overflow: hidden; }
+.lab-atmosphere-readout { position: relative; z-index: 1; padding: 4px 10px; border-radius: 999px; background: var(--surface-1); color: var(--ink-secondary); font: 11px/1.7 var(--ui-font); }

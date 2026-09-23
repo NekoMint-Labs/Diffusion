@@ -1,0 +1,314 @@
+/* ==========================================================================
+   Thought material — the single owner of what a Thought looks like in a state.
+
+   One chain, one place:
+
+     palette           theme.css      --thought-rest-material / --thought-rest-boundary
+       ->
+     material tokens   this file      --thought-material / --thought-edge  (the live rung)
+       ->
+     state ladder      this file      receded < rest < nearby < direct < selected < drag/editing
+       ->
+     Thought rendering this file      one fill and one inset edge per state
+
+   No later stylesheet may restate a Thought material state. The other files own exactly one other
+   thing each: `field.css` owns Field geometry, ink weight and interaction; `resultSemantics.css`
+   owns Ghost typography and causal-trace identity; `surfaces.css` owns application surfaces.
+   A state is expressed by setting the two rung tokens, never by restating the fill and the edge,
+   so a new state cannot drift away from the ladder.
+
+   Every edge is an *inset* shadow or outline. Geometry, collision and the camera therefore see one
+   set of bounds in hover, nearby, direct, selected, drag and editing alike.
+   ========================================================================== */
+
+/* Two exceptions carry their own material identity rather than a rung of the ladder: a Ghost is
+   provisional (pencil, not surface edge) and a Source is editorial (a rule, not a card). Both are
+   below. Everything else is a rung. */
+
+.thought {
+  border-radius: var(--radius-control);
+  --thought-material: var(--thought-rest-material);
+  --thought-edge: var(--thought-rest-boundary);
+  background: color-mix(in srgb, var(--surface-1) var(--thought-material), transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--boundary) var(--thought-edge), transparent),
+              0 1px 2px color-mix(in srgb, var(--ink-primary) 5%, transparent);
+  transition: color var(--motion-instant) ease,
+              background-color var(--motion-control) var(--ease-settle),
+              box-shadow var(--motion-control) var(--ease-settle);
+}
+
+/* --- Thought typography ----------------------------------------------------
+   Laid like a fragment on paper: `pretty` avoids the poster-like line balancing of long Thoughts,
+   and the width is fixed, so hover and selection never reflow the object. Source is cooler and more
+   tracked; a Crystal is set slightly tighter because it is a landmark. */
+.thought p { text-wrap: pretty; hanging-punctuation: first last; }
+.thought-preview { letter-spacing: -.004em; }
+.thought.source .thought-preview { letter-spacing: .004em; }
+.thought.crystal .thought-preview { letter-spacing: -.009em; }
+.thought[data-generation-action="question"]:not(.ghost):not(.editing) .thought-preview { font-style: italic; }
+
+/* --- The ladder ------------------------------------------------------------ */
+
+.thought:hover:not(.editing) {
+  --thought-material: calc(var(--thought-rest-material) + 5%);
+  --thought-edge: calc(var(--thought-rest-boundary) + 6%);
+}
+
+.thought[data-emphasis="receded"]:not(.editing),
+.thought[data-emphasis="peripheral"]:not(.editing) {
+  --thought-material: calc(var(--thought-rest-material) * .72);
+  --thought-edge: calc(var(--thought-rest-boundary) * .68);
+}
+
+.thought[data-emphasis="nearby"]:not([data-selected="true"]):not(.editing) {
+  --thought-material: calc(var(--thought-rest-material) + 8%);
+  --thought-edge: calc(var(--thought-rest-boundary) + 10%);
+}
+
+.thought[data-emphasis="direct"]:not([data-selected="true"]):not(.editing) {
+  --thought-material: calc(var(--thought-rest-material) + 15%);
+  --thought-edge: calc(var(--thought-rest-boundary) + 18%);
+}
+
+/* Selection has to be identifiable without the action strip. A thin attention edge and the small
+   accent point say "this is held" without turning the Thought into a heavy card. */
+.thought[data-selected="true"]:not(.editing) {
+  --thought-material: calc(var(--thought-rest-material) + 24%);
+  --thought-edge: calc(var(--thought-rest-boundary) + 22%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--selection-accent) var(--thought-edge), var(--boundary)),
+              0 2px 4px -3px color-mix(in srgb, var(--ink-primary) 18%, transparent);
+}
+.thought-selected-dot {
+  position: absolute;
+  z-index: 1;
+  right: 7px;
+  top: 7px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--selection-accent);
+  opacity: .86;
+  pointer-events: none;
+}
+.thought.editing .thought-selected-dot { display: none; }
+
+/* Drag lift is immediate: motion here means geometry, so the material must not lag behind it. */
+.field[data-drag-kind="selection"] .thought[data-selected="true"]:not(.editing) {
+  --thought-material: 98%;
+  --thought-edge: 92%;
+  z-index: calc(var(--layer-selection) + 1);
+  cursor: grabbing;
+  transition: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--selection-accent) var(--thought-edge), var(--boundary)),
+              0 4px 8px -5px color-mix(in srgb, var(--ink-primary) 30%, transparent);
+}
+
+/* Editing is the strongest writing surface in the product, and the only one that is opaque. */
+.thought.editing {
+  --thought-material: 98%;
+  background: color-mix(in srgb, var(--surface-1) 98%, transparent);
+  outline: 0;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--focus-accent) 48%, var(--boundary)),
+              0 3px 7px -5px color-mix(in srgb, var(--ink-primary) 28%, transparent);
+}
+
+.thought:focus-visible:not(.editing) {
+  outline: var(--focus-ring);
+  outline-offset: 4px;
+}
+
+/* --- Ghost: provisional material, not a canonical shell --------------------
+   A Ghost keeps a lighter body and a dashed pencil boundary. The stable action rail and question
+   mark remain in `resultSemantics.css`, so provisional status is visible without transparent text. */
+.thought.ghost:not(.editing) {
+  --thought-material: calc(var(--thought-rest-material) * .68);
+  --thought-edge: calc(var(--thought-rest-boundary) * .68);
+  background: color-mix(in srgb, var(--surface-1) var(--thought-material), transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pencil-trace) var(--thought-edge), transparent);
+}
+.ghost-boundary {
+  position: absolute;
+  inset: 0;
+  border: 1px dashed color-mix(in srgb, var(--pencil-trace) 42%, transparent);
+  border-radius: inherit;
+  pointer-events: none;
+}
+.thought.ghost:hover:not(.editing),
+.thought.ghost[data-selected="true"]:not(.editing) {
+  --thought-material: calc(var(--thought-rest-material) * .82);
+  --thought-edge: calc(var(--thought-rest-boundary) * .84);
+  background: color-mix(in srgb, var(--surface-1) var(--thought-material), transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pencil-trace) var(--thought-edge), transparent);
+}
+
+/* Causal arrival marks where a Ghost landed without fading its physical body. The words and the
+   pencil rail settle independently, while the provisional surface remains readable throughout. */
+.thought.ghost[data-causal="true"] .thought-preview { animation: ghost-text-settle var(--motion-spatial) var(--ease-settle) both; }
+.thought.ghost[data-causal="true"]::after {
+  content: ""; position: absolute; left: 3px; top: 8px; width: 1px; height: calc(100% - 16px);
+  background: color-mix(in srgb, var(--ghost-ink) 34%, transparent); transform-origin: center top;
+  animation: ghost-mark-arrive var(--motion-control) var(--ease-out-ui) both; pointer-events: none;
+}
+@keyframes ghost-mark-arrive { from { opacity: 0; transform: scaleY(.18); } to { opacity: .72; transform: scaleY(1); } }
+@keyframes ghost-text-settle { from { opacity: .18; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .thought { transition: none; }
+  .thought.ghost[data-causal="true"] .thought-preview, .thought.ghost[data-causal="true"]::after { animation: none; }
+}
+
+/* --- Crystal: a landmark, not an achievement ------------------------------ */
+.thought.crystal:not([data-selected="true"]):not(.editing) {
+  --thought-material: calc(var(--thought-rest-material) + 10%);
+  --thought-edge: calc(var(--thought-rest-boundary) * .82);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--boundary) var(--thought-edge), transparent),
+              inset 0 -1px 0 color-mix(in srgb, var(--boundary-strong) 58%, transparent);
+}
+.thought.crystal[data-selected="true"]:not(.editing) {
+  --thought-material: calc(var(--thought-rest-material) + 28%);
+}
+
+/* --- Source: a footnote fragment -----------------------------------------
+   Subordinate by identity — a light body, a rule under the words and lower ink weight — while
+   still carrying enough surface to remain readable over textured Fields. */
+.thought.source:not(.editing) {
+  --thought-material: calc(var(--thought-rest-material) * .64);
+  background: color-mix(in srgb, var(--surface-1) var(--thought-material), transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--source-rule) 12%, transparent),
+              inset 0 -1px 0 color-mix(in srgb, var(--source-rule) 30%, transparent);
+}
+.thought.source:hover:not(.editing) {
+  --thought-material: calc(var(--thought-rest-material) * .76);
+  background: color-mix(in srgb, var(--surface-1) var(--thought-material), transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--source-rule) 18%, transparent),
+              inset 0 -1px 0 color-mix(in srgb, var(--source-rule) 58%, transparent);
+}
+.thought.source[data-selected="true"]:not(.editing) {
+  --thought-material: calc(var(--thought-rest-material) * .88);
+  background: color-mix(in srgb, var(--surface-1) var(--thought-material), transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--selection-accent) 42%, var(--source-rule)),
+              inset 0 -1px 0 color-mix(in srgb, var(--source-rule) 66%, transparent);
+}
+
+/* --- Image Atmosphere ------------------------------------------------------
+   A busy background behind a Thought needs a fuller, fixed fill so the words never have to compete
+   with a photograph. Ghost and Source keep their own semantic materials. */
+:root[data-image-atmosphere="true"] .thought:not(.ghost):not(.source):not(.editing) {
+  background: color-mix(in srgb, var(--surface-1) var(--thought-image-material), transparent);
+}
+:root[data-image-atmosphere="true"] .thought[data-selected="true"]:not(.ghost):not(.source):not(.editing) {
+  background: color-mix(in srgb, var(--surface-1) calc(var(--thought-image-material) + 34%), transparent);
+}
+
+/* --- Relations: topology, not decoration ----------------------------------
+   Confirmed topology survives a drag and is repainted against the transient Thought positions by
+   Field.tsx; tentative phenomena recede during motion. A Relation wakes under attention; it never
+   becomes the composition. */
+.relation { --relation-presence: 1; animation: awaken 240ms var(--ease-out-ui) 130ms both; }
+.relation path {
+  stroke: var(--trace-muted);
+  stroke-width: 1;
+  stroke-linecap: round;
+  fill: none;
+  opacity: .18;
+  vector-effect: non-scaling-stroke;
+  transition: opacity var(--motion-attention) var(--ease-attention), stroke var(--motion-control) var(--ease-attention);
+}
+.relation.tentative { --relation-presence: .48; opacity: .72; }
+.relation.exiting { opacity: 0; animation: recede 180ms ease-out both; }
+.relation.confirmed path { stroke: color-mix(in srgb, var(--relation) 72%, transparent); stroke-dasharray: none; opacity: .24; }
+.relation.tentative path { stroke: color-mix(in srgb, var(--pencil-trace) 66%, transparent); stroke-dasharray: 7 7; opacity: .18; }
+.relation.probing path { stroke: color-mix(in srgb, var(--pencil-trace) 76%, transparent); stroke-dasharray: 1 7; stroke-linecap: round; opacity: .36; animation: probe-trace 900ms linear infinite; }
+.field[data-scope="true"] .relation:not(.relevant) path { opacity: .13; }
+.field[data-scope="true"] .relation.relevant.confirmed path { stroke: color-mix(in srgb, var(--relation) 88%, transparent); opacity: .6; }
+.field[data-scope="true"] .relation.relevant.tentative path { opacity: .42; }
+/* A selection drag repaints confirmed topology against the transient positions, so the confirmed
+   Relations stay visible while the tentative ones and their labels withdraw for the duration. */
+.field[data-drag-kind="selection"] .relations { visibility: visible; }
+.field[data-drag-kind="selection"] .relation.confirmed { visibility: visible; opacity: 1; }
+.field[data-drag-kind="selection"] .relation.tentative { visibility: hidden; }
+@keyframes awaken { from { opacity: 0; } }
+@keyframes recede { from { opacity: var(--relation-presence, 1); } to { opacity: 0; } }
+@keyframes probe-trace { to { stroke-dashoffset: -16; } }
+@media (prefers-reduced-motion: reduce) { .relation.probing path { animation: none; } }
+
+/* --- Scope Hub: the scope says what it is ---------------------------------
+   Contextual actions belong to the selected scope. The strip reads like a quiet editorial margin
+   note, not a detached application toolbar. Positioning stays screen-space and lives in
+   `field.css`; the hairline connector here only communicates ownership and changes no geometry. */
+.scope-hub { gap: 6px; min-height: 40px; padding: 2px 4px; color: var(--ink-secondary); }
+.scope-hub::before { inset: -2px -5px; border-radius: 3px; background: color-mix(in srgb, var(--field-bg) 44%, transparent); }
+/* The narrow Field mask keeps dense texture from crossing the words without drawing borders or
+   elevation. The one-pixel connector below remains the visible ownership cue. */
+.scope-hub::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--attention) 45%, var(--boundary));
+  opacity: .58;
+}
+.scope-hub[data-scope-side="top"]::after { left: 50%; top: 100%; width: 1px; height: 14px; }
+.scope-hub[data-scope-side="bottom"]::after { left: 50%; bottom: 100%; width: 1px; height: 14px; }
+.scope-hub[data-scope-side="left"]::after { left: 100%; top: 50%; width: 14px; height: 1px; }
+.scope-hub[data-scope-side="right"]::after { right: 100%; top: 50%; width: 14px; height: 1px; }
+.scope-count { padding: 0 5px; color: var(--ink-tertiary); }
+.scope-scope-line { color: var(--ink-tertiary); font-size: var(--type-hint-size); }
+.scope-actions { gap: 2px; }
+.scope-actions::before { display: none; }
+.scope-action { position: relative; display: inline-flex; align-items: center; pointer-events: auto; }
+.scope-actions button { min-height: 32px; padding: 0 7px; border-radius: 3px; font-weight: 400; }
+.scope-actions button:hover:not(:disabled), .scope-actions button:focus-visible {
+  background: color-mix(in srgb, var(--attention-soft) 74%, transparent);
+}
+.scope-actions button:last-child { min-width: 32px; }
+.scope-action-description {
+  position: absolute;
+  z-index: calc(var(--layer-surface) + 1);
+  left: 50%;
+  top: calc(100% + 8px);
+  translate: -50% -2px;
+  width: max-content;
+  max-width: min(260px, calc(100vw - 32px));
+  padding: 5px 7px;
+  border: 1px solid var(--boundary);
+  border-radius: var(--radius-control);
+  background: var(--surface-1);
+  box-shadow: var(--shadow);
+  color: var(--ink-secondary);
+  font: var(--type-hint-size)/1.5 var(--ui-font);
+  letter-spacing: 0;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--motion-instant) ease, translate var(--motion-instant) ease, visibility var(--motion-instant) step-end;
+}
+.scope-hub[data-scope-side="top"] .scope-action-description { top: auto; bottom: calc(100% + 8px); translate: -50% 2px; }
+.scope-action:hover .scope-action-description, .scope-action:focus-within .scope-action-description {
+  opacity: 1;
+  visibility: visible;
+  translate: -50% 0;
+  transition: opacity var(--motion-instant) ease, translate var(--motion-instant) ease;
+}
+
+@media (max-width: 720px) {
+  .scope-actions button { padding-inline: 6px; }
+}
+
+/* Keep is the Ghost material becoming canonical in place. The DOM identity and transform stay put;
+   the existing material transitions resolve the fill/edge while the last pencil rail recedes. */
+.thought[data-material-settling="true"]::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 7px;
+  bottom: 7px;
+  width: 1px;
+  background: var(--pencil-trace);
+  pointer-events: none;
+  animation: ghost-pencil-settle var(--motion-spatial) var(--ease-settle) both;
+}
+@keyframes ghost-pencil-settle { from { opacity: .78; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .thought[data-material-settling="true"]::before { animation: none; opacity: 0; }
+}

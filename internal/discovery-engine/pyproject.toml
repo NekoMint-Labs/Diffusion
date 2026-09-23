@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "diffusion-discovery"
+description = "Diffusion's internal discovery engine: source search, bounded read, normalization, deduplication and ranking."
+requires-python = ">=3.10"
+dynamic = ["version"]
+dependencies = [
+    "httpx[socks]>=0.28.0",
+    "tenacity>=8.0.0",
+]
+
+[project.scripts]
+diffusion-discovery = "diffusion_discovery.cli:main"
+
+[tool.setuptools]
+packages = [
+    "diffusion_discovery",
+    "diffusion_discovery.core",
+    "diffusion_discovery.evidence",
+    "diffusion_discovery.providers",
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "diffusion_discovery.__version__" }

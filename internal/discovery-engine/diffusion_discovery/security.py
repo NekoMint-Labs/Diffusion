@@ -1,0 +1,194 @@
+"""Shared redaction helpers for provider errors and machine-readable output."""
+
+from __future__ import annotations
+
+import re
+from urllib.parse import unquote_plus, urlsplit, urlunsplit
+from typing import Any, Iterable
+
+
+_SENSITIVE_KEY_NAMES = frozenset(
+    {
+        "access_token",
+        "api_key",
+        "apikey",
+        "authorization",
+        "client_secret",
+        "key",
+        "password",
+        "secret",
+        "sig",
+        "signature",
+        "token",
+    }
+)
+
+# Single source of truth for sensitive URL query-parameter names. Structured
+# redaction and Research workflow URL handling use this policy so a signed
+# URL or API-key query parameter can never reach machine output unredacted.
+SENSITIVE_QUERY_KEY_NAMES = _SENSITIVE_KEY_NAMES
+
+# Fully-masked sentinel values that may legitimately appear under a sensitive
+# key: the redaction marker itself, the documented unconfigured markers, and
+# the all-asterisk marker emitted by ``config._mask_api_key`` for short
+# values. Anything else - including raw values that merely contain ``*`` such
+# as ``abc*def`` - is treated as a live secret and redacted.
+_MASKED_VALUE_SENTINELS = frozenset({"[REDACTED]", "未配置", "not configured"})
+
+
+def _is_masked_value(value: str) -> bool:
+    """Return True only for documented fully-masked sentinel values."""
+    if value in _MASKED_VALUE_SENTINELS:
+        return True
+    return len(value) >= 3 and value.strip("*") == ""
+_SENSITIVE_KEY_PATTERN = re.compile(
+    r"(?i)(authorization|api[_-]?key|access[_-]?token|client[_-]?secret|password|secret|token)"
+    r"(\s*[:=]\s*)([^\s,;\"'&#]+)"
+)
+_BEARER_PATTERN = re.compile(r"(?i)\b(Bearer|Basic)(\s+)([^\s,;\"']+)")
+_URL_PATTERN = re.compile(r"https?://[^\s<>'\"]+")
+_URL_PARAMETER_PATTERN = re.compile(r"(^|[&;?])([^=&;?#]+)(=)([^&;#]*)")
+
+
+def _redact_url_parameters(value: str) -> tuple[str, bool]:
+    """Mask sensitive query-like parameters while preserving their separators."""
+    has_sensitive_parameter = False
+
+    def replace(match: re.Match[str]) -> str:
+        nonlocal has_sensitive_parameter
+        separator, raw_key, equals, _ = match.groups()
+        if not is_sensitive_key(unquote_plus(raw_key)):
+            return match.group(0)
+        has_sensitive_parameter = True
+        return f"{separator}{raw_key}{equals}%5BREDACTED%5D"
+
+    return _URL_PARAMETER_PATTERN.sub(replace, value), has_sensitive_parameter
+
+
+def redact_url_credentials(value: str) -> str:
+    """
+    /*
+     * ================================================================================
+     * 步骤1：脱敏 URL 凭据
+     * ================================================================================
+     * 目标：保留可识别的服务端点，同时移除 URL userinfo、查询参数和 fragment 凭据。
+     * 数据源：模型路由、诊断消息和结构化输出中的 URL 字符串。
+     * 操作：
+     * 1) 用统一标记替换 userinfo，保留主机、端口和路径。
+     * 2) 仅替换敏感查询和 fragment 参数值，保留其他参数用于诊断。
+     * ================================================================================
+    */
+    """
+    # ``urlsplit`` treats the display-only ``[REDACTED]`` marker as an
+    # invalid bracketed host when it appears in userinfo. Substitute a
+    # parseable placeholder before splitting, then render the marker below.
+    parse_value = value.replace("://[REDACTED]@", "://redacted@")
+    try:
+        parsed = urlsplit(parse_value)
+    except ValueError:
+        return "[REDACTED]"
+
+    # 1.1 移除 URL userinfo，避免用户名或密码进入展示和诊断结果。
+    redacted_netloc = parsed.netloc
+    has_userinfo = "@" in redacted_netloc
+    if has_userinfo:
+        redacted_netloc = f"[REDACTED]@{redacted_netloc.rsplit('@', 1)[1]}"
+
+    # 1.2 支持 & 和 ; 分隔的查询参数，保留非敏感参数的原始形式。
+    redacted_query, has_sensitive_query = _redact_url_parameters(parsed.query)
+
+    # 1.3 fragment 也可能携带 OAuth token，按相同规则保留非敏感片段。
+    redacted_fragment, has_sensitive_fragment = _redact_url_parameters(parsed.fragment)
+    if not has_userinfo and not has_sensitive_query and not has_sensitive_fragment:
+        return value
+
+    result = urlunsplit(
+        (
+            parsed.scheme,
+            redacted_netloc,
+            parsed.path,
+            redacted_query,
+            redacted_fragment,
+        )
+    )
+    return result
+
+
+def sanitize_text(value: Any, secrets: Iterable[str] = ()) -> str:
+    """
+    =================================================================================
+    步骤1：清理敏感文本
+    =================================================================================
+    目标：让错误、日志和 URL 元数据不能携带凭据。
+    数据源：Provider 异常、上游响应片段和配置值。
+    操作：
+    1) 先替换调用方已知的完整 secret。
+    2) 再清理 Authorization、Token、URL userinfo 和敏感 URL 查询参数。
+    """
+    text = "" if value is None else str(value)
+    for secret in sorted({str(item) for item in secrets if item}, key=len, reverse=True):
+        text = text.replace(secret, "[REDACTED]")
+    text = _BEARER_PATTERN.sub(r"\1\2[REDACTED]", text)
+    text = _SENSITIVE_KEY_PATTERN.sub(r"\1\2[REDACTED]", text)
+    # 2.1 统一处理文本中出现的 URL，避免输出边界遗漏 userinfo。
+    return _URL_PATTERN.sub(lambda match: redact_url_credentials(match.group(0)), text)
+
+
+def sanitize_data(value: Any, secrets: Iterable[str] = (), *, key: str = "") -> Any:
+    """
+    =================================================================================
+    步骤2：递归清理结构化结果
+    =================================================================================
+    目标：在不改变业务字段形状的前提下，清理 JSON 中的凭据。
+    数据源：Service 结果字典、Provider attempts 和诊断信息。
+    操作：
+    1) 敏感字段直接替换值。
+    2) 其他字符串按文本规则清理，列表和字典递归处理。
+    """
+    normalized_key = key.lower().replace("-", "_")
+    if is_sensitive_key(normalized_key):
+        if isinstance(value, str) and _is_masked_value(value):
+            return value
+        return "[REDACTED]" if value not in (None, "") else value
+    if isinstance(value, dict):
+        return {str(item_key): sanitize_data(item, secrets, key=str(item_key)) for item_key, item in value.items()}
+    if isinstance(value, list):
+        return [sanitize_data(item, secrets, key=key) for item in value]
+    if isinstance(value, tuple):
+        return [sanitize_data(item, secrets, key=key) for item in value]
+    if isinstance(value, str):
+        return sanitize_text(value, secrets)
+    return value
+
+
+def is_sensitive_key(key: str) -> bool:
+    normalized = key.lower().replace("-", "_")
+    return (
+        normalized in _SENSITIVE_KEY_NAMES
+        or normalized.endswith("_api_key")
+        or normalized.endswith("_token")
+        or normalized.endswith("_secret")
+        or normalized in {"authorization", "password"}
+    )
+
+
+_SAFE_ERROR_MESSAGES = {
+    "config_error": "provider configuration is invalid",
+    "auth_error": "provider authentication failed",
+    "parameter_error": "provider rejected the request",
+    "timeout": "provider request timed out",
+    "network_error": "provider request failed",
+    "rate_limited": "provider rate limit reached",
+    "protocol_error": "provider response violated its protocol",
+    "parse_error": "provider response could not be parsed",
+    "quality_error": "provider response failed quality checks",
+    "empty": "provider returned no usable result",
+    "too_large": "provider response exceeded the allowed size",
+    "budget_exhausted": "provider request budget exhausted",
+    "provider_error": "provider operation failed",
+}
+
+
+def safe_provider_message(error_type: str, fallback: str = "") -> str:
+    """Return a stable provider error message safe for machine output."""
+    return _SAFE_ERROR_MESSAGES.get(str(error_type or ""), "provider operation failed")

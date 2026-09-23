@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-09-13T10:26:50.597874+00:00",
+  "SOURCE_SNAPSHOT": "/mnt/data/delivery/diffusion-checkpoint-07-verified-primitives.zip",
+  "SOURCE_SNAPSHOT_SHA256": "56def6e409b08a9765ec33ea15bd84407eac874459d9ed1032fa42a6a3c58d62",
+  "SOURCE_SNAPSHOT_VERIFIED": "PASS",
+  "SOURCE_ROOT": "/mnt/data/diffusion-explorer",
+  "files": 137,
+  "CONTENTS_CHECK": [
+    "package.json",
+    "README.md",
+    "STATUS.md",
+    "src/main.tsx",
+    "src/",
+    "tests/"
+  ],
+  "NOTE": "Archive verification only. See STATUS.md for build/runtime verification."
+}

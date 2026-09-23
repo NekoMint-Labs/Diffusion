@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-09-13T10:03:39.556688+00:00",
+  "SOURCE_SNAPSHOT": "/mnt/data/delivery/diffusion-checkpoint-04-evidence-navigation.zip",
+  "SOURCE_SNAPSHOT_SHA256": "aef51313782352c8ae108e63b929f397f6fde5d14ccf9f4a395310d1a7fe9fbf",
+  "SOURCE_SNAPSHOT_VERIFIED": "PASS",
+  "SOURCE_ROOT": "/mnt/data/diffusion-explorer",
+  "files": 92,
+  "CONTENTS_CHECK": [
+    "package.json",
+    "README.md",
+    "STATUS.md",
+    "src/main.tsx",
+    "src/",
+    "tests/"
+  ],
+  "NOTE": "Archive verification only. See STATUS.md for build/runtime verification."
+}

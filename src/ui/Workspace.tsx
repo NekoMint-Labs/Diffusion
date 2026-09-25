@@ -16,7 +16,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, LayoutGroup } from 'motion/react';
 import { fieldSwitchSequence, settingsEnterSequence, settingsRecedeSequence, useSignature } from './motion/signature.ts';
 import { asPickedFile, type PlatformAdapter } from '../platform/contracts.ts';
-import type { Point } from '../core/model.ts';
+import type { Ghost, Point } from '../core/model.ts';
 import type { ProjectController } from '../core/controller.ts';
 import type { ProjectRepository } from '../storage/repository.ts';
 import { Field, type FieldHandle } from '../field/Field.tsx';
@@ -273,12 +273,20 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         surfaces.openSurface('settings');
     }
     const actionModel = contextualActionModel(commands, commandContext);
+    const selectedGhosts = ui.selection.map(key => session.ghosts[key]).filter((ghost): ghost is Ghost => !!ghost);
+    const ghostMenu = selectedGhosts.length > 0 && selectedGhosts.length === ui.selection.length && !selectedGhosts.some(ghost => ghost.proposal);
+    const ghostQuestion = ghostMenu && selectedGhosts.every(ghost => ghost.proposalKind === 'question');
+    const ghostRows = ghostMenu ? [
+        ...(ghostQuestion ? [{ id: 'answer', label: t('Answer'), run: () => handleAIProposalAction(ui.selection, 'answer') }] : []),
+        { id: 'keep', label: t('Keep this'), run: () => handleAIProposalAction(ui.selection, 'keep') },
+        { id: 'ignore', label: t('Ignore'), run: () => handleAIProposalAction(ui.selection, 'ignore') },
+    ] : [];
     const menuItems = ui.menu
-        ? scope === 'thought'
+        ? scope === 'thought' && ghostMenu ? ghostRows : scope === 'thought'
             ? contextualRows(commands, commandContext, ui.menu.mode === 'secondary' ? actionModel.secondary : actionModel.primary, platformKind)
             : menuRows(commands, commandContext, scope === 'global' ? APP_MENU : scope === 'field' ? FIELD_MENU : BLANK_MENU, platformKind)
         : [];
-    const menuMoreItems = ui.menu?.scope === 'thought' && ui.menu.mode !== 'secondary'
+    const menuMoreItems = ghostMenu ? [] : ui.menu?.scope === 'thought' && ui.menu.mode !== 'secondary'
         ? contextualRows(commands, commandContext, actionModel.secondary, platformKind)
         : ui.menu?.scope === 'field'
             ? menuRows(commands, commandContext, FIELD_MORE_MENU, platformKind)

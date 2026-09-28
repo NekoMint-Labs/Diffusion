@@ -286,7 +286,8 @@ export function Workspace({ controller, repository, platform, startupError, onSw
             ? contextualRows(commands, commandContext, ui.menu.mode === 'secondary' ? actionModel.secondary : actionModel.primary, platformKind)
             : menuRows(commands, commandContext, scope === 'global' ? APP_MENU : scope === 'field' ? FIELD_MENU : BLANK_MENU, platformKind)
         : [];
-    const menuMoreItems = ghostMenu ? [] : ui.menu?.scope === 'thought' && ui.menu.mode !== 'secondary'
+    const ghostThoughtMenu = ui.menu?.scope === 'thought' && ghostMenu;
+    const menuMoreItems = ghostThoughtMenu ? [] : ui.menu?.scope === 'thought' && ui.menu.mode !== 'secondary'
         ? contextualRows(commands, commandContext, actionModel.secondary, platformKind)
         : ui.menu?.scope === 'field'
             ? menuRows(commands, commandContext, FIELD_MORE_MENU, platformKind)

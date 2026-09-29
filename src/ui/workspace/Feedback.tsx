@@ -1,15 +1,26 @@
-import type { ReactElement, ReactNode } from 'react';
+import { useLayoutEffect, useRef, type ReactElement, type ReactNode } from 'react';
 import type { FeedbackTone } from './feedback.ts';
 
-/** One line. It carries no layout of its own beyond the `.notice` class, so it can sit wherever
- * the application already shows a line; mounting and exit belong to the caller. Appearance,
- * settle, disappearance — nothing to dismiss. */
-export function FeedbackLine({ text, tone, action, secondary }: {
+/** The workspace reserves the measured bottom line so a wrapped notice cannot cover writing. */
+export function FeedbackLine({ text, tone, action, secondary, onBottomHeight }: {
     text: string;
     tone: FeedbackTone;
     action?: ReactNode;
     /** The established placement for a standing, non-blocking statement (the demo disclosure). */
     secondary?: string;
+    onBottomHeight?: (height: number) => void;
 }): ReactElement {
-    return <div className="notice" data-tone={tone} data-secondary={secondary} role="status">{text}{action}</div>;
+    const line = useRef<HTMLDivElement>(null);
+    useLayoutEffect(() => {
+        const element = line.current;
+        if (!element || !onBottomHeight) return;
+        // Demo disclosure lives at the top; it must not leave an empty bottom lane.
+        if (secondary === 'demo') { onBottomHeight(0); return; }
+        const measure = () => onBottomHeight(Math.ceil(element.getBoundingClientRect().height));
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(element);
+        return () => { observer.disconnect(); onBottomHeight(0); };
+    }, [secondary, onBottomHeight]);
+    return <div ref={line} className="notice" data-tone={tone} data-secondary={secondary} role="status">{text}{action}</div>;
 }

@@ -209,7 +209,8 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
    The composer never becomes a chat box: 480px wide at most, a 108px textarea, compact padding, one
    bounded material. Its keyboard contract stays in the Shortcuts reference and Help; only Shift+Enter
    appears as tertiary copy in the focused writing row. */
-.speak-positioner { position: absolute; z-index: var(--layer-speak); left: 0; right: 0; bottom: 34px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; pointer-events: none; }
+/* The notice rests 10px above the window edge; writing keeps a further 12px clear. */
+.speak-positioner { position: absolute; z-index: var(--layer-speak); left: 0; right: 0; bottom: max(34px, calc(var(--bottom-notice-height, 0px) + 22px)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; pointer-events: none; }
 .speak { position: relative; width: min(250px, calc(100vw - 48px)); min-height: 40px; pointer-events: auto; cursor: text; }
 .speak[data-composing="true"] { width: min(480px, calc(100vw - 48px)); }
 .speak-shell { position: relative; isolation: isolate; display: flex; flex-direction: column; min-width: 0; min-height: 40px; padding: 7px 8px; background: transparent; transform-origin: center bottom; cursor: text; }
@@ -277,7 +278,7 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
   .app[data-active-surface="thread"] .global-actions { right: 28px; }
   .empty-invitation { gap: 8px; }
   .empty-invitation-line { font-size: 20px; }
-  .speak-positioner { bottom: 30px; }
+  .speak-positioner { bottom: max(30px, calc(var(--bottom-notice-height, 0px) + 22px)); }
   .speak-shortcut { display: none !important; }
 }
 

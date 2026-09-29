@@ -1,5 +1,5 @@
 /* Phase 3C — one presentation-only spatial activity layer. Activity never owns input or semantics. */
-.spatial-activity-layer { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.spatial-activity-layer { position: absolute; inset: 0; z-index: calc(var(--layer-selection) + 1); pointer-events: none; }
 .spatial-nonsemantic-activity { position: absolute; inset: 0; pointer-events: none; }
 .input-seed { position: absolute; width: min(360px, 48vw); min-width: 190px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--boundary) 65%, transparent); border-radius: var(--radius-control); background: color-mix(in srgb, var(--surface-1) 84%, transparent); color: var(--ink-secondary); box-shadow: 0 8px 24px -22px color-mix(in srgb, var(--ink-primary) 30%, transparent); transform-origin: 0 0; transition: opacity var(--motion-control) var(--ease-out-ui); }
 .input-seed[data-phase="settling"] { opacity: 0; }

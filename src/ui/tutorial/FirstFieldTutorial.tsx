@@ -130,7 +130,7 @@ export function useFirstFieldTutorial({ project, session, controller, field }: {
     function finish() {
         clearTutorialGhost(); setSettled(null); setActive(false); writeStored({ status: 'complete' }); field.current?.focus();
     }
-    function interceptScopeAction(actionId: string): boolean {
+    function interceptThinkingAction(actionId: string): boolean {
         if (!active || phase !== 'generate' || !thoughtId || !['continue-thinking', 'diffuse', 'questions'].includes(actionId)) return false;
         const snapshot = controller.getSnapshot();
         const thought = snapshot.project.thoughts[thoughtId];
@@ -160,7 +160,7 @@ export function useFirstFieldTutorial({ project, session, controller, field }: {
         return true;
     }
 
-    return { active, phase, settled, start, skip, finish, interceptScopeAction, interceptProposalAction };
+    return { active, phase, settled, start, skip, finish, interceptThinkingAction, interceptProposalAction };
 }
 
 export function FirstFieldTutorialCoach({ active, phase, settled, onSkip, onFinish }: {

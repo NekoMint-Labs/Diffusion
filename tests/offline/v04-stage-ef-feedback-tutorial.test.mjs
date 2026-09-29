@@ -43,7 +43,10 @@ test('Stage F tutorial is device UI state, uses a deterministic transient Ghost 
   assert.match(tutorial, /noticeAction: null/);
   assert.match(tutorial, /controller\.dismissGhost\(ghostId\)/);
   assert.doesNotMatch(tutorial, /controller\.claim\(|claimAll\(/);
-  assert.match(workspace, /tutorial\.interceptScopeAction\(id\)/);
+  for (const command of ['continue-thinking', 'diffuse', 'questions']) {
+    assert.ok(workspace.includes(`tutorial.interceptThinkingAction('${command}')`));
+  }
+  assert.doesNotMatch(workspace, /interceptScopeAction/);
   assert.match(workspace, /tutorial\.interceptProposalAction\(ids, action\)/);
   assert.match(workspace, /intents\.submit\(\{ localOnly: tutorial\.active \}\)/);
   // The tutorial's local-only write may not swallow the one sentence — and the one control — that

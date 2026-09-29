@@ -236,14 +236,15 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         controller,
         findRelation: intents.findRelation,
         ask: intents.ask,
-        continueThinking: ids => openActionPreview('continue', ids),
-        questions: ids => openActionPreview('ask', ids),
+        // Every command projection shares the tutorial boundary before entering normal AI work.
+        continueThinking: ids => { if (!tutorial.interceptThinkingAction('continue-thinking')) openActionPreview('continue', ids); },
+        questions: ids => { if (!tutorial.interceptThinkingAction('questions')) openActionPreview('ask', ids); },
         openThread: (ids, deep) => { stopDiffuseForIntent(); intents.openThread(ids, deep); },
         previewCrystal: intents.previewCrystal,
         continueCrystal: intents.continueCrystal,
         openHandoff: key => { surfaces.openSurface('handoff'); ui.patch({ handoffId: key }); },
         openSource: actions.openSource,
-        openDiffuse: ids => openActionPreview('angle', ids),
+        openDiffuse: ids => { if (!tutorial.interceptThinkingAction('diffuse')) openActionPreview('angle', ids); },
         organize: openOrganize,
         carry: actions.carry,
         keep: actions.keep,
@@ -283,7 +284,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         : ui.menu?.scope === 'field'
             ? menuRows(commands, commandContext, FIELD_MORE_MENU, platformKind)
             : [];
-    const runScopeAction = (id: string) => { if (!tutorial.interceptScopeAction(id)) commands.find(command => command.id === id)?.run(commandContext); };
+    const runScopeAction = (id: string) => { commands.find(command => command.id === id)?.run(commandContext); };
     const findOpen = ui.surface === 'find';
     useWorkspaceKeyboard({ commands, context: commandContext, speak, closeSurface: () => surfaces.closeSurface(), closeMenu, onExitSpeak: intents.exitSpeak });
     /** A possibility reaches the Field through this one route, whatever produced it. */

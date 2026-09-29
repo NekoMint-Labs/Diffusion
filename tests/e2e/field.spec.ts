@@ -856,3 +856,24 @@ test('composing Speak masks underlying Crystal text and leaves outside Field inp
     await page.mouse.click(70, 680);
     await expect(speak).toHaveAttribute('data-composing', 'false');
 });
+
+
+test('question Ghost menu actions do not hide Field More actions', async ({ page }) => {
+    await provider(page, 'demo');
+    await page.locator('[data-thought-id="attention"]').click();
+    await runQuestionPreview(page);
+    const ghost = page.locator('article.thought.ghost').first();
+    await expect(ghost).toBeVisible();
+    await ghost.click({ button: 'right' });
+    const thoughtMenu = page.getByTestId('thought-menu');
+    await expect(thoughtMenu.getByRole('menuitem', { name: 'Keep this' })).toBeVisible();
+    await expect(thoughtMenu.getByRole('menuitem', { name: 'Ignore' })).toBeVisible();
+
+    await page.getByTestId('field-title').click();
+    const fieldMenu = page.getByTestId('field-menu');
+    await expect(fieldMenu.getByRole('menuitem', { name: 'More', exact: true })).toBeVisible();
+    await fieldMenu.getByRole('menuitem', { name: 'More', exact: true }).click();
+    const fieldMore = page.getByTestId('field-more-menu');
+    await expect(fieldMore.getByRole('menuitem', { name: 'Duplicate Field' })).toBeVisible();
+    await expect(fieldMore.getByRole('menuitem', { name: 'Import / Restore' })).toBeVisible();
+});

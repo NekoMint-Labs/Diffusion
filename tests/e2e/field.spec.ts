@@ -858,12 +858,21 @@ test('composing Speak masks underlying Crystal text and leaves outside Field inp
 });
 
 
-test('question Ghost menu actions do not hide Field More actions', async ({ page }) => {
-    await provider(page, 'demo');
+test('generic generated Ghost menu actions do not hide Field More actions', async ({ page }) => {
+    await page.route('**/api/respond', async route => {
+        await route.fulfill({ json: { providerLabel: 'E2E stub / not live', mock: true, intents: [{ type: 'surface_possibility', text: 'A generic generated possibility.' }] } });
+    });
+    await menu(page, 'Settings');
+    await choose(page, 'provider-select', 'gateway');
+    await page.getByRole('button', { name: 'Return to Field' }).click();
     await page.locator('[data-thought-id="attention"]').click();
-    await runQuestionPreview(page);
-    const ghost = page.locator('article.thought.ghost').first();
+    await askOwnQuestion(page);
+    await page.getByRole('textbox', { name: 'Speak', exact: true }).fill('Explore this thought in another direction.');
+    await page.getByRole('textbox', { name: 'Speak', exact: true }).press('Enter');
+
+    const ghost = page.locator('article.thought.ghost').filter({ hasText: 'A generic generated possibility.' });
     await expect(ghost).toBeVisible();
+    await expect(ghost).toHaveAttribute('data-proposal-kind', 'thought');
     await ghost.click({ button: 'right' });
     const thoughtMenu = page.getByTestId('thought-menu');
     await expect(thoughtMenu.getByRole('menuitem', { name: 'Keep this' })).toBeVisible();

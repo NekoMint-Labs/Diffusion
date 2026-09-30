@@ -21,6 +21,6 @@ export function FindSurface({ query, count, index, onQuery, onNavigate, onClose 
             }
         }}/>
         <p className="find-status" data-testid="find-status" role="status">{trimmed ? count ? msg('{index} / {count}', { index: index % count + 1, count }) : msg('Nothing in this Field matches.') : msg('Type to reveal where it lives.')}</p>
-        <p className="find-hint">{msg('Enter next / Shift+Enter previous / Escape closes')}</p>
+        <p className="find-hint">{msg(trimmed && !count ? 'Try a shorter phrase, or clear the search to see the Field.' : 'Enter next / Shift+Enter previous / Escape closes')}</p>
     </Surface>;
 }

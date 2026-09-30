@@ -9,13 +9,14 @@
   border: 1px solid transparent;
   border-radius: var(--radius-control);
   color: var(--ink-secondary);
-  font: 500 var(--type-label-size)/1 var(--ui-font);
+  font: 500 var(--type-label-size)/1.35 var(--ui-font);
   letter-spacing: .002em;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
   transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease, border-color var(--motion-instant) ease, box-shadow var(--motion-instant) ease, opacity var(--motion-instant) ease;
 }
-.ui-button-md { min-height: var(--control-lg); padding: 0 12px; }
-.ui-button-sm { min-height: var(--control-md); padding: 0 9px; font-size: var(--type-helper-size); }
+.ui-button-md { min-height: var(--control-lg); padding: 6px 12px; }
+.ui-button-sm { min-height: var(--control-md); padding: 4px 9px; font-size: var(--type-helper-size); }
 .ui-button-ghost { background: transparent; }
 .ui-button-ghost:hover:not(:disabled), .ui-button-ghost[data-highlighted] { color: var(--ink-primary); background: color-mix(in srgb, var(--surface-2) 66%, transparent); }
 .ui-button-outline { border-color: var(--boundary); background: color-mix(in srgb, var(--surface-1) 74%, transparent); }
@@ -92,3 +93,15 @@
    typing with a menu. */
 .ui-combobox-input { flex: 1 1 auto; min-width: 0; }
 .ui-combobox-empty { padding: 6px 9px; color: var(--ink-tertiary); font-size: var(--type-status-size); max-width: 30ch; }
+
+/* Settings read as sections of one page. The surface already supplies their outer boundary. */
+.settings-form .ui-surface-group { border: 0; border-radius: 0; background: transparent; overflow: visible; }
+.settings-form .ui-surface-group + .ui-surface-group { border-top: 1px solid var(--boundary); padding-top: var(--space-3); }
+.settings-form .ui-surface-group-heading { padding: 8px 0; border: 0; }
+.settings-form .ui-setting-row { padding-inline: 0; }
+.ui-setting-label, .ui-setting-description { overflow-wrap: anywhere; }
+@container (max-width: 540px) {
+  .ui-setting-row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .ui-setting-control { justify-content: flex-start; flex-wrap: wrap; }
+  .ui-setting-control > input, .ui-setting-control .settings-key-row { width: 100%; min-width: 0; }
+}

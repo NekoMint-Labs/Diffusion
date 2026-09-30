@@ -32,7 +32,7 @@ test('Phase 4 Atlas preserves explicit orientation anchors without turning back 
 test('Phase 4 completion receipts carry only transient result counts', () => {
     const model = src('core/model.ts');
     const runtime = src('ai/runtime.ts');
-    const layer = src('ui/motion/SpatialActivityLayer.tsx');
+    const layer = src('ui/motion/operationPresentation.ts');
     assert.match(model, /resultCount\?: number/);
     assert.match(runtime, /settle\(started, 'completed', emitted\)/);
     assert.match(layer, /\{count\} results · \{action\}/);

@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from 'motion/react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type Ref } from 'react';
 import { t } from '../../shared/i18n.ts';
 import { contentTransition } from '../motion.ts';
 import { Button } from '../primitives/Button.tsx';
@@ -10,9 +10,10 @@ import type { ScopePlacement } from './scopePlacement.ts';
 const MORE_HOVER_DELAY = 160;
 export type AIProposalNextAction = 'keep' | 'continue' | 'angle' | 'answer' | 'ignore';
 
-export function ScopeHub({ count, placement, actions, probing = false, proposalReview = false, aiProposalKind, onAction, onKeepAll, onKeepOriginal, onAIProposalAction, onMore }: {
+export interface ScopeHubProps {
+    elementRef?: Ref<HTMLDivElement>;
     count: number;
-    placement: ScopePlacement;
+    placement?: ScopePlacement;
     actions: ContextualAction[];
     probing?: boolean;
     proposalReview?: boolean;
@@ -22,7 +23,9 @@ export function ScopeHub({ count, placement, actions, probing = false, proposalR
     onKeepOriginal?: () => void;
     onAIProposalAction?: (action: AIProposalNextAction) => void;
     onMore: (trigger: HTMLElement) => void;
-}) {
+}
+
+export function ScopeHub({ elementRef, count, placement, actions, probing = false, proposalReview = false, aiProposalKind, onAction, onKeepAll, onKeepOriginal, onAIProposalAction, onMore }: ScopeHubProps) {
     const reduced = useReducedMotion();
     const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const cancelMoreHover = () => {
@@ -43,7 +46,7 @@ export function ScopeHub({ count, placement, actions, probing = false, proposalR
     };
     useEffect(() => () => cancelMoreHover(), []);
 
-    return <motion.div data-testid="scope-hub" data-scope-hub="true" data-scope-side={placement.side} data-proposal-kind={aiProposalKind} className="scope-hub" role="toolbar" aria-label={`${t('Scope actions')}: ${t('Selection makes a temporary scope')}`} style={{ left: placement.x, top: placement.y }} initial={{ opacity: reduced ? 1 : 0, y: reduced ? 0 : -2 }} animate={{ opacity: 1, y: 0 }} transition={contentTransition(!!reduced)} onPointerDown={event => event.stopPropagation()}>
+    return <motion.div ref={elementRef} data-testid="scope-hub" data-scope-hub="true" data-scope-side={placement?.side} data-proposal-kind={aiProposalKind} className="scope-hub" role="toolbar" aria-label={`${t('Scope actions')}: ${t('Selection makes a temporary scope')}`} style={{ left: placement?.x, top: placement?.y }} initial={{ opacity: reduced ? 1 : 0, y: reduced ? 0 : -2 }} animate={{ opacity: 1, y: 0 }} transition={contentTransition(!!reduced)} onPointerDown={event => event.stopPropagation()}>
         {count > 1 && <span className="scope-count" data-testid="scope-count">{t('{count} thoughts', { count })}</span>}
         <div className="scope-actions">
             {proposalReview ? <>

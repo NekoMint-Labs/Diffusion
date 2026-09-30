@@ -45,7 +45,7 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .global-actions button:focus-visible { outline-offset: 1px; }
 .global-actions button:active { opacity: .62; }
 
-.field { position: absolute; inset: 0; overflow: hidden; outline: none; touch-action: none; }
+.field { position: absolute; inset: 0 0 var(--field-dock-height, 0px); overflow: hidden; outline: none; touch-action: none; }
 /* Settings and Help are places arriving over the Field, so the Field gives up presence for as long
    as one of them is the active place, and takes it back when the place closes. Opacity only, and one
    named property only: the Field's own pointer math reads its rect, so a held transform here would
@@ -190,7 +190,7 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .scope-hub::before { content: ""; position: absolute; z-index: -1; inset: -5px -10px; background: radial-gradient(ellipse at center, var(--interaction-mask) 72%, color-mix(in srgb, var(--interaction-mask) 94%, transparent) 84%, transparent 100%); pointer-events: none; }
 .scope-count { color: var(--ink-tertiary); white-space: nowrap; }
 .scope-count::before { content: ""; display: inline-block; width: 4px; height: 4px; margin-right: 6px; border-radius: 50%; background: var(--attention); opacity: .75; }
-.scope-actions { display: flex; align-items: center; gap: 6px; }
+.scope-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
 /* The action's own size belongs to `materials.css`; this rule keeps only what the toolbar's
    behaviour needs — each action owns its own pointer. */
 .scope-actions button { padding: 6px 10px; border-radius: var(--radius-hair); color: var(--ink-secondary); pointer-events: auto; transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease, opacity var(--motion-instant) ease; }
@@ -210,7 +210,7 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
    bounded material. Its keyboard contract stays in the Shortcuts reference and Help; only Shift+Enter
    appears as tertiary copy in the focused writing row. */
 /* The notice rests 10px above the window edge; writing keeps a further 12px clear. */
-.speak-positioner { position: absolute; z-index: var(--layer-speak); left: 0; right: 0; bottom: max(34px, calc(var(--bottom-notice-height, 0px) + 22px)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; pointer-events: none; }
+.speak-positioner { position: absolute; z-index: var(--layer-speak); left: 0; right: 0; bottom: max(34px, calc(var(--bottom-notice-height, 0px) + 22px), calc(var(--field-dock-height, 0px) + 12px)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; pointer-events: none; }
 .speak { position: relative; width: min(250px, calc(100vw - 48px)); min-height: 40px; pointer-events: auto; cursor: text; }
 .speak[data-composing="true"] { width: min(480px, calc(100vw - 48px)); }
 .speak-shell { position: relative; isolation: isolate; display: flex; flex-direction: column; min-width: 0; min-height: 40px; padding: 7px 8px; background: transparent; transform-origin: center bottom; cursor: text; }
@@ -278,10 +278,16 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
   .app[data-active-surface="thread"] .global-actions { right: 28px; }
   .empty-invitation { gap: 8px; }
   .empty-invitation-line { font-size: 20px; }
-  .speak-positioner { bottom: max(30px, calc(var(--bottom-notice-height, 0px) + 22px)); }
+  .speak-positioner { bottom: max(30px, calc(var(--bottom-notice-height, 0px) + 22px), calc(var(--field-dock-height, 0px) + 12px)); }
   .speak-shortcut { display: none !important; }
 }
 
 /* Attention stays in the existing Thought emphasis ladder; the Field supplies no local wash. */
 .field[data-scope="true"] .thought[data-emphasis="peripheral"] { --thought-ink-presence: .42; }
 .field[data-scope="true"] .thought[data-emphasis="direct"] { --thought-ink-presence: 1; }
+
+/* Measured overlays share a temporary feedback lane only when no local space is clear. */
+.scope-hub:not([data-placed]), .spatial-operation-feedback:not([data-placed]) { visibility: hidden; }
+.scope-hub { width: max-content; flex-wrap: wrap; }
+.scope-hub[data-docked]::after { display: none; }
+.field-overlay-dock { display: none; position: fixed; z-index: var(--layer-selection); background: var(--field-bg); border-top: 1px solid var(--boundary); pointer-events: none; }

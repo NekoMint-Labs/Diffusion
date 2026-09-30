@@ -1,6 +1,6 @@
 import type { Camera, Point } from '../core/model.ts';
 import type { ProjectController } from '../core/controller.ts';
-import type { ScopePlacement } from '../ui/scope/scopePlacement.ts';
+import type { ScopeRect } from '../ui/scope/scopePlacement.ts';
 import { dismissGhostWithDissolve, presentSpatialTransition } from '../ui/motion/spatialGrammar.ts';
 import { correctSevereOverlap } from './spatial/collision.ts';
 import { screenToWorld, viewportBounds, type Bounds } from './spatial/geometry.ts';
@@ -72,7 +72,7 @@ export function deleteFieldSelection(controller: ProjectController, selection: s
     return canonical.length + ghosts.length > 0;
 }
 
-export function relationPlacementObstacles(visible: string[], geometry: GeometryCache, camera: Camera, viewport: ViewportRect, scopePlacement: ScopePlacement | null): Bounds[] {
+export function relationPlacementObstacles(visible: string[], geometry: GeometryCache, camera: Camera, viewport: ViewportRect, scopePlacement: ScopeRect | null): Bounds[] {
     const screenRectToWorld = (bounds: Bounds): Bounds => {
         const point = screenToWorld({ x: bounds.x - viewport.left, y: bounds.y - viewport.top }, camera);
         return { x: point.x, y: point.y, width: bounds.width / camera.zoom, height: bounds.height / camera.zoom };

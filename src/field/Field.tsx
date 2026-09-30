@@ -7,10 +7,10 @@ import type { ProjectController } from '../core/controller.ts';
 import { useProject } from '../ui/hooks.ts';
 import { useUI } from '../ui/store.ts';
 import { ThoughtView } from '../ui/thought/ThoughtView.tsx';
-import { ScopeHub } from '../ui/scope/ScopeHub.tsx';
+import { FieldOverlays, type FieldOverlaysHandle } from '../ui/scope/FieldOverlays.tsx';
 import { StructureOverlay } from './phenomena/StructureOverlay.tsx';
 import type { ContextualAction } from '../ui/commands/contextualActionModel.ts';
-import { computeScopeHubPlacement, unionScopeBounds } from '../ui/scope/scopePlacement.ts';
+import type { ScopeRect } from '../ui/scope/scopePlacement.ts';
 import { GeometryCache } from './spatial/index.ts';
 import { disclosureBox, estimateThoughtSize } from './spatial/collision.ts';
 import { center, distanceBetween, fitCameraToBounds, rectangle, scaleLevel, unionBounds, viewportBounds, worldToScreen, type Bounds } from './spatial/geometry.ts';
@@ -70,6 +70,9 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const { project, session } = useProject(controller);
     const ui = useUI();
     const viewport = useRef<HTMLDivElement>(null);
+    const overlays = useRef<FieldOverlaysHandle>(null);
+    const [scopePlacement, setScopePlacement] = useState<ScopeRect | null>(null);
+    const onScopeBounds = useCallback((next: ScopeRect | null) => setScopePlacement(previous => JSON.stringify(previous) === JSON.stringify(next) ? previous : next), []);
     const world = useRef<HTMLDivElement>(null);
     const lasso = useRef<SVGRectElement>(null);
     const cue = useRef<SVGGElement>(null);
@@ -160,7 +163,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         const measure = () => { const b = viewport.current!.getBoundingClientRect(); rect.current = { left: b.left, top: b.top, width: b.width, height: b.height }; const activeCamera = camera.current?.get();
             if (activeCamera) refreshVisible(activeCamera, true); };
         measure();
-        const c = new CameraController(world.current, controller.getSnapshot().project.camera, cam => { setStableCamera(cam); controller.dispatch({ type: 'camera.commit', camera: cam }, 'system'); refreshVisible(cam, true); viewport.current?.removeAttribute('data-camera-moving'); }, cam => refreshVisible(cam));
+        const c = new CameraController(world.current, controller.getSnapshot().project.camera, cam => { setStableCamera(cam); controller.dispatch({ type: 'camera.commit', camera: cam }, 'system'); refreshVisible(cam, true); viewport.current?.removeAttribute('data-camera-moving'); }, cam => { refreshVisible(cam); overlays.current?.layout(cam); });
         camera.current = c;
         const ro = new ResizeObserver(measure);
         ro.observe(viewport.current);
@@ -518,27 +521,12 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const keepCandidate = useCallback((relationId: string) => keepRelationCandidate(controller, relationId), [controller]);
     const ignoreCandidate = useCallback((relationId: string) => ignoreRelationCandidate(controller, relationId), [controller]);
     const renameCandidate = useCallback((relationId: string, label: string) => controller.updatePhenomenon(relationId, { label }), [controller]);
-    const selectedBoxes = ui.selection.map(k => geometry.get(k)).filter((b): b is Bounds => !!b);
-    const scopeBounds = unionScopeBounds(selectedBoxes.map(bounds => {
-        const point = worldToScreen(bounds, stableCamera);
-        return { x: point.x + rect.current.left, y: point.y + rect.current.top, width: bounds.width * stableCamera.zoom, height: bounds.height * stableCamera.zoom };
-    }));
     const selectedProposalGhosts = ui.selection.map(key => session.ghosts[key]).filter((ghost): ghost is Ghost => !!ghost?.proposal);
     const proposalReview = ui.selection.length > 0 && selectedProposalGhosts.length === ui.selection.length && new Set(selectedProposalGhosts.map(ghost => ghost.origin?.inputId)).size === 1;
     const selectedAIProposalGhosts = ui.selection.map(key => session.ghosts[key]).filter((ghost): ghost is Ghost => !!ghost?.proposalKind);
     const aiProposalKind: AIProposalKind | undefined = ui.selection.length > 0 && selectedAIProposalGhosts.length === ui.selection.length && new Set(selectedAIProposalGhosts.map(ghost => ghost.proposalKind)).size === 1 ? selectedAIProposalGhosts[0].proposalKind : undefined;
     const probing = ui.operation?.phase === 'pending' && ui.operation.kind === 'probe' && ui.operation.scopeIds.length === 2 && ui.operation.scopeIds.every(key => ui.selection.includes(key));
-    const hubSize = proposalReview || aiProposalKind ? { width: 390, height: 44 } : ui.selection.length > 1 ? { width: 590, height: 44 } : { width: 520, height: 44 };
-    const scopePlacement = scopeBounds ? computeScopeHubPlacement({
-        selectionBounds: scopeBounds,
-        viewportBounds: { x: rect.current.left, y: rect.current.top, width: rect.current.width, height: rect.current.height },
-        occupiedRects: visible.filter(key => !ui.selection.includes(key)).map(key => geometry.get(key)).filter((bounds): bounds is Bounds => !!bounds).map(bounds => {
-            const point = worldToScreen(bounds, stableCamera);
-            return { x: point.x + rect.current.left, y: point.y + rect.current.top, width: bounds.width * stableCamera.zoom, height: bounds.height * stableCamera.zoom };
-        }).concat([{ x: rect.current.left + rect.current.width - 190, y: rect.current.top, width: 190, height: 90 }]),
-        hubSize,
-    }) : null;
-    const showScopeHub = !!scopePlacement && !ui.dragging && !ui.editing && !ui.carry.length && ui.surface === 'none' && !ui.speakFocused;
+    const showScopeHub = ui.selection.length > 0 && !ui.dragging && !ui.editing && !ui.carry.length && ui.surface === 'none' && !ui.speakFocused;
     const relationObstacles = relationPlacementObstacles(visible, geometry, stableCamera, rect.current, showScopeHub ? scopePlacement : null);
     const visibleSet = new Set(visible); // One frontier read feeds both disclosure and Atlas labels.
     const frontiers = activeFrontiers(project);
@@ -637,7 +625,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
    {Object.values(project.regions).filter(region => level !== 'local' ? disclosedLandmarks.has('region:' + region.id) : ui.regionId === region.id).map(region => <button className="region-label" data-active={ui.regionId === region.id || undefined} onClick={() => onRegion(region.id, { x: region.x, y: region.y })} key={region.id} style={{ transform: `translate(${region.x}px,${region.y}px) scale(var(--inverse-zoom))` }}><span>{t(region.name)}</span><small>{t('{count} thoughts', { count: region.members.length })}</small></button>)}
    {level === 'atlas' && frontiers.filter(key => disclosedLandmarks.has('frontier:' + key)).map(key => { const t = project.thoughts[key]; return <button className="frontier-label" key={'frontier-' + key} onClick={() => { controller.wake(key); ui.patch({ selection: [key] }); camera.current?.set({ x: rect.current.width / 2 - t.x - 128, y: rect.current.height / 2 - t.y - 30, zoom: 1 }); camera.current?.commit(); }} style={{ transform: `translate(${t.x}px,${t.y}px) scale(var(--inverse-zoom))` }}><span aria-hidden="true">&#9671;</span> {semanticExcerpt(t.text, 'atlas', 'thought')}</button>; })}
   </div>
-   {showScopeHub && scopePlacement && <ScopeHub count={ui.selection.length} placement={scopePlacement} actions={scopeActions} probing={probing} proposalReview={proposalReview} aiProposalKind={aiProposalKind} onAction={onScopeAction} onKeepAll={() => onKeepAllProposals([...ui.selection])} onKeepOriginal={() => onKeepOriginalProposal([...ui.selection])} onAIProposalAction={action => onAIProposalAction([...ui.selection], action)} onMore={onMore}/>}
+   <FieldOverlays ref={overlays} viewport={viewport} camera={() => camera.current?.get() ?? project.camera} geometry={geometry} visibleIds={visible} selection={ui.selection} operation={ui.operation} enabled={ui.surface === 'none' && !ui.menu} dragging={ui.dragging} onScopeBounds={onScopeBounds} scope={showScopeHub ? { count: ui.selection.length, actions: scopeActions, probing, proposalReview, aiProposalKind, onAction: onScopeAction, onKeepAll: () => onKeepAllProposals([...ui.selection]), onKeepOriginal: () => onKeepOriginalProposal([...ui.selection]), onAIProposalAction: action => onAIProposalAction([...ui.selection], action), onMore } : null} />
   {ui.carry.length > 0 && <div className="carry-preview">{project.thoughts[ui.carry[0]]?.text.slice(0, 180)}</div>}
   {ui.carry.length > 0 && <div className="carry-banner">{t('Carrying {count} thoughts. Click to place; Escape cancels.', { count: ui.carry.length })}</div>}
     {session.recalls.filter(k => !visibleSet.has(k) && !!project.thoughts[k]).map((k, index) => { const edge = recallEdge(project.thoughts[k], stableCamera, rect.current.width, rect.current.height, index); return <button className="recall-edge" key={k} style={{ left: edge.x, top: edge.y }} onClick={() => { controller.wake(k); ui.patch({ selection: [k], notice: t('Earlier thought awakened. Use Find / Take me there to travel.') }); }} title={project.thoughts[k].text}><span aria-hidden="true" style={{ display: 'inline-block', transform: `rotate(${edge.angle}deg)` }}>&#8594;</span> {t('Earlier thought')}</button>; })}

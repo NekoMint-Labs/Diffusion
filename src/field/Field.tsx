@@ -517,7 +517,13 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const handleThoughtEdit = useCallback((key: string, text: string) => { const snapshot = controller.getSnapshot(); if (snapshot.session.ghosts[key]) presentMaterialSettle([key]); const thought = snapshot.session.ghosts[key] ? controller.claim(key) : snapshot.project.thoughts[key]; if (thought && thought.text !== text) controller.dispatch({ type: 'thought.edit', id: key, text }); useUI.getState().patch({ editing: null }); }, [controller]);
     const handleThoughtCancel = useCallback(() => { const key = useUI.getState().editing; const t = key ? controller.getSnapshot().project.thoughts[key] : null; if (t && !t.text.trim())
         controller.dispatch({ type: 'thought.delete', ids: [t.id] }); useUI.getState().patch({ editing: null, selection: useUI.getState().selection.filter(k => !!controller.getSnapshot().project.thoughts[k] || !!controller.getSnapshot().session.ghosts[k]) }); }, [controller]);
-    const handleGhostMeasured = useCallback((key: string) => correctMeasuredGhost(key, correctedGhosts.current, controller, geometry, Object.keys(liveItems.current), camera.current?.get() ?? controller.getSnapshot().project.camera, rect.current), [controller, geometry]);
+    const handleGhostMeasured = useCallback((key: string) => {
+        const app = viewport.current?.closest('.app');
+        const reserved = [...app?.querySelectorAll<HTMLElement>('.identity, .global-actions, [data-testid="speak"], .notice') ?? []]
+            .filter(element => element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden')
+            .map(element => element.getBoundingClientRect());
+        correctMeasuredGhost(key, correctedGhosts.current, controller, geometry, Object.keys(liveItems.current), camera.current?.get() ?? controller.getSnapshot().project.camera, rect.current, reserved);
+    }, [controller, geometry]);
     const keepCandidate = useCallback((relationId: string) => keepRelationCandidate(controller, relationId), [controller]);
     const ignoreCandidate = useCallback((relationId: string) => ignoreRelationCandidate(controller, relationId), [controller]);
     const renameCandidate = useCallback((relationId: string, label: string) => controller.updatePhenomenon(relationId, { label }), [controller]);

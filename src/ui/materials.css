@@ -144,17 +144,16 @@
 
 /* Causal arrival marks where a Ghost landed without fading its physical body. The words and the
    pencil rail settle independently, while the provisional surface remains readable throughout. */
-.thought.ghost[data-causal="true"] .thought-preview { animation: ghost-text-settle var(--motion-spatial) var(--ease-settle) both; }
+/* TransientTextPresence alone owns the arriving words; the causal mark has its own property. */
 .thought.ghost[data-causal="true"]::after {
   content: ""; position: absolute; left: 3px; top: 8px; width: 1px; height: calc(100% - 16px);
   background: color-mix(in srgb, var(--ghost-ink) 34%, transparent); transform-origin: center top;
   animation: ghost-mark-arrive var(--motion-control) var(--ease-out-ui) both; pointer-events: none;
 }
 @keyframes ghost-mark-arrive { from { opacity: 0; transform: scaleY(.18); } to { opacity: .72; transform: scaleY(1); } }
-@keyframes ghost-text-settle { from { opacity: .18; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) {
   .thought { transition: none; }
-  .thought.ghost[data-causal="true"] .thought-preview, .thought.ghost[data-causal="true"]::after { animation: none; }
+  .thought.ghost[data-causal="true"]::after { animation: none; }
 }
 
 /* --- Crystal: a landmark, not an achievement ------------------------------ */

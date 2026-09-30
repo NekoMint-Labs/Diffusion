@@ -43,7 +43,9 @@ test('Phase 4 motion remains state-clarifying and reduced-motion aware', () => {
     const semantics = src('ui/resultSemantics.css');
     const material = src('ui/materials.css');
     assert.match(semantics, /causal-trace-wake/);
-    assert.match(material, /ghost-text-settle/);
+    // Arrival text has one animation owner, using the shared duration roles.
+    assert.doesNotMatch(material, /ghost-text-settle/);
+    assert.match(src('ui/motion/TransientTextPresence.tsx'), /MOTION_DURATION.spatial/);
     assert.match(material, /box-shadow var\(--motion-control\)/);
     assert.match(`${semantics}\n${material}`, /prefers-reduced-motion: reduce/);
     assert.doesNotMatch(material, /particle/i);

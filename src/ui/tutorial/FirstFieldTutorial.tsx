@@ -153,10 +153,12 @@ export function useFirstFieldTutorial({ project, session, controller, field }: {
         if (!ghost) return true;
         const screen = field.current?.screenPoint({ x: ghost.x, y: ghost.y });
         presentSpatialTransition('settle', [ghostId]);
-        if (screen) setSettled({ text: ghost.text, x: screen.x, y: screen.y });
+        const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        if (screen && !reduced) setSettled({ text: ghost.text, x: screen.x, y: screen.y });
         controller.dismissGhost(ghostId);
         useUI.getState().patch({ selection: thoughtId ? [thoughtId] : [] });
-        setTimeout(() => { setSettled(null); setPhase('done'); }, 620);
+        if (reduced) { setSettled(null); setPhase('done'); }
+        else setTimeout(() => { setSettled(null); setPhase('done'); }, 620);
         return true;
     }
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useReducedMotion } from 'motion/react';
 import type { ThinkingOperation } from '../../core/model.ts';
 import { t } from '../../shared/i18n.ts';
 
@@ -37,6 +38,7 @@ export function terminalCopy(operation: ThinkingOperation): string {
 }
 
 export function useOperationPresentation(operation: ThinkingOperation | null) {
+    const reduced = !!useReducedMotion();
     const [displayOperation, setDisplayOperation] = useState<ThinkingOperation | null>(operation);
     const [showCopy, setShowCopy] = useState(false);
     const beganAt = useRef<{ id: string; at: number } | null>(null);
@@ -45,16 +47,17 @@ export function useOperationPresentation(operation: ThinkingOperation | null) {
         setDisplayOperation(operation);
         if (operation.phase === 'pending') {
             beganAt.current = beganAt.current?.id === operation.id ? beganAt.current : { id: operation.id, at: performance.now() };
-            setShowCopy(false);
+            setShowCopy(reduced);
+            if (reduced) return;
             const timer = setTimeout(() => setShowCopy(true), 190);
             return () => clearTimeout(timer);
         }
         const elapsed = beganAt.current?.id === operation.id ? performance.now() - beganAt.current.at : 1000;
-        const wasLongEnough = elapsed >= 180;
+        const wasLongEnough = reduced || elapsed >= 180;
         setShowCopy(wasLongEnough);
         const timer = setTimeout(() => { setDisplayOperation(null); setShowCopy(false); }, wasLongEnough ? (operation.phase === 'completed' ? 520 : 1000) : 180);
         return () => clearTimeout(timer);
-    }, [operation?.id, operation?.phase]);
+    }, [operation?.id, operation?.phase, reduced]);
 
     return { displayOperation, showCopy };
 }

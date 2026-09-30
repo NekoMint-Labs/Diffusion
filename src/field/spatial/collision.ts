@@ -107,8 +107,11 @@ function free(bounds: Bounds, occupied: readonly Bounds[]): boolean {
  * Local collision correction only. If the requested position is not severely overlapping anything,
  * it is left alone; otherwise only this rectangle searches outward for the nearest clear slot.
  */
-export function correctSevereOverlap(desired: Bounds, occupied: readonly Bounds[], viewport?: Bounds): Point {
-    if (!occupied.some(other => severeOverlap(desired, other))) return { x: desired.x, y: desired.y };
+export function correctSevereOverlap(desired: Bounds, occupied: readonly Bounds[], viewport?: Bounds, reserved: readonly Bounds[] = []): Point {
+    // UI regions are strict exclusions for newly arriving material; user-authored overlaps
+    // retain the ordinary severe-overlap threshold when no reserved regions are supplied.
+    if (!occupied.some(other => severeOverlap(desired, other)) && free(desired, reserved)) return { x: desired.x, y: desired.y };
+    occupied = [...occupied, ...reserved];
 
     const candidates: Bounds[] = [];
     const step = 28;

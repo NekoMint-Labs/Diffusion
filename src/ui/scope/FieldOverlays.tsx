@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useImperativeHandle, useLayoutEffect, useRef, type RefObject } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, type RefObject } from 'react';
 import type { Camera, ThinkingOperation } from '../../core/model.ts';
 import type { GeometryCache } from '../../field/spatial/index.ts';
 import { worldToScreen } from '../../field/spatial/geometry.ts';
@@ -61,7 +61,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             .filter(element => element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden')
             .map(element => screenRect(element.getBoundingClientRect()));
         const placed: ScopeRect[] = [];
-        const waiting: Array<{ element: HTMLDivElement; width: number; height: number; scope: boolean }> = [];
+        const waiting: Array<{ element: HTMLElement; width: number; height: number; scope: boolean }> = [];
         scopeBounds.current = null;
         for (const item of controls) {
             const element = item.element!;
@@ -100,6 +100,13 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             if (scopeElement.current) scopeElement.current.style.display = 'none';
             if (operationElement.current) operationElement.current.style.display = 'none';
         }
+        // One-time coaching shares the reserved feedback lane instead of covering the Field.
+        const coach = app.querySelector<HTMLElement>('.progressive-tutorial-coach');
+        if (coach) {
+            coach.style.bottom = 'auto';
+            coach.style.right = 'auto';
+            waiting.push({ element: coach, width: Math.ceil(coach.offsetWidth), height: Math.ceil(coach.offsetHeight), scope: false });
+        }
         const noticeHeight = parseFloat(getComputedStyle(app).getPropertyValue('--bottom-notice-height')) || 0;
         const laneBottom = noticeHeight ? noticeHeight + 22 : 12;
         const laneHeight = waiting.reduce((total, item) => total + item.height + 8, 0);
@@ -122,7 +129,9 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         layout();
         props.onScopeBounds(scopeBounds.current);
     });
-    useLayoutEffect(() => {
+    // Parent DOM refs are attached after child layout effects on the first mount.
+    // Start observation after that commit so sibling-only changes also relayout the lane.
+    useEffect(() => {
         const field = props.viewport.current;
         const app = field?.closest<HTMLElement>('.app');
         if (!field || !app) return;
@@ -138,7 +147,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         const resize = new ResizeObserver(update);
         const observed = new Set<Element>();
         const observe = () => {
-            const elements = new Set<Element>([field, ...app.querySelectorAll('.scope-hub, .spatial-operation-feedback, [data-testid="speak"], .notice')]);
+            const elements = new Set<Element>([field, ...app.querySelectorAll('.scope-hub, .spatial-operation-feedback, [data-testid="speak"], .notice, .progressive-tutorial-coach')]);
             for (const element of observed) if (!elements.has(element)) { resize.unobserve(element); observed.delete(element); }
             for (const element of elements) if (!observed.has(element)) { resize.observe(element); observed.add(element); }
         };
@@ -146,6 +155,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         // Only DOM content changes matter. Pointer-frame transform/style writes are not observed.
         mutation.observe(app, { childList: true, subtree: true, characterData: true });
         observe();
+        update();
         return () => {
             resize.disconnect(); mutation.disconnect();
             if (scheduled.current !== null) cancelAnimationFrame(scheduled.current);

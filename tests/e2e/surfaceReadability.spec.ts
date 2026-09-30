@@ -21,7 +21,7 @@ async function readable(page: Page, surface: Locator) {
 
 for (const [width, height, locale, profile] of [
     [1280, 720, 'zh', 'editorial-warm'], [1440, 960, 'en', 'graphite-night'],
-    [1920, 1080, 'zh', 'graphite-night'], [853, 480, 'zh', 'editorial-warm'],
+    [1920, 1080, 'zh', 'graphite-night'], [1024, 576, 'zh', 'graphite-night'], [853, 480, 'zh', 'editorial-warm'],
 ] as const) {
     test.describe(`${locale} surfaces at ${width}x${height}`, () => {
         test.use({ viewport: { width, height }, reducedMotion: 'reduce' });

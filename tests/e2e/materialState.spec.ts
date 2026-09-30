@@ -198,7 +198,8 @@ test('a causal trace is a distinct presence sleeping, as a parent, and awake', a
     // wake: the continued Thought's ancestry is selected.
     const wake = await settleOpacity(page, 'wake');
     // sleep: nothing selected and nothing hovered.
-    await page.getByTestId('field').click({ position: { x: 80, y: 880 } });
+    const fieldBounds = (await page.getByTestId('field').boundingBox())!;
+    await page.getByTestId('field').click({ position: { x: 80, y: fieldBounds.height - 20 } });
     await page.mouse.move(1300, 900);
     const sleep = await settleOpacity(page, 'sleep');
     // parent: hover the edge's child with no selection.
@@ -233,25 +234,39 @@ test('Keep stabilizes a Ghost material in place without generic circular feedbac
         const before = await ghost.boundingBox();
         if (!id || !before) throw new Error('Ghost has no stable identity or bounds');
         await ghost.click();
+        // Observe the commitment frame itself. A series of protocol round trips can outlive the
+        // 340 ms transition under renderer load, which is not evidence of missing animation.
+        await page.evaluate(id => {
+            const element = document.querySelector(`[data-thought-id="${id}"]`)!;
+            const observer = new MutationObserver(() => {
+                if (element.classList.contains('ghost')) return;
+                const style = getComputedStyle(element, '::before');
+                (window as unknown as { settleProof: unknown }).settleProof = {
+                    animation: style.animationName, content: style.content,
+                    settling: element.getAttribute('data-material-settling'),
+                };
+                observer.disconnect();
+            });
+            observer.observe(element, { attributes: true });
+        }, id);
         await page.getByTestId('proposal-keep-all').click();
         const thought = page.locator(`[data-thought-id="${id}"]`);
         await expect(thought).toBeVisible();
         await expect(thought).not.toHaveClass(/ghost/);
-        await expect(thought).toHaveAttribute('data-material-settling', 'true');
+
         const after = await thought.boundingBox();
         if (!after) throw new Error('Kept Thought has no bounds');
         expect(after.x).toBeCloseTo(before.x, 0);
         expect(after.y).toBeCloseTo(before.y, 0);
         await expect(page.getByTestId('settle-activity')).toHaveCount(0);
-        const pencil = await thought.evaluate(element => {
-            const style = getComputedStyle(element, '::before');
-            return { animation: style.animationName, opacity: Number(style.opacity) };
-        });
+        const pencil = await page.evaluate(() => (window as unknown as { settleProof: { animation: string; content: string; settling: string | null } }).settleProof);
         if (reduced) {
             expect(pencil.animation).toBe('none');
-            expect(pencil.opacity).toBe(0);
+            expect(pencil.settling).not.toBe('true');
+            expect(pencil.content).toBe('none');
         } else {
             expect(pencil.animation).toBe('ghost-pencil-settle');
+            expect(pencil.settling).toBe('true');
         }
         await expect(thought).not.toHaveAttribute('data-material-settling', 'true');
         await context.close();

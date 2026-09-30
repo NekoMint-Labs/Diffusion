@@ -489,7 +489,10 @@ test('Scope Hub follows selection geometry and transfers exact scope to Speak', 
     await expect(demoNotice).toBeVisible();
     expect((await demoNotice.boundingBox())!.y).toBeLessThan(100);
     expect((await project(page)).thoughts.attention).toMatchObject({ x: before.thoughts.attention.x, y: before.thoughts.attention.y });
-    await page.getByTestId('field').click({ position: { x: 80, y: 880 } });
+    // The feedback/coaching lane may reserve the bottom of the window. Clear scope in
+    // the actual Field, rather than clicking a fixed window coordinate outside it.
+    const fieldBounds = (await page.getByTestId('field').boundingBox())!;
+    await page.getByTestId('field').click({ position: { x: 80, y: fieldBounds.height - 20 } });
     await expect(page.getByTestId('scope-hub')).toHaveCount(0);
     await expect(page.getByTestId('speak')).toBeVisible();
     await expect.poll(async () => (await page.getByTestId('speak').boundingBox())!.width).toBeCloseTo(250, 0);

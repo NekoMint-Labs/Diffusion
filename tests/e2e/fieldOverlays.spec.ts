@@ -92,6 +92,7 @@ test('a scope with no free side uses a reserved lane without moving Thoughts', a
     expect(await page.locator('.thought').evaluateAll(items => items.map(item => [item.getAttribute('data-thought-id'), (item as HTMLElement).style.transform]))).toEqual(positions);
     await page.keyboard.press('Escape');
     await expect(hub).toHaveCount(0);
+    await page.getByTestId('progressive-tutorial-coach').getByRole('button', { name: 'Got it' }).click();
     await expect.poll(async () => (await page.getByTestId('field').boundingBox())!.height).toBe(720);
 });
 
@@ -106,4 +107,64 @@ test('a failed request can leave feedback without blocking the original Thought'
         await page.locator('[data-thought-id="attention"]').dblclick();
         await expect(page.getByRole('textbox', { name: 'Edit thought' })).toBeFocused();
     } finally { model.release(); }
+});
+
+
+test('a valid response arriving after Stop cannot replace a newer request', async ({ page }) => {
+    let release!: () => void;
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    let finished!: () => void;
+    const lateDelivered = new Promise<void>(resolve => { finished = resolve; });
+    let requests = 0;
+    await page.route('**/api/respond', async route => {
+        const first = ++requests === 1;
+        if (first) await gate;
+        await route.fulfill({ json: { providerLabel: 'E2E fixture', mock: true, intents: [{ type: 'surface_possibility', text: first ? 'Late cancelled possibility' : 'Current possibility' }] } }).catch(() => {});
+        if (first) finished();
+    });
+    try {
+        await page.addInitScript(() => localStorage.setItem('diffusion-settings', JSON.stringify({ locale: 'en', provider: 'gateway' })));
+        await page.goto('/demo?locale=en');
+        const ask = async () => {
+            await page.locator('[data-thought-id="attention"]').click();
+            await page.getByTestId('thought-more').click();
+            await page.getByTestId('thought-menu').locator('[data-command="ask"]').click();
+            const input = page.getByRole('textbox', { name: 'Speak', exact: true });
+            await input.fill('Explore this thought');
+            await input.press('Enter');
+        };
+        await ask();
+        await expect(page.getByTestId('operation-feedback')).toHaveAttribute('data-copy-visible', 'true');
+        await page.getByTestId('operation-feedback').getByRole('button', { name: 'Stop', exact: true }).click();
+        await ask();
+        await expect(page.locator('article.ghost').filter({ hasText: 'Current possibility' })).toBeVisible();
+        release();
+        await lateDelivered;
+        await expect(page.locator('article.ghost')).toHaveCount(1);
+        await expect(page.locator('article.ghost')).toContainText('Current possibility');
+        await expect(page.locator('article.ghost').filter({ hasText: 'Late cancelled possibility' })).toHaveCount(0);
+    } finally { release(); }
+});
+
+test('one-time multi-selection coaching reserves space and releases it on dismissal', async ({ page }, testInfo) => {
+    await page.goto('/demo?locale=en');
+    const source = page.locator('[data-thought-id="attention"]');
+    await expect(source).toBeVisible();
+    const before = await source.evaluate(el => (el as HTMLElement).style.transform);
+    await source.click();
+    await page.locator('[data-thought-id="structure"]').click({ modifiers: ['Shift'] });
+    const coach = page.getByTestId('progressive-tutorial-coach');
+    await expect(coach).toBeVisible();
+    await clearOf(coach, page.getByTestId('field'));
+    await clearOf(coach, page.getByTestId('scope-hub'));
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('speak')).toBeVisible();
+    await clearOf(coach, page.getByTestId('speak'));
+    await page.screenshot({ path: testInfo.outputPath('coaching-reserved-lane.png') });
+    const height = (await page.getByTestId('field').boundingBox())!.height;
+    await coach.getByRole('button', { name: 'Got it' }).click();
+    await expect(coach).toHaveCount(0);
+    await expect.poll(async () => (await page.getByTestId('field').boundingBox())!.height).toBeGreaterThan(height);
+    await expect.poll(async () => (await page.getByTestId('field').boundingBox())!.height).toBe(720);
+    expect(await source.evaluate(el => (el as HTMLElement).style.transform)).toEqual(before);
 });

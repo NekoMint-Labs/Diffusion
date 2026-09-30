@@ -4,6 +4,7 @@ import { t as msg, getLocale } from '../../shared/i18n.ts';
 import { isAuthoredExample } from '../../core/demo.ts';
 import type { ProjectState, TrajectoryEntry } from '../../core/model.ts';
 import { Surface } from './Surface.tsx';
+import { SurfaceEmpty } from '../primitives/SurfaceEmpty.tsx';
 import { historyRevealSequence, useSignature } from '../motion/signature.ts';
 const categoryLabel: Record<TrajectoryCategory, string> = {
     commitment: 'Commitment', wording: 'Wording', placement: 'Placement', release: 'Let go',
@@ -47,7 +48,7 @@ export function HistorySurface({ project, scope, onClose }: {
     useSignature(root, historyRevealSequence, [entries.length, scope.length]);
     return <Surface title={msg("How did this form?")} subtitle={msg(scope.length ? 'The deliberate changes you made to these thoughts, newest first' : 'The deliberate changes you made in this Field, newest first')} level="focus" onClose={onClose}>
   <div className="history" ref={root}>
-  <p className="settings-note">{msg("Commitments, claims, questions, and revisions are recorded. Pan, zoom, clicks, and pixel movements are not.")}</p>
+
   {entries.length > 0 && <ul className="history-overview">
     <li>{msg('Recorded in this scope')}</li>
     {categories.map(category => <li key={category} className="history-chip">{msg(categoryLabel[category])}</li>)}
@@ -67,7 +68,7 @@ export function HistorySurface({ project, scope, onClose }: {
         </article>;
     })}</div>
   </section>}
-  {!days.length && <p className="history-empty">{msg('Nothing has been committed, reframed or let go in this scope yet. Every deliberate change you make here appears in this timeline.')}</p>}
+  {!days.length && <SurfaceEmpty title={msg('No changes here yet')}>{msg('Return to the Field and write, keep, or revise a thought. Your decisions will appear here.')}</SurfaceEmpty>}
   {days.map(day => <Fragment key={day.key}>
     <div className="history-day-row">
       <h3 className="history-day">{dayLabel(day.key)}</h3>

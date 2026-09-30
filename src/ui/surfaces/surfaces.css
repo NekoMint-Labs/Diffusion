@@ -29,7 +29,7 @@
   outline: none;
   overflow: hidden;
 }
-.surface.split { top: 16px; right: 16px; bottom: 16px; width: var(--thread-width); }
+.surface.split { top: 16px; right: 16px; bottom: 16px; width: min(var(--thread-width), calc(100vw - 32px)); }
 .surface.focus { inset: 0; border-radius: 0; border: 0; box-shadow: none; background: var(--field-bg); }
 .surface.anchored { top: 85px; right: 30px; width: min(420px, calc(100vw - 32px)); max-height: calc(100dvh - 115px); }
 .surface.anchored.relation-surface { width: min(330px, calc(100vw - 32px)); max-height: min(430px, calc(100dvh - 48px)); }
@@ -62,6 +62,7 @@
 /* --- Anatomy: one header, one body, one action row, one close -------------- */
 .surface-header {
   min-height: 70px;
+  flex: none;
   padding: 19px 21px 16px;
   display: flex;
   align-items: center;
@@ -70,7 +71,7 @@
   border-bottom: 1px solid color-mix(in srgb, var(--boundary) 72%, transparent);
 }
 .surface.focus .surface-header { border-bottom-color: transparent; }
-.surface-heading { min-width: 0; }
+.surface-heading { min-width: 0; overflow-wrap: anywhere; }
 .surface-header h2 { margin: 0; font: 400 var(--type-ui-title-size)/var(--type-ui-title-line) var(--ui-font); letter-spacing: var(--type-identity-track); color: var(--ink-primary); }
 .surface-header p { max-width: 62ch; margin: 4px 0 0; font-size: var(--type-helper-size); line-height: 1.55; color: var(--ink-helper); }
 .surface-header button { flex-shrink: 0; }
@@ -78,7 +79,7 @@
 .surface-body > :first-child { margin-top: 0; }
 .surface-body > :last-child { margin-bottom: 0; }
 .surface-body p { margin: 0 0 18px; overflow-wrap: anywhere; }
-.surface-actions { padding: 10px 21px; display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid color-mix(in srgb, var(--boundary) 66%, transparent); font-size: var(--type-helper-size); color: var(--ink-helper); }
+.surface-actions { flex: none; padding: 10px 21px; display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid color-mix(in srgb, var(--boundary) 66%, transparent); font-size: var(--type-helper-size); color: var(--ink-helper); }
 .surface h3 { margin: 20px 0 10px; font: 500 var(--type-section-title-size)/1.5 var(--ui-font); }
 
 /* One close affordance for every surface, in one place, with one hit area larger than its glyph. */
@@ -140,11 +141,11 @@
 .surface summary { cursor: pointer; color: var(--ink-secondary); font-weight: 500; }
 
 /* Small utility surfaces. */
-.surface.bar { top: 18px; left: 50%; translate: -50% 0; width: min(400px, calc(100vw - 32px)); border-color: var(--boundary); background: var(--surface-raised); box-shadow: var(--shadow-float); }
+.surface.bar { max-height: calc(100dvh - 36px); top: 18px; left: 50%; translate: -50% 0; width: min(400px, calc(100vw - 32px)); border-color: var(--boundary); background: var(--surface-raised); box-shadow: var(--shadow-float); }
 .surface.bar .surface-header { min-height: auto; padding: 15px 18px 10px; }
 .surface.bar .surface-header h2 { font-size: 14px; }
 .surface.bar .surface-body { padding: 0 18px 15px; }
-.find-bar .surface-body p { margin: 8px 0 0; font: 11px/1.5 var(--ui-font); }
+.find-bar .surface-body p { margin: 8px 0 0; font: var(--type-helper-size)/1.5 var(--ui-font); }
 .find-status { margin-top: 8px !important; color: var(--ink-secondary); }
 .find-hint { color: var(--ink-tertiary); }
 
@@ -206,7 +207,7 @@
 .settings-nav-tab:hover { background: color-mix(in srgb, var(--surface-2) 66%, transparent); color: var(--ink-primary); }
 .settings-nav-tab[data-selected] { color: var(--ink-primary); background: var(--surface-2); box-shadow: inset 2px 0 0 color-mix(in srgb, var(--attention) 58%, transparent); }
 .settings-nav-tab:focus-visible { outline: var(--focus-ring); outline-offset: 1px; }
-.settings-form { display: flex; flex-direction: column; gap: 0; min-width: 0; max-width: 720px; }
+.settings-form { container-type: inline-size; display: flex; flex-direction: column; gap: 0; min-width: 0; max-width: 720px; }
 .settings-section { display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: var(--space-3); min-width: 0; }
 .settings-section > h3,
 .settings-form > [role="tabpanel"] > h3 { margin: 0 0 6px; font: 500 var(--type-section-title-size)/1.5 var(--ui-font); letter-spacing: .01em; }
@@ -300,7 +301,7 @@ h3.history-day { display: flex; align-items: center; gap: 12px; margin: 30px 0 1
 /* --- Thread: a manuscript place, never a chat box -------------------------
    A Thread states its frozen scope, then the passages in order, then one writing row. The scope is
    a snapshot: changing the Field selection cannot rewrite what this Thread was about. */
-.thread-scope { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; padding-left: 12px; border-left: 1px solid color-mix(in srgb, var(--attention) 28%, var(--boundary)); color: var(--ink-secondary); font: 13px/1.55 var(--thought-font); }
+.thread-scope { max-height: min(200px, 24dvh); overflow: auto; overscroll-behavior: contain; overflow-wrap: anywhere; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; padding-left: 12px; border-left: 1px solid color-mix(in srgb, var(--attention) 28%, var(--boundary)); color: var(--ink-secondary); font: 13px/1.55 var(--thought-font); }
 .thread-question { padding: 10px 0 14px 12px; border-left: 1px solid color-mix(in srgb, var(--boundary) 74%, transparent); color: var(--ink-secondary); font: 15px/1.6 var(--thought-font); }
 .thread-passage { padding: 12px 0 24px; font: 16px/1.7 var(--thought-font); }
 .thread-passage + .thread-passage { border-top: 1px solid color-mix(in srgb, var(--boundary) 54%, transparent); }
@@ -511,3 +512,12 @@ h3.history-day { display: flex; align-items: center; gap: 12px; margin: 30px 0 1
 }
 
 .command-menu-positioner[data-closed] { pointer-events: none; }
+
+/* The next step has the same quiet hierarchy in History, Thread and Deep Dive. */
+.surface-empty { max-width: 52ch; margin-block: var(--space-4); color: var(--ink-helper); font: var(--type-helper-size)/1.65 var(--ui-font); }
+.surface-body .surface-empty p { margin: 0; }
+.surface-body .surface-empty .surface-empty-title { margin-bottom: 6px; color: var(--ink-primary); font: 500 var(--type-section-title-size)/1.5 var(--ui-font); }
+.thread-scope span { flex: none; }
+.surface-body .thread-focus-context { max-height: calc(100dvh - 180px); overflow: auto; overflow-wrap: anywhere; }
+.command-menu-copy, .command-palette-list button { overflow-wrap: anywhere; }
+.command-menu kbd, .command-menu-caret { flex: none; }

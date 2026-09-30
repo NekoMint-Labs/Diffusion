@@ -8,6 +8,7 @@ import { useProject } from '../hooks.ts';
 import { useUI } from '../store.ts';
 import { Surface } from '../surfaces/Surface.tsx';
 import { Button } from '../primitives/Button.tsx';
+import { SurfaceEmpty } from '../primitives/SurfaceEmpty.tsx';
 import { Manuscript } from './Manuscript.tsx';
 import { sendThreadMessage, bringThreadTextToField } from './threadFlow.ts';
 
@@ -53,7 +54,7 @@ export function ThreadSurface({ controller, runtime, threadId, onClose, onFocus,
         <Manuscript text={message.text}/>
         {message.role === 'assistant' && <div className="passage-footer"><span>{message.provider}</span><Button variant="ghost" size="sm" onClick={() => bring(message.text)}>{msg('Bring to Field')}</Button></div>}
     </section>);
-    const empty = !thread.messages.length && <p className="muted">{msg('Nothing has been asked here yet. This Thread keeps the scope you opened it with — write your first question below.')}</p>;
+    const empty = !thread.messages.length && <SurfaceEmpty title={msg('Start with a question')}>{msg('Write below to explore these thoughts. This Thread keeps the scope it opened with.')}</SurfaceEmpty>;
     const inputRow = <form className="thread-input" onSubmit={event => { event.preventDefault(); send(); }}>
         <label className="eyebrow" htmlFor="thread-words">{msg(thread.messages.length ? 'Continue this line of thought' : 'Start this line of thought')}</label>
         <textarea id="thread-words" value={input} onChange={event => setInput(event.target.value)} maxLength={12000} rows={3} placeholder={msg('What remains unclear?')}/>
@@ -72,7 +73,7 @@ export function ThreadSurface({ controller, runtime, threadId, onClose, onFocus,
             </div>
         </Surface>;
     return <Surface key="thread" title={msg('Thinking with')} subtitle={thread.title} level="split" onClose={onClose} actions={<><Button variant="ghost" size="sm" onClick={() => controller.dispatch({ type: 'thread.scope', id: threadId, ids: ui.selection })}>{msg('Add current selection')}</Button><Button variant="outline" size="sm" onClick={onFocus}>{msg('Go deeper')}</Button></>}>
-        <div className="thread-scope">{scope.map(item => <span key={item.id}>{item.text.slice(0, 100)}</span>)}</div>
+        <div className="thread-scope">{scope.map(item => <span key={item.id}>{item.text}</span>)}</div>
         {empty}
         <div className="manuscript">{history}</div>
         {inputRow}

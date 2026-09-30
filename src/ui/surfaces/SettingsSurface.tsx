@@ -62,7 +62,7 @@ export function SettingsSurface({ initialSection, settings, capabilities, check,
                                 options={[{ value: 'system', label: msg('Follow system') }, { value: 'en', label: msg('English') }, { value: 'zh', label: msg('Chinese') }]}/>
                         </SettingRow>
                     </SurfaceGroup>
-                    <SurfaceGroup title={msg('Type & interface')} description={msg('These scale the interface and your writing without changing the Field itself.')}>
+                    <SurfaceGroup title={msg('Type & interface')}>
                         <SettingRow label={msg('Thought typography')} description={msg('Typography applies to what you wrote, never to the interface around it.')} setting="typography">
                             <Select testId="typography-select" ariaLabel={msg('Thought typography')} value={settings.thoughtTypography}
                                 onChange={value => set('thoughtTypography', value as Settings['thoughtTypography'])}

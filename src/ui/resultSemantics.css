@@ -21,7 +21,7 @@
   border-left: 1px dashed color-mix(in srgb, var(--pencil-trace) 86%, transparent);
 }
 .thought.ghost:not(.editing) .thought-preview { color: inherit; }
-.thought.ghost .ghost-label { color: var(--ink-tertiary); letter-spacing: .01em; }
+.thought.ghost .ghost-label { position: static; display: block; margin-top: 8px; color: var(--ink-helper); letter-spacing: .01em; font-size: var(--type-meta-size); opacity: 1; }
 
 /* A generated question stays a proposal, and its unresolved posture is visible before metadata. */
 .thought.ghost[data-proposal-kind="question"]::before {

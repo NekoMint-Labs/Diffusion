@@ -878,7 +878,10 @@ test('generic generated Ghost menu actions do not hide Field More actions', asyn
     await expect(scopeHub).toBeVisible();
     await expect(scopeHub.getByRole('button', { name: 'Keep this' })).toBeVisible();
     await expect(scopeHub.getByRole('button', { name: 'Continue thinking' })).toBeVisible();
-    await expect(scopeHub.getByRole('button', { name: 'Another angle' })).toBeVisible();
+    await expect(scopeHub.getByRole('button', { name: 'Ignore', exact: true })).toBeVisible();
+    await scopeHub.getByTestId('thought-more').click();
+    await expect(page.getByTestId('thought-menu').getByRole('menuitem', { name: 'Another angle' })).toBeVisible();
+    await page.keyboard.press('Escape');
     await ghost.click({ button: 'right' });
     const thoughtMenu = page.getByTestId('thought-menu');
     await expect(thoughtMenu.getByRole('menuitem', { name: 'Keep this' })).toBeVisible();

@@ -285,9 +285,11 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         ...(ghostQuestion ? [{ id: 'answer', label: t('Answer'), run: () => handleAIProposalAction(ui.selection, 'answer') }] : []),
         { id: 'keep', label: t('Keep this'), run: () => handleAIProposalAction(ui.selection, 'keep') },
         { id: 'ignore', label: t('Ignore'), run: () => handleAIProposalAction(ui.selection, 'ignore') },
+        { id: 'continue', label: t('Continue thinking'), run: () => handleAIProposalAction(ui.selection, 'continue') },
+        { id: 'angle', label: t('Another angle'), run: () => handleAIProposalAction(ui.selection, 'angle') },
     ] : [];
     const menuItems = ui.menu
-        ? scope === 'thought' && ghostMenu ? ghostRows : scope === 'thought'
+        ? scope === 'thought' && ghostMenu ? (ui.menu.mode === 'secondary' ? ghostRows.filter(row => row.id === 'angle' || ghostQuestion && row.id === 'continue') : ghostRows) : scope === 'thought'
             ? contextualRows(commands, commandContext, ui.menu.mode === 'secondary' ? actionModel.secondary : actionModel.primary, platformKind)
             : menuRows(commands, commandContext, scope === 'global' ? APP_MENU : scope === 'field' ? FIELD_MENU : BLANK_MENU, platformKind)
         : [];

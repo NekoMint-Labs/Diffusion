@@ -69,18 +69,18 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .thought[data-selected="true"] { z-index: var(--layer-selection); --thought-ink-presence: 1; color: var(--ink-primary); }
 .thought[data-emphasis="direct"] { --thought-ink-presence: .96; color: var(--ink-primary); }
 .thought[data-emphasis="nearby"] { --thought-ink-presence: .84; }
-.thought[data-emphasis="receded"] { --thought-ink-presence: .6; color: var(--ink-secondary); }
-.thought[data-emphasis="peripheral"] { --thought-ink-presence: .46; color: var(--ink-secondary); }
+.thought[data-emphasis="receded"] { --thought-ink-presence: .76; color: var(--ink-primary); }
+.thought[data-emphasis="peripheral"] { --thought-ink-presence: .68; color: var(--ink-primary); }
 .thought[data-emphasis="receded"]:hover, .thought[data-emphasis="peripheral"]:hover { --thought-ink-presence: .78; color: var(--ink-primary); }
 .thought[data-life="cooling"][data-emphasis="normal"] { --thought-ink-presence: .68; }
-.thought[data-life="peripheral"][data-emphasis="normal"] { --thought-ink-presence: .5; color: var(--ink-secondary); }
+.thought[data-life="peripheral"][data-emphasis="normal"] { --thought-ink-presence: .68; color: var(--ink-primary); }
 .thought.crystal { width: 276px; padding: 10px 12px; font-size: calc(var(--thought-size) * 20 / 18); font-weight: 500; line-height: 1.48; letter-spacing: -.008em; --thought-ink-presence: 1; }
 .thought.crystal::before { content: "\25c6"; position: absolute; left: -16px; top: 14px; font: 11px/1 var(--ui-font); color: var(--crystal-mark); opacity: .82; }
 .thought.crystal[data-emphasis="receded"], .thought.crystal[data-emphasis="peripheral"] { --thought-ink-presence: .78; }
 .thought.crystal[data-emphasis="nearby"] { --thought-ink-presence: .9; }
-.thought.ghost { --thought-ink-presence: .76; color: var(--ghost-ink); }
+.thought.ghost { --thought-ink-presence: .9; color: var(--ghost-ink); }
 .thought.ghost:hover, .thought.ghost[data-selected="true"] { --thought-ink-presence: .94; color: var(--ink-primary); }
-.thought.ghost[data-emphasis="receded"], .thought.ghost[data-emphasis="peripheral"] { --thought-ink-presence: .56; }
+.thought.ghost[data-emphasis="receded"], .thought.ghost[data-emphasis="peripheral"] { --thought-ink-presence: .78; }
 .thought.recall { --thought-ink-presence: .58; }
 .thought-meta { position: absolute; left: 8px; top: calc(100% + 3px); font: var(--type-helper-size)/1.4 var(--ui-font); color: var(--ink-secondary); opacity: 0; transition: opacity var(--motion-micro) ease; pointer-events: none; }
 .thought:hover .thought-meta, .thought:focus-visible .thought-meta { opacity: 1; }
@@ -283,7 +283,7 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 }
 
 /* Attention stays in the existing Thought emphasis ladder; the Field supplies no local wash. */
-.field[data-scope="true"] .thought[data-emphasis="peripheral"] { --thought-ink-presence: .42; }
+.field[data-scope="true"] .thought[data-emphasis="peripheral"] { --thought-ink-presence: .68; }
 .field[data-scope="true"] .thought[data-emphasis="direct"] { --thought-ink-presence: 1; }
 
 /* Measured overlays share a temporary feedback lane only when no local space is clear. */
@@ -291,3 +291,5 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .scope-hub { width: max-content; flex-wrap: wrap; }
 .scope-hub[data-docked]::after { display: none; }
 .field-overlay-dock { display: none; position: fixed; z-index: var(--layer-selection); background: var(--field-bg); border-top: 1px solid var(--boundary); pointer-events: none; }
+
+.thought.recall[data-selected="true"] { --thought-ink-presence: 1; color: var(--ink-primary); }

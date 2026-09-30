@@ -55,6 +55,8 @@ The final candidate is served from a production Vite build. The local Playwright
 
 The final complete local run used `pnpm exec playwright test --config verification/playwright.local.ts --output verification/acceptance-results`. Two old tests clicked fixed window coordinate y=880, now outside the Field while coaching reserves the bottom lane; they now click within the measured Field, preserving the scope and causal-trace assertions, and both passed in a focused rerun. Before the final measured-chrome/coaching corrections, another complete local run was **198 passed, 12 skipped, 1 failed**. The remaining failure is the unchanged `motion.spec.ts:257` atmosphere-motion assertion (`>1px`, measured `1px`), also reproduced on the starting baseline. No baseline was replaced and no assertion, retry or skip was added to hide it. An earlier overlapping local workload caused one unit timeout; a standalone full run passed, and its failure log was retained. The short Keep effect is now observed at its commitment mutation, avoiding a test that sampled after the effect ended. First-open persistence still asserts reload recovery and now waits for the durable IndexedDB write first.
 
+The first final-stage CI run passed all three interaction shards and 30/31 production-background checks. The remaining visual check sampled a far-edge Thought while first-use coaching reduced the viewport; its setup now dismisses the coaching before checking attention. All ink/opacity/presence assertions remain intact.
+
 Tracked tests and CI artifacts are the portable evidence; ignored local captures/logs supplement rendered review. No native build, real-provider smoke test, installer or Windows client qualification is claimed here.
 
 ## Previous main stabilization verification

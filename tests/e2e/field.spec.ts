@@ -873,6 +873,12 @@ test('generic generated Ghost menu actions do not hide Field More actions', asyn
     const ghost = page.locator('article.thought.ghost').filter({ hasText: 'A generic generated possibility.' });
     await expect(ghost).toBeVisible();
     await expect(ghost).toHaveAttribute('data-proposal-kind', 'thought');
+    await ghost.click();
+    const scopeHub = page.getByTestId('scope-hub');
+    await expect(scopeHub).toBeVisible();
+    await expect(scopeHub.getByRole('button', { name: 'Keep this' })).toBeVisible();
+    await expect(scopeHub.getByRole('button', { name: 'Continue thinking' })).toBeVisible();
+    await expect(scopeHub.getByRole('button', { name: 'Another angle' })).toBeVisible();
     await ghost.click({ button: 'right' });
     const thoughtMenu = page.getByTestId('thought-menu');
     await expect(thoughtMenu.getByRole('menuitem', { name: 'Keep this' })).toBeVisible();

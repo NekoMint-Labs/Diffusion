@@ -17,7 +17,7 @@ test('Stage E cancellation is request-scoped and does not store callbacks in UI 
 });
 
 test('Stage E keeps immediate spatial acknowledgement, delayed copy and truthful action-specific wording', () => {
-  const layer = read('src/ui/motion/SpatialActivityLayer.tsx');
+  const layer = read('src/ui/motion/operationPresentation.ts') + read('src/ui/scope/FieldOverlays.tsx');
   const runtime = read('src/ai/runtime.ts');
   const evidence = read('src/ui/reference/EvidenceSurface.tsx');
   assert.match(layer, /setTimeout\(\(\) => setShowCopy\(true\), 190\)/);

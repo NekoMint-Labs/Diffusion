@@ -381,9 +381,9 @@ test('attention does not hide the rest of the Field: a distant Thought keeps its
     // Attention changes clarity, not physical existence: every body remains present while the
     // peripheral ink reaches the documented scoped step.
     expect(nonSelected.every(entry => entry.objectOpacity === 1)).toBe(true);
-    expect(inkFloor, 'the least-present non-selected Thought ink').toBeGreaterThanOrEqual(0.4);
-    expect(farEntry?.inkOpacity ?? 0).toBeGreaterThanOrEqual(0.4);
-    expect(farEntry?.inkOpacity ?? 0).toBeLessThanOrEqual(0.46);
+    expect(inkFloor, 'peripheral words retain readable ink').toBeGreaterThanOrEqual(0.65);
+    expect(farEntry?.inkOpacity ?? 0).toBeGreaterThanOrEqual(0.65);
+    expect(farEntry?.inkOpacity ?? 0).toBeLessThanOrEqual(0.72);
     expect(nonSelected.length, 'other Thoughts are still present').toBeGreaterThanOrEqual(3);
 });
 

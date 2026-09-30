@@ -111,9 +111,9 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
     {selected && <span className="thought-selected-dot" aria-hidden="true"/>}
     {ghost && <span className="ghost-boundary" aria-hidden="true"/>}
     {kind === 'source' && <span className="thought-meta">{t('Source')}</span>}
-    {ghost && <span className="thought-meta ghost-label">{t(proposal ? 'AI material proposal' : proposalKind === 'question' ? 'AI question proposal' : proposalAction === 'continue' ? 'Continuation proposal' : proposalAction === 'angle' ? 'Another angle proposal' : 'AI possibility')}</span>}
+    {ghost && <span className="thought-meta ghost-label">{t(proposal ? 'From your words · not kept' : 'AI suggestion · not kept')}</span>}
     {ghost && proposalKind === 'question' && <span className="question-mark" aria-hidden="true">?</span>}
-    {ghost && (proposal || proposalKind) && onReject && <button type="button" className="proposal-reject" aria-label={t('Remove proposal')} title={t('Remove proposal')} onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); onReject(item.id); }}>{'×'}</button>}
+    {ghost && onReject && <button type="button" className="proposal-reject" aria-label={t('Remove proposal')} title={t('Remove proposal')} onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); onReject(item.id); }}>{'×'}</button>}
    {recalled && <span className="thought-meta">{t('Earlier thought')}</span>}
    {'kept' in item && item.kept && kind === 'thought' && <span className="kept-mark" title={t('Kept, not crystallized')}>.</span>}
  </article>;

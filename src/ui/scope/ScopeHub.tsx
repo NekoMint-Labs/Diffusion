@@ -55,7 +55,7 @@ export function ScopeHub({ elementRef, count, placement, actions, probing = fals
             </> : aiProposalKind === 'thought' ? <>
                 <Button variant="ghost" size="sm" data-testid="ai-proposal-keep" onClick={() => onAIProposalAction?.('keep')}>{t('Keep this')}</Button>
                 <Button variant="ghost" size="sm" data-testid="ai-proposal-continue" onClick={() => onAIProposalAction?.('continue')}>{t('Continue thinking')}</Button>
-                <Button variant="ghost" size="sm" data-testid="ai-proposal-angle" onClick={() => onAIProposalAction?.('angle')}>{t('Another angle')}</Button>
+                <Button variant="ghost" size="sm" data-testid="ai-proposal-ignore" onClick={() => onAIProposalAction?.('ignore')}>{t('Ignore')}</Button>
             </> : aiProposalKind === 'question' ? <>
                 <Button variant="ghost" size="sm" data-testid="ai-question-answer" onClick={() => onAIProposalAction?.('answer')}>{t('Answer')}</Button>
                 <Button variant="ghost" size="sm" data-testid="ai-proposal-keep" onClick={() => onAIProposalAction?.('keep')}>{t('Keep this')}</Button>
@@ -68,7 +68,7 @@ export function ScopeHub({ elementRef, count, placement, actions, probing = fals
                     <span id={descriptionId} role="tooltip" className="scope-action-description">{t(action.description)}</span>
                 </span>;
             })}
-            {!aiProposalKind && <Button variant="ghost" size="sm" data-testid="thought-more" aria-label={t('More thought actions')} aria-haspopup="menu"
+            <Button variant="ghost" size="sm" data-testid="thought-more" aria-label={t('More thought actions')} aria-haspopup="menu"
                 onPointerEnter={event => scheduleMore(event.currentTarget)} onPointerLeave={cancelMoreHover}
                 onKeyDown={event => {
                     if (event.key === 'ArrowRight' || event.key === 'Enter' || event.key === ' ') {
@@ -76,7 +76,7 @@ export function ScopeHub({ elementRef, count, placement, actions, probing = fals
                         openMore(event.currentTarget);
                     }
                 }}
-                onClick={event => openMore(event.currentTarget)}><span aria-hidden="true">...</span></Button>}
+                onClick={event => openMore(event.currentTarget)}><span aria-hidden="true">...</span></Button>
         </div>
     </motion.div>;
 }

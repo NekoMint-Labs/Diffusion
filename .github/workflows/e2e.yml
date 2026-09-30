@@ -123,11 +123,13 @@ jobs:
           [[ "$CAPTURE_TRIALS" =~ ^[1-9][0-9]?$ ]] || exit 2
           status=0
           for mode in $CAPTURE_MODES; do
-            case "$mode" in original|baseline|mounted|ready|delay|element) ;; *) exit 2 ;; esac
+            case "$mode" in original|baseline|mounted|ready|delay|element|contract|painted|isolated) ;; *) exit 2 ;; esac
             for trial in $(seq 1 "$CAPTURE_TRIALS"); do
               echo "CAPTURE EXPERIMENT mode=$mode trial=$trial"
               if [ "$mode" = original ]; then
                 env -u CAPTURE_DIAGNOSTIC pnpm exec playwright test --project=production-backgrounds --workers=1 --retries=0 --reporter=line --output="test-results/$mode-$trial" > "verification/hosted-capture/$mode-$trial.log" 2>&1 || status=1
+              elif [ "$mode" = isolated ]; then
+                CAPTURE_DIAGNOSTIC=baseline pnpm exec playwright test tests/e2e/visual.spec.ts --grep 'Paper Day' --project=production-backgrounds --workers=1 --retries=0 --reporter=line --output="test-results/$mode-$trial" > "verification/hosted-capture/$mode-$trial.log" 2>&1 || status=1
               else
                 CAPTURE_DIAGNOSTIC="$mode" pnpm exec playwright test --project=production-backgrounds --workers=1 --retries=0 --reporter=line --output="test-results/$mode-$trial" > "verification/hosted-capture/$mode-$trial.log" 2>&1 || status=1
               fi

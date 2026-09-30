@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { choose, openSection } from './selects.ts';
+import { waitForFieldBackgroundReady } from './fieldBackgroundReady.ts';
 
 const styles = ['paper-texture', 'topography', 'threads', 'waves', 'silk'] as const;
 
@@ -20,10 +21,11 @@ async function selectBackground(page: Page, style: typeof styles[number]) {
     const host = page.getByTestId('field-background');
     await expect(host).toHaveAttribute('data-background-id', style);
     await expect(host.locator('canvas')).toHaveCount(1, { timeout: 15_000 });
+    if (process.env.CAPTURE_DIAGNOSTIC === 'contract') await waitForFieldBackgroundReady(page, style);
     return host;
 }
 
-test('approved backgrounds switch through one inert viewport host and remain static at Motion 0', async ({ page }) => {
+test('approved backgrounds switch through one inert viewport host and remain static at Motion 0', async ({ page }, testInfo) => {
     const errors: Error[] = [];
     page.on('pageerror', error => errors.push(error));
     await page.goto('/demo?locale=en');
@@ -50,10 +52,16 @@ test('approved backgrounds switch through one inert viewport host and remain sta
         expect(dimensions.boxWidth).toBeLessThanOrEqual(dimensions.hostWidth + 1);
         expect(dimensions.boxHeight).toBeLessThanOrEqual(dimensions.hostHeight + 1);
 
-        await page.waitForTimeout(250);
+        if (process.env.CAPTURE_DIAGNOSTIC !== 'contract') await page.waitForTimeout(250);
+        console.log(`[capture static] ${style}`);
         const first = await host.screenshot();
         await page.waitForTimeout(250);
-        expect(await host.screenshot()).toEqual(first);
+        const second = await host.screenshot();
+        if (!second.equals(first)) {
+            await testInfo.attach(`${style}-first`, { body: first, contentType: 'image/png' });
+            await testInfo.attach(`${style}-second`, { body: second, contentType: 'image/png' });
+        }
+        expect(second.equals(first), `${style} pixels remain unchanged at Motion 0`).toBe(true);
     }
     expect(errors).toEqual([]);
 });

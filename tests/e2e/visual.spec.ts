@@ -1,5 +1,6 @@
 import { test, expect, type Browser, type Locator, type Page } from '@playwright/test';
 import { choose, openSection } from './selects.ts';
+import { waitForFieldBackgroundReady } from './fieldBackgroundReady.ts';
 import zlib from 'node:zlib';
 
 /** Phase 2.5 visual acceptance: the falsifiable half of "interaction, motion and atmosphere".
@@ -131,6 +132,7 @@ const sampleField = async (page: Page) => {
                 const gl = canvas?.getContext('webgl2');
                 return { hidden: document.hidden, visibility: document.visibilityState, canvas: !!canvas,
                     backing: canvas && [canvas.width, canvas.height], dom: box && [box.width, box.height], lost: gl?.isContextLost(),
+                    paint: performance.getEntriesByType('paint').map(entry => ({ name: entry.name, startTime: entry.startTime })),
                     events: (window as unknown as { captureEvents: unknown[] }).captureEvents };
             });
             console.log('[capture diagnostic]', JSON.stringify({ mode: process.env.CAPTURE_DIAGNOSTIC, started, ended, closed: page.isClosed(), state }));
@@ -174,6 +176,8 @@ test('Paper Day is a neutral paper, not a beige sheet', async ({ browser }) => {
             });
         }
     }
+    if (mode === 'contract') await waitForFieldBackgroundReady(page, 'paper-texture');
+    if (mode === 'painted') await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
     if (mode === 'delay') await page.waitForTimeout(250); // Temporary diagnostic, not a fix.
     const samples = await sampleField(page);
     const meanDelta = samples.reduce((sum, s) => sum + (s.r - s.b), 0) / samples.length;

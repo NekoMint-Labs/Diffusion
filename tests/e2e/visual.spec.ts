@@ -1,7 +1,6 @@
 import { test, expect, type Browser, type Locator, type Page } from '@playwright/test';
 import { choose, openSection } from './selects.ts';
 import { waitForFieldBackgroundReady } from './fieldBackgroundReady.ts';
-import { waitForFieldBackgroundReadyMinimal } from './fieldBackgroundReadyMinimal.ts';
 import zlib from 'node:zlib';
 
 /** Phase 2.5 visual acceptance: the falsifiable half of "interaction, motion and atmosphere".
@@ -35,28 +34,7 @@ const fieldReady = async (page: Page) => {
 async function seeded(browser: Browser, theme: 'light' | 'dark', viewport = { width: 1440, height: 960 }, extra: Record<string, unknown> = {}) {
     const context = await browser.newContext({ viewport, deviceScaleFactor: 1 });
     await context.addInitScript(settings => localStorage.setItem('diffusion-settings', JSON.stringify(settings)), { locale: 'en', theme, ...extra });
-    if (process.env.CAPTURE_DIAGNOSTIC) await context.addInitScript(() => {
-        const events: unknown[] = [];
-        (window as unknown as { captureEvents: unknown[] }).captureEvents = events;
-        const mark = (kind: string, canvas: HTMLCanvasElement) => events.push({ kind, at: Date.now(), backing: [canvas.width, canvas.height] });
-        for (const name of ['width', 'height']) {
-            const original = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, name)!;
-            Object.defineProperty(HTMLCanvasElement.prototype, name, { ...original, set(value) { original.set!.call(this, value); mark(name, this); } });
-        }
-        const original = WebGL2RenderingContext.prototype.drawArrays;
-        WebGL2RenderingContext.prototype.drawArrays = function (...args) {
-            original.apply(this, args);
-            mark('drawArrays', this.canvas as HTMLCanvasElement);
-        };
-    });
-    const page = await context.newPage();
-    if (process.env.CAPTURE_DIAGNOSTIC) {
-        page.on('pageerror', error => console.log('[capture pageerror]', error.message));
-        page.on('crash', () => console.log('[capture crash]'));
-        page.on('close', () => console.log('[capture close]'));
-        page.on('console', message => { if (['error', 'warning'].includes(message.type())) console.log('[capture console]', message.text()); });
-    }
-    return { context, page };
+    return { context, page: await context.newPage() };
 }
 
 // --- a real PNG pixel reader ---------------------------------------------------------------
@@ -120,28 +98,8 @@ function patchMean(image: Pixels, x: number, y: number, size = 8) {
  * the invitation and clear of the identity/`···` chrome, so each one is untouched background. */
 const FIELD_POINTS: [number, number][] = [[500, 140], [900, 140], [500, 360], [900, 360], [500, 580], [900, 580], [140, 480], [1300, 480]];
 const sampleField = async (page: Page) => {
-    const started = Date.now();
-    try {
-        const image = decodePng(await (process.env.CAPTURE_DIAGNOSTIC === 'element' ? page.getByTestId('field-background').screenshot() : page.screenshot()));
-        return FIELD_POINTS.map(([x, y]) => patchMean(image, x, y));
-    } finally {
-        if (process.env.CAPTURE_DIAGNOSTIC) {
-            const ended = Date.now();
-            const state = await page.evaluate(() => {
-                const canvas = document.querySelector<HTMLCanvasElement>('[data-testid="field-background"] canvas');
-                const box = canvas?.getBoundingClientRect();
-                const gl = canvas?.getContext('webgl2');
-                return { hidden: document.hidden, visibility: document.visibilityState, canvas: !!canvas,
-                    backing: canvas && [canvas.width, canvas.height], dom: box && [box.width, box.height], lost: gl?.isContextLost(),
-                    paint: performance.getEntriesByType('paint').map(entry => ({ name: entry.name, startTime: entry.startTime })),
-                    events: (window as unknown as { captureEvents: unknown[] }).captureEvents };
-            });
-            console.log('[capture diagnostic]', JSON.stringify({ mode: process.env.CAPTURE_DIAGNOSTIC, started, ended, closed: page.isClosed(), state }));
-            const session = await page.context().browser()!.newBrowserCDPSession();
-            console.log('[capture gpu]', JSON.stringify(await session.send('SystemInfo.getInfo')));
-            await session.detach();
-        }
-    }
+    const image = decodePng(await page.screenshot());
+    return FIELD_POINTS.map(([x, y]) => patchMean(image, x, y));
 };
 
 // --- measured values reported to the run ------------------------------------------------------
@@ -159,28 +117,7 @@ test('Paper Day is a neutral paper, not a beige sheet', async ({ browser }) => {
     const { context, page } = await seeded(browser, 'light');
     await page.goto('/?locale=en');
     await fieldReady(page);
-    const mode = process.env.CAPTURE_DIAGNOSTIC;
-    if (mode === 'mounted' || mode === 'ready') {
-        const background = page.getByTestId('field-background');
-        await expect(background).toHaveAttribute('data-background-id', 'paper-texture');
-        await expect(background.locator('canvas')).toHaveCount(1, { timeout: 15_000 });
-        if (mode === 'ready') {
-            await expect.poll(() => background.locator('canvas').evaluate(canvas => {
-                const own = canvas as HTMLCanvasElement;
-                const box = own.getBoundingClientRect();
-                const mount = (own.parentElement as unknown as { paperShaderMount?: { program: unknown; lastRenderTime: number; resolutionChanged: boolean } }).paperShaderMount;
-                return own.width > 0 && own.height > 0 && box.width > 0 && box.height > 0 && !!mount?.program && mount.lastRenderTime > 0 && !mount.resolutionChanged;
-            }), { timeout: 15_000 }).toBe(true);
-            await background.locator('canvas').evaluate(async canvas => {
-                await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
-                (canvas as HTMLCanvasElement).getContext('webgl2')!.finish();
-            });
-        }
-    }
-    if (mode === 'contract') await waitForFieldBackgroundReady(page, 'paper-texture');
-    if (mode === 'minimal') await waitForFieldBackgroundReadyMinimal(page, 'paper-texture');
-    if (mode === 'painted') await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
-    if (mode === 'delay') await page.waitForTimeout(250); // Temporary diagnostic, not a fix.
+    await waitForFieldBackgroundReady(page, 'paper-texture');
     const samples = await sampleField(page);
     const meanDelta = samples.reduce((sum, s) => sum + (s.r - s.b), 0) / samples.length;
     const worst = Math.max(...samples.map(s => Math.abs(s.r - s.b)));
@@ -201,9 +138,7 @@ test('Graphite Night Topography creates restrained structured variation — not 
     const { context, page } = await seeded(browser, 'dark', { width: 1440, height: 960 }, { appearance });
     await page.goto('/?locale=en');
     await fieldReady(page);
-    const background = page.getByTestId('field-background');
-    await expect(background).toHaveAttribute('data-background-id', 'topography');
-    await expect(background.locator('canvas')).toHaveCount(1);
+    const background = await waitForFieldBackgroundReady(page, 'topography');
     const samples = await sampleField(page);
     await background.evaluate(element => { (element as HTMLElement).style.visibility = 'hidden'; });
     const withoutBackground = await sampleField(page);

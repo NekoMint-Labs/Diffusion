@@ -8,19 +8,6 @@ on:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      capture_diagnostic:
-        description: Temporary isolated-branch capture investigation
-        default: false
-        type: boolean
-      capture_modes:
-        description: Space-separated single-variable modes
-        default: baseline mounted ready
-        type: string
-      capture_trials:
-        description: Independent full-project runs per mode (not retries)
-        default: '3'
-        type: string
 
 permissions:
   contents: read
@@ -74,13 +61,9 @@ jobs:
             test-results/
 
   production-backgrounds:
-    name: Production backgrounds ${{ matrix.lane }}
+    name: Production backgrounds
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        lane: ${{ fromJSON(inputs.capture_diagnostic && '[1,2,3,4]' || '[1]') }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -103,51 +86,18 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run production backgrounds
-        env:
-          CAPTURE_EXPERIMENT: ${{ inputs.capture_diagnostic }}
-          CAPTURE_MODES: ${{ inputs.capture_modes }}
-          CAPTURE_TRIALS: ${{ inputs.capture_trials }}
-          DEBUG: ${{ inputs.capture_diagnostic && 'pw:browser' || '' }}
-        run: |
-          if [ "$CAPTURE_EXPERIMENT" != true ]; then
-            pnpm exec playwright test --project=production-backgrounds
-            exit
-          fi
-          # Temporary manual-only diagnostics; preserve every failure in the job status.
-          mkdir -p verification/hosted-capture
-          uname -a
-          free -h
-          df -h /dev/shm
-          node --version
-          pnpm exec playwright --version
-          [[ "$CAPTURE_TRIALS" =~ ^[1-9][0-9]?$ ]] || exit 2
-          status=0
-          for mode in $CAPTURE_MODES; do
-            case "$mode" in original|baseline|mounted|ready|delay|element|contract|painted|isolated|minimal) ;; *) exit 2 ;; esac
-            for trial in $(seq 1 "$CAPTURE_TRIALS"); do
-              echo "CAPTURE EXPERIMENT mode=$mode trial=$trial"
-              if [ "$mode" = original ]; then
-                env -u CAPTURE_DIAGNOSTIC pnpm exec playwright test --project=production-backgrounds --workers=1 --retries=0 --reporter=line --output="test-results/$mode-$trial" > "verification/hosted-capture/$mode-$trial.log" 2>&1 || status=1
-              elif [ "$mode" = isolated ]; then
-                CAPTURE_DIAGNOSTIC=baseline pnpm exec playwright test tests/e2e/visual.spec.ts --grep 'Paper Day' --project=production-backgrounds --workers=1 --retries=0 --reporter=line --output="test-results/$mode-$trial" > "verification/hosted-capture/$mode-$trial.log" 2>&1 || status=1
-              else
-                CAPTURE_DIAGNOSTIC="$mode" pnpm exec playwright test --project=production-backgrounds --workers=1 --retries=0 --reporter=line --output="test-results/$mode-$trial" > "verification/hosted-capture/$mode-$trial.log" 2>&1 || status=1
-              fi
-            done
-          done
-          exit "$status"
+        run: pnpm exec playwright test --project=production-backgrounds
 
       - name: Upload Playwright diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-production-backgrounds-${{ github.run_id }}-${{ matrix.lane }}
+          name: playwright-production-backgrounds-${{ github.run_id }}
           if-no-files-found: ignore
           retention-days: 14
           path: |
             playwright-report/
             test-results/
-            verification/hosted-capture/
 
   e2e-gate:
     name: E2E gate

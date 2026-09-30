@@ -1,8 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
-import { writeFile } from 'node:fs/promises';
 import { choose, openSection } from './selects.ts';
 import { waitForFieldBackgroundReady } from './fieldBackgroundReady.ts';
-import { waitForFieldBackgroundReadyMinimal } from './fieldBackgroundReadyMinimal.ts';
 
 const styles = ['paper-texture', 'topography', 'threads', 'waves', 'silk'] as const;
 
@@ -20,15 +18,10 @@ async function openAppearance(page: Page) {
 
 async function selectBackground(page: Page, style: typeof styles[number]) {
     await choose(page, 'field-style-select', style);
-    const host = page.getByTestId('field-background');
-    await expect(host).toHaveAttribute('data-background-id', style);
-    await expect(host.locator('canvas')).toHaveCount(1, { timeout: 15_000 });
-    if (process.env.CAPTURE_DIAGNOSTIC === 'contract') await waitForFieldBackgroundReady(page, style);
-    if (process.env.CAPTURE_DIAGNOSTIC === 'minimal') await waitForFieldBackgroundReadyMinimal(page, style);
-    return host;
+    return waitForFieldBackgroundReady(page, style);
 }
 
-test('approved backgrounds switch through one inert viewport host and remain static at Motion 0', async ({ page }, testInfo) => {
+test('approved backgrounds switch through one inert viewport host and remain static at Motion 0', async ({ page }) => {
     const errors: Error[] = [];
     page.on('pageerror', error => errors.push(error));
     await page.goto('/demo?locale=en');
@@ -55,15 +48,9 @@ test('approved backgrounds switch through one inert viewport host and remain sta
         expect(dimensions.boxWidth).toBeLessThanOrEqual(dimensions.hostWidth + 1);
         expect(dimensions.boxHeight).toBeLessThanOrEqual(dimensions.hostHeight + 1);
 
-        if (!['contract', 'minimal'].includes(process.env.CAPTURE_DIAGNOSTIC ?? '')) await page.waitForTimeout(250);
-        console.log(`[capture static] ${style}`);
         const first = await host.screenshot();
-        await page.waitForTimeout(250);
+        await page.waitForTimeout(250); // Observation interval: Motion 0 must stay static over time.
         const second = await host.screenshot();
-        if (!second.equals(first)) {
-            await writeFile(testInfo.outputPath(`${style}-first.png`), first);
-            await writeFile(testInfo.outputPath(`${style}-second.png`), second);
-        }
         expect(second.equals(first), `${style} pixels remain unchanged at Motion 0`).toBe(true);
     }
     expect(errors).toEqual([]);

@@ -152,7 +152,7 @@ export interface Ghost extends Point {
     origin?: Provenance;
     /** Marks a transient proposal produced from authored input. */
     proposal?: true;
-    /** Semantic identity for action results. Absent for legacy/general possibilities. */
+    /** Semantic identity for transient AI action results, including generic possibilities. */
     proposalKind?: AIProposalKind;
     /** The explicit action that produced this transient proposal. */
     proposalAction?: AIProposalAction;

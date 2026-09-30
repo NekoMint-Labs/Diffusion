@@ -297,7 +297,7 @@ export class AIRuntime {
                 const proposalAction = action === 'continue' || action === 'angle' ? action : undefined;
                 const mode = candidate.type === 'surface_evidence' ? 'evidence' : action === 'continue' ? 'continue' : action === 'angle' ? 'branch' : 'default';
                 const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), text, mode);
-                this.controller.addGhost({ id: key, text, ...point, createdAt: Date.now(), scopeIds, runId: options.runId, origin: provenance, ...(proposalAction ? { proposalKind: 'thought' as const, proposalAction } : {}) });
+                this.controller.addGhost({ id: key, text, ...point, createdAt: Date.now(), scopeIds, runId: options.runId, origin: provenance, proposalKind: 'thought' as const, ...(proposalAction ? { proposalAction } : {}) });
                 options.onEmission?.(key);
                 break;
             }

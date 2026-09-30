@@ -856,3 +856,39 @@ test('composing Speak masks underlying Crystal text and leaves outside Field inp
     await page.mouse.click(70, 680);
     await expect(speak).toHaveAttribute('data-composing', 'false');
 });
+
+
+test('generic generated Ghost menu actions do not hide Field More actions', async ({ page }) => {
+    await page.route('**/api/respond', async route => {
+        await route.fulfill({ json: { providerLabel: 'E2E stub / not live', mock: true, intents: [{ type: 'surface_possibility', text: 'A generic generated possibility.' }] } });
+    });
+    await menu(page, 'Settings');
+    await choose(page, 'provider-select', 'gateway');
+    await page.getByRole('button', { name: 'Return to Field' }).click();
+    await page.locator('[data-thought-id="attention"]').click();
+    await askOwnQuestion(page);
+    await page.getByRole('textbox', { name: 'Speak', exact: true }).fill('Explore this thought in another direction.');
+    await page.getByRole('textbox', { name: 'Speak', exact: true }).press('Enter');
+
+    const ghost = page.locator('article.thought.ghost').filter({ hasText: 'A generic generated possibility.' });
+    await expect(ghost).toBeVisible();
+    await expect(ghost).toHaveAttribute('data-proposal-kind', 'thought');
+    await ghost.click();
+    const scopeHub = page.getByTestId('scope-hub');
+    await expect(scopeHub).toBeVisible();
+    await expect(scopeHub.getByRole('button', { name: 'Keep this' })).toBeVisible();
+    await expect(scopeHub.getByRole('button', { name: 'Continue thinking' })).toBeVisible();
+    await expect(scopeHub.getByRole('button', { name: 'Another angle' })).toBeVisible();
+    await ghost.click({ button: 'right' });
+    const thoughtMenu = page.getByTestId('thought-menu');
+    await expect(thoughtMenu.getByRole('menuitem', { name: 'Keep this' })).toBeVisible();
+    await expect(thoughtMenu.getByRole('menuitem', { name: 'Ignore' })).toBeVisible();
+
+    await page.getByTestId('field-title').click();
+    const fieldMenu = page.getByTestId('field-menu');
+    await expect(fieldMenu.getByRole('menuitem', { name: 'More', exact: true })).toBeVisible();
+    await fieldMenu.getByRole('menuitem', { name: 'More', exact: true }).click();
+    const fieldMore = page.getByTestId('field-more-menu');
+    await expect(fieldMore.getByRole('menuitem', { name: 'Duplicate Field' })).toBeVisible();
+    await expect(fieldMore.getByRole('menuitem', { name: 'Import / Restore' })).toBeVisible();
+});

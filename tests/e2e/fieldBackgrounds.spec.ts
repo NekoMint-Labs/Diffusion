@@ -1,6 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
+import { writeFile } from 'node:fs/promises';
 import { choose, openSection } from './selects.ts';
 import { waitForFieldBackgroundReady } from './fieldBackgroundReady.ts';
+import { waitForFieldBackgroundReadyMinimal } from './fieldBackgroundReadyMinimal.ts';
 
 const styles = ['paper-texture', 'topography', 'threads', 'waves', 'silk'] as const;
 
@@ -22,6 +24,7 @@ async function selectBackground(page: Page, style: typeof styles[number]) {
     await expect(host).toHaveAttribute('data-background-id', style);
     await expect(host.locator('canvas')).toHaveCount(1, { timeout: 15_000 });
     if (process.env.CAPTURE_DIAGNOSTIC === 'contract') await waitForFieldBackgroundReady(page, style);
+    if (process.env.CAPTURE_DIAGNOSTIC === 'minimal') await waitForFieldBackgroundReadyMinimal(page, style);
     return host;
 }
 
@@ -52,14 +55,14 @@ test('approved backgrounds switch through one inert viewport host and remain sta
         expect(dimensions.boxWidth).toBeLessThanOrEqual(dimensions.hostWidth + 1);
         expect(dimensions.boxHeight).toBeLessThanOrEqual(dimensions.hostHeight + 1);
 
-        if (process.env.CAPTURE_DIAGNOSTIC !== 'contract') await page.waitForTimeout(250);
+        if (!['contract', 'minimal'].includes(process.env.CAPTURE_DIAGNOSTIC ?? '')) await page.waitForTimeout(250);
         console.log(`[capture static] ${style}`);
         const first = await host.screenshot();
         await page.waitForTimeout(250);
         const second = await host.screenshot();
         if (!second.equals(first)) {
-            await testInfo.attach(`${style}-first`, { body: first, contentType: 'image/png' });
-            await testInfo.attach(`${style}-second`, { body: second, contentType: 'image/png' });
+            await writeFile(testInfo.outputPath(`${style}-first.png`), first);
+            await writeFile(testInfo.outputPath(`${style}-second.png`), second);
         }
         expect(second.equals(first), `${style} pixels remain unchanged at Motion 0`).toBe(true);
     }

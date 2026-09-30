@@ -1,6 +1,7 @@
 import { test, expect, type Browser, type Locator, type Page } from '@playwright/test';
 import { choose, openSection } from './selects.ts';
 import { waitForFieldBackgroundReady } from './fieldBackgroundReady.ts';
+import { waitForFieldBackgroundReadyMinimal } from './fieldBackgroundReadyMinimal.ts';
 import zlib from 'node:zlib';
 
 /** Phase 2.5 visual acceptance: the falsifiable half of "interaction, motion and atmosphere".
@@ -177,6 +178,7 @@ test('Paper Day is a neutral paper, not a beige sheet', async ({ browser }) => {
         }
     }
     if (mode === 'contract') await waitForFieldBackgroundReady(page, 'paper-texture');
+    if (mode === 'minimal') await waitForFieldBackgroundReadyMinimal(page, 'paper-texture');
     if (mode === 'painted') await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
     if (mode === 'delay') await page.waitForTimeout(250); // Temporary diagnostic, not a fix.
     const samples = await sampleField(page);

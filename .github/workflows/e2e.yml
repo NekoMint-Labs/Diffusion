@@ -123,7 +123,7 @@ jobs:
           [[ "$CAPTURE_TRIALS" =~ ^[1-9][0-9]?$ ]] || exit 2
           status=0
           for mode in $CAPTURE_MODES; do
-            case "$mode" in original|baseline|mounted|ready|delay|element|contract|painted|isolated) ;; *) exit 2 ;; esac
+            case "$mode" in original|baseline|mounted|ready|delay|element|contract|painted|isolated|minimal) ;; *) exit 2 ;; esac
             for trial in $(seq 1 "$CAPTURE_TRIALS"); do
               echo "CAPTURE EXPERIMENT mode=$mode trial=$trial"
               if [ "$mode" = original ]; then

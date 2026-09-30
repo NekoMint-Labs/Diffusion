@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { choose, openSection } from './selects.ts';
+import { waitForFieldBackgroundReady } from './fieldBackgroundReady.ts';
 
 const styles = ['paper-texture', 'topography', 'threads', 'waves', 'silk'] as const;
 
@@ -17,10 +18,7 @@ async function openAppearance(page: Page) {
 
 async function selectBackground(page: Page, style: typeof styles[number]) {
     await choose(page, 'field-style-select', style);
-    const host = page.getByTestId('field-background');
-    await expect(host).toHaveAttribute('data-background-id', style);
-    await expect(host.locator('canvas')).toHaveCount(1, { timeout: 15_000 });
-    return host;
+    return waitForFieldBackgroundReady(page, style);
 }
 
 test('approved backgrounds switch through one inert viewport host and remain static at Motion 0', async ({ page }) => {
@@ -50,10 +48,10 @@ test('approved backgrounds switch through one inert viewport host and remain sta
         expect(dimensions.boxWidth).toBeLessThanOrEqual(dimensions.hostWidth + 1);
         expect(dimensions.boxHeight).toBeLessThanOrEqual(dimensions.hostHeight + 1);
 
-        await page.waitForTimeout(250);
         const first = await host.screenshot();
-        await page.waitForTimeout(250);
-        expect(await host.screenshot()).toEqual(first);
+        await page.waitForTimeout(250); // Observation interval: Motion 0 must stay static over time.
+        const second = await host.screenshot();
+        expect(second.equals(first), `${style} pixels remain unchanged at Motion 0`).toBe(true);
     }
     expect(errors).toEqual([]);
 });

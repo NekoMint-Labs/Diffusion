@@ -1,5 +1,6 @@
 import { test, expect, type Browser, type Locator, type Page } from '@playwright/test';
 import { choose, openSection } from './selects.ts';
+import { waitForFieldBackgroundReady } from './fieldBackgroundReady.ts';
 import zlib from 'node:zlib';
 
 /** Phase 2.5 visual acceptance: the falsifiable half of "interaction, motion and atmosphere".
@@ -116,6 +117,7 @@ test('Paper Day is a neutral paper, not a beige sheet', async ({ browser }) => {
     const { context, page } = await seeded(browser, 'light');
     await page.goto('/?locale=en');
     await fieldReady(page);
+    await waitForFieldBackgroundReady(page, 'paper-texture');
     const samples = await sampleField(page);
     const meanDelta = samples.reduce((sum, s) => sum + (s.r - s.b), 0) / samples.length;
     const worst = Math.max(...samples.map(s => Math.abs(s.r - s.b)));
@@ -136,9 +138,7 @@ test('Graphite Night Topography creates restrained structured variation — not 
     const { context, page } = await seeded(browser, 'dark', { width: 1440, height: 960 }, { appearance });
     await page.goto('/?locale=en');
     await fieldReady(page);
-    const background = page.getByTestId('field-background');
-    await expect(background).toHaveAttribute('data-background-id', 'topography');
-    await expect(background.locator('canvas')).toHaveCount(1);
+    const background = await waitForFieldBackgroundReady(page, 'topography');
     const samples = await sampleField(page);
     await background.evaluate(element => { (element as HTMLElement).style.visibility = 'hidden'; });
     const withoutBackground = await sampleField(page);

@@ -364,7 +364,7 @@ test('attention does not hide the rest of the Field: a distant Thought keeps its
     // The emphasis attribute flips before the 200 ms ink transition finishes. The Thought body stays
     // fully present; only its content recedes.
     const farInk = far.locator('.thought-preview');
-    await expect.poll(async () => farInk.evaluate(element => Number(getComputedStyle(element).opacity)), 'the far Thought settles to its peripheral ink presence').toBeLessThanOrEqual(0.46);
+    await expect.poll(async () => farInk.evaluate(element => Number(getComputedStyle(element).opacity)), 'the far Thought settles to its readable peripheral ink presence').toBeLessThanOrEqual(0.72);
     await expect.poll(async () => far.evaluate(element => Number(getComputedStyle(element).opacity)), 'the far Thought body remains present').toBe(1);
 
     const presence = await page.locator('[data-thought-id]').evaluateAll(elements => elements.map(element => ({

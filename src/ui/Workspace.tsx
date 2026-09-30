@@ -12,7 +12,7 @@ import { OpenFieldSurface } from './surfaces/OpenFieldSurface.tsx';
 import { ShortcutsSurface } from './surfaces/ShortcutsSurface.tsx';
 import { Surface } from './surfaces/Surface.tsx';
 import { RestoreSurface } from './surfaces/RestoreSurface.tsx';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, LayoutGroup } from 'motion/react';
 import { fieldSwitchSequence, settingsEnterSequence, settingsRecedeSequence, useSignature } from './motion/signature.ts';
 import { asPickedFile, type PlatformAdapter } from '../platform/contracts.ts';
@@ -55,7 +55,7 @@ import { useThinkingIntents } from './workspace/useThinkingIntents.ts';
 import { useProjectActions } from './workspace/useProjectActions.ts';
 import { notice, failureNotice, deviceFailureNotice, deviceFailureText } from './workspace/notice.ts';
 import { presentMaterialSettle } from './motion/spatialGrammar.ts';
-import type { NoticeActionKind } from './workspace/feedback.ts';
+import { clearFeedback, type NoticeActionKind } from './workspace/feedback.ts';
 import type { SettingsSection } from './surfaces/SettingsSurface.tsx';
 import { FirstFieldTutorialCoach, ProgressiveTutorialCoach, useFirstFieldTutorial } from './tutorial/FirstFieldTutorial.tsx';
 interface Props {
@@ -87,6 +87,9 @@ export function Workspace({ controller, repository, platform, startupError, onSw
     const { project, session, persistenceError } = useProject(controller);
     const ui = useUI();
     const root = useRef<HTMLElement>(null);
+    const setBottomNoticeHeight = useCallback((height: number) => {
+        root.current?.style.setProperty('--bottom-notice-height', `${height}px`);
+    }, []);
     const field = useRef<FieldHandle>(null);
     const speak = useRef<HTMLTextAreaElement>(null);
     const globalMore = useRef<HTMLButtonElement>(null);
@@ -236,14 +239,15 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         controller,
         findRelation: intents.findRelation,
         ask: intents.ask,
-        continueThinking: ids => openActionPreview('continue', ids),
-        questions: ids => openActionPreview('ask', ids),
+        // Every command projection shares the tutorial boundary before entering normal AI work.
+        continueThinking: ids => { if (!tutorial.interceptThinkingAction('continue-thinking')) openActionPreview('continue', ids); },
+        questions: ids => { if (!tutorial.interceptThinkingAction('questions')) openActionPreview('ask', ids); },
         openThread: (ids, deep) => { stopDiffuseForIntent(); intents.openThread(ids, deep); },
         previewCrystal: intents.previewCrystal,
         continueCrystal: intents.continueCrystal,
         openHandoff: key => { surfaces.openSurface('handoff'); ui.patch({ handoffId: key }); },
         openSource: actions.openSource,
-        openDiffuse: ids => openActionPreview('angle', ids),
+        openDiffuse: ids => { if (!tutorial.interceptThinkingAction('diffuse')) openActionPreview('angle', ids); },
         organize: openOrganize,
         carry: actions.carry,
         keep: actions.keep,
@@ -270,6 +274,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
             return;
         }
         setSettingsSection(kind === 'search-settings' ? 'search' : 'ai');
+        clearFeedback();
         surfaces.openSurface('settings');
     }
     const actionModel = contextualActionModel(commands, commandContext);
@@ -292,7 +297,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         : ui.menu?.scope === 'field'
             ? menuRows(commands, commandContext, FIELD_MORE_MENU, platformKind)
             : [];
-    const runScopeAction = (id: string) => { if (!tutorial.interceptScopeAction(id)) commands.find(command => command.id === id)?.run(commandContext); };
+    const runScopeAction = (id: string) => { commands.find(command => command.id === id)?.run(commandContext); };
     const findOpen = ui.surface === 'find';
     useWorkspaceKeyboard({ commands, context: commandContext, speak, closeSurface: () => surfaces.closeSurface(), closeMenu, onExitSpeak: intents.exitSpeak });
     /** A possibility reaches the Field through this one route, whatever produced it. */
@@ -368,7 +373,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
   <AnimatePresence initial={false}>{ui.surface === 'restore' && <RestoreSurface key="restore" platform={platform} repository={repository} onSwitch={onSwitchProject} onClose={() => surfaces.closeSurface()}/>}</AnimatePresence>
   <DiffuseIndicator session={diffuse} onReview={() => surfaces.openSurface('diffuse')}/>
     <AnimatePresence initial={false}>{(intents.speakScope !== null || !ui.selection.length) && !isGlobalModal(ui.surface) && !ui.menu && <Speak key="speak" textareaRef={speak} words={intents.words} onWords={intents.setWords} onSubmit={() => intents.submit({ localOnly: tutorial.active })} onStop={() => { stopDiffuseForIntent(); runtime.cancel(); }} onCompose={intents.compose} onExit={intents.exitSpeak} composing={intents.speakScope !== null} empty={!Object.keys(project.thoughts).length && !Object.keys(session.ghosts).length && !(ui.operation?.kind === 'ingest' && ui.operation.phase === 'pending')} typography={settings.thoughtTypography} scopeIds={intents.speakScope ?? []}/>}</AnimatePresence>
-   {(startupError || persistenceError || ui.notice) && <FeedbackLine text={persistenceError ? deviceFailureText('save') : t(startupError || ui.notice)} tone={persistenceError || startupError ? 'error' : ui.noticeTone} secondary={ui.notice === t('Demo possibilities / no live model was used.') ? 'demo' : undefined} action={persistenceError ? <Button variant="ghost" size="sm" onClick={() => void fields.exportCanonical()}>{t('Export')}</Button> : ui.noticeAction ? <Button variant="ghost" size="sm" data-testid="notice-action" onClick={() => runNoticeAction(ui.noticeAction!.kind)}>{t(ui.noticeAction.label)}</Button> : undefined}/>}
+    {(startupError || persistenceError || ui.notice) && <FeedbackLine onBottomHeight={setBottomNoticeHeight} text={persistenceError ? deviceFailureText('save') : t(startupError || ui.notice)} tone={persistenceError || startupError ? 'error' : ui.noticeTone} secondary={ui.notice === t('Demo possibilities / no live model was used.') ? 'demo' : undefined} action={persistenceError ? <Button variant="ghost" size="sm" onClick={() => void fields.exportCanonical()}>{t('Export')}</Button> : ui.noticeAction ? <Button variant="ghost" size="sm" data-testid="notice-action" onClick={() => runNoticeAction(ui.noticeAction!.kind)}>{t(ui.noticeAction.label)}</Button> : undefined}/>}
    <FirstFieldTutorialCoach active={tutorial.active} phase={tutorial.phase} settled={tutorial.settled} onSkip={tutorial.skip} onFinish={tutorial.finish}/>
    <ProgressiveTutorialCoach enabled={!tutorial.active}/>
  </main>;

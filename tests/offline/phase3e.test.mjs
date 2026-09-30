@@ -28,7 +28,7 @@ test('Phase 3E 1 / 3 / 5 preview wiring reaches action-specific execution withou
   assert.match(workspace, /runtime\.run\(action,[\s\S]*maxCandidates: options\.count/);
   assert.match(workspace, /diffuse\.start\(\{[\s\S]*steps: options\.count,[\s\S]*mode: 'angle'/);
   assert.match(workspace, /ask: intents\.ask/);
-  assert.match(workspace, /questions: ids => openActionPreview\('ask', ids\)/);
+  assert.match(workspace, /questions: ids => \{ if \(!tutorial\.interceptThinkingAction\('questions'\)\) openActionPreview\('ask', ids\)/);
 });
 
 test('Phase 3E proposal surfaces expose only contextual next actions', () => {

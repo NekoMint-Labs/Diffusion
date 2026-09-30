@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
-test('First Field Tutorial follows real interaction and uses no provider for its proposal', async ({ page }) => {
+async function reachGeneration(page: Page) {
     await page.goto('/?locale=en');
     await expect(page.getByTestId('first-field-tutorial')).toHaveAttribute('data-phase', 'write');
     const composer = page.getByRole('textbox', { name: 'Speak', exact: true });
@@ -18,6 +18,11 @@ test('First Field Tutorial follows real interaction and uses no provider for its
     await expect(page.getByTestId('first-field-tutorial')).toHaveAttribute('data-phase', 'select');
     await thought.click();
     await expect(page.getByTestId('first-field-tutorial')).toHaveAttribute('data-phase', 'generate');
+    return thought;
+}
+
+test('First Field Tutorial follows real interaction and uses no provider for its proposal', async ({ page }) => {
+    await reachGeneration(page);
     await page.getByTestId('scope-continue').click();
     await expect(page.getByTestId('first-field-tutorial')).toHaveAttribute('data-phase', 'ghost');
     await expect(page.getByText('Tutorial demonstration / no live model was used.')).toBeVisible();
@@ -33,6 +38,38 @@ test('First Field Tutorial follows real interaction and uses no provider for its
     await page.getByTestId('tutorial-finish').click();
     await expect(page.getByTestId('first-field-tutorial')).toHaveCount(0);
 });
+
+for (const entry of ['toolbar', 'context menu', 'palette']) {
+    for (const action of [
+        { id: 'continue-thinking', testId: 'scope-continue', kind: 'thought', generation: 'continue' },
+        { id: 'diffuse', testId: 'scope-angle', kind: 'thought', generation: 'angle' },
+        { id: 'questions', testId: 'scope-question', kind: 'question', generation: 'question' },
+    ]) {
+        test(`tutorial ${action.id} from ${entry} produces one local proposal with AI off`, async ({ page }) => {
+            const requests: string[] = [];
+            page.on('request', request => {
+                if (['fetch', 'xhr'].includes(request.resourceType())) requests.push(request.url());
+            });
+            const thought = await reachGeneration(page);
+            if (entry === 'toolbar') await page.getByTestId(action.testId).click();
+            else if (entry === 'context menu') {
+                await thought.click({ button: 'right' });
+                await page.getByTestId('thought-menu').locator(`[data-command="${action.id}"]`).click();
+            } else {
+                await page.keyboard.press('Control+k');
+                await page.getByTestId('command-palette').locator(`[data-command="${action.id}"]`).click();
+            }
+            await expect(page.getByTestId('first-field-tutorial')).toHaveAttribute('data-phase', 'ghost');
+            const ghost = page.locator('.thought.ghost');
+            await expect(ghost).toHaveCount(1);
+            await expect(ghost).toHaveAttribute('data-proposal-kind', action.kind);
+            await expect(ghost).toHaveAttribute('data-proposal-action', action.generation);
+            await expect(page.getByTestId('action-preview-run')).toHaveCount(0);
+            await expect(page.getByTestId('notice-action')).toHaveCount(0);
+            expect(requests).toEqual([]);
+        });
+    }
+}
 
 test('Help can restart the First Field Tutorial after it was skipped', async ({ page }) => {
     await page.goto('/?locale=en');

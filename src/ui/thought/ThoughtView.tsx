@@ -60,7 +60,8 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
         const textarea = input.current;
         if (!textarea) return;
         focusOnDraft.current = false;
-        textarea.focus();
+        // The camera owns Field travel. Focusing an edge editor must not scroll its clipped ancestors.
+        textarea.focus({ preventScroll: true });
         textarea.setSelectionRange(item.text.length, item.text.length);
     }, [editing, draft, item.text]);
     useLayoutEffect(() => {

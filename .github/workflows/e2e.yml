@@ -8,6 +8,19 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      capture_diagnostic:
+        description: Temporary isolated-branch capture investigation
+        default: false
+        type: boolean
+      capture_modes:
+        description: Space-separated single-variable modes
+        default: baseline mounted ready
+        type: string
+      capture_trials:
+        description: Independent full-project runs per mode (not retries)
+        default: '3'
+        type: string
 
 permissions:
   contents: read
@@ -86,7 +99,33 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run production backgrounds
-        run: pnpm exec playwright test --project=production-backgrounds
+        env:
+          CAPTURE_EXPERIMENT: ${{ inputs.capture_diagnostic }}
+          CAPTURE_MODES: ${{ inputs.capture_modes }}
+          CAPTURE_TRIALS: ${{ inputs.capture_trials }}
+          DEBUG: ${{ inputs.capture_diagnostic && 'pw:browser' || '' }}
+        run: |
+          if [ "$CAPTURE_EXPERIMENT" != true ]; then
+            pnpm exec playwright test --project=production-backgrounds
+            exit
+          fi
+          # Temporary manual-only diagnostics; preserve every failure in the job status.
+          mkdir -p verification/hosted-capture
+          uname -a
+          free -h
+          df -h /dev/shm
+          node --version
+          pnpm exec playwright --version
+          [[ "$CAPTURE_TRIALS" =~ ^[1-9][0-9]?$ ]] || exit 2
+          status=0
+          for mode in $CAPTURE_MODES; do
+            case "$mode" in baseline|mounted|ready|delay|element) ;; *) exit 2 ;; esac
+            for trial in $(seq 1 "$CAPTURE_TRIALS"); do
+              echo "CAPTURE EXPERIMENT mode=$mode trial=$trial"
+              CAPTURE_DIAGNOSTIC="$mode" pnpm exec playwright test --project=production-backgrounds --workers=1 --retries=0 --reporter=line --output="test-results/$mode-$trial" > "verification/hosted-capture/$mode-$trial.log" 2>&1 || status=1
+            done
+          done
+          exit "$status"
 
       - name: Upload Playwright diagnostics
         if: always()
@@ -98,6 +137,7 @@ jobs:
           path: |
             playwright-report/
             test-results/
+            verification/hosted-capture/
 
   e2e-gate:
     name: E2E gate

@@ -143,8 +143,9 @@ async function ghostAndCanonical(browser: Browser, image: boolean) {
     const canonical = await readMaterial(page, '[data-thought-id="structure"]');
     const ghost = await readMaterial(page, '.thought.ghost');
     const pencil = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--pencil-trace').trim());
+    const rail = await page.locator('.thought.ghost').first().evaluate(el => ({ color: getComputedStyle(el, '::before').backgroundColor, width: getComputedStyle(el, '::before').width, duplicate: getComputedStyle(el, '::after').content }));
     await context.close();
-    return { canonical, ghost, pencil };
+    return { canonical, ghost, pencil, rail };
 }
 
 test('Ghost is a different kind of material, and Image Atmosphere fills canonical Thoughts but not Ghosts', async ({ browser }) => {
@@ -155,10 +156,13 @@ test('Ghost is a different kind of material, and Image Atmosphere fills canonica
     console.log(`[measured] image canonical fill ${image.canonical.bgAlpha.toFixed(3)} raw=[${image.canonical.bgRaw}]; image ghost fill ${image.ghost.bgAlpha.toFixed(3)} raw=[${image.ghost.bgRaw}]`);
     console.log(`[measured] canonical fill paper=${paper.canonical.bgAlpha.toFixed(3)} image=${image.canonical.bgAlpha.toFixed(3)}; ghost fill paper=${paper.ghost.bgAlpha.toFixed(3)} image=${image.ghost.bgAlpha.toFixed(3)}`);
 
-    // (5) A Ghost differs by kind, not a few percent of opacity: its edge is drawn from the pencil
-    // trace, not from a canonical Thought's surface-boundary ring.
-    expect(maxChannelDelta(paper.ghost.ringRGB, hexRgb(paper.pencil)), 'the Ghost edge is the pencil trace colour').toBeLessThanOrEqual(2);
-    expect(maxChannelDelta(paper.ghost.ringRGB, paper.canonical.ringRGB), 'the Ghost edge is not the canonical boundary ring').toBeGreaterThan(20);
+    // (5) The approved Ghost has one pencil rail and no closed inset ring. Read the rail itself;
+    // its paper shadow is no longer the old boundary's measurement owner.
+    expect(paper.rail.color).toBe(`rgb(${hexRgb(paper.pencil).join(', ')})`);
+    expect(paper.rail.width).toBe('2px');
+    expect(paper.rail.duplicate).toBe('none');
+    expect(paper.ghost.boxShadow).not.toContain('inset');
+    expect(paper.canonical.boxShadow).toContain('inset');
     // Issue 11 approved readable paper plus one fine rail, not opacity as a proxy for temporariness.
     // This selected proposal has the explicit paper treatment; canonical material tests stay intact.
     expect(paper.ghost.bgAlpha).toBeCloseTo(.88, 2);

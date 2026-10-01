@@ -3,7 +3,7 @@ import { createProject, makeThought } from '../../src/core/model.ts';
 
 async function seed(page: Page) {
     await page.addInitScript(() => {
-        localStorage.setItem('diffusion-settings', JSON.stringify({ locale: 'zh', provider: 'demo' }));
+        if (!localStorage.getItem('diffusion-settings')) localStorage.setItem('diffusion-settings', JSON.stringify({ locale: 'zh', provider: 'demo' }));
         localStorage.setItem('diffusion-first-field-tutorial-v1', JSON.stringify({ status: 'complete' }));
     });
     await page.goto('/?locale=zh');

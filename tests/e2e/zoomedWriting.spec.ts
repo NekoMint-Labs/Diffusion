@@ -160,5 +160,8 @@ test('Find discloses an ordinary Thought in dense Atlas without weakening the de
     const entry = page.locator('.root-review .suggestion-review-list button').first();
     const wording = (await entry.innerText()).trim();
     await entry.click();
-    await expect(page.locator('article.thought').filter({ hasText: wording }).first()).toBeVisible();
+    const revealed = page.locator('article.thought[data-selected="true"]');
+    await expect(revealed).toBeVisible();
+    // Atlas deliberately renders an excerpt; the selected object's accessible name keeps full text.
+    expect(await revealed.getAttribute('aria-label')).toContain(wording);
 });

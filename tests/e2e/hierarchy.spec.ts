@@ -24,12 +24,20 @@ async function seed(page: Page) {
 async function openLineage(page: Page) {
     await page.locator('[data-thought-id="c"]').click();
     await page.getByTestId('thought-more').click();
-    const menu = page.getByTestId('thought-menu'), original = (await menu.boundingBox())!;
+    const menu = page.getByTestId('thought-menu');
+    await expect(menu).toBeVisible();
+    await page.locator('[data-command="thought-lineage"]').click({ trial: true });
+    const original = (await menu.boundingBox())!;
     await page.locator('[data-command="thought-lineage"]').click();
     await expect(page.getByTestId('organizing-parent')).toBeVisible();
     const retiringMenu = page.locator('#thought-command-menu');
-    if (await retiringMenu.count()) {
-        const duringExit = (await retiringMenu.boundingBox())!;
+    const duringExit = await retiringMenu.evaluateAll(elements => {
+        const rect = elements[0]?.getBoundingClientRect();
+        return rect && rect.width > 0 && rect.height > 0 ? { x: rect.x, y: rect.y } : null;
+    });
+    // Exit may finish between reading the DOM and measuring it. A retired menu has no box;
+    // any still-painted exit frame must keep its original anchor.
+    if (duringExit) {
         expect(Math.abs(duringExit.x - original.x)).toBeLessThan(4);
         expect(Math.abs(duringExit.y - original.y)).toBeLessThan(12);
     }
@@ -96,6 +104,14 @@ test('connection style is a durable device preference and never changes the proj
 test('dragging a third thought across a source trace reroutes the trace before commit', async ({ page }, info) => {
     await seed(page);
     const route = page.locator('[data-causal-id="causal:a:b"] .causal-trace-visual');
+    // The horizontal fixture first draws estimated boxes, then uses actual text measurements.
+    // Capture the measured route so undo is compared with the same geometry on every platform.
+    await expect.poll(() => route.evaluate(path => {
+        const line = path as SVGGeometryElement;
+        const start = line.getPointAtLength(0).matrixTransform(line.getScreenCTM()!);
+        const source = document.querySelector('[data-thought-id="a"]')!.getBoundingClientRect();
+        return Math.hypot(start.x - source.right, start.y - (source.top + source.height / 2));
+    })).toBeLessThan(1);
     const original = await route.getAttribute('d');
     const moving = page.locator('[data-thought-id="d"]');
     const box = (await moving.boundingBox())!;

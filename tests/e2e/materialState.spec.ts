@@ -158,7 +158,10 @@ test('Ghost is a different kind of material, and Image Atmosphere fills canonica
 
     // (5) The approved Ghost has one pencil rail and no closed inset ring. Read the rail itself;
     // its paper shadow is no longer the old boundary's measurement owner.
-    expect(paper.rail.color).toBe(`rgb(${hexRgb(paper.pencil).join(', ')})`);
+    const railSrgb = paper.rail.color.match(/color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\/\s*([\d.]+)\)/);
+    expect(railSrgb, 'the resolved pencil rail keeps its translucent paper treatment').not.toBeNull();
+    expect(maxChannelDelta(railSrgb!.slice(1, 4).map(value => Number(value) * 255), hexRgb(paper.pencil))).toBeLessThan(1);
+    expect(Number(railSrgb![4])).toBeCloseTo(.74, 2);
     expect(paper.rail.width).toBe('2px');
     expect(paper.rail.duplicate).toBe('none');
     expect(paper.ghost.boxShadow).not.toContain('inset');
@@ -236,9 +239,13 @@ test('Keep stabilizes a Ghost material in place without generic circular feedbac
         const ghost = page.locator('.thought.ghost').first();
         await expect(ghost).toBeVisible();
         const id = await ghost.getAttribute('data-thought-id');
-        const before = await ghost.boundingBox();
-        if (!id || !before) throw new Error('Ghost has no stable identity or bounds');
-        await ghost.click();
+        if (!id) throw new Error('Ghost has no stable identity');
+        // Selecting a proposal changes disclosure priority and can reorder mounted siblings.
+        // Keep measuring this identity; `.ghost.first()` may now be a different proposal.
+        const thought = page.locator(`[data-thought-id="${id}"]`);
+        await thought.click();
+        const before = await thought.boundingBox();
+        if (!before) throw new Error('Ghost has no stable bounds');
         // Observe the commitment frame itself. A series of protocol round trips can outlive the
         // 340 ms transition under renderer load, which is not evidence of missing animation.
         await page.evaluate(id => {
@@ -255,7 +262,6 @@ test('Keep stabilizes a Ghost material in place without generic circular feedbac
             observer.observe(element, { attributes: true });
         }, id);
         await page.getByTestId('proposal-keep-all').click();
-        const thought = page.locator(`[data-thought-id="${id}"]`);
         await expect(thought).toBeVisible();
         await expect(thought).not.toHaveClass(/ghost/);
 

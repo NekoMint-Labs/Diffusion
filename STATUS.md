@@ -57,13 +57,13 @@ The final candidate is served from a production Vite build. The local Playwright
 | Gate | Candidate evidence |
 |---|---|
 | Typecheck / build | Passed; existing >500 kB main-chunk warning retained |
-| Offline contracts | 265 passed, with `NODE_OPTIONS=--no-experimental-global-navigator` for this Windows environment |
+| Offline contracts | 266 passed, with `NODE_OPTIONS=--no-experimental-global-navigator` for this Windows environment |
 | Unit suite | Passed: 41 files, 309 tests |
 | Full local browser suite | After the Windows feedback repairs: 207 passed, 12 existing skips, 1 unchanged background-motion baseline failure in 11.9 minutes; all six new zoom regressions and five surface cases passed within this complete run. |
 | Visual review | Before/after scope, object and Settings captures; 4 profiles × 5 production backgrounds; 1280×720, 1440×960 and 1920×1080. Narrow 1024×576 and 853×480 content areas plus DPR 1/1.25/1.5 and 120% interface size are browser simulations, not native Windows zoom acceptance. |
 | CI for prerequisite PRs | CI and complete E2E passed at #13 `039894e`, #14 `4fb3754`, #15 `f19e584` |
 
-The repaired candidate was checked with `pnpm exec playwright test --config verification/playwright.local.ts --reporter line --output verification/zoom-full-final-results`, one worker and zero retries. All 220 cases completed; the sole failure remains `motion.spec.ts:257` (`>1px`, measured `1px`).
+The repaired candidate was checked with `pnpm exec playwright test --config verification/playwright.local.ts --reporter line --output verification/zoom-full-final-results`, one worker and zero retries. All 220 cases completed. The subsequent extraction of Find projection into the existing spatial representation module is covered by a coordinate contract and the focused zoom suite; the sole full-run failure remains `motion.spec.ts:257` (`>1px`, measured `1px`).
 
 The pre-feedback complete local run used `pnpm exec playwright test --config verification/playwright.local.ts --output verification/acceptance-results`. Two old tests clicked fixed window coordinate y=880, now outside the Field while coaching reserves the bottom lane; they now click within the measured Field, preserving the scope and causal-trace assertions, and both passed in a focused rerun. Before the final measured-chrome/coaching corrections, another complete local run was **198 passed, 12 skipped, 1 failed**. The remaining failure is the unchanged `motion.spec.ts:257` atmosphere-motion assertion (`>1px`, measured `1px`), also reproduced on the starting baseline. No baseline was replaced and no assertion, retry or skip was added to hide it. An earlier overlapping local workload caused one unit timeout; a standalone full run passed, and its failure log was retained. The short Keep effect is now observed at its commitment mutation, avoiding a test that sampled after the effect ended. First-open persistence still asserts reload recovery and now waits for the durable IndexedDB write first.
 

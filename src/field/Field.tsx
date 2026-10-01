@@ -1,4 +1,4 @@
-import { readableLabels, recallEdge, semanticExcerpt } from './spatial/representation.ts';
+import { readableLabels, recallEdge, revealCamera, semanticExcerpt } from './spatial/representation.ts';
 import { t } from '../shared/i18n.ts';
 import { activeFrontiers } from './spatial/regions.ts';
 import { type PointerEvent as ReactPointerEvent, type MouseEvent as ReactMouseEvent, forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -234,11 +234,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             return; const b = boxes[0]; const c = camera.current; if (!c)
             return; c.set({ x: rect.current.width / 2 - (b.x + b.width / 2), y: rect.current.height / 2 - (b.y + b.height / 2), zoom: 1 }, true); },
         reveal: (ids) => { const boxes = ids.map(k => geometry.get(k)).filter((b): b is Bounds => !!b); const c = camera.current; if (!boxes.length || !c)
-            return; const b = boxes[0]; const zoom = c.get().zoom; const item = liveItems.current[ids[0]];
-            // A culled/unmounted hit still has a provisional cache width. Center its current
-            // semantic representation, not that pre-mount world width.
-            const width = item ? disclosureBox(item.text, zoom, 'kind' in item ? item.kind : 'thought').width : b.width * zoom;
-            c.set({ x: rect.current.width / 2 - b.x * zoom - width / 2, y: rect.current.height / 2 - (b.y + b.height / 2) * zoom, zoom }, true); },
+            return; c.set(revealCamera(boxes[0], liveItems.current[ids[0]], c.get().zoom, rect.current), true); },
         zoomOut: () => { const c = camera.current; if (c)
             c.zoom({ x: rect.current.width / 2, y: rect.current.height / 2 }, 750); },
     }), [project.camera, geometry, visible]);

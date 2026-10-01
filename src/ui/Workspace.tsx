@@ -32,6 +32,7 @@ import { EvidenceSurface } from './reference/EvidenceSurface.tsx';
 import { FindSurface } from './surfaces/FindSurface.tsx';
 import { HistorySurface } from './surfaces/HistorySurface.tsx';
 import { RegionSurface } from './surfaces/RegionSurface.tsx';
+import { LineageSurface } from './surfaces/LineageSurface.tsx';
 import { HandoffSurface } from './surfaces/HandoffSurface.tsx';
 import { ForkSurface } from './surfaces/ForkSurface.tsx';
 import { DiffuseSurface, DiffuseIndicator } from './surfaces/DiffuseSurface.tsx';
@@ -369,6 +370,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
   {ui.surface === 'fields' && <OpenFieldSurface key="fields" repository={repository} currentId={project.id} onSwitch={fields.switchField} onCreate={() => void fields.createField(false)} onClose={() => surfaces.closeSurface()}/>}
   </AnimatePresence>
   {ui.surface === 'region' && ui.regionId && project.regions[ui.regionId] && <RegionSurface region={project.regions[ui.regionId]} anchor={ui.anchor ?? undefined} onRename={name => controller.dispatch({ type: 'region.rename', id: ui.regionId!, name })} onAsk={() => intents.openThread(project.regions[ui.regionId!].members)} onCrystal={() => intents.previewCrystal(project.regions[ui.regionId!].members)} onDiffuse={() => startDiffuse(project.regions[ui.regionId!].members)} onClose={() => surfaces.closeSurface()}/>}
+  {ui.surface === 'lineage' && surfaces.lineageId && <LineageSurface key={surfaces.lineageId} controller={controller} project={project} thoughtId={surfaces.lineageId} onClose={() => surfaces.closeSurface(false)}/>}
   {ui.surface === 'handoff' && ui.handoffId && <HandoffSurface project={project} crystalId={ui.handoffId} platform={platform} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'fork' && <ForkSurface project={project} repository={repository} flush={fields.ensureSaved} onSwitch={async key => { diffuse.stop('Switching worlds.'); runtime.cancel(); await onSwitchProject(key); }} point={actions.anchor()} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'diffuse' && <DiffuseSurface session={diffuse} project={project} scopeIds={surfaces.diffuseScope} canWeb={!!evidence} onBring={intents.bringEvidence} onClose={() => surfaces.closeSurface(false)}/>}

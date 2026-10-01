@@ -10,7 +10,7 @@ export interface CoreSnapshot {
 }
 export type SaveProject = (state: ProjectState) => Promise<void>;
 
-const undoable = new Set(['thought.create', 'thought.edit', 'thought.move', 'thought.delete', 'thought.keep', 'thought.release', 'ghost.claim', 'crystal.form', 'crystal.create', 'crystal.continue', 'relation.confirm', 'relation.remove', 'source.add', 'fork.bring', 'field.rename']);
+const undoable = new Set(['thought.create', 'thought.edit', 'thought.move', 'thought.delete', 'thought.keep', 'thought.release', 'thought.reparent', 'ghost.claim', 'crystal.form', 'crystal.create', 'crystal.continue', 'relation.confirm', 'relation.remove', 'source.add', 'fork.bring', 'field.rename']);
 /** One user-level history step: the Field before the action, plus transient objects it consumed. */
 interface HistoryStep {
     project: ProjectState;

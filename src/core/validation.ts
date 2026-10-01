@@ -158,6 +158,9 @@ export function validateProject(value: unknown): ProjectState {
         timestamp(t.updatedAt);
         timestamp(t.touchedAt);
         if (t.attentionDebt !== undefined) number(t.attentionDebt, 'attention debt', 0, 32);
+        // Missing targets and legacy cycles remain readable through hierarchy's safe projection.
+        // New user changes are strictly checked by the reducer; persistence never strips this field.
+        if (t.organizingParentId !== undefined && t.organizingParentId !== null) key(t.organizingParentId, 'organizing parent');
         provenance(t.origin);
         verifyInputProvenance(t.origin);
         if (t.derivedFrom !== undefined) {

@@ -12,6 +12,23 @@ Legacy URL Source excerpts without a real read record are preserved as `discover
 
 `ProjectController` schedules one in-flight save plus the most recent pending snapshot. Later edits are not lost behind an old snapshot; explicit flush/retry and failure state remain visible. This is not a cross-tab concurrency protocol or a crash-proof OS flush guarantee.
 
+## Optional organization (Issue #11 acceptance follow-up)
+
+`Thought.organizingParentId` is optional: absence follows the first surviving entry in the recorded
+`derivedFrom` order, `null` explicitly makes a root, and a string selects a user-organized parent.
+Reparenting never changes `derivedFrom`, `generationAction`, wording, positions or child branches.
+The Core user event `thought.reparent` owns validation, authority, history and undo/redo. Deleting an
+explicit parent makes its organized children independent; the existing source-reference deletion
+policy is unchanged. Missing imported targets project as roots; a legacy cycle loses one stable
+display edge without rewriting the archive. New self/descendant/missing-parent changes are rejected.
+
+No database version, database name or portable envelope changes. Existing validation, migration,
+JSON export/recovery, snapshot history and Dexie preserve the field. Old projects need no new field.
+Eight new hierarchy tests cover chains, branches, source order, invalid cycles, authority, undo/redo,
+actual fake-IndexedDB close/reopen, portable import/recovery and a 10,000-node chain. Browser testing
+also exercises the shared menu, explicit apply, original-source display and reload. Old application
+versions have not been qualified to interpret or preserve the new organization preference.
+
 ## Verification boundary
 
 Pure migration, idempotence, legacy snippet downgrade, raw-input normalization, geometry preservation, long-downtime and queue tests passed in the offline suite. Two tests in `tests/unit/migrations.test.ts` exercise a real Dexie/fake-IndexedDB v1-to-v3 upgrade and rollback of an invalid upgrade, including raw-input normalization, original blobs and reopen. These two tests are authored but **not run** here because dependencies are unavailable. Native IndexedDB disk timings are likewise not measured.

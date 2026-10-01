@@ -24,12 +24,14 @@ export function useWorkspaceSurfaces({ controller, field, diffuse, runtime, find
 }) {
     const [draft, setDraft] = useState<CrystalDraft | null>(null);
     const [historyScope, setHistoryScope] = useState<string[]>([]);
+    const [lineageId, setLineageId] = useState<string | null>(null);
     const [diffuseScope, setDiffuseScope] = useState<string[]>([]);
     const transient = useTransientFocus(() => field.current?.focus());
 
     function openSurface(surface: SurfaceName, origin?: Point) {
         transient.capture();
         const state = useUI.getState();
+        if (surface === 'lineage') setLineageId(state.selection.length === 1 ? state.selection[0] : null);
         if (surface === 'history')
             setHistoryScope([...state.selection]);
         if (surface === 'diffuse')
@@ -58,5 +60,5 @@ export function useWorkspaceSurfaces({ controller, field, diffuse, runtime, find
         setDraft(null);
         transient.restore(true);
     }
-    return { transient, draft, setDraft, openSurface, closeSurface, historyScope, diffuseScope, setDiffuseScope };
+    return { transient, draft, setDraft, openSurface, closeSurface, historyScope, lineageId, diffuseScope, setDiffuseScope };
 }

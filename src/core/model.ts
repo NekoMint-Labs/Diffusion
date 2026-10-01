@@ -42,6 +42,8 @@ export interface Thought extends Point {
     origin?: Provenance;
     /** Durable causal lineage. Semantic ancestry only; never stores connector geometry. */
     derivedFrom?: string[];
+    /** User organization only. Absent inherits the first surviving source; null is an explicit root. */
+    organizingParentId?: string | null;
     /** The thinking action that produced this Thought from its causal parent scope. */
     generationAction?: AIProposalAction;
 }

@@ -23,11 +23,13 @@ test('Phase 4 Region semantics remain labels and disclosure without ambient cont
 
 test('Phase 4 Atlas preserves explicit orientation anchors without turning back into a card field', () => {
     const field = src('field/Field.tsx');
-    assert.match(field, /item\.kind === 'thought' && \(selected \|\| item\.kept \|\| matched\)/);
-    assert.match(field, /item\.kind !== 'crystal'/);
-    assert.match(field, /tier === 'atlas' && found\.length > 64/);
+    const disclosure = src('field/spatial/hierarchyDisclosure.ts');
+    assert.match(field, /discloseHierarchy/);
+    assert.match(disclosure, /hierarchy\.originalRoots\.has\(id\)/);
+    assert.match(disclosure, /tier === 'local' \? 240 : 64/);
+    assert.match(field, /data-testid="root-anchors"/);
     assert.match(field, /semanticExcerpt\(t\.text, 'atlas', 'thought'\)/);
-    assert.match(field, /priority\.has\(key\) \? 4 : landmark \? 3 : unresolved \? 2 : 1/);
+    assert.match(disclosure, /protectedIds\.has\(id\)/);
 });
 
 test('Phase 4 completion receipts carry only transient result counts', () => {

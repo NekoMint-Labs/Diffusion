@@ -1,4 +1,7 @@
 import { readableLabels, recallEdge, revealCamera, semanticExcerpt } from './spatial/representation.ts';
+import { discloseHierarchy, zoomDepth } from './spatial/hierarchyDisclosure.ts';
+import { useDisclosureMeasurements } from './spatial/useDisclosureMeasurements.ts';
+import { thoughtHierarchy } from '../core/hierarchy.ts';
 import { t } from '../shared/i18n.ts';
 import { activeFrontiers } from './spatial/regions.ts';
 import { type PointerEvent as ReactPointerEvent, type MouseEvent as ReactMouseEvent, forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -12,7 +15,7 @@ import { StructureOverlay } from './phenomena/StructureOverlay.tsx';
 import type { ContextualAction } from '../ui/commands/contextualActionModel.ts';
 import type { ScopeRect } from '../ui/scope/scopePlacement.ts';
 import { GeometryCache } from './spatial/index.ts';
-import { disclosureBox, estimateThoughtSize } from './spatial/collision.ts';
+import { estimateThoughtSize } from './spatial/collision.ts';
 import { center, distanceBetween, fitCameraToBounds, rectangle, scaleLevel, unionBounds, viewportBounds, worldToScreen, type Bounds } from './spatial/geometry.ts';
 import { focusFor } from './spatial/focus.ts';
 import { CameraController } from './camera/controller.ts';
@@ -27,7 +30,7 @@ import { paintCausalDragTraces } from './phenomena/causalDragPreview.ts';
 import { FieldBackgroundLayer } from '../ui/fieldBackgrounds/FieldBackgroundLayer.tsx';
 import { SpatialActivityLayer } from '../ui/motion/SpatialActivityLayer.tsx';
 import { claimWithSettle, dismissGhostWithDissolve, presentMaterialSettle } from '../ui/motion/spatialGrammar.ts';
-import type { FieldStyleId } from '../ui/appearance.ts';
+import type { ConnectionStyle, FieldStyleId } from '../ui/appearance.ts';
 import { commitDraggedItems, correctMeasuredGhost, correctSingleDraggedThought, deleteFieldSelection, ignoreRelationCandidate, keepRelationCandidate, relationPlacementObstacles } from './interactionHygiene.ts';
 export interface FieldHandle {
     focus: () => void;
@@ -65,8 +68,9 @@ interface Props {
     onRevealMatch: (key: string) => void;
     find: FieldFind | null;
     fieldStyle: FieldStyleId;
+    connectionStyle: ConnectionStyle;
 }
-export const Field = forwardRef<FieldHandle, Props>(function Field({ controller, fieldStyle, onProbeRelation, scopeActions, onScopeAction, onKeepAllProposals, onKeepOriginalProposal, onAIProposalAction, onMore, onRegion, onRelation, onDropText, onSource, onDropFiles, onObserve, onCreateThought, onContextMenu, onRevealMatch, find }, forwardedRef) {
+export const Field = forwardRef<FieldHandle, Props>(function Field({ controller, fieldStyle, connectionStyle, onProbeRelation, scopeActions, onScopeAction, onKeepAllProposals, onKeepOriginalProposal, onAIProposalAction, onMore, onRegion, onRelation, onDropText, onSource, onDropFiles, onObserve, onCreateThought, onContextMenu, onRevealMatch, find }, forwardedRef) {
     const { project, session } = useProject(controller);
     const ui = useUI();
     const viewport = useRef<HTMLDivElement>(null);
@@ -81,6 +85,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const camera = useRef<CameraController | null>(null);
     const geometry = useMemo(() => new GeometryCache(), []);
     const known = useRef(new Set<string>());
+    const { get: measuredBox, record: recordMeasurement } = useDisclosureMeasurements();
     const rect = useRef({ left: 0, top: 0, width: 1440, height: 900 });
     const gesture = useRef<Gesture | null>(null);
     const wheelZoom = useRef<WheelZoomGesture | null>(null);
@@ -96,6 +101,9 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const probeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastCull = useRef(0);
     const [visible, setVisible] = useState<string[]>([]);
+    const [rootAnchors, setRootAnchors] = useState<string[]>([]);
+    const depthBudget = useRef(zoomDepth(project.camera.zoom));
+    const expandedParents = useRef(new Set<string>());
     const [stableCamera, setStableCamera] = useState(project.camera);
     const [level, setLevel] = useState(scaleLevel(project.camera.zoom));
     const [hoveredThought, setHoveredThought] = useState<string | null>(null);
@@ -104,6 +112,9 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     liveFind.current = find;
     const liveItems = useRef(items);
     liveItems.current = items;
+    const hierarchy = useMemo(() => thoughtHierarchy(items), [items]);
+    const liveHierarchy = useRef(hierarchy);
+    liveHierarchy.current = hierarchy;
     const focus = useMemo(() => focusFor(project, session, ui.selection), [project, session, ui.selection]);
     const correctedGhosts = useRef(new Set<string>());
     useLayoutEffect(() => {
@@ -120,36 +131,13 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         setLevel(prev => prev === tier ? prev : tier);
         const found = geometry.index.query(viewportBounds(cam, rect.current.width, rect.current.height));
         const snap = controller.getSnapshot();
-        const filtered = found.filter(key => {
-            const item = liveItems.current[key];
-            if (!item) return false;
-            const isGhost = key in snap.session.ghosts;
-            if ('kind' in item) {
-                const selected = useUI.getState().selection.includes(key);
-                const matched = liveFind.current?.matches.has(key);
-                if (item.life === 'memory' && !snap.session.recalls.includes(key) && !selected && !matched) return false;
-                // Dense Atlas stays landmark-led. A sparse scene must not erase everything the person
-                // just wrote when selection changes; Find matches also remain eligible.
-                if (tier === 'atlas' && found.length > 64 && item.kind !== 'crystal' && !(item.kind === 'thought' && (selected || item.kept || matched)))
-                    return false;
-                if (tier !== 'local' && (item.kind === 'source' || snap.session.recalls.includes(key)))
-                    return false;
-            }
-            return true;
-        });
-        // Cap representational density; spatial identity remains in canonical state.
-        const currentMatch = liveFind.current?.current;
-        const priority = new Set([...useUI.getState().selection, ...(useUI.getState().editing ? [useUI.getState().editing!] : []), ...(currentMatch ? [currentMatch] : [])]);
-        const disclosed = tier === 'local' ? filtered : readableLabels(filtered.map(key => {
-            const item = liveItems.current[key];
-            const kind = 'kind' in item ? item.kind : 'thought';
-            const landmark = kind === 'crystal';
-            const unresolved = 'generationAction' in item && item.generationAction === 'question' || /[?？]/.test(item.text);
-            return { ...item, priority: key === currentMatch ? 6 : priority.has(key) ? 5 : key in snap.session.ghosts ? 4 : landmark ? 3 : unresolved ? 2 : 1, ...disclosureBox(item.text, cam.zoom, kind) };
-        }), cam, rect.current, 64);
-        const ids = [...disclosed.filter(k => priority.has(k)), ...disclosed.filter(k => !priority.has(k))].slice(0, tier === 'local' ? 240 : 64).sort();
+        depthBudget.current = zoomDepth(cam.zoom, depthBudget.current);
+        const state = useUI.getState();
+        const disclosure = discloseHierarchy({ items: liveItems.current, hierarchy: liveHierarchy.current, found, camera: cam, viewport: rect.current, depth: depthBudget.current, selection: state.selection, editing: state.editing, currentMatch: liveFind.current?.current, matches: liveFind.current?.matches, recalls: snap.session.recalls, expanded: expandedParents.current, measured: key => measuredBox(key, liveItems.current[key], cam) });
+        const ids = disclosure.visible;
+        setRootAnchors(old => old.length === disclosure.roots.length && old.every((id, i) => id === disclosure.roots[i]) ? old : disclosure.roots);
         setVisible(old => old.length === ids.length && old.every((x, i) => x === ids[i]) ? old : ids);
-    }, [geometry, controller]);
+    }, [geometry, controller, measuredBox]);
     useEffect(() => {
         const newKeys = new Set(Object.keys(items));
         for (const key of known.current)
@@ -525,12 +513,14 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const handleThoughtCancel = useCallback(() => { const key = useUI.getState().editing; const t = key ? controller.getSnapshot().project.thoughts[key] : null; if (t && !t.text.trim())
         controller.dispatch({ type: 'thought.delete', ids: [t.id] }); useUI.getState().patch({ editing: null, selection: useUI.getState().selection.filter(k => !!controller.getSnapshot().project.thoughts[k] || !!controller.getSnapshot().session.ghosts[k]) }); }, [controller]);
     const handleGhostMeasured = useCallback((key: string) => {
+        const cam = camera.current?.get() ?? controller.getSnapshot().project.camera;
+        recordMeasurement(key, geometry.get(key), liveItems.current[key], cam, !!viewport.current?.hasAttribute('data-camera-moving'), () => refreshVisible(camera.current?.get() ?? cam, true));
         const app = viewport.current?.closest('.app');
         const reserved = [...app?.querySelectorAll<HTMLElement>('.identity, .global-actions, [data-testid="speak"], .notice') ?? []]
             .filter(element => element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden')
             .map(element => element.getBoundingClientRect());
         correctMeasuredGhost(key, correctedGhosts.current, controller, geometry, Object.keys(liveItems.current), camera.current?.get() ?? controller.getSnapshot().project.camera, rect.current, reserved);
-    }, [controller, geometry]);
+    }, [controller, geometry, refreshVisible, recordMeasurement]);
     const keepCandidate = useCallback((relationId: string) => keepRelationCandidate(controller, relationId), [controller]);
     const ignoreCandidate = useCallback((relationId: string) => ignoreRelationCandidate(controller, relationId), [controller]);
     const renameCandidate = useCallback((relationId: string, label: string) => controller.updatePhenomenon(relationId, { label }), [controller]);
@@ -542,6 +532,16 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const showScopeHub = ui.selection.length > 0 && !ui.dragging && !ui.editing && !ui.carry.length && ui.surface === 'none' && !ui.speakFocused;
     const relationObstacles = relationPlacementObstacles(visible, geometry, stableCamera, rect.current, showScopeHub ? scopePlacement : null);
     const visibleSet = new Set(visible); // One frontier read feeds both disclosure and Atlas labels.
+    const revealThought = (key: string) => {
+        useUI.getState().patch({ selection: [key] });
+        const bounds = geometry.get(key), c = camera.current;
+        if (bounds && c) c.set(revealCamera(bounds, items[key], c.get().zoom, rect.current), true);
+    };
+    const expandBranch = (key: string) => {
+        expandedParents.current.add(key);
+        refreshVisible(camera.current?.get() ?? project.camera, true);
+        frameIds([key, ...hierarchy.children.get(key) ?? []], 72, camera.current?.get().zoom ?? 1);
+    };
     const frontiers = activeFrontiers(project);
     const landmarkCandidates = [
         ...visible.filter(key => project.thoughts[key]?.kind === 'crystal').map(key => ({ ...project.thoughts[key], id: 'crystal:' + key, priority: 3 })),
@@ -567,7 +567,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     // its own offsets and classes; the description owns the resolved positions.
     const relationPhenomena = describeRelations(visibleRelations, geometry, false);
     const relationHits = describeRelations(tokenRelations, geometry, false);
-    const causalTraces = level === 'atlas' ? [] : describeCausalTraces(project, geometry, ui.selection, hoveredThought, visibleSet);
+    const causalTraces = describeCausalTraces(project, geometry, ui.selection, hoveredThought, visibleSet, session.ghosts, connectionStyle);
     return <div ref={viewport} className="field" data-testid="field" data-level={level} data-scope={ui.selection.length > 0 || undefined} tabIndex={0} aria-label={t('Thought Field')} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerCancel} onContextMenu={contextMenu} onLostPointerCapture={() => { if (gesture.current)
         pointerCancel(); }} onDoubleClick={doubleClick} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; }} onDrop={e => { e.preventDefault(); const point = camera.current?.worldPoint(localPoint(e)) ?? { x: 200, y: 200 }; if (e.dataTransfer.files.length)
         onDropFiles(Array.from(e.dataTransfer.files), point);
@@ -625,6 +625,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         }}>
     <FieldBackgroundLayer style={fieldStyle}/>
     <div ref={world} className="world">
+     {rootAnchors.length > 0 && <svg className="phenomena root-anchors" aria-hidden="true" data-testid="root-anchors" data-count={rootAnchors.length}><path d={rootAnchors.map(key => { const item = items[key]; const size = 7 / stableCamera.zoom; return item ? `M${item.x},${item.y}h${size}v${size}h-${size}z` : ''; }).join(' ')} /></svg>}
      <CausalTraceLayer layerRef={causalTraceLayer} traces={causalTraces}/>
     <RelationLayer layerRef={relationLayer} probe={null} operationId={ui.operation?.id} relations={relationPhenomena} relevantIds={activeRelationIds}/>
     <StructureOverlay proposals={Object.values(session.structures)} geometry={geometry}/>
@@ -633,12 +634,12 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             {ui.surface !== 'relation' && <RelationLabels relations={relationHits} thoughtBounds={relationObstacles} zoom={stableCamera.zoom} onRelation={onRelation} onKeep={keepCandidate} onIgnore={ignoreCandidate} onRename={renameCandidate}/>}
    {visible.map(key => { if (ui.carry.includes(key))
         return null; const item = items[key]; if (!item)
-        return null; return <ThoughtView key={key} item={item} ghost={key in session.ghosts} recalled={session.recalls.includes(key)} selected={ui.selection.includes(key)} settling={ui.spatialTransition?.material === true && ui.spatialTransition.scopeIds.includes(key)} find={findEmphasis(key)} emphasis={!focus.selected.size ? 'normal' : focus.selected.has(key) ? 'selected' : focus.direct.has(key) ? 'direct' : focus.nearby.has(key) ? 'nearby' : focus.peripheral.has(key) ? 'peripheral' : 'receded'} editing={ui.editing === key} level={level} geometry={geometry} onEdit={handleThoughtEdit} onCancel={handleThoughtCancel} onMeasure={handleGhostMeasured} onHover={setHoveredThought} onReject={key => dismissGhostWithDissolve(controller, key, () => { const state = useUI.getState(); state.patch({ selection: state.selection.filter(id => id !== key) }); })}/>; })}
+        return null; return <ThoughtView key={key} item={item} ghost={key in session.ghosts} recalled={session.recalls.includes(key)} selected={ui.selection.includes(key)} settling={ui.spatialTransition?.material === true && ui.spatialTransition.scopeIds.includes(key)} find={findEmphasis(key)} emphasis={!focus.selected.size ? 'normal' : focus.selected.has(key) ? 'selected' : focus.direct.has(key) ? 'direct' : focus.nearby.has(key) ? 'nearby' : focus.peripheral.has(key) ? 'peripheral' : 'receded'} editing={ui.editing === key} level={level} depth={hierarchy.depth.get(key) ?? 0} root={hierarchy.originalRoots.has(key)} collapsedCount={(hierarchy.children.get(key) ?? []).filter(id => !visibleSet.has(id)).length} onExpand={expandBranch} geometry={geometry} onEdit={handleThoughtEdit} onCancel={handleThoughtCancel} onMeasure={handleGhostMeasured} onHover={setHoveredThought} onReject={key => dismissGhostWithDissolve(controller, key, () => { const state = useUI.getState(); state.patch({ selection: state.selection.filter(id => id !== key) }); })}/>; })}
     {offscreenMatches.map((key, index) => { const edge = recallEdge(project.thoughts[key], stableCamera, rect.current.width, rect.current.height, index); const hit = find?.current === key; return <button className="find-edge" data-current={hit || undefined} key={'find-' + key} style={{ left: edge.x, top: edge.y }} onClick={() => onRevealMatch(key)} title={project.thoughts[key].text}><span aria-hidden="true" style={{ display: 'inline-block', transform: `rotate(${edge.angle}deg)` }}>&#8594;</span> {t(hit ? 'Next match' : 'Match elsewhere')}</button>; })}
    {Object.values(project.regions).filter(region => level !== 'local' ? disclosedLandmarks.has('region:' + region.id) : ui.regionId === region.id).map(region => <button className="region-label" data-active={ui.regionId === region.id || undefined} onClick={() => onRegion(region.id, { x: region.x, y: region.y })} key={region.id} style={{ transform: `translate(${region.x}px,${region.y}px) scale(var(--inverse-zoom))` }}><span>{t(region.name)}</span><small>{t('{count} thoughts', { count: region.members.length })}</small></button>)}
    {level === 'atlas' && frontiers.filter(key => disclosedLandmarks.has('frontier:' + key)).map(key => { const t = project.thoughts[key]; return <button className="frontier-label" key={'frontier-' + key} onClick={() => { controller.wake(key); ui.patch({ selection: [key] }); camera.current?.set({ x: rect.current.width / 2 - t.x - 128, y: rect.current.height / 2 - t.y - 30, zoom: 1 }); camera.current?.commit(); }} style={{ transform: `translate(${t.x}px,${t.y}px) scale(var(--inverse-zoom))` }}><span aria-hidden="true">&#9671;</span> {semanticExcerpt(t.text, 'atlas', 'thought')}</button>; })}
   </div>
-   <FieldOverlays ref={overlays} viewport={viewport} camera={() => camera.current?.get() ?? project.camera} geometry={geometry} visibleIds={visible} selection={ui.selection} operation={ui.operation} enabled={ui.surface === 'none'} dragging={ui.dragging} onScopeBounds={onScopeBounds} suggestions={Object.values(session.ghosts)} thoughts={project.thoughts} reviewNeeded={level !== 'local' || Object.keys(session.ghosts).some(key => !visibleSet.has(key))} onSuggestionAction={onAIProposalAction} scope={showScopeHub ? { count: ui.selection.length, actions: scopeActions, probing, proposalReview, aiProposalKind, onAction: onScopeAction, onKeepAll: () => onKeepAllProposals([...ui.selection]), onKeepOriginal: () => onKeepOriginalProposal([...ui.selection]), onAIProposalAction: action => onAIProposalAction([...ui.selection], action), onMore } : null} />
+   <FieldOverlays ref={overlays} viewport={viewport} camera={() => camera.current?.get() ?? project.camera} geometry={geometry} visibleIds={visible} selection={ui.selection} operation={ui.operation} enabled={ui.surface === 'none'} dragging={ui.dragging} onScopeBounds={onScopeBounds} suggestions={Object.values(session.ghosts)} thoughts={project.thoughts} roots={rootAnchors.map(key => project.thoughts[key]).filter(Boolean)} onRevealRoot={revealThought} reviewNeeded={level !== 'local' || Object.keys(session.ghosts).some(key => !visibleSet.has(key))} onSuggestionAction={onAIProposalAction} scope={showScopeHub ? { count: ui.selection.length, actions: scopeActions, probing, proposalReview, aiProposalKind, onAction: onScopeAction, onKeepAll: () => onKeepAllProposals([...ui.selection]), onKeepOriginal: () => onKeepOriginalProposal([...ui.selection]), onAIProposalAction: action => onAIProposalAction([...ui.selection], action), onMore } : null} />
   {ui.carry.length > 0 && <div className="carry-preview">{project.thoughts[ui.carry[0]]?.text.slice(0, 180)}</div>}
   {ui.carry.length > 0 && <div className="carry-banner">{t('Carrying {count} thoughts. Click to place; Escape cancels.', { count: ui.carry.length })}</div>}
     {session.recalls.filter(k => !visibleSet.has(k) && !!project.thoughts[k]).map((k, index) => { const edge = recallEdge(project.thoughts[k], stableCamera, rect.current.width, rect.current.height, index); return <button className="recall-edge" key={k} style={{ left: edge.x, top: edge.y }} onClick={() => { controller.wake(k); ui.patch({ selection: [k], notice: t('Earlier thought awakened. Use Find / Take me there to travel.') }); }} title={project.thoughts[k].text}><span aria-hidden="true" style={{ display: 'inline-block', transform: `rotate(${edge.angle}deg)` }}>&#8594;</span> {t('Earlier thought')}</button>; })}

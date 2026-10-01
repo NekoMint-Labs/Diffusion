@@ -159,13 +159,14 @@ test('Ghost is a different kind of material, and Image Atmosphere fills canonica
     // trace, not from a canonical Thought's surface-boundary ring.
     expect(maxChannelDelta(paper.ghost.ringRGB, hexRgb(paper.pencil)), 'the Ghost edge is the pencil trace colour').toBeLessThanOrEqual(2);
     expect(maxChannelDelta(paper.ghost.ringRGB, paper.canonical.ringRGB), 'the Ghost edge is not the canonical boundary ring').toBeGreaterThan(20);
-    // …in addition to being fainter than a canonical Thought.
-    expect(paper.ghost.bgAlpha).toBeLessThan(paper.canonical.bgAlpha);
+    // Issue 11 approved readable paper plus one fine rail, not opacity as a proxy for temporariness.
+    // This selected proposal has the explicit paper treatment; canonical material tests stay intact.
+    expect(paper.ghost.bgAlpha).toBeCloseTo(.88, 2);
 
     // (7) Image Atmosphere gives a canonical Thought a fuller fill; a Ghost keeps its own treatment.
     expect(image.canonical.bgAlpha).toBeGreaterThan(paper.canonical.bgAlpha);
     expect(image.ghost.bgAlpha).toBeCloseTo(paper.ghost.bgAlpha, 3);
-    expect(image.ghost.bgAlpha).toBeLessThan(image.canonical.bgAlpha);
+    expect(image.ghost.bgAlpha).toBeCloseTo(.88, 2);
 });
 
 async function settleOpacity(page: Page, state: string): Promise<number> {

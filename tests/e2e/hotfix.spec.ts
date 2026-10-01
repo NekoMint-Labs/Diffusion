@@ -77,7 +77,10 @@ test('More opens a delayed secondary column without replacing the primary menu',
     const secondary = page.getByTestId('thought-more-menu');
     await expect(secondary).toBeVisible();
     await expect(root.locator('[data-command="continue-thinking"]')).toBeVisible();
-    expect(await secondary.getByRole('menuitem').count()).toBeLessThanOrEqual(6);
+    // The approved lineage inspector is one extra row; Copy/Delete must remain accessible.
+    expect(await secondary.getByRole('menuitem').count()).toBeLessThanOrEqual(7);
+    await expect(secondary.locator('[data-command="thought-lineage"]')).toBeVisible();
+    await expect(secondary.locator('[data-command="delete"]')).toBeVisible();
     const rows = secondary.getByRole('menuitem');
     for (let index = 0; index < await rows.count(); index++) {
         const row = await rows.nth(index).boundingBox();

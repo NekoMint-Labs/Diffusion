@@ -18,7 +18,9 @@ export function LineageSurface({ controller, project, thoughtId, onClose }: { co
         for (let index = 0; index < queue.length; index++) for (const child of hierarchy.children.get(queue[index]) ?? []) if (!excluded.has(child)) { excluded.add(child); queue.push(child); }
         return excluded;
     }, [hierarchy, thoughtId]);
-    const candidates = Object.values(project.thoughts).filter(item => item.kind !== 'source' && !descendants.has(item.id) && (item.text.toLocaleLowerCase().includes(query.toLocaleLowerCase()) || choice === `parent:${item.id}`)).slice(0, 80);
+    const allowed = Object.values(project.thoughts).filter(item => item.kind !== 'source' && !descendants.has(item.id));
+    const selectedParent = allowed.find(item => choice === `parent:${item.id}`);
+    const candidates = [...(selectedParent ? [selectedParent] : []), ...allowed.filter(item => item !== selectedParent && item.text.toLocaleLowerCase().includes(query.toLocaleLowerCase())).slice(0, selectedParent ? 79 : 80)];
     const options = [{ value: 'default', label: t('Use original sources') }, { value: 'root', label: t('Independent thought') }, ...candidates.map(item => ({ value: `parent:${item.id}`, label: item.text.slice(0, 90) || t('New thought') }))];
     const apply = () => {
         try {
@@ -32,9 +34,10 @@ export function LineageSurface({ controller, project, thoughtId, onClose }: { co
             <h3>{t('Original sources')}</h3>
             {thought.derivedFrom?.length ? <ul>{thought.derivedFrom.map(id => <li key={id}>{project.thoughts[id]?.text ?? t('Missing thought')}</li>)}</ul> : <p className="muted">{t('Written independently')}</p>}
             <p className="muted">{t('Organization does not rewrite sources, words or positions. With several sources, the first surviving source is the default parent.')}</p>
+            <p className="muted">{t('Arrows show original sources; dashed lines show a different organizing parent. Labeled connections describe meaning.')}</p>
             <label>{t('Find a parent')}<input data-testid="parent-query" value={query} onChange={event => setQuery(event.target.value)} /></label>
             <Select value={choice} options={options} onChange={setChoice} ariaLabel={t('Organizing parent')} testId="organizing-parent" />
-            <p className="muted">{t('Current parent')}: {hierarchy.parent.get(thoughtId) ? project.thoughts[hierarchy.parent.get(thoughtId)!]?.text : t('Independent thought')}</p>
+            <p className="muted">{t('Current parent')}{': '}{hierarchy.parent.get(thoughtId) ? project.thoughts[hierarchy.parent.get(thoughtId)!]?.text : t('Independent thought')}</p>
             {error && <p role="alert">{error}</p>}
             <Button variant="solid" data-testid="apply-parent" onClick={apply}>{t('Apply parent change')}</Button>
         </>}

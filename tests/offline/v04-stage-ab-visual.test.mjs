@@ -9,7 +9,8 @@ test('Stage B gives Ghost, Question and Source distinct editorial identities wit
   const theme = read('src/ui/theme.css');
 
   assert.match(semantic, /\.thought\.ghost:not\(\.editing\)::before[\s\S]*pencil-trace/);
-  assert.match(semantic, /data-proposal-action="angle"[\s\S]*border-left: 1px dashed/);
+  assert.match(semantic, /data-proposal-action="angle"[\s\S]*font-style: italic/);
+  assert.doesNotMatch(semantic, /border-left: 1px dashed/);
   assert.match(semantic, /\.question-mark[\s\S]*left: -23px/);
   assert.match(semantic, /\.thought\.source:not\(\.editing\)::before[\s\S]*source-rule/);
   assert.match(theme, /--pencil-trace:/);

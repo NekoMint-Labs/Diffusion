@@ -413,7 +413,10 @@ test('large projects are culled and zoom changes representation', async ({ page 
         await page.waitForTimeout(160);
     }
     await expect(page.getByTestId('field')).toHaveAttribute('data-level', 'atlas');
-    await expect(page.locator('[data-kind="thought"]')).toHaveCount(0);
+    // Issue 11 retains roots through capped summaries and exact anchors, rather than hiding all.
+    expect(await page.locator('[data-kind="thought"]').count()).toBeLessThanOrEqual(64);
+    await expect(page.getByTestId('root-anchors')).toBeVisible();
+    await expect(page.getByTestId('root-review-toggle')).toBeVisible();
 });
 
 test('Scope Hub follows selection geometry and transfers exact scope to Speak', async ({ page }) => {

@@ -70,7 +70,8 @@ export function contextualActionModel(commands: DiffusionCommand[], context: Com
     const secondary = secondaryCandidates
         .filter(action => !primaryIds.has(action.id) && supported(commands, context, action))
         .filter((action, index, all) => all.findIndex(candidate => candidate.id === action.id) === index)
-        .slice(0, 6);
+        // One new inspector must not displace an existing edit action (notably Delete).
+        .slice(0, supported(commands, context, secondaryCandidates[0]) ? 7 : 6);
 
     return { primary, secondary };
 }

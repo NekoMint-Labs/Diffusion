@@ -1,5 +1,13 @@
 /* Product copy only. English source keys are the fallback dictionary. */
 export const zh: Record<string, string> = {
+  "Thought not found": "这条想法已不存在。",
+  "Connection style": "连线样式",
+  "Soft curves": "柔和曲线",
+  "Elbow lines": "折线",
+  "{count} thoughts shown as anchors": "另有 {count} 条想法以位置标记显示",
+  "Find root thoughts": "查找这些根想法",
+  "Type to narrow these thoughts.": "输入关键词可进一步查找。",
+  "Show {count} children": "展开 {count} 个下级",
   "Sources and parent...": "来源与上级…",
   "Sources and parent": "来源与上级",
   "Inspect original sources or change the organizing parent.": "查看原始来源，或调整整理后的上级。",
@@ -881,4 +889,6 @@ export const zh: Record<string, string> = {
   "Strength": "强度",
   "How present the image is behind the Field. The Field always stays readable.": "图像在场域背后的显现程度。场域始终清晰可读。",
   "For this run only.": "只影响这一次运行。",
+  "Find anchored thoughts": "查找位置标记中的想法",
+  "Arrows show original sources; dashed lines show a different organizing parent. Labeled connections describe meaning.": "箭头表示原始来源，虚线表示另设的上级；带文字的关联线表示内容之间的联系。",
 };

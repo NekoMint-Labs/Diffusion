@@ -346,7 +346,9 @@ test('attention does not hide the rest of the Field: a distant Thought keeps its
         await page.mouse.wheel(0, 120);
     }
     await expect(page.getByTestId('field')).toHaveAttribute('data-level', 'neighborhood');
-    await page.getByTestId('field').dblclick({ position: { x: 1400, y: 900 } });
+    // The dense-root reading entry reserves a dock lane; choose inside the current Field bounds.
+    const usableField = (await page.getByTestId('field').boundingBox())!;
+    await page.getByTestId('field').dblclick({ position: { x: usableField.width - 40, y: usableField.height - 60 } });
     const editor = page.getByRole('textbox', { name: 'Edit thought' });
     await editor.fill('A far reference point');
     await editor.press('Enter');

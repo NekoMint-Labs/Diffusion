@@ -112,6 +112,10 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .suggestion-review section { padding: 10px 4px; border-top: 1px solid var(--boundary); }
 .suggestion-review p { white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0; }
 .suggestion-review small { display: block; color: var(--ink-secondary); overflow-wrap: anywhere; }
+.root-review section button { text-align: start; white-space: normal; overflow-wrap: anywhere; }
+.root-anchors path { fill: var(--surface-1); stroke: var(--ink-secondary); stroke-width: 1; vector-effect: non-scaling-stroke; opacity: .65; }
+.branch-expand { display: block; margin-top: 8px; border: 0; background: transparent; color: var(--ink-secondary); cursor: pointer; padding: 2px 0; font: var(--type-helper-size)/1.5 var(--ui-font); }
+.field:not([data-level="local"]) .branch-expand { font-size: calc(var(--type-helper-size) * var(--inverse-zoom)); margin-top: calc(8px * var(--inverse-zoom)); }
 
 /* --- Phenomena layers: positioning only -----------------------------------
    The visuals of a Relation and of a causal trace are owned by `materials.css` and

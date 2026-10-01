@@ -1,6 +1,9 @@
-import type { AIProposalAction, Point, ProjectState } from '../../core/model.ts';
-import { center, type Bounds } from '../spatial/geometry.ts';
-import { boundaryToward, type GeometryLookup } from './describe.ts';
+import type { AIProposalAction, Ghost, Point, ProjectState } from '../../core/model.ts';
+import { thoughtHierarchy } from '../../core/hierarchy.ts';
+import type { ConnectionStyle } from '../../ui/appearance.ts';
+import { routeCausalTrace } from './causalRouting.ts';
+import { type Bounds } from '../spatial/geometry.ts';
+import { type GeometryLookup } from './describe.ts';
 
 export type CausalTraceState = 'sleep' | 'parent' | 'wake';
 
@@ -9,6 +12,11 @@ export interface CausalEdge {
     parentId: string;
     childId: string;
     action: AIProposalAction;
+    relationship?: 'source' | 'organization';
+    pending?: boolean;
+    depth?: number;
+    style?: ConnectionStyle;
+    obstacleIds?: string[];
 }
 
 export interface CausalTrace extends CausalEdge {
@@ -16,18 +24,27 @@ export interface CausalTrace extends CausalEdge {
     a: Point;
     b: Point;
     path: string;
+    routeBounds?: Bounds;
 }
 
 /** Canonical lineage is intentionally tiny: parent ids plus the action on the child. Relations do
  * not participate here, and no visual geometry is ever persisted back into a Thought. */
-export function causalEdges(project: ProjectState): CausalEdge[] {
+export function causalEdges(project: ProjectState, ghosts: Record<string, Ghost> = {}): CausalEdge[] {
     const edges: CausalEdge[] = [];
+    const hierarchy = thoughtHierarchy({ ...project.thoughts, ...ghosts });
     for (const child of Object.values(project.thoughts)) {
         if (!child.derivedFrom?.length || !child.generationAction) continue;
         for (const parentId of child.derivedFrom) {
             if (parentId === child.id || !project.thoughts[parentId]) continue;
-            edges.push({ id: `causal:${parentId}:${child.id}`, parentId, childId: child.id, action: child.generationAction });
+            edges.push({ id: `causal:${parentId}:${child.id}`, parentId, childId: child.id, action: child.generationAction, relationship: 'source', depth: hierarchy.depth.get(child.id) });
         }
+    }
+    for (const ghost of Object.values(ghosts)) for (const parentId of ghost.scopeIds) {
+        if (project.thoughts[parentId]) edges.push({ id: `causal:${parentId}:${ghost.id}`, parentId, childId: ghost.id, action: ghost.proposalAction ?? 'continue', relationship: 'source', pending: true, depth: hierarchy.depth.get(ghost.id) });
+    }
+    for (const child of Object.values(project.thoughts)) {
+        const parentId = child.organizingParentId;
+        if (parentId && project.thoughts[parentId] && hierarchy.parent.get(child.id) === parentId && !child.derivedFrom?.includes(parentId)) edges.push({ id: `organization:${parentId}:${child.id}`, parentId, childId: child.id, action: 'continue', relationship: 'organization', depth: hierarchy.depth.get(child.id) });
     }
     return edges.sort((a, b) => a.childId.localeCompare(b.childId) || a.parentId.localeCompare(b.parentId));
 }
@@ -35,8 +52,8 @@ export function causalEdges(project: ProjectState): CausalEdge[] {
 /** Selecting a Thought wakes its ancestry and one local branch depth. Hover is intentionally more
  * restrained: only the immediate parent edge wakes. This makes the journey legible without turning
  * the resting Field into a graph. */
-export function causalTraceStates(project: ProjectState, selection: readonly string[], hoveredId?: string | null): Map<string, CausalTraceState> {
-    const edges = causalEdges(project);
+export function causalTraceStates(project: ProjectState, selection: readonly string[], hoveredId?: string | null, ghosts: Record<string, Ghost> = {}): Map<string, CausalTraceState> {
+    const edges = causalEdges(project, ghosts);
     const byChild = new Map<string, CausalEdge[]>();
     const byParent = new Map<string, CausalEdge[]>();
     for (const edge of edges) {
@@ -45,7 +62,7 @@ export function causalTraceStates(project: ProjectState, selection: readonly str
     }
 
     const wake = new Set<string>();
-    const ancestry = new Set(selection.filter(id => !!project.thoughts[id]));
+    const ancestry = new Set(selection.filter(id => !!project.thoughts[id] || !!ghosts[id]));
     const queue = [...ancestry];
     while (queue.length) {
         const childId = queue.shift()!;
@@ -62,47 +79,25 @@ export function causalTraceStates(project: ProjectState, selection: readonly str
     for (const parentId of ancestry)
         for (const edge of byParent.get(parentId) ?? []) wake.add(edge.id);
 
-    const hoveredParents = new Set((hoveredId && project.thoughts[hoveredId] ? byChild.get(hoveredId) : [])?.map(edge => edge.id) ?? []);
+    const hoveredParents = new Set((hoveredId ? byChild.get(hoveredId) : [])?.map(edge => edge.id) ?? []);
     return new Map(edges.map(edge => [edge.id, wake.has(edge.id) ? 'wake' : hoveredParents.has(edge.id) ? 'parent' : 'sleep']));
-}
-
-function curvedPath(action: AIProposalAction, a: Point, b: Point): string {
-    const dx = b.x - a.x, dy = b.y - a.y;
-    const length = Math.max(1, Math.hypot(dx, dy));
-    const ux = dx / length, uy = dy / length;
-    const px = -uy, py = ux;
-
-    if (action === 'angle') {
-        const bend = Math.max(28, Math.min(92, length * .2));
-        const sign = Math.abs(dy) > 8 ? Math.sign(dy) : dx >= 0 ? 1 : -1;
-        const c1 = { x: a.x + dx * .28 + px * bend * sign, y: a.y + dy * .28 + py * bend * sign };
-        const c2 = { x: b.x - dx * .25 + px * bend * sign, y: b.y - dy * .25 + py * bend * sign };
-        return `M${a.x},${a.y} C${c1.x},${c1.y} ${c2.x},${c2.y} ${b.x},${b.y}`;
-    }
-
-    if (Math.abs(dx) >= Math.abs(dy)) {
-        const pull = Math.max(30, Math.min(150, Math.abs(dx) * .42));
-        return `M${a.x},${a.y} C${a.x + Math.sign(dx || 1) * pull},${a.y} ${b.x - Math.sign(dx || 1) * pull},${b.y} ${b.x},${b.y}`;
-    }
-    const pull = Math.max(30, Math.min(150, Math.abs(dy) * .42));
-    return `M${a.x},${a.y} C${a.x},${a.y + Math.sign(dy || 1) * pull} ${b.x},${b.y - Math.sign(dy || 1) * pull} ${b.x},${b.y}`;
 }
 
 export function describeCausalEdge(edge: CausalEdge, geometry: GeometryLookup, state: CausalTraceState = 'sleep'): CausalTrace | null {
     const parent = geometry.get(edge.parentId), child = geometry.get(edge.childId);
     if (!parent || !child) return null;
-    const parentCenter = center(parent), childCenter = center(child);
-    const a = boundaryToward(parent, childCenter);
-    const b = boundaryToward(child, parentCenter);
-    return { ...edge, state, a, b, path: curvedPath(edge.action, a, b) };
+    const obstacles = (edge.obstacleIds ?? []).filter(id => id !== edge.parentId && id !== edge.childId).map(id => geometry.get(id)).filter((box): box is Bounds => !!box);
+    const route = routeCausalTrace(parent, child, edge.style ?? 'curve', obstacles);
+    return route ? { ...edge, state, ...route } : null;
 }
 
-export function describeCausalTraces(project: ProjectState, geometry: GeometryLookup, selection: readonly string[], hoveredId?: string | null, visibleIds?: ReadonlySet<string>): CausalTrace[] {
-    const states = causalTraceStates(project, selection, hoveredId);
+export function describeCausalTraces(project: ProjectState, geometry: GeometryLookup, selection: readonly string[], hoveredId?: string | null, visibleIds?: ReadonlySet<string>, ghosts: Record<string, Ghost> = {}, style: ConnectionStyle = 'curve'): CausalTrace[] {
+    const states = causalTraceStates(project, selection, hoveredId, ghosts);
     const traces: CausalTrace[] = [];
-    for (const edge of causalEdges(project)) {
-        if (visibleIds && !visibleIds.has(edge.parentId) && !visibleIds.has(edge.childId) && states.get(edge.id) === 'sleep') continue;
-        const trace = describeCausalEdge(edge, geometry, states.get(edge.id));
+    const obstacleIds = visibleIds ? [...visibleIds] : [];
+    for (const edge of causalEdges(project, ghosts)) {
+        if (visibleIds && (!visibleIds.has(edge.parentId) || !visibleIds.has(edge.childId))) continue;
+        const trace = describeCausalEdge({ ...edge, style, obstacleIds }, geometry, states.get(edge.id));
         if (trace) traces.push(trace);
     }
     return traces;

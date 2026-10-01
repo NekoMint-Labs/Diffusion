@@ -51,9 +51,10 @@ export function thoughtHierarchy(items: Record<string, HierarchyItem>): ThoughtH
 export function organizingParentError(thoughts: Record<string, Thought>, id: string, parentId: string | null | undefined): string | null {
     if (!Object.hasOwn(thoughts, id) || thoughts[id].kind === 'source') return 'Thought not found';
     if (parentId === null) return null;
+    const followsSources = parentId === undefined;
     if (parentId === undefined) parentId = thoughts[id].derivedFrom?.find(key => key !== id && Object.hasOwn(thoughts, key)) ?? null;
     if (parentId === null) return null;
-    if (typeof parentId !== 'string' || !Object.hasOwn(thoughts, parentId) || thoughts[parentId].kind === 'source') return 'The chosen parent no longer exists.';
+    if (typeof parentId !== 'string' || !Object.hasOwn(thoughts, parentId) || !followsSources && thoughts[parentId].kind === 'source') return 'The chosen parent no longer exists.';
     const hierarchy = thoughtHierarchy(thoughts);
     let cursor: string | null = parentId;
     while (cursor) {

@@ -142,7 +142,11 @@ test('Find discloses an ordinary Thought in dense Atlas without weakening the de
         await page.waitForTimeout(40);
     }
     await expect(page.getByTestId('field')).toHaveAttribute('data-level', 'atlas');
-    await expect(page.locator('article[data-kind="thought"]')).toHaveCount(0);
+    // Acceptance now preserves authored roots. Dense views retain readable boxes up to the
+    // existing cap plus exact compact anchors and a searchable entry for suppressed roots.
+    expect(await page.locator('article[data-kind="thought"]').count()).toBeLessThanOrEqual(64);
+    await expect(page.getByTestId('root-anchors')).toBeVisible();
+    await expect(page.getByTestId('root-review-toggle')).toBeVisible();
     const camera = await page.locator('.world').getAttribute('style');
     await page.keyboard.press('Control+f');
     await page.locator('.find-bar input').fill('远景中也能找到这一条独特想法');
@@ -151,4 +155,10 @@ test('Find discloses an ordinary Thought in dense Atlas without weakening the de
     await expect(thought).toHaveAttribute('data-find', 'current');
     expect(await page.locator('article.thought').count()).toBeLessThanOrEqual(64);
     expect(await page.locator('.world').getAttribute('style')).toBe(camera);
+    await page.keyboard.press('Escape');
+    await page.getByTestId('root-review-toggle').click();
+    const entry = page.locator('.root-review .suggestion-review-list button').first();
+    const wording = (await entry.innerText()).trim();
+    await entry.click();
+    await expect(page.locator('article.thought').filter({ hasText: wording }).first()).toBeVisible();
 });

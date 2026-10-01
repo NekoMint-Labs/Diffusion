@@ -18,7 +18,7 @@ export function SuggestionReview({ elementRef, suggestions, thoughts, onAction }
             {suggestions.map(ghost => <section key={ghost.id} data-origin-scope={ghost.scopeIds.join(' ')}>
                 <small>{t('AI suggestion · not kept')}</small>
                 <p>{ghost.text}</p>
-                {ghost.scopeIds.length > 0 && <small>{t('From')}: {ghost.scopeIds.map(id => thoughts[id]?.text ?? t('Missing thought')).join(' / ')}</small>}
+                {ghost.scopeIds.length > 0 && <small>{t('From')}{': '}{ghost.scopeIds.map(id => thoughts[id]?.text ?? t('Missing thought')).join(' / ')}</small>}
                 <div><Button variant="ghost" size="sm" data-testid="suggestion-keep" onClick={() => onAction([ghost.id], 'keep')}>{t('Keep this')}</Button><Button variant="ghost" size="sm" data-testid="suggestion-ignore" onClick={() => onAction([ghost.id], 'ignore')}>{t('Ignore')}</Button></div>
             </section>)}
         </div>}

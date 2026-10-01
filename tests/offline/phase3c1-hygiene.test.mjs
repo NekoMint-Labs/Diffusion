@@ -58,7 +58,8 @@ test('Phase 3D keeps direct Delete, centralized bounded actions, and static per-
   assert.match(field, /e\.key === 'Delete'.*e\.key === 'Backspace'/s);
   const model = read('src/ui/commands/contextualActionModel.ts');
   assert.match(model, /slice\(0, 3\)/);
-  assert.match(model, /slice\(0, 6\)/);
+  // Issue 11 adds one lineage inspector while preserving the six existing secondary actions.
+  assert.match(model, /slice\(0, supported\(commands, context, secondaryCandidates\[0\]\) \? 7 : 6\)/);
   assert.match(model, /primaryIds/);
   const workspace = read('src/ui/Workspace.tsx');
   // Thinking runs use fixed product defaults plus their own per-run controls; no persisted setting

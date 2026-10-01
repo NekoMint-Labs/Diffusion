@@ -7,6 +7,7 @@ import { reduceProject } from '../../src/core/reducer.ts';
 import { validateProject, parseProjectExport, recoveredProject } from '../../src/core/validation.ts';
 import { migrateProjectV2, migrateProjectV3 } from '../../src/storage/migrations.ts';
 import { DexieRepository } from '../../src/storage/dexie.ts';
+import { exportProjectJSON } from '../../src/core/world.ts';
 
 function branch() {
     const p = createProject('p', 'P', 1);
@@ -74,7 +75,7 @@ describe('user organization and immutable generated sources', () => {
         const p = branch();
         expect(migrateProjectV3(migrateProjectV2(p)).thoughts.c.organizingParentId).toBeUndefined();
         p.thoughts.c.organizingParentId = 'a'; p.thoughts.e.organizingParentId = null;
-        const imported = parseProjectExport(JSON.stringify({ format: 'diffusion-project', version: 1, project: migrateProjectV3(migrateProjectV2(p)) }));
+        const imported = parseProjectExport(exportProjectJSON(migrateProjectV3(migrateProjectV2(p))));
         expect(recoveredProject(imported).thoughts.c.organizingParentId).toBe('a');
         const name = `hierarchy-${crypto.randomUUID()}`;
         let repository = new DexieRepository(name);
@@ -92,5 +93,13 @@ describe('user organization and immutable generated sources', () => {
         const p = createProject();
         for (let i = 0; i < 10000; i++) p.thoughts[`n${i}`] = { ...makeThought('text', { x: 0, y: 0 }, 1, `n${i}`), organizingParentId: i ? `n${i - 1}` : null };
         expect(thoughtHierarchy(p.thoughts).depth.get('n9999')).toBe(9999);
+    });
+    it('restores default source organization even when the original source is reference material', () => {
+        const p = branch(); p.thoughts.a.kind = 'source'; p.thoughts.b.organizingParentId = null;
+        const c = new ProjectController(p, async () => {});
+        c.dispatch({ type: 'thought.reparent', id: 'b' });
+        expect(c.getSnapshot().project.thoughts.b.organizingParentId).toBeUndefined();
+        expect(thoughtHierarchy(c.getSnapshot().project.thoughts).parent.get('b')).toBe('a');
+        expect(c.getSnapshot().project.thoughts.b.derivedFrom).toEqual(['a']);
     });
 });

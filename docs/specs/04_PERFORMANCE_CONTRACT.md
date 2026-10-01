@@ -73,21 +73,23 @@ The first implementation may use a simple grid / bucket. Keep the interface repl
 
 As the user zooms out, representation becomes cheaper:
 
-- Ghost disappears early
-- relation disappears early
-- Thought full text → shortened → gone
+- Pending Ghost stays directly reviewable, through text or a bounded screen-space entry
+- Only connectors with two disclosed endpoints render
+- Thought full text → shortened → compact root/selected anchor; descendants disclose by depth
 - Crystal → landmark
 - Region → label / landmark
 
-Atlas must not render every project detail simultaneously. Sparse viewports retain readable Thought excerpts so deselection does not empty a small Field. Dense viewports remain landmark-led; explicit selection, Keep and Find can disclose a Thought within the existing 64-label cap.
+Atlas must not render every project detail simultaneously. Sparse viewports retain readable root excerpts. Dense viewports retain at most 64 reading labels; additional original roots and protected canonical objects share one SVG anchor path and a searchable entry rendering at most 30 results. Local retains its 240-object cap. Pending suggestions remain inspectable without zooming. Depth and collision disclosure are presentation only, with hysteresis and stable source-based hierarchy; neither writes positions. Actual reading measurements supersede estimates after layout, coalesced outside camera animation.
 
 ## 7. Relations
 
 Render only:
 
-> visible + relevant + attention-activated relations
+> visible semantic relations, plus source/organization traces with both endpoints disclosed
 
 Confirmed relation persistence does not mean permanent SVG mounting.
+
+Source traces remain subtle at rest and wake with selection. Routes are bounded to the mounted set and cached geometry. Drag updates stay imperative and limited to the affected presentation; route failure must not trigger auto-layout or model edits.
 
 ## 8. Geometry cache
 

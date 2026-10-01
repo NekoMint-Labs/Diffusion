@@ -59,7 +59,16 @@ export function CommandMenu({ anchor, point, rows, moreRows = [], scope, note, p
     }, [present, anchor, point?.x, point?.y]);
 
     const anchorProp = useMemo(() => {
-        if (anchor) return anchor;
+        if (anchor) {
+            // A successor surface can hide the strip while this menu is still exiting.
+            // Keep its last real rectangle throughout that transition instead of jumping to (0,0).
+            let last = anchor.getBoundingClientRect();
+            return () => ({ getBoundingClientRect: () => {
+                const next = anchor.getBoundingClientRect();
+                if (next.width > 0 && next.height > 0) last = next;
+                return last;
+            } });
+        }
         if (point) return () => ({ getBoundingClientRect: () => new DOMRect(point.x, point.y, 1, 1) });
         return null;
     }, [anchor, point?.x, point?.y]);

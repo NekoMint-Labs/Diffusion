@@ -1,6 +1,7 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, type RefObject } from 'react';
 import type { Camera, Ghost, Thought, ThinkingOperation } from '../../core/model.ts';
 import { SuggestionReview } from './SuggestionReview.tsx';
+import { RootReview } from './RootReview.tsx';
 import type { GeometryCache } from '../../field/spatial/index.ts';
 import { worldToScreen } from '../../field/spatial/geometry.ts';
 import { cancelThinkingOperation, canCancelThinkingOperation } from '../../ai/operationControl.ts';
@@ -26,6 +27,8 @@ interface Props {
     thoughts: Record<string, Thought>;
     reviewNeeded: boolean;
     onSuggestionAction: (ids: string[], action: 'keep' | 'ignore') => void;
+    roots: Thought[];
+    onRevealRoot: (id: string) => void;
 }
 const screenRect = (rect: DOMRect): ScopeRect => ({ x: rect.x, y: rect.y, width: rect.width, height: rect.height });
 
@@ -36,6 +39,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
     const scopeElement = useRef<HTMLDivElement>(null);
     const operationElement = useRef<HTMLDivElement>(null);
     const reviewElement = useRef<HTMLDivElement>(null);
+    const rootsElement = useRef<HTMLDivElement>(null);
     const dockElement = useRef<HTMLDivElement>(null);
     const current = useRef({ ...props, displayOperation });
     current.current = { ...props, displayOperation };
@@ -55,6 +59,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             { element: scopeElement.current, ids: state.selection, key: `scope:${state.selection.join(' ')}`, forceDock: false },
             { element: operationElement.current, ids: state.displayOperation?.scopeIds ?? [], key: `operation:${state.displayOperation?.id}`, forceDock: state.dragging },
             { element: reviewElement.current, ids: [], key: 'suggestions', forceDock: true },
+            { element: rootsElement.current, ids: [], key: 'roots', forceDock: true },
         ].filter(item => item.element && state.enabled);
         const liveKeys = new Set(controls.map(item => item.key));
         for (const key of docked.current) if (!liveKeys.has(key)) docked.current.delete(key);
@@ -107,6 +112,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             if (scopeElement.current) scopeElement.current.style.display = 'none';
             if (operationElement.current) operationElement.current.style.display = 'none';
             if (reviewElement.current) reviewElement.current.style.display = 'none';
+            if (rootsElement.current) rootsElement.current.style.display = 'none';
         }
         // One-time coaching shares the reserved feedback lane instead of covering the Field.
         const coach = app.querySelector<HTMLElement>('.progressive-tutorial-coach');
@@ -174,6 +180,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
     const cancelable = Boolean(displayOperation && displayOperation.phase === 'pending' && canCancelThinkingOperation(displayOperation.id));
     return <>
         <div ref={dockElement} className="field-overlay-dock" aria-hidden="true" />
+        {props.roots.length > 0 && <RootReview elementRef={rootsElement} roots={props.roots} onReveal={props.onRevealRoot} />}
         {props.reviewNeeded && props.suggestions.length > 0 && <SuggestionReview elementRef={reviewElement} suggestions={props.suggestions} thoughts={props.thoughts} onAction={props.onSuggestionAction} />}
         {props.scope && <ScopeHub {...props.scope} elementRef={scopeElement} />}
         {displayOperation && <div ref={operationElement} className="spatial-operation-feedback" data-testid="operation-feedback" data-phase={displayOperation.phase} data-operation-id={displayOperation.id} data-origin-scope={displayOperation.scopeIds.join(' ')} data-copy-visible={showCopy || undefined} role="status" aria-live="polite" aria-atomic="true" onPointerDown={event => event.stopPropagation()}>

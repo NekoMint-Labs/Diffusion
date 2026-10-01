@@ -69,8 +69,11 @@
    pointer ownership today. */
 .causal-trace-layer { z-index: var(--layer-relation); }
 .causal-trace { --causal-presence: var(--causal-sleep-presence); }
-.causal-trace[data-causal-state="parent"] { --causal-presence: .38; }
-.causal-trace[data-causal-state="wake"] { --causal-presence: .56; }
+.causal-trace[data-causal-state="parent"] { --causal-presence: .64; }
+.causal-trace[data-causal-state="wake"] { --causal-presence: .82; }
+.causal-trace[data-relationship="organization"] .causal-trace-visual { stroke-dasharray: 6 5; }
+.causal-trace[data-pending="true"] .causal-trace-visual { stroke-dasharray: 2 4; }
+.causal-trace[data-depth="1"] .causal-trace-visual { stroke-width: 1.35; }
 .causal-trace-visual {
   fill: none;
   stroke: var(--trace);
@@ -107,7 +110,7 @@
 .region-label[data-active="true"] { color: var(--ink-primary); }
 
 /* Causal wake remains a directional provenance cue, independent of Region presentation. */
-.field[data-level="neighborhood"] .causal-trace[data-causal-state="sleep"] { --causal-presence: calc(var(--causal-sleep-presence) * .8); }
+.field:not([data-level="local"]) .causal-trace[data-causal-state="sleep"] { --causal-presence: var(--causal-sleep-presence); }
 .causal-trace[data-causal-state="wake"] .causal-trace-visual { animation: causal-trace-wake var(--motion-spatial) var(--ease-attention) both; }
 @keyframes causal-trace-wake { from { opacity: .12; stroke-dashoffset: 10; } to { opacity: var(--causal-presence); stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) {

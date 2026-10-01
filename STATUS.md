@@ -4,24 +4,17 @@ Diffusion is a quiet thinking medium for ideas before commitment. This file desc
 
 ## Issue #11 candidate — acceptance still open
 
-The four changes form a dependent draft stack: [scope and feedback #13](https://github.com/NekoMint-Labs/Diffusion/pull/13) → [object language #14](https://github.com/NekoMint-Labs/Diffusion/pull/14) → [auxiliary surfaces #15](https://github.com/NekoMint-Labs/Diffusion/pull/15) → motion and acceptance (this branch). They start from `fd09d6b` and preserve public APIs, canonical data, database schema, export format and explicit user commitment. Issue #10 model-quality work and #12 release qualification are outside this change.
+The dependent draft stack is [#13](https://github.com/NekoMint-Labs/Diffusion/pull/13) → [#14](https://github.com/NekoMint-Labs/Diffusion/pull/14) → [#15](https://github.com/NekoMint-Labs/Diffusion/pull/15) → [#16](https://github.com/NekoMint-Labs/Diffusion/pull/16) → [feedback repairs #17](https://github.com/NekoMint-Labs/Diffusion/pull/17). This follow-up starts at `b447da9` and implements the requester's collected items 4–10. The requester explicitly authorized one optional organization field while preserving original sources and older projects. Database names/versions, the portable envelope and public AI APIs are unchanged. Issue #10 model quality and #12 release qualification remain outside this work.
 
-- Scope controls use rendered dimensions, with three primary actions and overflow. Running copy/Stop stay in screen space, tied to the request's original scope. A reserved bottom lane handles crowded scenes without relocating the person's Thoughts.
-- Ghosts have readable open boundaries and direct Keep/Ignore; Thoughts retain stronger text; Crystals keep their stable manuscript hierarchy and landmark mark. Keeping a Ghost preserves its identity and position. New Ghosts receive one measured correction around persistent Field chrome; existing Thoughts are not rearranged.
-- Settings, Find, History, Thread and Deep Dive share surface spacing, wrapping controls and a reachable return path. Long Chinese context remains available through scrolling. Configuration and recovery controls remain present.
-- Shared motion tokens replace duplicate text effects. Reduced Motion removes transition delays, including the tutorial settlement pause, while keeping immediate state and running feedback. One-time coaching uses the measured feedback lane and releases it after dismissal; its observer starts after parent DOM refs are attached. Fixtures cover stop, failure and a valid late result after cancellation.
+- At Atlas/neighborhood zoom, pending suggestions have a bounded screen-space reading and Keep/Ignore entry. Editing, Find and selected objects stay discoverable; completion feedback belongs to the request's frozen scope. Empty, failed, cancelled and late responses remain distinct.
+- Scope overflow retains its trigger and last valid rectangle through exit into another surface. Click, hover, keyboard, Escape and existing edit actions remain available.
+- Ghosts use the approved soft paper body, one fine pencil rail, explicit unaccepted wording and reserved dismiss/selection space. Accepted Thought material and in-place commitment remain intact.
+- `thought.reparent` is an explicit user-only, undoable command. Optional `organizingParentId` is separate from `derivedFrom` / `generationAction`; wording, coordinates and child branches do not move. The source inspector and organization control share the existing overflow entry.
+- Hierarchical disclosure uses stable depth thresholds and hysteresis. Dense original roots retain world-coordinate anchors and a searchable reading entry. Cached rendered bounds feed disclosure; there is still one imperative camera and no per-frame React tree update.
+- Default source arrows, organization dashes and semantic relations have separate meanings. Device-local curve/elbow styling cannot edit project data. Boundary routing avoids visible cards, including a third card dragged across an existing trace; impossible routes are omitted while provenance stays available in the inspector.
+- Slate, forest and graphite have distinct blue, green and neutral palettes across surfaces and all five backgrounds; warm paper and custom accent preferences are retained.
 
-The requester accepted the first-stage direction and the distinction/Keep/Ignore flow of the three objects. The requester also reports that the final browser journey is smooth. Windows testing then exposed a narrow editor at Atlas zoom, disappearing deselected Thoughts, and misaligned Settings headings. These now have targeted fixes and regressions described below. The requester reported no further Settings anomalies at 100/125/150% display scaling on the earlier installer; acceptance of the repaired build, real Chinese IME and the complete native journey remains **pending**. Automated checks do not complete B1–B8 human acceptance; see [`docs/ACCEPTANCE_MAP.md`](docs/ACCEPTANCE_MAP.md#issue-11-b1b8-candidate-evidence).
-
-### Windows feedback repairs
-
-- A new editor at 8% Field zoom no longer overrides semantic CSS width with a provisional world-space cache width. The canonical text still freezes the width class throughout editing, and the multiline height budget is converted from screen to world pixels.
-- Sparse Atlas viewports retain readable Thoughts after deselection. Dense Atlas still prioritizes landmarks and keeps the 64-label cap; an explicit Find match can be disclosed. Find refreshes visibility without recreating the camera and projects coordinates at the existing zoom, including before a hit has mounted. Closing Find retains the existing exact return-view behavior. Canonical text and coordinates are unchanged.
-- All four Settings sections align their first title baseline with the first navigation label, including at narrow content sizes.
-
-`zoomedWriting.spec.ts` covers Atlas/neighborhood editors, Chinese multiline text, composing-Enter protection, commit/cancel, both motion preferences, light/dark, consecutive creation, durable reload, offscreen reload and Find centering/return, and a 5,000-Thought dense Atlas. All six focused cases passed (the reload case waits for application readiness and the durable camera write). `surfaceReadability.spec.ts` verifies the title alignment across all four sections and five viewport/locale cases. Five targeted surface cases passed.
-
-The narrow editor and hidden Thoughts were also reproduced in the installed Windows/WebView2 shell using a separate copy of local storage at 8% zoom. With the repaired production frontend served into that isolated shell, Chinese multiline editing, both reported Find matches, centering and all four Settings title baselines passed; rendered captures were inspected. This checks the native renderer at observed DPR 1.5, not a fresh installer or real IME candidate selection. Private data and screenshots are not published. The previous `9fe12b0` Windows package run succeeded and was installed by the requester. Per-commit CI, complete E2E results and the replacement installer are recorded on [PR #16](https://github.com/NekoMint-Labs/Diffusion/pull/16); native user acceptance remains separate.
+The earlier Windows fixes for zoomed Chinese editing, sparse Atlas visibility, Find return and Settings title alignment remain covered. A new Windows installer now contains this follow-up. Automated and rendered checks below do not substitute for the requester's final native input/focus/scale journey or human B1–B8 acceptance. No issue is closed or PR merged by this record.
 
 ## What works now
 
@@ -50,26 +43,27 @@ The narrow editor and hidden Thoughts were also reproduced in the installed Wind
 | Gateway | `server/` | Origin/token guard, provider wire adapters, bounded requests, and normalized evidence HTTP seam. |
 | Desktop | `src/platform/`, `src-tauri/` | One frontend, narrow native capabilities, OS credential access, native provider transport, and discovery launcher. |
 
-## Issue #11 verification (Windows Chrome, 2026-10-01)
+## Issue #11 verification (Windows, 2026-10-02)
 
-The final candidate is served from a production Vite build. The local Playwright harness selects installed Chrome and an externally served preview because the repository web-server command is POSIX-specific. It retains the repository project split, one worker, zero retries and assertions. Interaction storage is bound to `http://127.0.0.1:4173`; real-background captures use the production-backgrounds project.
+The local browser harness serves the fresh Vite build at an isolated preview origin, selects installed Chrome, and retains the repository's interaction/production-background split, one worker, zero retries and assertions. Production background checks use the actual renderers. Public fixtures contain no private user material and make no live model request.
 
-| Gate | Candidate evidence |
+| Gate | Current follow-up evidence |
 |---|---|
-| Typecheck / build | Passed; existing >500 kB main-chunk warning retained |
-| Offline contracts | 266 passed, with `NODE_OPTIONS=--no-experimental-global-navigator` for this Windows environment |
-| Unit suite | Passed: 41 files, 309 tests |
-| Full local browser suite | After the Windows feedback repairs: 207 passed, 12 existing skips, 1 unchanged background-motion baseline failure in 11.9 minutes; all six new zoom regressions and five surface cases passed within this complete run. |
-| Visual review | Before/after scope, object and Settings captures; 4 profiles × 5 production backgrounds; 1280×720, 1440×960 and 1920×1080. Narrow 1024×576 and 853×480 content areas plus DPR 1/1.25/1.5 and 120% interface size are browser simulations, not native Windows zoom acceptance. |
-| CI for prerequisite PRs | CI and complete E2E passed at #13 `039894e`, #14 `4fb3754`, #15 `f19e584` |
+| Typecheck / production build | Passed; existing large-chunk warning remains visible |
+| Offline, locale and source-size contracts | 266 passed; Windows Node uses `NODE_OPTIONS=--no-experimental-global-navigator` so existing English-message fixtures retain their locale |
+| Unit suite | 44 files / 327 tests passed, including nine hierarchy/compatibility cases |
+| Complete local browser suite | 215 passed / 12 existing skips / 0 failed; one worker, zero retries |
+| Rendered review | Four palettes × five production backgrounds; 1280×720, 1440×960, 1920×1080; low/normal/near Field zoom, EN/ZH, normal/reduced motion, source/organization inspector, dense roots and result controls |
+| Actual Chrome browser zoom | Nine cases passed: 100% / 125% / 150%, Chinese Han/punctuation endings and long English, enlarged text/interface; OS/device scale fixed at 1 and no pinch zoom. Rendered captures inspected. This is browser zoom, not Windows OS scaling. |
+| Windows native tests | 25 passed: eight unit and 17 integration tests |
+| Discovery / distribution inputs | Fresh Windows sidecar build and source-hash check passed; third-party license collection has no unresolved entries |
+| New Windows installer | NSIS x64 0.3.0 built successfully from `46215fd`; subsequent commits change tests/documentation only. SHA-256: `65ab2db85d71bd4cdf48d55a3da0c03c738e516bffd91a70a4b5bc619d63014b` |
 
-The repaired candidate was checked with `pnpm exec playwright test --config verification/playwright.local.ts --reporter line --output verification/zoom-full-final-results`, one worker and zero retries. All 220 cases completed. The subsequent extraction of Find projection into the existing spatial representation module is covered by a coordinate contract and the focused zoom suite; the sole full-run failure remains `motion.spec.ts:257` (`>1px`, measured `1px`).
+Earlier follow-up full runs recorded 208 passed / 12 skipped / 5 failed and 211 passed / 12 skipped / 4 failed. Their logs remain local evidence. Repairs distinguish obsolete approved-design expectations from measurement defects: the actual Ghost rail is measured instead of its paper shadow; original edit actions remain available beside the inspector; Field clicks use its measured viewport; dense Atlas uses the same detail cap plus explicit root access. Proposal checks retain a fixed identity when priority reorders siblings, routes wait for actual card geometry, and the reload fixture no longer overwrites saved preferences. Exit measurements account for an already-retired menu without permitting a painted menu at the origin.
 
-The pre-feedback complete local run used `pnpm exec playwright test --config verification/playwright.local.ts --output verification/acceptance-results`. Two old tests clicked fixed window coordinate y=880, now outside the Field while coaching reserves the bottom lane; they now click within the measured Field, preserving the scope and causal-trace assertions, and both passed in a focused rerun. Before the final measured-chrome/coaching corrections, another complete local run was **198 passed, 12 skipped, 1 failed**. The remaining failure is the unchanged `motion.spec.ts:257` atmosphere-motion assertion (`>1px`, measured `1px`), also reproduced on the starting baseline. No baseline was replaced and no assertion, retry or skip was added to hide it. An earlier overlapping local workload caused one unit timeout; a standalone full run passed, and its failure log was retained. The short Keep effect is now observed at its commitment mutation, avoiding a test that sampled after the effect ended. First-open persistence still asserts reload recovery and now waits for the durable IndexedDB write first.
+The atmosphere-motion check keeps its strict `>1px` within three seconds. Removing premature two-decimal rounding fixes the old false failure without changing the threshold. No retry or skip was added. The 12 existing skips concern dev-only Motion Lab / Material Gallery services, which are not started by the production suite. Fresh CI results and portable workflow captures are linked from PR #17.
 
-The first final-stage CI run passed all three interaction shards and 30/31 production-background checks. The remaining visual check sampled a far-edge Thought while first-use coaching reduced the viewport; its setup now dismisses the coaching before checking attention. All ink/opacity/presence assertions remain intact.
-
-Tracked tests and CI artifacts are the portable evidence; ignored local captures/logs supplement rendered review. The Windows package workflow succeeded for the earlier candidate. The isolated native rendering checks above do not qualify a fresh installer, real-provider use or the complete Windows client.
+The new installer is built evidence, not proof of installation, real IME candidate selection, native dialogs, OS keychain persistence, packaged-sidecar execution or live providers. These remain a single native/operator acceptance batch. Older clients round-tripping the new optional field are not qualified; see [migration boundaries](docs/MIGRATIONS.md#optional-organization-issue-11-acceptance-follow-up).
 
 ## Previous main stabilization verification
 
@@ -93,8 +87,8 @@ The five previously recorded deterministic Playwright failures were resolved wit
 
 ## Important limitations
 
-- **Windows/native acceptance remains incomplete.** The requester installed the earlier package and checked Settings at 100/125/150% display scaling. The repaired frontend was also checked inside an isolated native WebView2 shell. Real Chinese IME, the repaired installer, native dialog/filesystem scope, OS credential persistence, packaged-sidecar runtime and the complete native journey still require operator acceptance.
-- **Native Linux compilation is UNVERIFIED.** Rust/Cargo are present, but required GLib/GObject development packages are not installed; no Tauri window or native package was produced.
+- **Windows/native acceptance remains incomplete.** The requester tested the earlier client; this follow-up has a newly built installer and passing Windows native tests. Its real Chinese IME, focus, OS display scaling, dialogs, credential persistence, packaged-sidecar runtime and complete native journey still require operator acceptance.
+- **Native Linux compilation is UNVERIFIED.** Rust/Cargo are present, but required GLib/GObject development packages are not installed; no Linux Tauri window or Linux native package was produced in that earlier run.
 - **Live AI and discovery are UNVERIFIED.** No provider or search credentials are present. Fixture/contract suites passed, but no external service was contacted.
 - **Unsupported rich formats remain metadata-only.** PDF, image, Office, audio, and video extraction/understanding is not implemented.
 - **Multi-tab project write coordination is not implemented.** Use one editing tab per project. Actual IndexedDB disk latency remains unmeasured.

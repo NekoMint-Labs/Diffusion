@@ -24,13 +24,13 @@ display edge without rewriting the archive. New self/descendant/missing-parent c
 
 No database version, database name or portable envelope changes. Existing validation, migration,
 JSON export/recovery, snapshot history and Dexie preserve the field. Old projects need no new field.
-Eight new hierarchy tests cover chains, branches, source order, invalid cycles, authority, undo/redo,
+Nine new hierarchy tests cover chains, branches, source order, invalid cycles, authority, undo/redo,
 actual fake-IndexedDB close/reopen, portable import/recovery and a 10,000-node chain. Browser testing
 also exercises the shared menu, explicit apply, original-source display and reload. Old application
 versions have not been qualified to interpret or preserve the new organization preference.
 
 ## Verification boundary
 
-Pure migration, idempotence, legacy snippet downgrade, raw-input normalization, geometry preservation, long-downtime and queue tests passed in the offline suite. Two tests in `tests/unit/migrations.test.ts` exercise a real Dexie/fake-IndexedDB v1-to-v3 upgrade and rollback of an invalid upgrade, including raw-input normalization, original blobs and reopen. These two tests are authored but **not run** here because dependencies are unavailable. Native IndexedDB disk timings are likewise not measured.
+Pure migration, idempotence, legacy snippet downgrade, raw-input normalization, geometry preservation, long-downtime and queue tests passed in the offline suite. Two tests in `tests/unit/migrations.test.ts` exercise a real Dexie/fake-IndexedDB v1-to-v3 upgrade and rollback of an invalid upgrade, including raw-input normalization, original blobs and reopen. These two tests passed in the current 44-file / 327-test unit run, alongside the new optional-organization export/import and close/reopen cases. Fake IndexedDB validates behavior; native IndexedDB disk timings are not measured.
 
 Before a real upgrade rollout, preserve a portable backup and original files, execute the installed migration tests, then reopen an actual v0.1 database in the target browser/WebView. Do not clear storage to make a failing upgrade appear successful.

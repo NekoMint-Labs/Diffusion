@@ -49,9 +49,17 @@ test('scope overflow keeps its measured trigger for click hover and keyboard', a
         const menu = page.getByTestId('thought-menu');
         await expect(menu).toBeVisible();
         await expect(trigger).toBeVisible();
-        const box = (await menu.boundingBox())!;
-        expect(Math.min(Math.abs(box.x - before.x - before.width), Math.abs(box.x + box.width - before.x))).toBeLessThan(30);
-        expect(Math.abs(box.y - before.y)).toBeLessThan(60);
+        // Committing the new text can resize compact -> regular before hover becomes
+        // actionable. Compare the live anchor and popup in one layout snapshot.
+        const { anchor, box } = await menu.evaluate(element => ({
+            anchor: document.querySelector('[data-testid="thought-more"]')!.getBoundingClientRect().toJSON(),
+            box: element.getBoundingClientRect().toJSON(),
+        }));
+        await info.attach(`menu-${mode}-geometry`, { body: JSON.stringify({ before, anchor, box }), contentType: 'application/json' });
+        expect(anchor.width).toBeGreaterThan(0);
+        expect(anchor.height).toBeGreaterThan(0);
+        expect(Math.min(Math.abs(box.x - anchor.x - anchor.width), Math.abs(box.x + box.width - anchor.x))).toBeLessThan(30);
+        expect(Math.abs(box.y - anchor.y)).toBeLessThan(60);
         await menu.hover();
         await page.screenshot({ path: info.outputPath(`menu-${mode}.png`) });
         await page.keyboard.press('Escape');

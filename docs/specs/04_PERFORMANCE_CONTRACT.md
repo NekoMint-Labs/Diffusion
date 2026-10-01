@@ -79,7 +79,7 @@ As the user zooms out, representation becomes cheaper:
 - Crystal → landmark
 - Region → label / landmark
 
-Atlas must not render every project detail simultaneously.
+Atlas must not render every project detail simultaneously. Sparse viewports retain readable Thought excerpts so deselection does not empty a small Field. Dense viewports remain landmark-led; explicit selection, Keep and Find can disclose a Thought within the existing 64-label cap.
 
 ## 7. Relations
 

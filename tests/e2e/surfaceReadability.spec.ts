@@ -35,6 +35,15 @@ for (const [width, height, locale, profile] of [
             for (const section of ['general', 'appearance', 'ai', 'search']) {
                 await settings.locator(`[data-section="${section}"]`).click();
                 await readable(page, settings);
+                const alignment = await settings.evaluate(el => {
+                    const textBottom = (node: Element) => {
+                        const range = document.createRange();
+                        range.selectNodeContents(node);
+                        return range.getBoundingClientRect().bottom;
+                    };
+                    return Math.abs(textBottom(el.querySelector('.settings-nav-tab')!) - textBottom(el.querySelector('[role="tabpanel"] > h3')!));
+                });
+                expect(alignment, 'each section title aligns with the first navigation label').toBeLessThanOrEqual(2);
                 await page.screenshot({ path: testInfo.outputPath(`settings-${section}.png`) });
             }
             await settings.locator('.surface-close').click();

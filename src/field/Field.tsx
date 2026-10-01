@@ -100,6 +100,8 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const [level, setLevel] = useState(scaleLevel(project.camera.zoom));
     const [hoveredThought, setHoveredThought] = useState<string | null>(null);
     const items = useMemo(() => ({ ...project.thoughts, ...session.ghosts }) as Record<string, Thought | Ghost>, [project.thoughts, session.ghosts]);
+    const liveFind = useRef(find);
+    liveFind.current = find;
     const liveItems = useRef(items);
     liveItems.current = items;
     const focus = useMemo(() => focusFor(project, session, ui.selection), [project, session, ui.selection]);
@@ -125,9 +127,11 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             if (isGhost && tier !== 'local') return false;
             if ('kind' in item) {
                 const selected = useUI.getState().selection.includes(key);
-                if (item.life === 'memory' && !snap.session.recalls.includes(key) && !selected) return false;
-                // Atlas keeps Crystals primary while selected/kept Thoughts survive as orientation anchors.
-                if (tier === 'atlas' && item.kind !== 'crystal' && !(item.kind === 'thought' && (selected || item.kept)))
+                const matched = liveFind.current?.matches.has(key);
+                if (item.life === 'memory' && !snap.session.recalls.includes(key) && !selected && !matched) return false;
+                // Dense Atlas stays landmark-led. A sparse scene must not erase everything the person
+                // just wrote when selection changes; Find matches also remain eligible.
+                if (tier === 'atlas' && found.length > 64 && item.kind !== 'crystal' && !(item.kind === 'thought' && (selected || item.kept || matched)))
                     return false;
                 if (tier !== 'local' && (item.kind === 'source' || snap.session.recalls.includes(key)))
                     return false;
@@ -135,13 +139,14 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             return true;
         });
         // Cap representational density; spatial identity remains in canonical state.
-        const priority = new Set([...useUI.getState().selection, ...(useUI.getState().editing ? [useUI.getState().editing!] : [])]);
+        const currentMatch = liveFind.current?.current;
+        const priority = new Set([...useUI.getState().selection, ...(useUI.getState().editing ? [useUI.getState().editing!] : []), ...(currentMatch ? [currentMatch] : [])]);
         const disclosed = tier === 'local' ? filtered : readableLabels(filtered.map(key => {
             const item = liveItems.current[key];
             const kind = 'kind' in item ? item.kind : 'thought';
             const landmark = kind === 'crystal';
             const unresolved = 'generationAction' in item && item.generationAction === 'question' || /[?？]/.test(item.text);
-            return { ...item, priority: priority.has(key) ? 4 : landmark ? 3 : unresolved ? 2 : 1, ...disclosureBox(item.text, cam.zoom, kind) };
+            return { ...item, priority: key === currentMatch ? 5 : priority.has(key) ? 4 : landmark ? 3 : unresolved ? 2 : 1, ...disclosureBox(item.text, cam.zoom, kind) };
         }), cam, rect.current, 64);
         const ids = [...disclosed.filter(k => priority.has(k)), ...disclosed.filter(k => !priority.has(k))].slice(0, tier === 'local' ? 240 : 64).sort();
         setVisible(old => old.length === ids.length && old.every((x, i) => x === ids[i]) ? old : ids);
@@ -199,6 +204,9 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             cancelAnimationFrame(frame.current); if (probeTimer.current)
             clearTimeout(probeTimer.current); };
     }, [controller, refreshVisible, syncPanningCursor]);
+    useEffect(() => {
+        refreshVisible(camera.current?.get() ?? controller.getSnapshot().project.camera, true);
+    }, [ui.selection, ui.editing, find?.current, find?.matches, controller, refreshVisible]);
     const frameIds = useCallback((ids: string[], padding = 72, maxZoom = 1.15) => {
         const boxes = ids.map(key => geometry.get(key)).filter((bounds): bounds is Bounds => !!bounds);
         const bounds = unionBounds(boxes);
@@ -226,7 +234,11 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             return; const b = boxes[0]; const c = camera.current; if (!c)
             return; c.set({ x: rect.current.width / 2 - (b.x + b.width / 2), y: rect.current.height / 2 - (b.y + b.height / 2), zoom: 1 }, true); },
         reveal: (ids) => { const boxes = ids.map(k => geometry.get(k)).filter((b): b is Bounds => !!b); const c = camera.current; if (!boxes.length || !c)
-            return; const b = boxes[0]; const zoom = c.get().zoom; c.set({ x: rect.current.width / 2 - (b.x + b.width / 2), y: rect.current.height / 2 - (b.y + b.height / 2), zoom }, true); },
+            return; const b = boxes[0]; const zoom = c.get().zoom; const item = liveItems.current[ids[0]];
+            // A culled/unmounted hit still has a provisional cache width. Center its current
+            // semantic representation, not that pre-mount world width.
+            const width = item ? disclosureBox(item.text, zoom, 'kind' in item ? item.kind : 'thought').width : b.width * zoom;
+            c.set({ x: rect.current.width / 2 - b.x * zoom - width / 2, y: rect.current.height / 2 - (b.y + b.height / 2) * zoom, zoom }, true); },
         zoomOut: () => { const c = camera.current; if (c)
             c.zoom({ x: rect.current.width / 2, y: rect.current.height / 2 }, 750); },
     }), [project.camera, geometry, visible]);

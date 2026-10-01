@@ -102,6 +102,16 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .proposal-reject { position: absolute; top: 7px; right: 7px; width: 22px; height: 22px; padding: 0; border: 0; background: transparent; color: var(--ink-tertiary); opacity: 0; cursor: pointer; }
 .thought.ghost:hover .proposal-reject, .thought.ghost[data-selected="true"] .proposal-reject, .proposal-reject:focus-visible { opacity: .72; }
 .proposal-reject:hover { color: var(--ink-primary); opacity: 1; }
+.field .thought.ghost { --ghost-unit: 1; padding: calc(12px * var(--ghost-unit)) calc(38px * var(--ghost-unit)) calc(11px * var(--ghost-unit)) calc(20px * var(--ghost-unit)); }
+.field:not([data-level="local"]) .thought.ghost { --ghost-unit: var(--inverse-zoom); }
+.thought.ghost .proposal-reject { top: calc(7px * var(--ghost-unit)); right: calc(7px * var(--ghost-unit)); width: calc(24px * var(--ghost-unit)); height: calc(24px * var(--ghost-unit)); font-size: calc(18px * var(--ghost-unit)); }
+.thought.ghost .thought-selected-dot { top: calc(38px * var(--ghost-unit)); right: calc(17px * var(--ghost-unit)); width: calc(4px * var(--ghost-unit)); height: calc(4px * var(--ghost-unit)); }
+.field[data-level] .thought.ghost .ghost-label { display: block; }
+.suggestion-review { position: fixed; z-index: var(--layer-scope); width: min(560px, calc(100vw - 32px)); padding: 4px 10px; border: 1px solid var(--boundary); border-radius: var(--radius-control); background: var(--surface-1); color: var(--ink-primary); font: var(--type-ui-size)/1.5 var(--ui-font); }
+.suggestion-review-list { max-height: min(30vh, 240px); overflow-y: auto; overscroll-behavior: contain; }
+.suggestion-review section { padding: 10px 4px; border-top: 1px solid var(--boundary); }
+.suggestion-review p { white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0; }
+.suggestion-review small { display: block; color: var(--ink-secondary); overflow-wrap: anywhere; }
 
 /* --- Phenomena layers: positioning only -----------------------------------
    The visuals of a Relation and of a causal trace are owned by `materials.css` and

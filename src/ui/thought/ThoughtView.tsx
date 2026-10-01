@@ -113,7 +113,6 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
                 ? <TransientTextPresence phase={ghost ? 'ghost' : 'recall'}>{short || t('A thought, not yet in words...')}</TransientTextPresence>
                 : <p>{short || t('A thought, not yet in words...')}</p>}</div>
     {selected && <span className="thought-selected-dot" aria-hidden="true"/>}
-    {ghost && <span className="ghost-boundary" aria-hidden="true"/>}
     {kind === 'source' && <span className="thought-meta">{t('Source')}</span>}
     {ghost && <span className="thought-meta ghost-label">{t(proposal ? 'From your words · not kept' : 'AI suggestion · not kept')}</span>}
     {ghost && proposalKind === 'question' && <span className="question-mark" aria-hidden="true">?</span>}

@@ -1,5 +1,9 @@
 /* Product copy only. English source keys are the fallback dictionary. */
 export const zh: Record<string, string> = {
+  "No usable results returned. Try another direction.": "这次没有得到可用结果，可以换个方向再试。",
+  "Review {count} suggestions": "查看 {count} 条待处理建议",
+  "From": "来自",
+  "Missing thought": "已移除的想法",
   "No changes here yet": "这里还没有修改记录",
   "Return to the Field and write, keep, or revise a thought. Your decisions will appear here.": "回到思绪场，写下、保留或修改一个想法，之后可以在这里回看。",
   "Start with a question": "从一个问题开始",

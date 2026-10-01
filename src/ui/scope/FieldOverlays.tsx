@@ -1,5 +1,6 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, type RefObject } from 'react';
-import type { Camera, ThinkingOperation } from '../../core/model.ts';
+import type { Camera, Ghost, Thought, ThinkingOperation } from '../../core/model.ts';
+import { SuggestionReview } from './SuggestionReview.tsx';
 import type { GeometryCache } from '../../field/spatial/index.ts';
 import { worldToScreen } from '../../field/spatial/geometry.ts';
 import { cancelThinkingOperation, canCancelThinkingOperation } from '../../ai/operationControl.ts';
@@ -21,6 +22,10 @@ interface Props {
     enabled: boolean;
     dragging: boolean;
     onScopeBounds: (bounds: ScopeRect | null) => void;
+    suggestions: Ghost[];
+    thoughts: Record<string, Thought>;
+    reviewNeeded: boolean;
+    onSuggestionAction: (ids: string[], action: 'keep' | 'ignore') => void;
 }
 const screenRect = (rect: DOMRect): ScopeRect => ({ x: rect.x, y: rect.y, width: rect.width, height: rect.height });
 
@@ -30,6 +35,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
     const { displayOperation, showCopy } = useOperationPresentation(props.operation);
     const scopeElement = useRef<HTMLDivElement>(null);
     const operationElement = useRef<HTMLDivElement>(null);
+    const reviewElement = useRef<HTMLDivElement>(null);
     const dockElement = useRef<HTMLDivElement>(null);
     const current = useRef({ ...props, displayOperation });
     current.current = { ...props, displayOperation };
@@ -48,6 +54,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         const controls = [
             { element: scopeElement.current, ids: state.selection, key: `scope:${state.selection.join(' ')}`, forceDock: false },
             { element: operationElement.current, ids: state.displayOperation?.scopeIds ?? [], key: `operation:${state.displayOperation?.id}`, forceDock: state.dragging },
+            { element: reviewElement.current, ids: [], key: 'suggestions', forceDock: true },
         ].filter(item => item.element && state.enabled);
         const liveKeys = new Set(controls.map(item => item.key));
         for (const key of docked.current) if (!liveKeys.has(key)) docked.current.delete(key);
@@ -99,6 +106,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         if (!state.enabled) {
             if (scopeElement.current) scopeElement.current.style.display = 'none';
             if (operationElement.current) operationElement.current.style.display = 'none';
+            if (reviewElement.current) reviewElement.current.style.display = 'none';
         }
         // One-time coaching shares the reserved feedback lane instead of covering the Field.
         const coach = app.querySelector<HTMLElement>('.progressive-tutorial-coach');
@@ -147,7 +155,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         const resize = new ResizeObserver(update);
         const observed = new Set<Element>();
         const observe = () => {
-            const elements = new Set<Element>([field, ...app.querySelectorAll('.scope-hub, .spatial-operation-feedback, [data-testid="speak"], .notice, .progressive-tutorial-coach')]);
+            const elements = new Set<Element>([field, ...app.querySelectorAll('.scope-hub, .spatial-operation-feedback, .suggestion-review, [data-testid="speak"], .notice, .progressive-tutorial-coach')]);
             for (const element of observed) if (!elements.has(element)) { resize.unobserve(element); observed.delete(element); }
             for (const element of elements) if (!observed.has(element)) { resize.observe(element); observed.add(element); }
         };
@@ -166,6 +174,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
     const cancelable = Boolean(displayOperation && displayOperation.phase === 'pending' && canCancelThinkingOperation(displayOperation.id));
     return <>
         <div ref={dockElement} className="field-overlay-dock" aria-hidden="true" />
+        {props.reviewNeeded && props.suggestions.length > 0 && <SuggestionReview elementRef={reviewElement} suggestions={props.suggestions} thoughts={props.thoughts} onAction={props.onSuggestionAction} />}
         {props.scope && <ScopeHub {...props.scope} elementRef={scopeElement} />}
         {displayOperation && <div ref={operationElement} className="spatial-operation-feedback" data-testid="operation-feedback" data-phase={displayOperation.phase} data-operation-id={displayOperation.id} data-origin-scope={displayOperation.scopeIds.join(' ')} data-copy-visible={showCopy || undefined} role="status" aria-live="polite" aria-atomic="true" onPointerDown={event => event.stopPropagation()}>
             <span className="operation-feedback-mark" aria-hidden="true" />

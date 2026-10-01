@@ -5,23 +5,22 @@
 .thought.ghost:not(.editing)::before {
   content: "";
   position: absolute;
-  left: -7px;
-  top: 7px;
-  bottom: 7px;
-  width: 1px;
-  background: color-mix(in srgb, var(--pencil-trace) 82%, transparent);
-  opacity: .78;
+  left: calc(8px * var(--ghost-unit));
+  top: calc(12px * var(--ghost-unit));
+  bottom: calc(12px * var(--ghost-unit));
+  width: calc(2px * var(--ghost-unit));
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--pencil-trace) 74%, transparent);
+  opacity: 1;
 }
 .thought.ghost[data-proposal-action="continue"]::before {
   background: color-mix(in srgb, var(--pencil-trace) 92%, transparent);
 }
 .thought.ghost[data-proposal-action="angle"]::before {
-  width: 0;
-  background: none;
-  border-left: 1px dashed color-mix(in srgb, var(--pencil-trace) 86%, transparent);
+  background: color-mix(in srgb, var(--pencil-trace) 86%, transparent);
 }
 .thought.ghost:not(.editing) .thought-preview { color: inherit; }
-.thought.ghost .ghost-label { position: static; display: block; margin-top: 8px; color: var(--ink-helper); letter-spacing: .01em; font-size: var(--type-meta-size); opacity: 1; }
+.thought.ghost .ghost-label { position: static; display: block; margin-top: calc(11px * var(--ghost-unit)); color: var(--ink-secondary); letter-spacing: .01em; font-size: calc(var(--type-meta-size) * var(--ghost-unit)); opacity: 1; }
 
 /* A generated question stays a proposal, and its unresolved posture is visible before metadata. */
 .thought.ghost[data-proposal-kind="question"]::before {

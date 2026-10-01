@@ -257,7 +257,8 @@ export class AIRuntime {
                     if (index < accepted.length - 1) await abortableDelay(220, started.abort.signal);
                 }
             }
-            if (kind === 'probe') this.hooks.notice(emitted && relationLabel ? t('Found a candidate relation: {label}. You decide whether to keep it.', { label: relationLabel }) : t(emitted ? 'A relation candidate is ready. Nothing was confirmed.' : 'No clear relation found.'));
+            if (!emitted && kind !== 'probe') this.hooks.notice(t('No usable results returned. Try another direction.'));
+            else if (kind === 'probe') this.hooks.notice(emitted && relationLabel ? t('Found a candidate relation: {label}. You decide whether to keep it.', { label: relationLabel }) : t(emitted ? 'A relation candidate is ready. Nothing was confirmed.' : 'No clear relation found.'));
             else if (kind === 'question') this.hooks.notice(t(response.mock ? 'Demo questions / no live model was used.' : 'Questions returned. Nothing was committed.'));
             else if (kind === 'organize') this.hooks.notice(t(response.mock ? 'Demo structure / no live model was used.' : 'A structure proposal is ready. Nothing was changed yet.'));
             else this.hooks.notice(t(response.mock ? 'Demo possibilities / no live model was used.' : 'Possibilities returned. No commitment was made on your behalf.'));

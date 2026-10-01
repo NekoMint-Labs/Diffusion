@@ -124,7 +124,6 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             const item = liveItems.current[key];
             if (!item) return false;
             const isGhost = key in snap.session.ghosts;
-            if (isGhost && tier !== 'local') return false;
             if ('kind' in item) {
                 const selected = useUI.getState().selection.includes(key);
                 const matched = liveFind.current?.matches.has(key);
@@ -146,7 +145,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             const kind = 'kind' in item ? item.kind : 'thought';
             const landmark = kind === 'crystal';
             const unresolved = 'generationAction' in item && item.generationAction === 'question' || /[?？]/.test(item.text);
-            return { ...item, priority: key === currentMatch ? 5 : priority.has(key) ? 4 : landmark ? 3 : unresolved ? 2 : 1, ...disclosureBox(item.text, cam.zoom, kind) };
+            return { ...item, priority: key === currentMatch ? 6 : priority.has(key) ? 5 : key in snap.session.ghosts ? 4 : landmark ? 3 : unresolved ? 2 : 1, ...disclosureBox(item.text, cam.zoom, kind) };
         }), cam, rect.current, 64);
         const ids = [...disclosed.filter(k => priority.has(k)), ...disclosed.filter(k => !priority.has(k))].slice(0, tier === 'local' ? 240 : 64).sort();
         setVisible(old => old.length === ids.length && old.every((x, i) => x === ids[i]) ? old : ids);
@@ -639,7 +638,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
    {Object.values(project.regions).filter(region => level !== 'local' ? disclosedLandmarks.has('region:' + region.id) : ui.regionId === region.id).map(region => <button className="region-label" data-active={ui.regionId === region.id || undefined} onClick={() => onRegion(region.id, { x: region.x, y: region.y })} key={region.id} style={{ transform: `translate(${region.x}px,${region.y}px) scale(var(--inverse-zoom))` }}><span>{t(region.name)}</span><small>{t('{count} thoughts', { count: region.members.length })}</small></button>)}
    {level === 'atlas' && frontiers.filter(key => disclosedLandmarks.has('frontier:' + key)).map(key => { const t = project.thoughts[key]; return <button className="frontier-label" key={'frontier-' + key} onClick={() => { controller.wake(key); ui.patch({ selection: [key] }); camera.current?.set({ x: rect.current.width / 2 - t.x - 128, y: rect.current.height / 2 - t.y - 30, zoom: 1 }); camera.current?.commit(); }} style={{ transform: `translate(${t.x}px,${t.y}px) scale(var(--inverse-zoom))` }}><span aria-hidden="true">&#9671;</span> {semanticExcerpt(t.text, 'atlas', 'thought')}</button>; })}
   </div>
-   <FieldOverlays ref={overlays} viewport={viewport} camera={() => camera.current?.get() ?? project.camera} geometry={geometry} visibleIds={visible} selection={ui.selection} operation={ui.operation} enabled={ui.surface === 'none' && !ui.menu} dragging={ui.dragging} onScopeBounds={onScopeBounds} scope={showScopeHub ? { count: ui.selection.length, actions: scopeActions, probing, proposalReview, aiProposalKind, onAction: onScopeAction, onKeepAll: () => onKeepAllProposals([...ui.selection]), onKeepOriginal: () => onKeepOriginalProposal([...ui.selection]), onAIProposalAction: action => onAIProposalAction([...ui.selection], action), onMore } : null} />
+   <FieldOverlays ref={overlays} viewport={viewport} camera={() => camera.current?.get() ?? project.camera} geometry={geometry} visibleIds={visible} selection={ui.selection} operation={ui.operation} enabled={ui.surface === 'none'} dragging={ui.dragging} onScopeBounds={onScopeBounds} suggestions={Object.values(session.ghosts)} thoughts={project.thoughts} reviewNeeded={level !== 'local' || Object.keys(session.ghosts).some(key => !visibleSet.has(key))} onSuggestionAction={onAIProposalAction} scope={showScopeHub ? { count: ui.selection.length, actions: scopeActions, probing, proposalReview, aiProposalKind, onAction: onScopeAction, onKeepAll: () => onKeepAllProposals([...ui.selection]), onKeepOriginal: () => onKeepOriginalProposal([...ui.selection]), onAIProposalAction: action => onAIProposalAction([...ui.selection], action), onMore } : null} />
   {ui.carry.length > 0 && <div className="carry-preview">{project.thoughts[ui.carry[0]]?.text.slice(0, 180)}</div>}
   {ui.carry.length > 0 && <div className="carry-banner">{t('Carrying {count} thoughts. Click to place; Escape cancels.', { count: ui.carry.length })}</div>}
     {session.recalls.filter(k => !visibleSet.has(k) && !!project.thoughts[k]).map((k, index) => { const edge = recallEdge(project.thoughts[k], stableCamera, rect.current.width, rect.current.height, index); return <button className="recall-edge" key={k} style={{ left: edge.x, top: edge.y }} onClick={() => { controller.wake(k); ui.patch({ selection: [k], notice: t('Earlier thought awakened. Use Find / Take me there to travel.') }); }} title={project.thoughts[k].text}><span aria-hidden="true" style={{ display: 'inline-block', transform: `rotate(${edge.angle}deg)` }}>&#8594;</span> {t('Earlier thought')}</button>; })}

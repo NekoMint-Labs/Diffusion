@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { correctSevereOverlap, disclosureBox, estimateItemSize, estimateThoughtSize, severeOverlap, thoughtSizeClass, THOUGHT_WIDTHS } from '../../src/field/spatial/collision.ts';
+import { correctSevereOverlap, disclosureBox, estimateItemSize, estimateThoughtSize, overlapArea, severeOverlap, thoughtSizeClass, THOUGHT_WIDTHS } from '../../src/field/spatial/collision.ts';
 
 describe('local collision hygiene', () => {
     it('derives bounded visual-width classes across scripts, punctuation, and lines', () => {
@@ -37,6 +37,18 @@ describe('local collision hygiene', () => {
         const neighbour = { x: 340, y: 100, width: 256, height: 80 };
         expect(severeOverlap(desired, neighbour)).toBe(false);
         expect(correctSevereOverlap(desired, [neighbour])).toEqual({ x: 100, y: 100 });
+    });
+
+    it('clears even a small overlap with measured UI without moving existing objects', () => {
+        const arrival = { x: 120, y: 70, width: 256, height: 100 };
+        const title = { x: 20, y: 20, width: 120, height: 60 };
+        const existing = { x: 120, y: 260, width: 256, height: 100 };
+        expect(severeOverlap(arrival, title)).toBe(false);
+        expect(correctSevereOverlap(arrival, [existing])).toEqual({ x: 120, y: 70 });
+        const point = correctSevereOverlap(arrival, [existing], { x: 0, y: 0, width: 1280, height: 720 }, [title]);
+        expect(overlapArea({ ...arrival, ...point }, title)).toBe(0);
+        expect(overlapArea({ ...arrival, ...point }, existing)).toBe(0);
+        expect(existing).toEqual({ x: 120, y: 260, width: 256, height: 100 });
     });
 
     it('moves only the requested object out of severe overlap', () => {

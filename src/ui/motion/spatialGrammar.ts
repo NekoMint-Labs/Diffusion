@@ -15,7 +15,8 @@ export type SpatialTransitionKind = 'converge' | 'dissolve' | 'settle' | 'arrive
 export function presentSpatialTransition(kind: SpatialTransitionKind, scopeIds: string[], duration = MOTION_DURATION.spatial * 1000, material = false): string {
     const transitionId = id('motion');
     useUI.getState().patch({ spatialTransition: { id: transitionId, kind, scopeIds: [...scopeIds], ...(material ? { material: true as const } : {}) } });
-    if (duration <= 0) {
+    const reduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduced || duration <= 0) {
         if (useUI.getState().spatialTransition?.id === transitionId) useUI.getState().patch({ spatialTransition: null });
         return transitionId;
     }

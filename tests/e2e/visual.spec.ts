@@ -358,6 +358,12 @@ test('attention does not hide the rest of the Field: a distant Thought keeps its
     await expect.poll(() => anchors.count()).toBeGreaterThanOrEqual(2);
     await anchors.nth(0).click();
     await anchors.nth(1).click({ modifiers: ['Shift'] });
+    // First-use coaching intentionally reserves viewport space. Finish that separate lesson
+    // before measuring a far-edge object's attention, rather than sampling a culled object.
+    const coaching = page.getByTestId('progressive-tutorial-coach');
+    await coaching.getByRole('button', { name: 'Got it' }).click();
+    await expect(coaching).toHaveCount(0);
+    await expect(far).toBeVisible();
     await page.getByTestId('scope-question').click();
     await expect(page.getByTestId('field')).toHaveAttribute('data-scope', 'true');
     await expect.poll(async () => far.getAttribute('data-emphasis'), 'the far Thought is peripheral').toBe('peripheral');

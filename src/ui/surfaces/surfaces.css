@@ -201,7 +201,8 @@
 .command-palette-hint span { display: flex; align-items: center; gap: 6px; }
 
 /* --- Settings: a place with its own navigation and one section rhythm ----- */
-.settings-layout { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: 30px; align-items: start; }
+/* Align the first text baselines, including tab padding and different heading sizes. */
+.settings-layout { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: 30px; align-items: first baseline; }
 .settings-nav { position: sticky; top: 0; display: flex; flex-direction: column; gap: 2px; padding: 2px 0; }
 .settings-nav-tab { min-height: 34px; padding: 7px 10px; border-radius: var(--radius-control); text-align: left; font: 500 var(--type-label-size)/1.5 var(--ui-font); color: var(--ink-helper); cursor: pointer; transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease; }
 .settings-nav-tab:hover { background: color-mix(in srgb, var(--surface-2) 66%, transparent); color: var(--ink-primary); }

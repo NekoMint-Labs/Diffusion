@@ -9,3 +9,18 @@ test('grid culling handles negative coordinates, boundary intersection and remov
 test('5000 total thoughts do not imply 5000 visible records',()=>{const p=performanceProject(5000);const g=new GridIndex();for(const t of Object.values(p.thoughts))g.set(t.id,{x:t.x,y:t.y,width:250,height:100});const visible=g.query({x:0,y:0,width:1440,height:900});assert.ok(visible.length<60);assert.equal(g.count,5000);});
 test('selection wakes only existing relations and never changes positions',()=>{const p=demoProject();const before=JSON.stringify(p);const f=focusFor(p,emptySession(),['attention']);assert.deepEqual([...f.direct],['structure']);assert.equal(f.activeRelations.length,1);assert.equal(JSON.stringify(p),before);assert.equal(focusFor(p,emptySession(),[]).activeRelations.length,0);});
 test('semantic zoom tiers and proximity are deterministic local functions',()=>{assert.equal(scaleLevel(1),'local');assert.equal(scaleLevel(.4),'neighborhood');assert.equal(scaleLevel(.15),'atlas');assert.equal(distanceBetween({x:0,y:0,width:20,height:20},{x:25,y:0,width:20,height:20}),5);});
+
+
+test('Find centers current semantic width instead of provisional geometry while keeping zoom', async () => {
+    const { revealCamera } = await import('../../src/field/spatial/representation.ts');
+    const bounds = { x: -3200, y: 4700, width: 250, height: 102 };
+    const original = structuredClone(bounds);
+    for (const [zoom, screenWidth] of [[.08, 140], [.4, 160], [1, 176], [1.5, 264]]) {
+        const camera = revealCamera(bounds, { text: 'idea', kind: 'thought' }, zoom, { width: 1440, height: 960 });
+        const point = worldToScreen(bounds, camera);
+        assert.equal(camera.zoom, zoom);
+        assert.ok(Math.abs(point.x + screenWidth / 2 - 720) < 1e-9);
+        assert.ok(Math.abs(point.y + bounds.height * zoom / 2 - 480) < 1e-9);
+    }
+    assert.deepEqual(bounds, original);
+});

@@ -21,7 +21,7 @@ async function readable(page: Page, surface: Locator) {
 
 for (const [width, height, locale, profile] of [
     [1280, 720, 'zh', 'editorial-warm'], [1440, 960, 'en', 'graphite-night'],
-    [1920, 1080, 'zh', 'graphite-night'], [853, 480, 'zh', 'editorial-warm'],
+    [1920, 1080, 'zh', 'graphite-night'], [1024, 576, 'zh', 'graphite-night'], [853, 480, 'zh', 'editorial-warm'],
 ] as const) {
     test.describe(`${locale} surfaces at ${width}x${height}`, () => {
         test.use({ viewport: { width, height }, reducedMotion: 'reduce' });
@@ -35,6 +35,15 @@ for (const [width, height, locale, profile] of [
             for (const section of ['general', 'appearance', 'ai', 'search']) {
                 await settings.locator(`[data-section="${section}"]`).click();
                 await readable(page, settings);
+                const alignment = await settings.evaluate(el => {
+                    const textBottom = (node: Element) => {
+                        const range = document.createRange();
+                        range.selectNodeContents(node);
+                        return range.getBoundingClientRect().bottom;
+                    };
+                    return Math.abs(textBottom(el.querySelector('.settings-nav-tab')!) - textBottom(el.querySelector('[role="tabpanel"] > h3')!));
+                });
+                expect(alignment, 'each section title aligns with the first navigation label').toBeLessThanOrEqual(2);
                 await page.screenshot({ path: testInfo.outputPath(`settings-${section}.png`) });
             }
             await settings.locator('.surface-close').click();

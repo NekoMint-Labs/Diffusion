@@ -1,5 +1,6 @@
-import type { Camera, Point } from '../../core/model.ts';
+import type { Camera, Point, ThoughtKind } from '../../core/model.ts';
 import { intersects, worldToScreen, type Bounds } from './geometry.ts';
+import { disclosureBox } from './collision.ts';
 export interface LabelCandidate extends Point { id: string; priority?: number; width?: number; height?: number }
 /** Screen-space disclosure only: suppress colliding detail; never move canonical objects. */
 export function readableLabels(items: LabelCandidate[], camera: Camera, viewport: { width: number; height: number }, limit = 64): string[] {
@@ -40,4 +41,14 @@ export function semanticExcerpt(text: string, level: SemanticZoomLevel, kind: 't
     const clipped = candidate.slice(0, limit + 1);
     const boundary = Math.max(clipped.lastIndexOf(' '), clipped.lastIndexOf('，'), clipped.lastIndexOf(','), clipped.lastIndexOf('；'), clipped.lastIndexOf(';'));
     return `${candidate.slice(0, boundary >= Math.floor(limit * .58) ? boundary : limit).trimEnd()}…`;
+}
+
+/** Find keeps the current zoom. A pre-mount cache width does not describe semantic disclosure. */
+export function revealCamera(bounds: Bounds, item: { text: string; kind?: ThoughtKind } | undefined, zoom: number, viewport: { width: number; height: number }): Camera {
+    const width = item ? disclosureBox(item.text, zoom, item.kind ?? 'thought').width : bounds.width * zoom;
+    return {
+        x: viewport.width / 2 - bounds.x * zoom - width / 2,
+        y: viewport.height / 2 - (bounds.y + bounds.height / 2) * zoom,
+        zoom,
+    };
 }

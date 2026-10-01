@@ -37,13 +37,17 @@ export function commitDraggedItems(controller: ProjectController, positions: Rec
     for (const [key, point] of ghostMoves) controller.moveGhost(key, point, { detach: true });
     return { canonical, ghosts: ghostMoves.map(([key]) => key) };
 }
-export function correctMeasuredGhost(key: string, corrected: Set<string>, controller: ProjectController, geometry: GeometryCache, itemIds: string[], camera: Camera, viewport: ViewportRect): void {
+export function correctMeasuredGhost(key: string, corrected: Set<string>, controller: ProjectController, geometry: GeometryCache, itemIds: string[], camera: Camera, viewport: ViewportRect, screenObstacles: readonly Bounds[] = []): void {
     if (corrected.has(key) || !controller.getSnapshot().session.ghosts[key]) return;
     const bounds = geometry.get(key);
     if (!bounds) return;
     corrected.add(key);
     const occupied = itemIds.filter(id => id !== key).map(id => geometry.get(id)).filter((candidate): candidate is Bounds => !!candidate);
-    const point = correctSevereOverlap(bounds, occupied, viewportBounds(camera, viewport.width, viewport.height, 0));
+    const reserved = screenObstacles.map(rect => {
+        const point = screenToWorld({ x: rect.x - viewport.left - 12, y: rect.y - viewport.top - 12 }, camera);
+        return { ...point, width: (rect.width + 24) / camera.zoom, height: (rect.height + 24) / camera.zoom };
+    });
+    const point = correctSevereOverlap(bounds, occupied, viewportBounds(camera, viewport.width, viewport.height, 0), reserved);
     if (Math.abs(point.x - bounds.x) > .5 || Math.abs(point.y - bounds.y) > .5) controller.moveGhost(key, point);
 }
 

@@ -191,6 +191,16 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .field[data-level="atlas"] .thought.crystal { font-size: calc(18px * var(--thought-scale) * var(--inverse-zoom)); width: calc(240px * var(--inverse-zoom)); line-height: 1.4; }
 .field[data-level="atlas"] .thought.crystal::before { font-size: calc(13px * var(--inverse-zoom)); left: calc(-16px * var(--inverse-zoom)); }
 
+/* Hierarchy cards shrink continuously with the camera, stopping at a small reading
+   footprint. Changing local/neighborhood representation must never enlarge them. */
+.field[data-hierarchy="true"] .thought[data-kind="thought"]:not(.ghost):not(.editing),
+.field[data-hierarchy="true"] .thought[data-kind="question"]:not(.ghost):not(.editing) { --hierarchy-reading-unit: max(1, calc(.56 * var(--inverse-zoom))); font-size: calc(var(--thought-size) * var(--hierarchy-reading-unit)); padding: calc(8px * var(--hierarchy-reading-unit)); }
+.field[data-hierarchy="true"] .thought[data-size="compact"]:not(.ghost):not(.editing):not(.crystal):not(.source) { width: calc(176px * var(--hierarchy-reading-unit)); }
+.field[data-hierarchy="true"] .thought[data-size="regular"]:not(.ghost):not(.editing):not(.crystal):not(.source) { width: calc(256px * var(--hierarchy-reading-unit)); }
+.field[data-hierarchy="true"] .thought[data-size="wide"]:not(.ghost):not(.editing):not(.crystal):not(.source) { width: calc(328px * var(--hierarchy-reading-unit)); }
+.field[data-hierarchy="true"] .thought:not(.ghost) .hierarchy-context { display: grid; grid-template-columns: minmax(0, 1fr); }
+.field[data-hierarchy="true"][data-level] .thought[data-size]:not(.ghost) .thought-preview { max-width: none; }
+
 /* --- First-use invitation -------------------------------------------------
    Decoration only, and it lives with the input it points at rather than in the middle of the Field,
    so a blank-field gesture stays a Field gesture. No outer container in this rule may take pointer

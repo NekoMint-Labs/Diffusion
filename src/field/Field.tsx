@@ -131,9 +131,9 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         setLevel(prev => prev === tier ? prev : tier);
         const found = geometry.index.query(viewportBounds(cam, rect.current.width, rect.current.height));
         const snap = controller.getSnapshot();
-        updateDisclosure(cam.zoom, liveHierarchy.current);
         const state = useUI.getState();
-        const disclosure = discloseHierarchy({ items: liveItems.current, hierarchy: liveHierarchy.current, found, camera: cam, viewport: rect.current, depth: disclosureState.current.depth, selection: state.selection, editing: state.editing, currentMatch: liveFind.current?.current, matches: liveFind.current?.matches, recalls: snap.session.recalls, expanded: disclosureState.current.expanded, measured: key => measuredBox(key, liveItems.current[key], cam) });
+        updateDisclosure(cam.zoom, liveHierarchy.current, state.selection);
+        const disclosure = discloseHierarchy({ items: liveItems.current, hierarchy: liveHierarchy.current, found, camera: cam, viewport: rect.current, depth: disclosureState.current.depth, selection: state.selection, selectionReveals: !disclosureState.current.strictSelection, editing: state.editing, currentMatch: liveFind.current?.current, matches: liveFind.current?.matches, recalls: snap.session.recalls, expanded: disclosureState.current.expanded, measured: key => measuredBox(key, liveItems.current[key], cam) });
         const ids = disclosure.visible;
         setRootAnchors(old => old.length === disclosure.roots.length && old.every((id, i) => id === disclosure.roots[i]) ? old : disclosure.roots);
         setVisible(old => old.length === ids.length && old.every((x, i) => x === ids[i]) ? old : ids);
@@ -169,7 +169,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             viewport.current?.setAttribute('data-camera-moving', 'true');
             const resolved = resolveWheelZoom(wheelZoom.current, { point: { x: e.clientX - rect.current.left, y: e.clientY - rect.current.top }, deltaY: e.deltaY, deltaMode: e.deltaMode, viewportHeight: rect.current.height, ctrlKey: e.ctrlKey, timeStamp: e.timeStamp });
             wheelZoom.current = resolved.gesture;
-            c.zoomTo(resolved.gesture.anchor, wheelDisclosure(c.get().zoom, resolved, liveHierarchy.current));
+            c.zoomTo(resolved.gesture.anchor, wheelDisclosure(c.get().zoom, resolved, liveHierarchy.current, useUI.getState().selection));
         };
         viewport.current.addEventListener('wheel', wheel, { passive: false });
         const element = viewport.current;
@@ -529,7 +529,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const selectedAIProposalGhosts = ui.selection.map(key => session.ghosts[key]).filter((ghost): ghost is Ghost => !!ghost?.proposalKind);
     const aiProposalKind: AIProposalKind | undefined = ui.selection.length > 0 && selectedAIProposalGhosts.length === ui.selection.length && new Set(selectedAIProposalGhosts.map(ghost => ghost.proposalKind)).size === 1 ? selectedAIProposalGhosts[0].proposalKind : undefined;
     const probing = ui.operation?.phase === 'pending' && ui.operation.kind === 'probe' && ui.operation.scopeIds.length === 2 && ui.operation.scopeIds.every(key => ui.selection.includes(key));
-    const showScopeHub = ui.selection.length > 0 && !ui.dragging && !ui.editing && !ui.carry.length && ui.surface === 'none' && !ui.speakFocused;
+    const showScopeHub = ui.selection.some(key => visible.includes(key)) && !ui.dragging && !ui.editing && !ui.carry.length && ui.surface === 'none' && !ui.speakFocused;
     const relationObstacles = relationPlacementObstacles(visible, geometry, stableCamera, rect.current, showScopeHub ? scopePlacement : null);
     const visibleSet = new Set(visible); // One frontier read feeds both disclosure and Atlas labels.
     const revealThought = (key: string) => {
@@ -568,7 +568,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const relationPhenomena = describeRelations(visibleRelations, geometry, false);
     const relationHits = describeRelations(tokenRelations, geometry, false);
     const causalTraces = describeCausalTraces(project, geometry, ui.selection, hoveredThought, visibleSet, session.ghosts, connectionStyle);
-    return <div ref={viewport} className="field" data-testid="field" data-level={level} data-scope={ui.selection.length > 0 || undefined} tabIndex={0} aria-label={t('Thought Field')} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerCancel} onContextMenu={contextMenu} onLostPointerCapture={() => { if (gesture.current)
+    return <div ref={viewport} className="field" data-testid="field" data-level={level} data-hierarchy={hierarchy.children.size > 0 || undefined} data-scope={ui.selection.length > 0 || undefined} tabIndex={0} aria-label={t('Thought Field')} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerCancel} onContextMenu={contextMenu} onLostPointerCapture={() => { if (gesture.current)
         pointerCancel(); }} onDoubleClick={doubleClick} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; }} onDrop={e => { e.preventDefault(); const point = camera.current?.worldPoint(localPoint(e)) ?? { x: 200, y: 200 }; if (e.dataTransfer.files.length)
         onDropFiles(Array.from(e.dataTransfer.files), point);
     else

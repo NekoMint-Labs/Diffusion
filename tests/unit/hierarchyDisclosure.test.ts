@@ -30,7 +30,7 @@ it('discloses by depth while selected, edited, pending and authored roots remain
     expect(discloseHierarchy(base).visible).toEqual(['a', 'g']);
     const editing = discloseHierarchy({ ...base, selection: ['c'], editing: 'd' });
     expect(editing.visible).toContain('d');
-    expect([...editing.visible, ...editing.roots].sort()).toEqual(['a', 'c', 'd', 'g']);
+    expect([...editing.visible, ...editing.roots].sort()).toEqual(['a', 'b', 'c', 'd', 'g']);
     expect(discloseHierarchy({ ...base, expanded: new Set(['a']), camera: { x: 40, y: 50, zoom: .10 } }).visible).toEqual(['a', 'b', 'g']);
     p.thoughts.a.organizingParentId = 'd';
     expect(thoughtHierarchy(p.thoughts).originalRoots.has('a')).toBe(true);
@@ -141,4 +141,24 @@ it('counts rapid mouse notches individually and groups small scroll packets with
     expect(pinch).toMatchObject({ delta: -8, step: 0, pinch: true });
     expect(resolveWheelZoom(null, { ...input, deltaY: 3, deltaMode: 1 }).step).toBe(-1);
     expect(resolveWheelZoom(null, { ...input, deltaY: 0 }).step).toBe(0);
+});
+
+
+it('strict wheel disclosure hides selected deeper nodes and retains close ancestors', () => {
+    const items = {
+        'z-root': makeThought('Root thought', { x: 400, y: 200 }, 1, 'z-root'),
+        b: { ...makeThought('Second level', { x: 500, y: 200 }, 1, 'b'), derivedFrom: ['z-root'] },
+        'c-third': { ...makeThought('Third level', { x: 600, y: 200 }, 1, 'c-third'), derivedFrom: ['b'] },
+    };
+    const before = JSON.stringify(items);
+    const base = { items, hierarchy: thoughtHierarchy(items), found: Object.keys(items), viewport: { width: 1440, height: 960 }, selection: ['z-root', 'c-third'], selectionReveals: false, editing: null, recalls: [], expanded: new Set<string>(), measured: () => undefined };
+    expect(discloseHierarchy({ ...base, camera: { x: 0, y: 0, zoom: .65 }, depth: 2 }).visible).toEqual(['b', 'c-third', 'z-root']);
+    const collapsed = discloseHierarchy({ ...base, camera: { x: 0, y: 0, zoom: .38 }, depth: 1 });
+    expect(collapsed.visible).toEqual(['b', 'z-root']);
+    expect(collapsed.roots).toEqual([]);
+    expect(discloseHierarchy({ ...base, camera: { x: 0, y: 0, zoom: .16 }, depth: 0 }).visible).toEqual(['z-root']);
+    expect(JSON.stringify(items)).toBe(before);
+    expect(base.selection).toEqual(['z-root', 'c-third']);
+    expect(discloseHierarchy({ ...base, camera: { x: 0, y: 0, zoom: .38 }, depth: 1, editing: 'c-third' }).visible).toContain('c-third');
+    expect(discloseHierarchy({ ...base, camera: { x: 0, y: 0, zoom: .38 }, depth: 1, matches: new Set(['c-third']) }).visible).toContain('c-third');
 });

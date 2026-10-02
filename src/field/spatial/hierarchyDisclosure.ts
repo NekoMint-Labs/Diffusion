@@ -40,15 +40,15 @@ export function hierarchyWheelZoom(zoom: number, depth: number, maxDepth: number
  * in the node label even when a very deep branch cycles through the four ink/line recipes. */
 export function hierarchyStyle(depth: number): number { return depth > 0 ? (depth - 1) % 4 + 1 : 0; }
 
-export function discloseHierarchy({ items, hierarchy, found, camera, viewport, depth, selection, editing, currentMatch, matches, recalls, expanded, measured }: {
+export function discloseHierarchy({ items, hierarchy, found, camera, viewport, depth, selection, editing, currentMatch, matches, recalls, expanded, measured, selectionReveals = true }: {
     items: Record<string, Thought | Ghost>; hierarchy: ThoughtHierarchy; found: string[];
     camera: Camera; viewport: { width: number; height: number }; depth: number;
     selection: readonly string[]; editing: string | null; currentMatch?: string | null;
     matches?: ReadonlySet<string>; recalls: readonly string[]; expanded: ReadonlySet<string>;
-    measured: (id: string) => Bounds | undefined;
+    measured: (id: string) => Bounds | undefined; selectionReveals?: boolean;
 }): { visible: string[]; roots: string[] } {
     const tier = scaleLevel(camera.zoom);
-    const protectedIds = new Set([...selection, ...(editing ? [editing] : []), ...(currentMatch ? [currentMatch] : []), ...matches ?? []]);
+    const protectedIds = new Set([...(selectionReveals ? selection : []), ...(editing ? [editing] : []), ...(currentMatch ? [currentMatch] : []), ...matches ?? []]);
     const contextIds = new Set(protectedIds);
     // Protected descendants disclose their current ancestry when it fits. A parent label on
     // every child preserves context even when a reading box is outside the viewport or collides.
@@ -70,10 +70,12 @@ export function discloseHierarchy({ items, hierarchy, found, camera, viewport, d
         const item = items[id], kind = 'kind' in item ? item.kind : 'thought';
         const box = measured(id);
         const size = box ? { width: box.width * camera.zoom, height: box.height * camera.zoom } : disclosureBox(item.text, camera.zoom, kind);
-        return { id, x: item.x, y: item.y, ...size, priority: id === editing ? 9 : id === currentMatch ? 8 : protectedIds.has(id) ? 7 : 'scopeIds' in item ? 6 : kind === 'crystal' ? 5 : isRoot(id) ? 4 : 2 };
+        return { id, x: item.x, y: item.y, ...size, priority: id === editing ? 9 : id === currentMatch ? 8 : protectedIds.has(id) || selection.includes(id) ? 7 : 'scopeIds' in item ? 6 : kind === 'crystal' ? 5 : isRoot(id) ? 4 : 2 };
     });
-    // Local retains authored overlaps. Compact tiers disclose only collision-free reading boxes.
-    const visible = tier === 'local' ? candidates.sort((a, b) => b.priority - a.priority || a.id.localeCompare(b.id)).slice(0, limit).map(item => item.id) : readableLabels(candidates, camera, viewport, limit);
+    // Actual hierarchy levels retain their eligible nodes through compact zoom. Collision
+    // suppression must not remove a parent while keeping its children. Flat dense Fields
+    // retain the existing bounded readable summaries and exact root anchors.
+    const visible = tier === 'local' || hierarchy.children.size > 0 ? candidates.sort((a, b) => b.priority - a.priority || a.id.localeCompare(b.id)).slice(0, limit).map(item => item.id) : readableLabels(candidates, camera, viewport, limit);
     const shown = new Set(visible);
     // Dense roots retain their exact spatial anchors and a bounded, searchable reading entry.
     const roots = found.filter(id => !shown.has(id) && items[id] && 'kind' in items[id] && items[id].kind !== 'source' && (isRoot(id) || hierarchy.originalRoots.has(id) || protectedIds.has(id)));

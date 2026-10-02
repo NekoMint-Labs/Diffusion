@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { createProject, makeThought } from '../../src/core/model.ts';
+import { validateProject } from '../../src/core/validation.ts';
 
 async function boot(page: Page, profile = 'editorial-warm', style = 'curve', zoom = 1) {
     await page.addInitScript(({ profile, style }) => {
@@ -261,4 +262,87 @@ test('wheel steps use current reparented levels and close a manually opened chil
     await notch(page, 'down');
     await expect(node(page, 'b')).toHaveCount(0);
     await expect(node(page, 'c')).toHaveCount(0);
+});
+
+
+async function bootBranches(page: Page, profile = 'editorial-warm') {
+    await boot(page, profile);
+    const p = createProject('main', '紧凑分支滚轮验收');
+    const entries: [string, string | null, number, number, string][] = [
+        ['z-root', null, 600, 400, '希望这个学习资料工具可以按课程分类和整理'],
+        ['b-left', 'z-root', 120, 400, '课程名称可以自己手动添加，不用从固定列表里面挑选。'],
+        ['b-up', 'z-root', 650, 120, '按课程分完之后，同一门课的资料能够整块收起来，也能整块拿走。'],
+        ['b-right', 'z-root', 1060, 400, '先不用手动一个个建立课程，拿已有的课程名自动认识一遍，认不出来的再自己放进去。'],
+        ['b-down', 'z-root', 1050, 850, '认不出来的放在一个待办列表里，放的时候顺手给个准确名字，下次它就能认识了。'],
+        ['c-up', 'b-up', 1250, 110, '一门课整块收起来之后，学期结束了大概能整块挪走或者归档，不用再拆开分一遍。'],
+        ['c-left', 'b-up', 370, 570, '有些东西可能不止属于一门课，比如同一本参考书或同一个模板，需要保留来源。'],
+        ['c-bottom', 'b-right', 320, 780, '名字差不多但不完全一样的先归到疑似里面，再由使用者确认是否相同。'],
+        ['independent', null, 800, 990, '另一个独立顶层想法保持原始坐标，不因为缩放而消失。'],
+    ];
+    for (const [id, parent, x, y, text] of entries) p.thoughts[id] = { ...makeThought(text, { x, y }, 1, id), ...(parent ? { derivedFrom: [parent], generationAction: 'continue' as const } : {}) };
+    p.camera = { x: 30, y: 30, zoom: .65 };
+    validateProject(p);
+    await page.evaluate(p => new Promise<void>(resolve => {
+        const r = indexedDB.open('diffusion-explorer-v1');
+        r.onsuccess = () => { const db = r.result, tx = db.transaction('projects', 'readwrite'); tx.objectStore('projects').put(p); tx.oncomplete = () => { db.close(); resolve(); }; };
+    }), p);
+    await page.reload();
+    await expect(node(page, 'z-root')).toBeVisible();
+    return p;
+}
+
+for (const profile of ['editorial-warm', 'graphite-night']) {
+    test(`strict wheel retains compact parents and shrinks survivors with selection in ${profile}`, async ({ page }, info) => {
+        await bootBranches(page, profile);
+        await node(page, 'z-root').click();
+        await node(page, 'b-right').click({ modifiers: ['Shift'] });
+        await node(page, 'c-up').click({ modifiers: ['Shift'] });
+        for (const id of ['z-root', 'b-right', 'c-up']) await expect(node(page, id)).toHaveAttribute('data-selected', 'true');
+        await expect.poll(async () => { const saved = JSON.parse(await readThoughts(page)); return ['z-root', 'b-right', 'c-up'].every(id => saved[id].touchedAt > 1); }).toBe(true);
+        const before = await readThoughts(page);
+        const surviving = ['z-root', 'b-left', 'b-up', 'b-right', 'b-down', 'independent'];
+        const widths = await Promise.all(surviving.map(id => node(page, id).evaluate(el => el.getBoundingClientRect().width)));
+        await page.screenshot({ path: info.outputPath('compact-selected-P1.png') });
+        await notch(page, 'down');
+        await expect(page.getByTestId('hierarchy-disclosure')).toContainText('第 2 层');
+        await expect(page.locator('article[data-depth="2"]')).toHaveCount(0);
+        for (const [i, id] of surviving.entries()) {
+            await expect(node(page, id)).toBeVisible();
+            const after = await node(page, id).evaluate(el => el.getBoundingClientRect().width);
+            expect(after, `${id} must shrink rather than counter-scale to a larger card`).toBeLessThan(widths[i] - 1);
+        }
+        await expect(node(page, 'b-up').getByTestId('branch-expand')).toContainText('2 个下级');
+        await page.screenshot({ path: info.outputPath('compact-selected-P2.png') });
+        await notch(page, 'down');
+        await expect(page.locator('article[data-depth="1"]')).toHaveCount(0);
+        await expect(page.locator('article[data-depth="2"]')).toHaveCount(0);
+        await expect(node(page, 'z-root')).toBeVisible();
+        await expect(node(page, 'independent')).toBeVisible();
+        await notch(page, 'up');
+        await expect(node(page, 'b-right')).toHaveAttribute('data-selected', 'true');
+        await expect(node(page, 'c-up')).toHaveCount(0);
+        await notch(page, 'up');
+        await expect(node(page, 'c-up')).toHaveAttribute('data-selected', 'true');
+        expect(await readThoughts(page)).toBe(before);
+    });
+}
+
+test('a selected collapsed child leaves no floating scope controls and Find restores normal collapse', async ({ page }) => {
+    await bootBranches(page);
+    await node(page, 'c-up').click();
+    await expect(page.locator('[data-scope-hub]')).toBeVisible();
+    await notch(page, 'down');
+    await expect(node(page, 'c-up')).toHaveCount(0);
+    await expect(page.locator('[data-scope-hub]')).toHaveCount(0);
+    await expect(node(page, 'z-root')).toBeVisible();
+    const camera = await page.locator('.world').getAttribute('style');
+    await page.keyboard.press('Control+f');
+    await page.locator('.find-bar input').fill('一门课整块收起来之后');
+    await expect(node(page, 'c-up')).toBeVisible();
+    await expect(node(page, 'c-up').locator('.thought-preview')).toContainText('不用再拆开分一遍');
+    await page.keyboard.press('Escape');
+    await expect(node(page, 'c-up')).toHaveCount(0);
+    await expect(page.locator('.world')).toHaveAttribute('style', camera!);
+    await notch(page, 'up');
+    await expect(node(page, 'c-up')).toHaveAttribute('data-selected', 'true');
 });

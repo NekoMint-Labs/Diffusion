@@ -111,7 +111,13 @@ test('dragging a third thought across a source trace reroutes the trace before c
         const line = path as SVGGeometryElement;
         const start = line.getPointAtLength(0).matrixTransform(line.getScreenCTM()!);
         const source = document.querySelector('[data-thought-id="a"]')!.getBoundingClientRect();
-        return Math.hypot(start.x - source.right, start.y - (source.top + source.height / 2));
+        // The child's two-row parent caption gives it a different height. The measured
+        // ray lands on the card boundary toward the child's center, not the side midpoint.
+        const target = document.querySelector('[data-thought-id="b"]')!.getBoundingClientRect();
+        const cx = source.left + source.width / 2, cy = source.top + source.height / 2;
+        const dx = target.left + target.width / 2 - cx, dy = target.top + target.height / 2 - cy;
+        const distance = Math.min(source.width / 2 / Math.abs(dx), source.height / 2 / Math.abs(dy));
+        return Math.hypot(start.x - (cx + dx * distance), start.y - (cy + dy * distance));
     })).toBeLessThan(1);
     const original = await route.getAttribute('d');
     const moving = page.locator('[data-thought-id="d"]');

@@ -56,7 +56,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         const viewport = screenRect(field.getBoundingClientRect());
         const appRect = app.getBoundingClientRect();
         const controls = [
-            { element: scopeElement.current, ids: state.selection, key: `scope:${state.selection.join(' ')}`, forceDock: false },
+            { element: scopeElement.current, ids: state.selection.filter(id => state.visibleIds.includes(id)), key: `scope:${state.selection.join(' ')}`, forceDock: false },
             { element: operationElement.current, ids: state.displayOperation?.scopeIds ?? [], key: `operation:${state.displayOperation?.id}`, forceDock: state.dragging },
             { element: reviewElement.current, ids: [], key: 'suggestions', forceDock: true },
             { element: rootsElement.current, ids: [], key: 'roots', forceDock: true },

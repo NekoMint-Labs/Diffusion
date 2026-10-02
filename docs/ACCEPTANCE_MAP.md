@@ -55,3 +55,6 @@ Screenshots produced by the new tests are uploaded by the existing E2E workflow.
 | 10: palettes | Same-content four-palette / five-background rendered review; existing appearance and custom-accent checks | Personal visual preference remains a human judgment |
 
 The first draft-run failures are retained and explained; no full-frame snapshot update, retry or skip masks them. New screenshots use controlled fixtures only. Browser scaling, Windows compilation and source/unit tests are not promoted to complete native/operator acceptance.
+
+
+Deep hierarchy wheel acceptance also covers a 12-level mounted chain in warm/graphite profiles: each notch changes one visible level; every screen font stays at or below the configured normal Thought size; repeated input at full disclosure keeps camera/card size stable; intermediate depth restores after reload; explicit detail zoom remains available; downward steps return to root-only disclosure without changing canonical Thoughts. Unit coverage exercises every depth and both directions in chains up to 10,000 levels within the same reading ceiling.

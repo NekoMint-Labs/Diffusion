@@ -346,3 +346,79 @@ test('a selected collapsed child leaves no floating scope controls and Find rest
     await notch(page, 'up');
     await expect(node(page, 'c-up')).toHaveAttribute('data-selected', 'true');
 });
+
+
+async function bootDeepReading(page: Page, profile: string) {
+    await boot(page, profile);
+    const p = createProject('main', '十二层阅读上限验收');
+    for (let i = 0; i < 12; i++) {
+        const id = `deep-${i}`;
+        p.thoughts[id] = {
+            ...makeThought(`第 ${i + 1} 层：继续展开时，阅读大小保持适度，不因层级增多而无限放大。`, { x: 60 + i % 4 * 340, y: 150 + Math.floor(i / 4) * 220 }, 1, id),
+            ...(i ? { derivedFrom: [`deep-${i - 1}`], generationAction: 'continue' as const } : {}),
+        };
+    }
+    p.camera = { x: 30, y: 30, zoom: .65 };
+    validateProject(p);
+    await page.evaluate(p => new Promise<void>(resolve => {
+        const r = indexedDB.open('diffusion-explorer-v1');
+        r.onsuccess = () => { const db = r.result, tx = db.transaction('projects', 'readwrite'); tx.objectStore('projects').put(p); tx.oncomplete = () => { db.close(); resolve(); }; };
+    }), p);
+    await page.reload();
+    await expect(node(page, 'deep-2')).toBeVisible();
+    return p;
+}
+const liveZoom = (page: Page) => page.locator('.world').evaluate(el => new DOMMatrix(getComputedStyle(el).transform).a);
+const savedZoom = (page: Page) => page.evaluate(() => new Promise<number>(resolve => {
+    const r = indexedDB.open('diffusion-explorer-v1');
+    r.onsuccess = () => { const db = r.result, read = db.transaction('projects').objectStore('projects').get('main'); read.onsuccess = () => { resolve(read.result.camera.zoom); db.close(); }; };
+}));
+
+for (const profile of ['editorial-warm', 'graphite-night']) {
+    test(`twelve wheel levels stay within normal reading size and restore in ${profile}`, async ({ page }, info) => {
+        const p = await bootDeepReading(page, profile);
+        const before = await readThoughts(page);
+        const normalFont = await node(page, 'deep-0').evaluate(el => parseFloat(getComputedStyle(el).getPropertyValue('--thought-size')));
+        expect(normalFont).toBeGreaterThan(0);
+        for (let count = 4; count <= 12; count++) {
+            await notch(page, 'up');
+            await expect(node(page, `deep-${count - 1}`)).toBeVisible();
+            await expect(page.locator('article[data-thought-id^="deep-"]')).toHaveCount(count);
+            if (count < 12) await expect(node(page, `deep-${count}`)).toHaveCount(0);
+            const zoom = await liveZoom(page);
+            expect(zoom).toBeLessThanOrEqual(1);
+            const fonts = await page.locator('article[data-thought-id^="deep-"]').evaluateAll((nodes, zoom) => nodes.map(el => parseFloat(getComputedStyle(el).fontSize) * zoom), zoom);
+            for (const font of fonts) expect(font).toBeLessThanOrEqual(normalFont + .01);
+            if ([4, 8, 12].includes(count)) await page.screenshot({ path: info.outputPath(`reading-${count}-levels.png`) });
+            if (count === 8) {
+                await expect.poll(() => savedZoom(page)).toBeCloseTo(zoom, 6);
+                await page.reload();
+                await expect(page.locator('article[data-thought-id^="deep-"]')).toHaveCount(8);
+                expect(await liveZoom(page)).toBeCloseTo(zoom, 6);
+            }
+        }
+        const fullWidth = (await node(page, 'deep-11').boundingBox())!.width;
+        expect(fullWidth).toBeLessThanOrEqual(328.01);
+        await page.mouse.wheel(0, -120);
+        await page.mouse.wheel(0, -120);
+        await expect.poll(() => page.getByTestId('field').getAttribute('data-camera-moving')).toBeNull();
+        expect(await liveZoom(page)).toBe(1);
+        expect((await node(page, 'deep-11').boundingBox())!.width).toBeCloseTo(fullWidth, 1);
+        await expect(node(page, 'deep-11').locator('.thought-preview')).toHaveText(p.thoughts['deep-11'].text);
+        // Explicit pinch remains available for deliberate detail inspection above the wheel ceiling.
+        await pinchTo(page, 1.4);
+        expect(await liveZoom(page)).toBeGreaterThan(1);
+        await notch(page, 'down');
+        await expect(node(page, 'deep-11')).toHaveCount(0);
+        expect(await liveZoom(page)).toBeLessThan(1);
+        await notch(page, 'up');
+        await expect(node(page, 'deep-11')).toBeVisible();
+        expect(await liveZoom(page)).toBe(1);
+        for (let count = 11; count >= 1; count--) {
+            await notch(page, 'down');
+            await expect(page.locator('article[data-thought-id^="deep-"]')).toHaveCount(count);
+        }
+        await expect(node(page, 'deep-0')).toBeVisible();
+        expect(await readThoughts(page)).toBe(before);
+    });
+}

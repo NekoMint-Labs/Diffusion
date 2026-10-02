@@ -4,19 +4,22 @@ import { disclosureBox } from './collision.ts';
 import { readableLabels } from './representation.ts';
 import { scaleLevel, type Bounds } from './geometry.ts';
 
-// Every actual hierarchy level gets a reachable zoom band. Deeper imported branches
-// share the remaining camera range rather than jumping from level three to all detail.
+// Every actual hierarchy level gets a reachable zoom band. Deep branches share the
+// remaining NORMAL reading range, so ordinary disclosure never magnifies the whole
+// Field beyond 100%. Explicit pinch/manual zoom keeps its existing independent range.
+const READING_ZOOM = 1;
+const DEEP_BOUNDARY = .98;
 function depthBoundary(depth: number, maxDepth: number): number {
     if (depth <= 3) return [.08, .25, .50, .80][depth];
-    return .80 * Math.pow(2.35 / .80, (depth - 3) / (maxDepth - 3));
+    return .80 * Math.pow(DEEP_BOUNDARY / .80, (depth - 3) / (maxDepth - 3));
 }
 function depthMargin(depth: number, maxDepth: number): number {
     const boundary = depthBoundary(depth, maxDepth);
-    const next = depth < maxDepth ? depthBoundary(depth + 1, maxDepth) : 2.5;
+    const next = depth < maxDepth ? depthBoundary(depth + 1, maxDepth) : READING_ZOOM;
     return Math.min(.025, (boundary - depthBoundary(depth - 1, maxDepth)) / 4, (next - boundary) / 4);
 }
 export function zoomDepth(zoom: number, previous?: number, maxDepth = 3): number {
-    const estimate = maxDepth > 3 && zoom >= .8 ? 3 + Math.floor(Math.log(zoom / .8) / Math.log(2.35 / .8) * (maxDepth - 3)) : 0;
+    const estimate = maxDepth > 3 && zoom >= .8 ? 3 + Math.floor(Math.log(zoom / .8) / Math.log(DEEP_BOUNDARY / .8) * (maxDepth - 3)) : 0;
     let depth = Math.min(maxDepth, Math.max(0, Number.isFinite(previous) ? previous! : estimate));
     while (depth < maxDepth && zoom >= depthBoundary(depth + 1, maxDepth) + (previous === undefined ? 0 : depthMargin(depth + 1, maxDepth))) depth++;
     while (depth > 0 && zoom < depthBoundary(depth, maxDepth) - (previous === undefined ? 0 : depthMargin(depth, maxDepth))) depth--;
@@ -29,7 +32,7 @@ export function hierarchyWheelZoom(zoom: number, depth: number, maxDepth: number
     if (!delta || !step) return zoom;
     const next = Math.max(0, Math.min(maxDepth, depth + step));
     const lower = next ? depthBoundary(next, maxDepth) + depthMargin(next, maxDepth) + 1e-8 : .08;
-    const upper = next < maxDepth ? depthBoundary(next + 1, maxDepth) - depthMargin(next + 1, maxDepth) - 1e-8 : 2.5;
+    const upper = next < maxDepth ? depthBoundary(next + 1, maxDepth) - depthMargin(next + 1, maxDepth) - 1e-8 : maxDepth ? READING_ZOOM : 2.5;
     const center = Math.max(lower, Math.min(upper, [.16, .38, .65, 1][next] ?? (lower + upper) / 2));
     const proposed = zoom * Math.exp(-delta * .0015);
     const target = next === depth ? proposed : step > 0 ? Math.max(center, proposed) : Math.min(center, proposed);

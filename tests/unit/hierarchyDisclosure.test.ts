@@ -111,6 +111,7 @@ it('never jumps over an imported level and reaches both ends of a deep hierarchy
             depth = zoomDepth(zoom, depth, maxDepth);
             expect(depth).toBe(expected);
             expect(zoom).toBeGreaterThan(before);
+            expect(zoom).toBeLessThanOrEqual(1); // More imported levels cannot inflate the reading view.
             expect(zoomDepth(zoom, undefined, maxDepth)).toBe(depth);
         }
         for (let expected = maxDepth - 1; expected >= 0; expected--) {
@@ -161,4 +162,19 @@ it('strict wheel disclosure hides selected deeper nodes and retains close ancest
     expect(base.selection).toEqual(['z-root', 'c-third']);
     expect(discloseHierarchy({ ...base, camera: { x: 0, y: 0, zoom: .38 }, depth: 1, editing: 'c-third' }).visible).toContain('c-third');
     expect(discloseHierarchy({ ...base, camera: { x: 0, y: 0, zoom: .38 }, depth: 1, matches: new Set(['c-third']) }).visible).toContain('c-third');
+});
+
+it('caps ordinary hierarchy reading while retaining the flat Field manual wheel range', () => {
+    for (const maxDepth of [1, 3, 12, 10000]) {
+        let zoom = hierarchyWheelZoom(1, maxDepth, maxDepth, -120, 1);
+        for (let i = 0; i < 20; i++) zoom = hierarchyWheelZoom(zoom, maxDepth, maxDepth, -120, 1);
+        expect(zoom).toBe(1);
+        expect(zoomDepth(zoom, undefined, maxDepth)).toBe(maxDepth);
+        const collapsed = hierarchyWheelZoom(zoom, maxDepth, maxDepth, 120, -1);
+        expect(zoomDepth(collapsed, undefined, maxDepth)).toBe(maxDepth - 1);
+        // A prior high zoom still returns to the normal reading limit on ordinary wheel.
+        expect(hierarchyWheelZoom(2.5, maxDepth, maxDepth, -120, 1)).toBe(1);
+    }
+    expect(hierarchyWheelZoom(1, 0, 0, -120, 1)).toBeGreaterThan(1);
+    expect(hierarchyWheelZoom(2.5, 0, 0, -120, 1)).toBe(2.5);
 });

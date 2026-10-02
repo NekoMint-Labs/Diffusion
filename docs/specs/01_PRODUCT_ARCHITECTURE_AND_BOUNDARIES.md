@@ -303,3 +303,8 @@ Avoid:
 If a new capability appears to need a permanent toolbar button, first try:
 
 > direct manipulation → contextual action → language → system phenomenon
+
+
+### Deep hierarchy reading ceiling
+
+Ordinary wheel steps continue to reveal/close exactly one current level. Early levels increase reading size; deeper bands share the remaining normal-scale range and ordinary hierarchical wheel zoom never exceeds 1. This bounds text, card footprints and camera spacing together rather than compensating text alone. Repeated upward input at the deepest level stays at the ceiling. The existing camera persists disclosure without a new canonical field; direct estimation and reversible bands keep large imported chains reachable. Explicit Ctrl-wheel/pinch remains available for deliberate detail zoom above normal size, while the next ordinary hierarchy step returns to the reading bands. Flat Fields retain their existing wheel range. Canonical text, coordinates, sources and parent relationships do not change.

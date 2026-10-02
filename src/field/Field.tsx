@@ -6,7 +6,7 @@ import { type AIProposalKind, type Camera, type Point, type Ghost, type Thought 
 import type { ProjectController } from '../core/controller.ts';
 import { useProject } from '../ui/hooks.ts';
 import { useUI } from '../ui/store.ts';
-import { useThoughtMeasurements } from './useThoughtMeasurements.ts';
+import { selectionUIBounds, useThoughtMeasurements } from './useThoughtMeasurements.ts';
 import { ThoughtView } from '../ui/thought/ThoughtView.tsx';
 import { ScopeHub } from '../ui/scope/ScopeHub.tsx';
 import { StructureOverlay } from './phenomena/StructureOverlay.tsx';
@@ -103,7 +103,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const liveItems = useRef(items);
     liveItems.current = items;
     const focus = useMemo(() => focusFor(project, session, ui.selection), [project, session, ui.selection]);
-    const handleGhostMeasured = useThoughtMeasurements({ controller, geometry, items, camera, viewport: rect });
+    const { onMeasure: handleGhostMeasured, onActionsMeasure, actionBounds } = useThoughtMeasurements({ controller, geometry, items, camera, viewport: rect });
     useLayoutEffect(() => {
         const state = useUI.getState();
         const selection = state.selection.filter(key => !!items[key]);
@@ -519,7 +519,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const keepCandidate = useCallback((relationId: string) => keepRelationCandidate(controller, relationId), [controller]);
     const ignoreCandidate = useCallback((relationId: string) => ignoreRelationCandidate(controller, relationId), [controller]);
     const renameCandidate = useCallback((relationId: string, label: string) => controller.updatePhenomenon(relationId, { label }), [controller]);
-    const selectedBoxes = ui.selection.map(k => geometry.get(k)).filter((b): b is Bounds => !!b);
+    const selectedBoxes = selectionUIBounds(ui.selection, geometry, actionBounds);
     const scopeBounds = unionScopeBounds(selectedBoxes.map(bounds => {
         const point = worldToScreen(bounds, stableCamera);
         return { x: point.x + rect.current.left, y: point.y + rect.current.top, width: bounds.width * stableCamera.zoom, height: bounds.height * stableCamera.zoom };
@@ -633,7 +633,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             {ui.surface !== 'relation' && <RelationLabels relations={relationHits} thoughtBounds={relationObstacles} zoom={stableCamera.zoom} onRelation={onRelation} onKeep={keepCandidate} onIgnore={ignoreCandidate} onRename={renameCandidate}/>}
    {visible.map(key => { if (ui.carry.includes(key))
         return null; const item = items[key]; if (!item)
-        return null; return <ThoughtView key={key} item={item} ghost={key in session.ghosts} recalled={session.recalls.includes(key)} selected={ui.selection.includes(key)} settling={ui.spatialTransition?.material === true && ui.spatialTransition.scopeIds.includes(key)} find={findEmphasis(key)} emphasis={!focus.selected.size ? 'normal' : focus.selected.has(key) ? 'selected' : focus.direct.has(key) ? 'direct' : focus.nearby.has(key) ? 'nearby' : focus.peripheral.has(key) ? 'peripheral' : 'receded'} editing={ui.editing === key} level={level} geometry={geometry} onEdit={handleThoughtEdit} onCancel={handleThoughtCancel} onMeasure={handleGhostMeasured} onHover={setHoveredThought} onRead={onReadThought} onRespond={onRespondThought} onReject={key => dismissGhostWithDissolve(controller, key, () => { const state = useUI.getState(); state.patch({ selection: state.selection.filter(id => id !== key) }); })}/>; })}
+        return null; return <ThoughtView key={key} item={item} ghost={key in session.ghosts} recalled={session.recalls.includes(key)} selected={ui.selection.includes(key)} settling={ui.spatialTransition?.material === true && ui.spatialTransition.scopeIds.includes(key)} find={findEmphasis(key)} emphasis={!focus.selected.size ? 'normal' : focus.selected.has(key) ? 'selected' : focus.direct.has(key) ? 'direct' : focus.nearby.has(key) ? 'nearby' : focus.peripheral.has(key) ? 'peripheral' : 'receded'} editing={ui.editing === key} level={level} geometry={geometry} onEdit={handleThoughtEdit} onCancel={handleThoughtCancel} onMeasure={handleGhostMeasured} onActionsMeasure={onActionsMeasure} onHover={setHoveredThought} onRead={onReadThought} onRespond={onRespondThought} onReject={key => dismissGhostWithDissolve(controller, key, () => { const state = useUI.getState(); state.patch({ selection: state.selection.filter(id => id !== key) }); })}/>; })}
     {offscreenMatches.map((key, index) => { const edge = recallEdge(project.thoughts[key], stableCamera, rect.current.width, rect.current.height, index); const hit = find?.current === key; return <button className="find-edge" data-current={hit || undefined} key={'find-' + key} style={{ left: edge.x, top: edge.y }} onClick={() => onRevealMatch(key)} title={project.thoughts[key].text}><span aria-hidden="true" style={{ display: 'inline-block', transform: `rotate(${edge.angle}deg)` }}>&#8594;</span> {t(hit ? 'Next match' : 'Match elsewhere')}</button>; })}
    {Object.values(project.regions).filter(region => level !== 'local' ? disclosedLandmarks.has('region:' + region.id) : ui.regionId === region.id).map(region => <button className="region-label" data-active={ui.regionId === region.id || undefined} onClick={() => onRegion(region.id, { x: region.x, y: region.y })} key={region.id} style={{ transform: `translate(${region.x}px,${region.y}px) scale(var(--inverse-zoom))` }}><span>{t(region.name)}</span><small>{t('{count} thoughts', { count: region.members.length })}</small></button>)}
    {level === 'atlas' && frontiers.filter(key => disclosedLandmarks.has('frontier:' + key)).map(key => { const t = project.thoughts[key]; return <button className="frontier-label" key={'frontier-' + key} onClick={() => { controller.wake(key); ui.patch({ selection: [key] }); camera.current?.set({ x: rect.current.width / 2 - t.x - 128, y: rect.current.height / 2 - t.y - 30, zoom: 1 }); camera.current?.commit(); }} style={{ transform: `translate(${t.x}px,${t.y}px) scale(var(--inverse-zoom))` }}><span aria-hidden="true">&#9671;</span> {semanticExcerpt(t.text, 'atlas', 'thought')}</button>; })}

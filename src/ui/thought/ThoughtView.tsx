@@ -4,6 +4,7 @@ import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { Ghost, Thought } from '../../core/model.ts';
 import { isAuthoredExample } from '../../core/demo.ts';
 import type { GeometryCache } from '../../field/spatial/index.ts';
+import type { Bounds } from '../../field/spatial/geometry.ts';
 import { estimateThoughtSize, thoughtSizeClass } from '../../field/spatial/collision.ts';
 import { semanticExcerpt } from '../../field/spatial/representation.ts';
 import { isQuestion } from '../workspace/response.ts';
@@ -24,15 +25,17 @@ interface Props {
     onCancel: () => void;
     onReject?: (id: string) => void;
     onMeasure?: (id: string) => void;
+    onActionsMeasure?: (id: string, bounds: Bounds | null) => void;
     onHover?: (id: string | null) => void;
     onRead: (id: string) => void;
     onRespond: (id: string) => void;
 }
-export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, selected, emphasis, settling, find, editing, level, geometry, onEdit, onCancel, onReject, onMeasure, onHover, onRead, onRespond }: Props) {
+export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, selected, emphasis, settling, find, editing, level, geometry, onEdit, onCancel, onReject, onMeasure, onActionsMeasure, onHover, onRead, onRespond }: Props) {
     useLocale();
     const ref = useRef<HTMLElement>(null);
     const input = useRef<HTMLTextAreaElement>(null);
     const preview = useRef<HTMLDivElement>(null);
+    const localActions = useRef<HTMLDivElement>(null);
     const [truncated, setTruncated] = useState(false);
     const settled = useRef(false);
     const wasEditing = useRef(false);
@@ -57,6 +60,16 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
         observer.observe(el);
         return () => observer.disconnect();
     }, [item.id, item.text, editing, geometry, level, onMeasure]);
+    useLayoutEffect(() => {
+        const actions = localActions.current;
+        if (!actions || !onActionsMeasure) return;
+        const measure = () => onActionsMeasure(item.id, { x: actions.offsetLeft, y: actions.offsetTop, width: actions.offsetWidth, height: actions.offsetHeight });
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(actions);
+        if (ref.current) observer.observe(ref.current);
+        return () => { observer.disconnect(); onActionsMeasure(item.id, null); };
+    }, [item.id, item.text, selected, editing, truncated, level, onActionsMeasure]);
     useLayoutEffect(() => {
         const entering = editing && !wasEditing.current;
         wasEditing.current = editing;
@@ -118,7 +131,7 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
             : ghost || recalled
                 ? <TransientTextPresence phase={ghost ? 'ghost' : 'recall'}>{short || t('A thought, not yet in words...')}</TransientTextPresence>
                 : <p>{short || t('A thought, not yet in words...')}</p>}</div>
-    {selected && !editing && (!ghost && kind === 'thought' || truncated || short !== text) && <div className="thought-local-actions" onPointerDown={event => event.stopPropagation()}>
+    {selected && !editing && (!ghost && kind === 'thought' || truncated || short !== text) && <div ref={localActions} className="thought-local-actions" onPointerDown={event => event.stopPropagation()}>
         {!ghost && kind === 'thought' && <button type="button" className="thought-respond" data-testid="thought-respond" onClick={event => { event.stopPropagation(); onRespond(item.id); }}>{t(isQuestion(item) ? 'Respond to this question' : 'Add my thoughts')}</button>}
         {(truncated || short !== text) && <button type="button" className="thought-read" aria-haspopup="dialog" onClick={event => { event.stopPropagation(); onRead(item.id); }}>{t('Read full text')}</button>}
     </div>}

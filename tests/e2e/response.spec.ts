@@ -210,3 +210,38 @@ test('response controls remain readable in dark mode', async ({ page }, testInfo
     })).toBe(true);
     await page.screenshot({ path: testInfo.outputPath('response-dark.png') });
 });
+
+// Selection may expose read/respond controls, but it cannot reflow Thought geometry or let the
+// existing Scope Hub cover those controls. Use the top edge to exercise its below-card fallback.
+for (const [name, text, actionCount] of [
+    ['short', 'A concrete thought at the top edge.', 1],
+    ['long', 'A long thought keeps its original footprint when reading actions appear. '.repeat(8), 2],
+] as const) {
+    test(`${name} reading and response actions preserve card bounds and clear the Scope Hub`, async ({ page }) => {
+        await page.getByTestId('field').dblclick({ position: { x: 920, y: 22 } });
+        const editor = page.getByRole('textbox', { name: 'Edit thought', exact: true });
+        await editor.fill(text);
+        await editor.press('Enter');
+        const card = page.locator('article.thought').filter({ has: page.locator('p', { hasText: text }) });
+        await expect(card).toBeVisible();
+        await page.getByTestId('field').click({ position: { x: 70, y: 850 } });
+        await expect(card).toHaveAttribute('data-selected', 'false');
+        const before = await card.boundingBox();
+        expect(before).not.toBeNull();
+        await card.click();
+        const actions = card.locator('.thought-local-actions');
+        await expect(actions.getByRole('button')).toHaveCount(actionCount);
+        expect(await card.boundingBox()).toEqual(before);
+        await expect.poll(async () => {
+            const strip = await actions.boundingBox();
+            const hub = await page.getByTestId('scope-hub').boundingBox();
+            return Boolean(strip && hub && (strip.x + strip.width <= hub.x || hub.x + hub.width <= strip.x || strip.y + strip.height <= hub.y || hub.y + hub.height <= strip.y));
+        }).toBe(true);
+        const respond = card.getByTestId('thought-respond');
+        expect((await respond.boundingBox())!.height).toBeGreaterThanOrEqual(32);
+        await respond.focus();
+        await respond.press('Enter');
+        await expect(page.locator('.speak-references')).toContainText(text.slice(0, 55));
+        expect(await card.boundingBox()).toEqual(before);
+    });
+}

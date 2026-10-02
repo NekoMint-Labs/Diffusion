@@ -32,6 +32,7 @@ describe('Phase 3A action permissions and operation lifecycle', () => {
 
     it('rejects generic relation labels and orientation questions', () => {
         expect(semanticQualityAllowed('probe', { type: 'surface_relation', a: 'a', b: 'b', kind: 'gap', label: '可能算它的一个方向' })).toBe(false);
+        expect(semanticQualityAllowed('probe', { type: 'surface_relation', a: 'a', b: 'b', kind: 'gap', label: 'Possible missing link' })).toBe(false);
         expect(semanticQualityAllowed('probe', { type: 'surface_relation', a: 'a', b: 'b', kind: 'tension', label: '方向与应用场景', explanation: '一个想法描述领域范围，另一个把它落到具体应用上。' })).toBe(true);
         expect(semanticQualityAllowed('question', { type: 'surface_question', text: '你现在是想拿计算机视觉做点什么——一个课题、一份工作，还是先了解看看？' })).toBe(false);
         expect(semanticQualityAllowed('question', { type: 'surface_question', text: '如果只能先验证一件事，哪条证据会改变你对这个方向的判断？' })).toBe(true);

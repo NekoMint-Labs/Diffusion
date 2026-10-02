@@ -871,4 +871,8 @@ export const zh: Record<string, string> = {
   "Full thought": "完整内容",
   "Read full text": "阅读全文",
   "Keep and respond": "保留并回应",
+  "Selection directs attention": "选择限定注意范围",
+  "Context constrains structure": "上下文约束结构呈现",
+  "Selection defines which thoughts receive clearer attention while their positions stay unchanged.": "选择限定哪些想法变得更清晰，同时保持它们原来的位置。",
+  "The background question asks whether context survives; the structure thought makes that context a condition for showing structure.": "背景问题担心上下文会丢失，而结构想法让这份上下文成为是否呈现结构的条件。",
 };

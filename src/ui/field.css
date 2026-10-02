@@ -234,10 +234,9 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .speak textarea::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
 .speak[data-composing="true"] textarea { text-align: left; color: var(--ink-primary); }
 .speak textarea::placeholder { color: var(--ink-tertiary); font-size: var(--type-composer-hint-size); line-height: calc(var(--type-composer-line) * var(--type-composer-size)); }
-/* Focused, the surface is one row: writing, the optional cue, and the compact action. Its 24px
-   input, 8px vertical padding, and border keep the visible material at 42px; multiline text alone
-   increases that footprint. */
-.speak[data-composing="true"] .speak-shell { display: flex; flex-direction: column; padding: 8px 10px; background: color-mix(in srgb, var(--surface-1) 97%, transparent); border: 1px solid color-mix(in srgb, var(--boundary) 82%, transparent); border-radius: var(--radius-surface); box-shadow: 0 16px 40px -28px color-mix(in srgb, var(--ink-primary) 36%, transparent), 0 1px 3px color-mix(in srgb, var(--ink-primary) 7%, transparent); }
+/* The 32px action keeps its hit area while 4px vertical shell padding and the border keep
+   a single writing row at 42px. Multiline text and explicit references grow the surface. */
+.speak[data-composing="true"] .speak-shell { display: flex; flex-direction: column; padding: 4px 10px; background: color-mix(in srgb, var(--surface-1) 97%, transparent); border: 1px solid color-mix(in srgb, var(--boundary) 82%, transparent); border-radius: var(--radius-surface); box-shadow: 0 16px 40px -28px color-mix(in srgb, var(--ink-primary) 36%, transparent), 0 1px 3px color-mix(in srgb, var(--ink-primary) 7%, transparent); }
 .speak[data-composing="true"] .speak-shell::before { display: none; }
 .speak[data-composing="true"] .speak-row { gap: 8px; }
 .speak[data-state="submitting"] .speak-shell { opacity: .68; }
@@ -289,7 +288,8 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .field[data-scope="true"] .thought[data-emphasis="direct"] { --thought-ink-presence: 1; }
 
 /* Read-only disclosure and explicit context for a person's own response. */
-.thought-local-actions { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 7px; }
+/* Selection actions occupy a separate footprint; they never resize measured Thought geometry. */
+.thought-local-actions { position: absolute; top: calc(100% + 7px); left: 0; width: 100%; display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .thought-read, .thought-respond { display: block; min-height: 32px; margin: 0; padding: 5px 4px; border: 0; background: none; color: var(--ink-secondary); font: var(--type-label-size)/1.5 var(--ui-font); cursor: pointer; }
 .thought-read:hover, .thought-read:focus-visible, .thought-respond:hover, .thought-respond:focus-visible { color: var(--ink-primary); text-decoration: underline; }
 .speak-references { margin: 0 5px 9px; max-height: min(150px, 24dvh); overflow: auto; overscroll-behavior: contain; color: var(--ink-secondary); font: var(--type-helper-size)/1.6 var(--ui-font); }

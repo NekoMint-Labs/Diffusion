@@ -27,6 +27,10 @@ export class MockAIProvider implements AIProvider {
         let intents: AIResponse['intents'];
         if (intent.kind === 'probe' && first && second) {
             const pair = `${first.text} ${second.text}`;
+            // The example Field has authored relationships too. Unknown pairs stay unanswered;
+            // a generic fallback would be rejected by the same quality gate as live output.
+            const selectionAttention = /Attention should change clarity/u.test(pair) && /selection itself defines a temporary scope/u.test(pair);
+            const contextStructure = /background fades.*context/u.test(pair) && /Structure should appear only when it is needed/u.test(pair);
             const visualApplication = /计算机视觉/u.test(pair) && /稀疏视角|重建|智能体/u.test(pair);
             const label = visualApplication
                 ? '领域到具体应用'
@@ -34,7 +38,8 @@ export class MockAIProvider implements AIProvider {
                     ? '喜欢与就业风险的取舍'
                     : /读研|探索/u.test(pair) && /三年|时间.*长|成本/u.test(pair)
                         ? '探索空间与时间成本的取舍'
-                        : chinese ? '' : t('Possible missing link');
+                        : selectionAttention ? t('Selection directs attention')
+                            : contextStructure ? t('Context constrains structure') : '';
             if (!label) return { intents: [], providerLabel: this.label, mock: true };
             const explanation = visualApplication
                 ? '一条说的是较宽的技术领域，另一条把它落到了具体的重建与智能体组合。'
@@ -42,7 +47,8 @@ export class MockAIProvider implements AIProvider {
                     ? '一条表达喜欢的方向，另一条指出就业面可能成为现实约束。'
                     : /读研|探索/u.test(pair) && /三年|时间.*长|成本/u.test(pair)
                         ? '一条期待更多探索空间，另一条提醒这段空间有明确的时间成本。'
-                        : t('The two thoughts may depend on a connection that has not been stated yet.');
+                        : selectionAttention ? t('Selection defines which thoughts receive clearer attention while their positions stay unchanged.')
+                            : t('The background question asks whether context survives; the structure thought makes that context a condition for showing structure.');
             intents = [{ type: 'surface_relation', a: first.id, b: second.id, kind: visualApplication ? 'bridge' : 'gap', label, explanation }];
         }
         else if (intent.kind === 'ask' && packet.retrieved.thoughts.some(thought => thought.id === 'earlier'))

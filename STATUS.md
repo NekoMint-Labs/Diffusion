@@ -2,6 +2,26 @@
 
 Diffusion is a quiet thinking medium for ideas before commitment. This file describes the current checkout: what works, which subsystem owns it, what was freshly verified, and what remains incomplete. It is not a changelog. Historical phase reports and prior verification records remain under [`docs/history/`](docs/history/README.md).
 
+## Issue #11 current organization preview (2026-10-02)
+
+All implemented Issue #11 changes, including prerequisites #13–#16 and the latest five feedback commits, are available through [PR #17](https://github.com/NekoMint-Labs/Diffusion/pull/17). Organization members can download the [Windows x64 prerelease](https://github.com/NekoMint-Labs/Diffusion/releases/tag/issue11-preview-20261002); the [Chinese preview guide](docs/ISSUE11_PREVIEW.md) lists changes, reproducible steps and two fixed-size fixture screenshots.
+
+The current product source is `05c4144`. The latest repairs stabilize More at viewport edges and during pointer travel, bound Ghost reading geometry, recheck actual pending-suggestion overlap before paint and after later size changes, preserve manual drag placement, and restrict Region labels to Atlas. Earlier local follow-ups supply current-parent depth styling, strict one-level wheel disclosure, shallow-parent retention during collapse and a normal-reading ceiling for deep hierarchies. Existing Thought coordinates and original sources remain intact.
+
+| Current gate | Evidence at `05c4144` |
+|---|---|
+| TypeScript / production build | Passed; existing large-chunk warning retained |
+| Unit suite | 45 files / 338 tests passed |
+| Offline / locale / source-size | 266 contracts passed; source checks PASS |
+| Focused mounted browser regression | 37 distinct cases passed: seven final feedback cases, drag ownership, light/dark/reduced motion, hierarchy/presentation, zoomed writing and Find; three menu action-count cases additionally passed |
+| Windows packaging | Release executable and NSIS x64 0.3.0 installer built; bundled discovery source check passed and distribution licenses resolved |
+| Installer identity | `Diffusion-05c4144-three-fixes-x64-setup.exe`, 15,305,013 bytes, SHA-256 `0c4637de19fdad5b2797519c7ddbb437b38b0dce5d675e9f85660661330412a9` |
+| Current complete CI / E2E | See [PR #17 checks](https://github.com/NekoMint-Labs/Diffusion/pull/17/checks); older results below are revision-specific evidence |
+
+Browser checks retain one worker and zero retries. The generated-response fixtures exercise the actual UI but do not qualify live providers. Source-size growth and small-area overlap have direct unit coverage; early fixed geometry alone did not reliably reproduce the requester's screenshot overlap. First-pass failures exposed pointer/focus and delayed-measurement regressions; final focused runs passed after correction. No private user files or logs are included in the published preview.
+
+The installer includes all product changes through `05c4144`; the subsequent publication commit changes documentation/screenshots only. Earlier locally delivered installers are superseded by this preview. Final native operator acceptance remains open: real IME, focus, OS scaling, native dialogs, credentials, packaged-sidecar runtime and online services are separate checks. This publication does not merge the dependent PR stack or close #11.
+
 ## Issue #11 candidate — acceptance still open
 
 The dependent draft stack is [#13](https://github.com/NekoMint-Labs/Diffusion/pull/13) → [#14](https://github.com/NekoMint-Labs/Diffusion/pull/14) → [#15](https://github.com/NekoMint-Labs/Diffusion/pull/15) → [#16](https://github.com/NekoMint-Labs/Diffusion/pull/16) → [feedback repairs #17](https://github.com/NekoMint-Labs/Diffusion/pull/17). This follow-up starts at `b447da9` and implements the requester's collected items 4–10. The requester explicitly authorized one optional organization field while preserving original sources and older projects. Database names/versions, the portable envelope and public AI APIs are unchanged. Issue #10 model quality and #12 release qualification remain outside this work.

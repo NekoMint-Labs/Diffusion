@@ -58,3 +58,16 @@ The first draft-run failures are retained and explained; no full-frame snapshot 
 
 
 Deep hierarchy wheel acceptance also covers a 12-level mounted chain in warm/graphite profiles: each notch changes one visible level; every screen font stays at or below the configured normal Thought size; repeated input at full disclosure keeps camera/card size stable; intermediate depth restores after reload; explicit detail zoom remains available; downward steps return to root-only disclosure without changing canonical Thoughts. Unit coverage exercises every depth and both directions in chains up to 10,000 levels within the same reading ceiling.
+
+### Final collected feedback and organization preview
+
+The current installable preview and source identity are recorded at the top of [STATUS](../STATUS.md#issue-11-current-organization-preview-2026-10-02), with [Chinese experience steps and fixed-size screenshots](ISSUE11_PREVIEW.md). These latest `05c4144` checks supplement the earlier full-suite evidence above.
+
+| Final feedback | Reproducible evidence | Remaining boundary |
+|---|---|---|
+| More pointer travel / viewport edges | `remainingFeedback.spec.ts`: center, bottom and right; horizontal/diagonal hover, pinned click, action executes once, keyboard/Escape and outside-close focus | Cross-WebView assistive technology and native operator focus |
+| Repeated Continue / suggestion overlap | Actual generation → Keep → generation at zoom 1 / .4 / .08; DOM bounds and fixed canonical coordinates; `ghostMeasurement.test.ts` rechecks later source growth/small overlap and preserves detached proposals; existing rapid Ghost drag regression | Deterministic responses do not qualify live-model content; dense private projects need real experience |
+| Region labels only in overview | Atlas/neighborhood/local transitions, selected Region, reload and unchanged data in `remainingFeedback.spec.ts` | Human visual review in personal projects |
+| Strict hierarchy and reading ceiling | 19 mounted `hierarchyPresentation.spec.ts` cases plus hierarchy unit coverage; four palettes, curve/elbow, deep chains, selection/history/reload and one-level collapse | Final Windows scaling/input checks |
+
+The 37 distinct focused browser cases and three strengthened menu action-count checks passed with no retries; the latest 338 unit and 266 offline checks passed. Packaging success is separate from native/operator acceptance.

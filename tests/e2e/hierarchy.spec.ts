@@ -54,8 +54,9 @@ test('parent change is explicit, undoable and durable while sources stay unchang
     await page.getByTestId('apply-parent').click();
     await expect(dialog).toHaveCount(0);
     await expect(page.locator('[data-thought-id="c"]')).toHaveAttribute('data-origin-scope', 'b');
-    await expect(page.locator('[data-causal-id="causal:b:c"]')).toHaveAttribute('data-relationship', 'source');
-    await expect(page.locator('[data-causal-id="organization:a:c"]')).toHaveAttribute('data-relationship', 'organization');
+    await expect(page.locator('[data-causal-id="causal:b:c"]')).toHaveCount(0);
+    await expect(page.locator('[data-causal-id="causal:a:c"]')).toHaveAttribute('data-relationship', 'organization');
+    await expect(page.locator('[data-causal-id="causal:c:d"]')).toHaveAttribute('data-depth', '2');
     expect(await page.locator('[data-thought-id="c"]').getAttribute('style')).toBe(before);
     await openLineage(page);
     await expect(page.getByTestId('organizing-parent')).toHaveAttribute('data-value', 'parent:a');

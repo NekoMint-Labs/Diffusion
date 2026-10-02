@@ -10,8 +10,8 @@ The dependent draft stack is [#13](https://github.com/NekoMint-Labs/Diffusion/pu
 - Scope overflow retains its trigger and last valid rectangle through exit into another surface. Click, hover, keyboard, Escape and existing edit actions remain available.
 - Ghosts use the approved soft paper body, one fine pencil rail, explicit unaccepted wording and reserved dismiss/selection space. Accepted Thought material and in-place commitment remain intact.
 - `thought.reparent` is an explicit user-only, undoable command. Optional `organizingParentId` is separate from `derivedFrom` / `generationAction`; wording, coordinates and child branches do not move. The source inspector and organization control share the existing overflow entry.
-- Hierarchical disclosure uses stable depth thresholds and hysteresis. Dense original roots retain world-coordinate anchors and a searchable reading entry. Cached rendered bounds feed disclosure; there is still one imperative camera and no per-frame React tree update.
-- Default source arrows, organization dashes and semantic relations have separate meanings. Device-local curve/elbow styling cannot edit project data. Boundary routing avoids visible cards, including a third card dragged across an existing trace; impossible routes are omitted while provenance stays available in the inspector.
+- Hierarchical disclosure has roots / one child layer / two child layers / all-detail stages with hysteresis. Level and current-parent labels plus branch counts remain readable below 100% zoom. Dense original roots retain world-coordinate anchors and a searchable reading entry. Cached rendered bounds feed disclosure; there is still one imperative camera and no per-frame React tree update.
+- Parent arrows come only from the current effective hierarchy. Color and line pattern identify the child depth, including descendants of a reparented branch; original source IDs remain in the inspector and semantic relations retain their own layer. Device-local curve/elbow styling cannot edit project data. Boundary routing avoids visible cards, including a third card dragged across an existing trace; impossible routes are omitted while provenance stays available in the inspector.
 - Slate, forest and graphite have distinct blue, green and neutral palettes across surfaces and all five backgrounds; warm paper and custom accent preferences are retained.
 
 The earlier Windows fixes for zoomed Chinese editing, sparse Atlas visibility, Find return and Settings title alignment remain covered. A new Windows installer now contains this follow-up. Automated and rendered checks below do not substitute for the requester's final native input/focus/scale journey or human B1–B8 acceptance. No issue is closed or PR merged by this record.
@@ -43,7 +43,24 @@ The earlier Windows fixes for zoomed Chinese editing, sparse Atlas visibility, F
 | Gateway | `server/` | Origin/token guard, provider wire adapters, bounded requests, and normalized evidence HTTP seam. |
 | Desktop | `src/platform/`, `src-tauri/` | One frontend, narrow native capabilities, OS credential access, native provider transport, and discovery launcher. |
 
-## Issue #11 verification (Windows, 2026-10-02)
+## Issue #11 second acceptance repairs (Windows, 2026-10-02)
+
+The second acceptance checklist's items 4 and 5 refer to original feedback 8 and 9. This repair starts at `2e34c92`: the ordinary Field no longer overlays old source arrows on the current organizing parent. One cycle-safe hierarchy supplies arrows, depth styles and zoom disclosure. Adjacent depths use distinct theme-adapted colors and solid/dashed/dotted patterns; every connected Thought shows its current level and parent, with screen-readable branch controls. Explicit expansion frames the branch without moving Thoughts. Selected/edited/pending/Find content remains readable; Find discloses current ancestry where it fits and the parent label supplies context where it cannot.
+
+Final validation used the fresh production build, installed Chrome, one worker and zero retries:
+
+- Dependency-backed typecheck and Vite production build passed; the existing large-chunk warning remains.
+- Offline/Core/locale/source-size gate: 266 passed. Full Vitest: 44 files / 331 tests passed; the final complete run used two workers.
+- Complete Playwright: 227 passed, 12 existing dev-service skips, zero failures. The 12 new mounted cases cover branch history/persistence, four profiles with both curve/elbow routing, ordered zoom/expansion/Find, readable controls, reparented collapse order and full long wording.
+- Fixed-size rendered screenshots were reviewed at normal and reduced zoom in all four profiles. Public A→B→C→D plus independent X fixtures preserve text, coordinates and frozen provenance. Current-parent edges and descendant depth styles restore together on Undo/Redo and reload; making C independent keeps C→D at its new depth.
+- Windows native tests: eight unit plus 17 integration tests passed. The bundled discovery source-hash check passed and license collection has zero unresolved entries.
+- A fresh x64 NSIS installer was built from the final frontend. Packaging keeps the configured `../dist` path. The local overlay skips only the redundant beforeBuild command because the exact frontend, license material and sidecar were already prepared and checked; no production config or native permission was widened.
+
+Earlier iteration failures remain in local logs: an initial zoom fixture did not cross the hysteresis boundary; it now measures actual wheel-driven zoom. Static palette tests were matching an added selector rather than the existing palette block; palette roles now remain in their owning blocks. Transient expansion ownership moved out of Field to satisfy its existing size boundary. Rendered review also exposed small level text at 65% zoom; screen-readable metadata and buttons are now measured in the mounted tests. No retry, skip, or weakened behavioral assertion was introduced.
+
+Implementation and packaging are complete; the requester's native experience acceptance of these two items is pending. No remote issue/PR write or merge was made for this repair. Generated logs/screenshots/installers remain local evidence.
+
+## Initial Issue #11 follow-up verification (Windows, 2026-10-02)
 
 The local browser harness serves the fresh Vite build at an isolated preview origin, selects installed Chrome, and retains the repository's interaction/production-background split, one worker, zero retries and assertions. Production background checks use the actual renderers. Public fixtures contain no private user material and make no live model request.
 

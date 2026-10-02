@@ -1,5 +1,11 @@
 /* Product copy only. English source keys are the fallback dictionary. */
 export const zh: Record<string, string> = {
+  "Level {level}": "第 {level} 层",
+  "Top level": "顶层",
+  "Parent: {parent}": "上级：{parent}",
+  "Showing: {levels}": "显示：{levels}",
+  "All levels": "全部层级",
+  "Through level {level}": "至第 {level} 层",
   "Thought not found": "这条想法已不存在。",
   "Connection style": "连线样式",
   "Soft curves": "柔和曲线",
@@ -890,5 +896,5 @@ export const zh: Record<string, string> = {
   "How present the image is behind the Field. The Field always stays readable.": "图像在场域背后的显现程度。场域始终清晰可读。",
   "For this run only.": "只影响这一次运行。",
   "Find anchored thoughts": "查找位置标记中的想法",
-  "Arrows show original sources; dashed lines show a different organizing parent. Labeled connections describe meaning.": "箭头表示原始来源，虚线表示另设的上级；带文字的关联线表示内容之间的联系。",
+  "Arrows show the current parent. Color and line pattern identify the level; original sources stay listed here. Labeled connections describe meaning.": "箭头表示当前上级，颜色和线型区分层级；原始来源保留在此处，带文字的关联线表示内容之间的联系。",
 };

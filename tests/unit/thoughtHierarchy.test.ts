@@ -1,6 +1,7 @@
 import 'fake-indexeddb/auto';
 import { describe, expect, it } from 'vitest';
 import { createProject, makeThought } from '../../src/core/model.ts';
+import { causalEdges } from '../../src/field/phenomena/causalTrace.ts';
 import { thoughtHierarchy } from '../../src/core/hierarchy.ts';
 import { ProjectController } from '../../src/core/controller.ts';
 import { reduceProject } from '../../src/core/reducer.ts';
@@ -86,6 +87,7 @@ describe('user organization and immutable generated sources', () => {
             expect(reopened?.thoughts.e.organizingParentId).toBeNull();
             expect(reopened?.thoughts.c.derivedFrom).toEqual(['b']);
             expect(reopened?.schemaVersion).toBe(1);
+            expect(causalEdges(reopened!)).toEqual(causalEdges(imported));
             expect(() => validateProject({ ...p, thoughts: { ...p.thoughts, c: { ...p.thoughts.c, organizingParentId: 123 } } })).toThrow();
         } finally { await repository.deleteDatabase(); }
     });

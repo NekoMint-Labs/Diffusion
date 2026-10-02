@@ -41,6 +41,10 @@
   --active-control: var(--attention);
   --boundary: #c8c5c0;
   --trace: #6f8290;
+  --hierarchy-level-1: #426f8c;
+  --hierarchy-level-2: #986047;
+  --hierarchy-level-3: #55764e;
+  --hierarchy-level-4: #805a94;
   --relation: #838987;
   --trace-muted: #bfc6c8;
   --ghost-ink: #5e5a54;
@@ -166,6 +170,10 @@
 }
 :root[data-thought-typography="sans"] { --thought-font: var(--thought-font-sans); }
 :root[data-theme="dark"] {
+  --hierarchy-level-1: #9bc6e4;
+  --hierarchy-level-2: #efb48c;
+  --hierarchy-level-3: #aed0a1;
+  --hierarchy-level-4: #d2b2e5;
   color-scheme: dark;
   --field-bg: #171819;
   --ink-helper: var(--ink-secondary);
@@ -229,6 +237,10 @@
 /* Graphite Night is intentionally a real dark material, not an inverted light palette. It owns
    its lighting regardless of the legacy lighting preference. */
 :root[data-style-profile="graphite-night"] {
+  --hierarchy-level-1: #9bc6e4;
+  --hierarchy-level-2: #efb48c;
+  --hierarchy-level-3: #aed0a1;
+  --hierarchy-level-4: #d2b2e5;
   color-scheme: dark; --field-bg: #171719; --surface-1: #29292c; --surface-2: #333336; --surface-raised: #303034; --surface-sunken: #111113;
   --boundary: #48484d; --boundary-strong: #68686e; --ink-primary: #eeeeef; --ink-secondary: #c4c4c8; --ink-tertiary: #94949b; --ink-helper: #c4c4c8;
   --attention: #bfa48e; --trace: #b8b8bf; --relation: #aaaab0; --trace-muted: #57575f; --ghost-ink: #d5d5d8; --pencil-trace: #aaaab0; --pencil-trace-muted: #707078;

@@ -34,7 +34,7 @@ export function LineageSurface({ controller, project, thoughtId, onClose }: { co
             <h3>{t('Original sources')}</h3>
             {thought.derivedFrom?.length ? <ul>{thought.derivedFrom.map(id => <li key={id}>{project.thoughts[id]?.text ?? t('Missing thought')}</li>)}</ul> : <p className="muted">{t('Written independently')}</p>}
             <p className="muted">{t('Organization does not rewrite sources, words or positions. With several sources, the first surviving source is the default parent.')}</p>
-            <p className="muted">{t('Arrows show original sources; dashed lines show a different organizing parent. Labeled connections describe meaning.')}</p>
+            <p className="muted">{t('Arrows show the current parent. Color and line pattern identify the level; original sources stay listed here. Labeled connections describe meaning.')}</p>
             <label>{t('Find a parent')}<input data-testid="parent-query" value={query} onChange={event => setQuery(event.target.value)} /></label>
             <Select value={choice} options={options} onChange={setChoice} ariaLabel={t('Organizing parent')} testId="organizing-parent" />
             <p className="muted">{t('Current parent')}{': '}{hierarchy.parent.get(thoughtId) ? project.thoughts[hierarchy.parent.get(thoughtId)!]?.text : t('Independent thought')}</p>

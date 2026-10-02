@@ -27,24 +27,20 @@ export interface CausalTrace extends CausalEdge {
     routeBounds?: Bounds;
 }
 
-/** Canonical lineage is intentionally tiny: parent ids plus the action on the child. Relations do
- * not participate here, and no visual geometry is ever persisted back into a Thought. */
+/** The Field shows one current parent per item. Frozen source IDs remain provenance, not
+ * a second set of parent arrows; semantic Relations stay in their own layer. */
 export function causalEdges(project: ProjectState, ghosts: Record<string, Ghost> = {}): CausalEdge[] {
+    const items = { ...project.thoughts, ...ghosts };
+    const hierarchy = thoughtHierarchy(items);
     const edges: CausalEdge[] = [];
-    const hierarchy = thoughtHierarchy({ ...project.thoughts, ...ghosts });
-    for (const child of Object.values(project.thoughts)) {
-        if (!child.derivedFrom?.length || !child.generationAction) continue;
-        for (const parentId of child.derivedFrom) {
-            if (parentId === child.id || !project.thoughts[parentId]) continue;
-            edges.push({ id: `causal:${parentId}:${child.id}`, parentId, childId: child.id, action: child.generationAction, relationship: 'source', depth: hierarchy.depth.get(child.id) });
-        }
-    }
-    for (const ghost of Object.values(ghosts)) for (const parentId of ghost.scopeIds) {
-        if (project.thoughts[parentId]) edges.push({ id: `causal:${parentId}:${ghost.id}`, parentId, childId: ghost.id, action: ghost.proposalAction ?? 'continue', relationship: 'source', pending: true, depth: hierarchy.depth.get(ghost.id) });
-    }
-    for (const child of Object.values(project.thoughts)) {
-        const parentId = child.organizingParentId;
-        if (parentId && project.thoughts[parentId] && hierarchy.parent.get(child.id) === parentId && !child.derivedFrom?.includes(parentId)) edges.push({ id: `organization:${parentId}:${child.id}`, parentId, childId: child.id, action: 'continue', relationship: 'organization', depth: hierarchy.depth.get(child.id) });
+    for (const child of Object.values(items)) {
+        const parentId = hierarchy.parent.get(child.id);
+        if (!parentId) continue;
+        const pending = 'scopeIds' in child;
+        edges.push({ id: `causal:${parentId}:${child.id}`, parentId, childId: child.id,
+            action: pending ? child.proposalAction ?? 'continue' : child.generationAction ?? 'continue',
+            relationship: pending ? 'source' : 'organization', pending: pending || undefined,
+            depth: hierarchy.depth.get(child.id) });
     }
     return edges.sort((a, b) => a.childId.localeCompare(b.childId) || a.parentId.localeCompare(b.parentId));
 }

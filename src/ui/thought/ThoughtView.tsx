@@ -5,6 +5,7 @@ import type { Ghost, Thought } from '../../core/model.ts';
 import { isAuthoredExample } from '../../core/demo.ts';
 import type { GeometryCache } from '../../field/spatial/index.ts';
 import { thoughtSizeClass } from '../../field/spatial/collision.ts';
+import { hierarchyStyle } from '../../field/spatial/hierarchyDisclosure.ts';
 import { semanticExcerpt } from '../../field/spatial/representation.ts';
 import { TransientTextPresence } from '../motion/TransientTextPresence.tsx';
 interface Props {
@@ -20,6 +21,8 @@ interface Props {
     level: 'local' | 'neighborhood' | 'atlas';
     depth?: number;
     root?: boolean;
+    parentText?: string;
+    hasChildren?: boolean;
     collapsedCount?: number;
     onExpand?: (id: string) => void;
     geometry: GeometryCache;
@@ -29,7 +32,7 @@ interface Props {
     onMeasure?: (id: string) => void;
     onHover?: (id: string | null) => void;
 }
-export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, selected, emphasis, settling, find, editing, level, depth, root, collapsedCount = 0, onExpand, geometry, onEdit, onCancel, onReject, onMeasure, onHover }: Props) {
+export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, selected, emphasis, settling, find, editing, level, depth, root, parentText, hasChildren, collapsedCount = 0, onExpand, geometry, onEdit, onCancel, onReject, onMeasure, onHover }: Props) {
     useLocale();
     const ref = useRef<HTMLElement>(null);
     const input = useRef<HTMLTextAreaElement>(null);
@@ -98,8 +101,12 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
     // Canonical wording fixes the width class throughout an edit. CSS also owns the semantic-zoom
     // compensation; a cached pre-mount world width must not override it for a new editor.
     const size = kind === 'thought' || kind === 'ghost' ? thoughtSizeClass(text) : undefined;
-    const short = semanticExcerpt(text, level, kind);
-    return <article ref={ref} data-thought-id={item.id} data-kind={kind} data-depth={depth} data-original-root={root || undefined} data-size={size} data-life={'life' in item ? item.life : 'active'} data-emphasis={emphasis} data-selected={selected} data-material-settling={settling || undefined} data-recalled={recalled} data-causal={'scopeIds' in item ? item.scopeIds.length ? 'true' : undefined : 'derivedFrom' in item && item.derivedFrom?.length ? 'true' : undefined} data-origin-scope={'scopeIds' in item ? item.scopeIds.join(' ') : 'derivedFrom' in item ? item.derivedFrom?.join(' ') : undefined} data-proposal-kind={proposalKind} data-proposal-action={proposalAction} data-generation-action={'generationAction' in item ? item.generationAction : undefined} className={`thought ${kind} ${editing ? 'editing' : ''} ${ghost ? 'ghost' : ''} ${recalled ? 'recall' : ''}`} data-find={find} style={{ transform: `translate(${item.x}px, ${item.y}px)` }} tabIndex={0} aria-label={`${t(kind)}: ${text || t('New thought')}`} aria-current={selected ? 'true' : undefined} onPointerEnter={() => onHover?.(item.id)} onPointerLeave={() => onHover?.(null)}>
+    const short = semanticExcerpt(text, selected || ghost || find === 'current' || find === 'match' ? 'local' : level, kind);
+    return <article ref={ref} data-thought-id={item.id} data-kind={kind} data-depth={depth} data-depth-style={hierarchyStyle(depth ?? 0)} data-original-root={root || undefined} data-size={size} data-life={'life' in item ? item.life : 'active'} data-emphasis={emphasis} data-selected={selected} data-material-settling={settling || undefined} data-recalled={recalled} data-causal={'scopeIds' in item ? item.scopeIds.length ? 'true' : undefined : 'derivedFrom' in item && item.derivedFrom?.length ? 'true' : undefined} data-origin-scope={'scopeIds' in item ? item.scopeIds.join(' ') : 'derivedFrom' in item ? item.derivedFrom?.join(' ') : undefined} data-proposal-kind={proposalKind} data-proposal-action={proposalAction} data-generation-action={'generationAction' in item ? item.generationAction : undefined} className={`thought ${kind} ${editing ? 'editing' : ''} ${ghost ? 'ghost' : ''} ${recalled ? 'recall' : ''}`} data-find={find} style={{ transform: `translate(${item.x}px, ${item.y}px)` }} tabIndex={0} aria-label={`${t(kind)}: ${text || t('New thought')}`} aria-current={selected ? 'true' : undefined} onPointerEnter={() => onHover?.(item.id)} onPointerLeave={() => onHover?.(null)}>
+    {!editing && (parentText !== undefined || hasChildren) && <div className="hierarchy-context" data-testid="hierarchy-context" title={parentText}>
+        <span className="hierarchy-level">{depth ? t('Level {level}', { level: depth + 1 }) : t('Top level')}</span>
+        {parentText !== undefined && <span className="hierarchy-parent">{t('Parent: {parent}', { parent: parentText })}</span>}
+    </div>}
    <div className="thought-preview">{editing ? <textarea ref={input} aria-label={t('Edit thought')} value={draft} maxLength={20000} onChange={e => setDraft(e.target.value)} onBlur={save} onKeyDown={e => {
                 e.stopPropagation();
                 if (e.nativeEvent.isComposing || e.keyCode === 229)
@@ -116,7 +123,7 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
             : ghost || recalled
                 ? <TransientTextPresence phase={ghost ? 'ghost' : 'recall'}>{short || t('A thought, not yet in words...')}</TransientTextPresence>
                 : <p>{short || t('A thought, not yet in words...')}</p>}</div>
-    {!editing && collapsedCount > 0 && <button type="button" className="branch-expand" data-testid="branch-expand" onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); onExpand?.(item.id); }}>{t('Show {count} children', { count: collapsedCount })}</button>}
+    {!editing && collapsedCount > 0 && <button type="button" className="branch-expand" data-testid="branch-expand" aria-expanded="false" onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); onExpand?.(item.id); }}><span aria-hidden="true">{'▸ '}</span>{t('Show {count} children', { count: collapsedCount })}</button>}
     {selected && <span className="thought-selected-dot" aria-hidden="true"/>}
     {kind === 'source' && <span className="thought-meta">{t('Source')}</span>}
     {ghost && <span className="thought-meta ghost-label">{t(proposal ? 'From your words · not kept' : 'AI suggestion · not kept')}</span>}

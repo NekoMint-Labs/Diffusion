@@ -1,6 +1,6 @@
 import type { Point } from '../core/model.ts';
 /** Ephemeral presentation state only. Never persisted into the Field. */
-export type Surface = 'none' | 'thread' | 'thread-focus' | 'find' | 'history' | 'crystal' | 'source' | 'settings' | 'diffuse' | 'fork' | 'evidence' | 'relation' | 'region' | 'action-preview' | 'organize' | 'handoff' | 'restore' | 'help' | 'import' | 'palette' | 'shortcuts' | 'fields';
+export type Surface = 'none' | 'thought-reader' | 'thread' | 'thread-focus' | 'find' | 'history' | 'crystal' | 'source' | 'settings' | 'diffuse' | 'fork' | 'evidence' | 'relation' | 'region' | 'action-preview' | 'organize' | 'handoff' | 'restore' | 'help' | 'import' | 'palette' | 'shortcuts' | 'fields';
 /** Which command set a menu presents. Semantics stay in the shared registry. */
 export type MenuScope = 'global' | 'field' | 'thought' | 'blank';
 export interface MenuTarget {

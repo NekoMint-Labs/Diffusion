@@ -285,3 +285,11 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 /* Attention stays in the existing Thought emphasis ladder; the Field supplies no local wash. */
 .field[data-scope="true"] .thought[data-emphasis="peripheral"] { --thought-ink-presence: .42; }
 .field[data-scope="true"] .thought[data-emphasis="direct"] { --thought-ink-presence: 1; }
+
+/* Read-only disclosure and explicit context for a person's own response. */
+.thought-local-actions { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 7px; }
+.thought-read, .thought-respond { display: block; margin: 0; padding: 3px 0; border: 0; background: none; color: var(--ink-secondary); font: var(--type-helper-size)/1.5 var(--ui-font); cursor: pointer; }
+.thought-read:hover, .thought-read:focus-visible, .thought-respond:hover, .thought-respond:focus-visible { color: var(--ink-primary); text-decoration: underline; }
+.speak-references { margin: 0 5px 9px; max-height: min(150px, 24dvh); overflow: auto; overscroll-behavior: contain; color: var(--ink-secondary); font: var(--type-helper-size)/1.6 var(--ui-font); }
+.speak-references blockquote { margin: 4px 0; padding-left: 9px; border-left: 2px solid var(--boundary); overflow-wrap: anywhere; }
+.speak-references > span { display: block; margin-top: 4px; color: var(--ink-helper); }

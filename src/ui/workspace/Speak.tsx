@@ -6,6 +6,7 @@ import type { Settings } from '../settings.ts';
 import { contentTransition, layoutTransition } from '../motion.ts';
 import { MOTION_DURATION } from '../motion/tokens.ts';
 import { firstThoughtComposerSequence, invitationContractSequence, invitationIdleSequence, useSequencer, useSignature } from '../motion/signature.ts';
+import { referenceExcerpt } from './response.ts';
 import { COMPOSER_SHORTCUT, composerState } from './composer.ts';
 
 const SPEAK_MAX_HEIGHT = 108;
@@ -43,7 +44,7 @@ function EmptyFieldInvitation() {
  * permanent legend here — the Shortcuts and Help surfaces own it — so the only disclosure is a
  * tertiary Shift+Enter cue inside the focused writing row.
  */
-export function Speak({ textareaRef, words, onWords, onSubmit, onStop, onCompose, onExit, composing, empty, typography, scopeIds }: {
+export function Speak({ textareaRef, words, onWords, onSubmit, onStop, onCompose, onExit, composing, empty, typography, scopeIds, references, mode = 'think' }: {
     textareaRef: RefObject<HTMLTextAreaElement | null>;
     words: string;
     onWords: (value: string) => void;
@@ -55,6 +56,8 @@ export function Speak({ textareaRef, words, onWords, onSubmit, onStop, onCompose
     empty: boolean;
     typography: Settings['thoughtTypography'];
     scopeIds: string[];
+    references: { id: string; text: string }[];
+    mode?: 'think' | 'respond';
 }) {
     const busy = useUI(state => state.busy);
     const reduced = useReducedMotion();
@@ -67,7 +70,7 @@ export function Speak({ textareaRef, words, onWords, onSubmit, onStop, onCompose
     const [releasing, setReleasing] = useState(false);
     const play = useSequencer(positioner);
     const scoped = scopeIds.length > 0;
-    const state = composerState({ composing, scoped, words, busy });
+    const state = composerState({ composing, scoped, words, busy: busy && mode !== 'respond' });
     useSignature(positioner, invitationIdleSequence, [empty, composing]);
     // Focus follows the intent, not the mount. `AnimatePresence` revives this same key when a
     // scope is re-set before the exit finishes, and React applies `autoFocus` only on mount, so
@@ -94,8 +97,8 @@ export function Speak({ textareaRef, words, onWords, onSubmit, onStop, onCompose
         return; const timer = setTimeout(() => setReleasing(false), RELEASE_HOLD); return () => clearTimeout(timer); }, [releasing]);
     /** The one action, always present while writing: `↵ 思考` says what committing does. It is the
      * surface's own control, so its accessible name is exactly its visible label. */
-    const action = composing ? busy ? { key: 'stop', label: t('Stop'), type: 'button' as const, run: onStop }
-        : { key: 'think', label: t('Think'), type: 'submit' as const, run: undefined } : null;
+    const action = composing ? busy && mode !== 'respond' ? { key: 'stop', label: t('Stop'), type: 'button' as const, run: onStop }
+        : { key: 'think', label: t(mode === 'respond' ? 'Save response' : 'Think'), type: 'submit' as const, run: undefined } : null;
     /** The one gesture the whole invitation exists for: commit, then let it release. The first
      * Thought of an empty Field gets the authored two-part sequence — the composer yields the
      * space and the written idea separates from it — while later submissions only release. */
@@ -112,7 +115,7 @@ export function Speak({ textareaRef, words, onWords, onSubmit, onStop, onCompose
             whole point of it. `releasing` covers the moment after the commit, when the Field is no
             longer empty but the release is still on screen as a visual echo. */}
         {(empty || releasing) && <EmptyFieldInvitation/>}
-        <motion.form layout data-testid="speak" className="speak" data-composing={composing} data-state={state} data-scope-active={scoped || undefined} initial={composing ? { opacity: reduced ? 1 : 0, y: reduced ? 0 : 2 } : false} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: reduced ? 0 : 5, pointerEvents: 'none' }} transition={{ layout: layoutTransition(!!reduced), ...contentTransition(!!reduced) }} onPointerDown={event => {
+        <motion.form layout data-testid="speak" className="speak" data-mode={mode} data-composing={composing} data-state={state} data-scope-active={scoped || undefined} initial={composing ? { opacity: reduced ? 1 : 0, y: reduced ? 0 : 2 } : false} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: reduced ? 0 : 5, pointerEvents: 'none' }} transition={{ layout: layoutTransition(!!reduced), ...contentTransition(!!reduced) }} onPointerDown={event => {
             if (event.button !== 0 || (event.target as HTMLElement).closest('textarea,button'))
                 return;
             event.preventDefault();
@@ -133,10 +136,15 @@ export function Speak({ textareaRef, words, onWords, onSubmit, onStop, onCompose
                 {/* The illumination layer. CSS-only, opacity 0 at rest: it fades in *with* the
                     material, so the surface reads as one lit object rather than a flat rectangle. */}
                 <span className="speak-light" aria-hidden="true"/>
-                {composing && scoped && <span className="speak-scope" data-testid="speak-scope">{t(scopeIds.length === 1 ? 'Thinking with this thought' : 'Thinking with {count} thoughts', { count: scopeIds.length })}</span>}
+                {composing && scoped && <span className="speak-scope" data-testid="speak-scope">{t(mode === 'respond' ? 'Responding to' : scopeIds.length === 1 ? 'Thinking with this thought' : 'Thinking with {count} thoughts', { count: scopeIds.length })}</span>}
+                {composing && scoped && <div className="speak-references" id="speak-references" aria-label={t('Referenced thoughts')}>
+                    {references.slice(0, 3).map(reference => <blockquote key={reference.id} title={reference.text}>{referenceExcerpt(reference.text)}</blockquote>)}
+                    {references.length > 3 && <span>{t('And {count} more thoughts', { count: references.length - 3 })}</span>}
+                    {references.length < scopeIds.length && <span>{t('A referenced thought is no longer available.')}</span>}
+                </div>}
                 <motion.div layout="position" className="speak-row" transition={{ layout: layoutTransition(!!reduced) }}>
                     {!composing && <span className="speak-mark" aria-hidden="true"/>}
-                    <textarea ref={textareaRef} aria-label={t('Speak')} placeholder={t(composing ? 'Write down something not yet clear...' : empty ? 'Write or paste a thought...' : 'Continue thinking...')} value={words} rows={1} maxLength={12000} data-overflowing={overflowing} style={{ height: inputHeight, overflowY: overflowing ? 'auto' : 'hidden' }} onChange={event => onWords(event.target.value)} onKeyDown={event => {
+                    <textarea ref={textareaRef} aria-label={t('Speak')} aria-describedby={composing && scoped ? 'speak-references' : undefined} placeholder={t(composing && mode === 'respond' ? 'Write your response or what is still unclear...' : composing ? 'Write down something not yet clear...' : empty ? 'Write or paste a thought...' : 'Continue thinking...')} value={words} rows={1} maxLength={12000} data-overflowing={overflowing} style={{ height: inputHeight, overflowY: overflowing ? 'auto' : 'hidden' }} onChange={event => onWords(event.target.value)} onKeyDown={event => {
                         if (event.key === 'Escape') {
                             event.preventDefault();
                             event.stopPropagation();

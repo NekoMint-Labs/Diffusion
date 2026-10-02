@@ -10,7 +10,7 @@ The dependent draft stack is [#13](https://github.com/NekoMint-Labs/Diffusion/pu
 - Scope overflow retains its trigger and last valid rectangle through exit into another surface. Click, hover, keyboard, Escape and existing edit actions remain available.
 - Ghosts use the approved soft paper body, one fine pencil rail, explicit unaccepted wording and reserved dismiss/selection space. Accepted Thought material and in-place commitment remain intact.
 - `thought.reparent` is an explicit user-only, undoable command. Optional `organizingParentId` is separate from `derivedFrom` / `generationAction`; wording, coordinates and child branches do not move. The source inspector and organization control share the existing overflow entry.
-- Hierarchical disclosure has roots / one child layer / two child layers / all-detail stages with hysteresis. Level and current-parent labels plus branch counts remain readable below 100% zoom. Dense original roots retain world-coordinate anchors and a searchable reading entry. Cached rendered bounds feed disclosure; there is still one imperative camera and no per-frame React tree update.
+- Ordinary wheel notches zoom in/out and disclose/close exactly one current hierarchy level. Every imported depth has a reachable stable zoom band; pinch remains continuous and camera snapshots restore the disclosed level. Level and current-parent labels plus branch counts remain readable below 100% zoom. Dense original roots retain world-coordinate anchors and a searchable reading entry. Cached rendered bounds feed disclosure; there is still one imperative camera and no per-frame React tree update.
 - Parent arrows come only from the current effective hierarchy. Color and line pattern identify the child depth, including descendants of a reparented branch; original source IDs remain in the inspector and semantic relations retain their own layer. Device-local curve/elbow styling cannot edit project data. Boundary routing avoids visible cards, including a third card dragged across an existing trace; impossible routes are omitted while provenance stays available in the inspector.
 - Slate, forest and graphite have distinct blue, green and neutral palettes across surfaces and all five backgrounds; warm paper and custom accent preferences are retained.
 
@@ -42,6 +42,16 @@ The earlier Windows fixes for zoomed Chinese editing, sparse Atlas visibility, F
 | Persistence | `src/storage/` | Dexie repository, migration, save queue, and recovery boundaries. |
 | Gateway | `server/` | Origin/token guard, provider wire adapters, bounded requests, and normalized evidence HTTP seam. |
 | Desktop | `src/platform/`, `src-tauri/` | One frontend, narrow native capabilities, OS credential access, native provider transport, and discovery launcher. |
+
+## Issue #11 wheel disclosure follow-up (Windows, 2026-10-02)
+
+This follow-up starts at `d67b5cb` and implements the requester's ordinary wheel contract: from A→B, one upward notch zooms in and reveals C; one downward notch from A→B zooms out and hides B. Each notch changes exactly one current level. The existing camera snapshot restores the level without a new canonical field. Imported chains receive individually reachable bands rather than an all-depth jump. Pinch stays continuous, full notches count separately during rapid bursts, and small high-resolution packets accumulate. Protected reading exceptions and current-parent arrows remain intact.
+
+Final validation: dependency-backed typecheck / Vite build passed; offline/Core/locale/source-size gate 266 passed; full Vitest 44 files / 334 tests passed; full Playwright 229 passed, 12 existing dev-service skips, zero failures, one worker and zero retries. Mounted cases verify single-notch disclosure, current reparented depths, temporary expansion closure, exact wording/coordinate preservation and camera-based reopening. Rendered A/B, A/B/C and root-only screenshots were reviewed. The existing four-profile / two-routing presentation cases also pass.
+
+An initial mounted run caught compact-label collision immediately after a boundary crossing and expansion framing that opened an extra layer. Wheel targets now enter readable band interiors, and branch framing stays below the next global depth boundary. The original failed log is retained; assertions, timeouts, skips and retries were not weakened. The long-chain unit case also exposed repeated initial traversal; direct band estimation keeps 10,000-depth restoration practical.
+
+A fresh x64 NSIS installer was built from this exact frontend using the existing `../dist` configuration and prepared dependency-license material; the discovery source-hash check passed. Native Rust code and permissions were unchanged, and the earlier 25 native tests were not rerun for this frontend-only follow-up. Native wheel/hardware experience is still pending the requester. No push, issue/PR write or merge was performed.
 
 ## Issue #11 second acceptance repairs (Windows, 2026-10-02)
 

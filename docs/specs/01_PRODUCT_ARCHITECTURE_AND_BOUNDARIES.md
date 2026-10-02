@@ -196,7 +196,7 @@ A Region is not a folder, box, frame, or container. It is a neighborhood that em
 
 Atlas is continuous semantic zoom, not a separate page.
 
-Depth thresholds have hysteresis. Original roots keep their spatial presence even after reparenting. Selection, editing, Find and pending proposals receive disclosure priority. When collision-free summaries cannot fit, canonical Thoughts retain compact world anchors plus a bounded searchable reading entry; pending proposals use their own review entry. A collapsed branch has a child-count expansion action. Neither culling nor these entries moves authored coordinates or accepts AI proposals.
+One ordinary wheel notch upward zooms in and reveals the next current hierarchy level; downward zooms out and closes the deepest ordinary level. All levels, including deep imports, have reachable zoom bands with hysteresis. Pinch remains continuous. Selected, edited, found and pending content retains its reading exceptions. Original roots keep their spatial presence even after reparenting. Selection, editing, Find and pending proposals receive disclosure priority. When collision-free summaries cannot fit, canonical Thoughts retain compact world anchors plus a bounded searchable reading entry; pending proposals use their own review entry. A collapsed branch has a child-count expansion action. Neither culling nor these entries moves authored coordinates or accepts AI proposals.
 
 ## 8. Conversation / Thread / Deep Dive
 

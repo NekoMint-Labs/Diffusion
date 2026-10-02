@@ -1,7 +1,9 @@
 import { expect, it } from 'vitest';
+import { resolveWheelZoom } from '../../src/field/spatial/gesture.ts';
+import { screenToWorld, zoomCameraAt } from '../../src/field/spatial/geometry.ts';
 import { makeThought, createProject, type Ghost } from '../../src/core/model.ts';
 import { thoughtHierarchy } from '../../src/core/hierarchy.ts';
-import { discloseHierarchy, zoomDepth } from '../../src/field/spatial/hierarchyDisclosure.ts';
+import { discloseHierarchy, hierarchyWheelZoom, zoomDepth } from '../../src/field/spatial/hierarchyDisclosure.ts';
 import { causalEdges, describeCausalTraces } from '../../src/field/phenomena/causalTrace.ts';
 import { routeCausalTrace } from '../../src/field/phenomena/causalRouting.ts';
 import { normalizeAppearanceSettings } from '../../src/ui/appearance.ts';
@@ -10,14 +12,14 @@ it('has stable reversible depth boundaries with a real hysteresis interval', () 
     expect(zoomDepth(.08)).toBe(0);
     expect(zoomDepth(.3)).toBe(1);
     expect(zoomDepth(.55)).toBe(2);
-    expect(zoomDepth(1)).toBe(Infinity);
+    expect(zoomDepth(1)).toBe(3);
     let depth = zoomDepth(.55);
     for (const zoom of [.50, .495, .51, .48]) expect(depth = zoomDepth(zoom, depth)).toBe(2);
     depth = zoomDepth(.47, depth); expect(depth).toBe(1);
     expect(zoomDepth(.51, depth)).toBe(1);
     expect(zoomDepth(.53, depth)).toBe(2);
-    expect(zoomDepth(.80, Infinity)).toBe(Infinity);
-    expect(zoomDepth(.77, Infinity)).toBe(2);
+    expect(zoomDepth(.80, 3)).toBe(3);
+    expect(zoomDepth(.77, 3)).toBe(2);
 });
 it('discloses by depth while selected, edited, pending and authored roots remain eligible', () => {
     const p = createProject();
@@ -68,10 +70,10 @@ it('routes around intermediate wording instead of through its rectangle', () => 
     expect(routeCausalTrace(parent, parent, 'curve', [])).toBeNull();
 });
 
-it('has an uncapped all-detail stage and reveals protected ancestry without changing coordinates', () => {
+it('keeps every imported depth reachable and reveals protected ancestry without changing coordinates', () => {
     const items = Object.fromEntries(Array.from({ length: 12 }, (_, i) => [`n${i}`, { ...makeThought(`Level ${i}`, { x: 20, y: i * 100 }, 1, `n${i}`), organizingParentId: i ? `n${i - 1}` : null }]));
     const before = JSON.stringify(items);
-    const base = { items, hierarchy: thoughtHierarchy(items), found: Object.keys(items), camera: { x: 0, y: 0, zoom: 1 }, viewport: { width: 1440, height: 1600 }, depth: zoomDepth(1), selection: [], editing: null, recalls: [], expanded: new Set<string>(), measured: () => undefined };
+    const base = { items, hierarchy: thoughtHierarchy(items), found: Object.keys(items), camera: { x: 0, y: 0, zoom: 1 }, viewport: { width: 1440, height: 1600 }, depth: zoomDepth(2.5, undefined, 11), selection: [], editing: null, recalls: [], expanded: new Set<string>(), measured: () => undefined };
     expect(discloseHierarchy(base).visible).toHaveLength(12);
     expect(discloseHierarchy({ ...base, depth: 0, selection: ['n3'] }).visible).toEqual(['n0', 'n1', 'n2', 'n3']);
     expect(discloseHierarchy({ ...base, depth: 0, matches: new Set(['n4']) }).visible).toEqual(['n0', 'n1', 'n2', 'n3', 'n4']);
@@ -82,4 +84,61 @@ it('collapses an adopted original root by its current depth while retaining its 
     const result = discloseHierarchy({ items, hierarchy: thoughtHierarchy(items), found: ['a', 'x'], camera: { x: 0, y: 0, zoom: .2 }, viewport: { width: 1440, height: 960 }, depth: 0, selection: [], editing: null, recalls: [], expanded: new Set(), measured: () => undefined });
     expect(result.visible).toEqual(['a']);
     expect(result.roots).toEqual(['x']);
+});
+
+
+it('opens and closes one actual level per wheel notch while preserving the attended point', () => {
+    const pointer = { x: 640, y: 360 };
+    let camera = { x: 80, y: -40, zoom: .38 }, depth = zoomDepth(camera.zoom);
+    const worldPoint = screenToWorld(pointer, camera);
+    for (const [delta, expected] of [[-120, 2], [120, 1], [120, 0], [-120, 1], [-120, 2], [-120, 3]]) {
+        const previous = camera.zoom;
+        camera = zoomCameraAt(camera, pointer, hierarchyWheelZoom(camera.zoom, depth, 3, delta, -Math.sign(delta)));
+        depth = zoomDepth(camera.zoom, depth);
+        expect(depth).toBe(expected);
+        expect(delta < 0 ? camera.zoom > previous : camera.zoom < previous).toBe(true);
+        expect(screenToWorld(pointer, camera).x).toBeCloseTo(worldPoint.x, 9);
+        expect(screenToWorld(pointer, camera).y).toBeCloseTo(worldPoint.y, 9);
+        expect(zoomDepth(camera.zoom)).toBe(expected); // The saved camera restores the same level.
+    }
+});
+it('never jumps over an imported level and reaches both ends of a deep hierarchy', () => {
+    for (const maxDepth of [1, 3, 12, 10000]) {
+        let zoom = .16, depth = 0;
+        for (let expected = 1; expected <= maxDepth; expected++) {
+            const before = zoom;
+            zoom = hierarchyWheelZoom(zoom, depth, maxDepth, -120, 1);
+            depth = zoomDepth(zoom, depth, maxDepth);
+            expect(depth).toBe(expected);
+            expect(zoom).toBeGreaterThan(before);
+            expect(zoomDepth(zoom, undefined, maxDepth)).toBe(depth);
+        }
+        for (let expected = maxDepth - 1; expected >= 0; expected--) {
+            const before = zoom;
+            zoom = hierarchyWheelZoom(zoom, depth, maxDepth, 120, -1);
+            depth = zoomDepth(zoom, depth, maxDepth);
+            expect(depth).toBe(expected);
+            expect(zoom).toBeLessThan(before);
+        }
+        expect(hierarchyWheelZoom(.08, 0, maxDepth, 120, -1)).toBe(.08);
+    }
+});
+it('counts rapid mouse notches individually and groups small scroll packets without pinch steps', () => {
+    const input = { point: { x: 640, y: 360 }, deltaY: -120, deltaMode: 0, viewportHeight: 800, ctrlKey: false, timeStamp: 100 };
+    let resolved = resolveWheelZoom(null, input);
+    expect(resolved.step).toBe(1);
+    resolved = resolveWheelZoom(resolved.gesture, { ...input, timeStamp: 120 });
+    expect(resolved.step).toBe(1);
+    let gesture = null as typeof resolved.gesture | null;
+    const steps: number[] = [];
+    for (let i = 0; i < 8; i++) {
+        resolved = resolveWheelZoom(gesture, { ...input, deltaY: -4, timeStamp: 200 + i * 10 });
+        gesture = resolved.gesture; steps.push(resolved.step);
+    }
+    expect(steps).toEqual([0, 0, 0, 0, 0, 0, 0, 1]);
+    expect(resolveWheelZoom(gesture, { ...input, deltaY: 4, timeStamp: 300 }).step).toBe(0);
+    const pinch = resolveWheelZoom(gesture, { ...input, ctrlKey: true, deltaY: -2, timeStamp: 320 });
+    expect(pinch).toMatchObject({ delta: -8, step: 0, pinch: true });
+    expect(resolveWheelZoom(null, { ...input, deltaY: 3, deltaMode: 1 }).step).toBe(-1);
+    expect(resolveWheelZoom(null, { ...input, deltaY: 0 }).step).toBe(0);
 });

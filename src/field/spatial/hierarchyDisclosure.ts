@@ -4,16 +4,36 @@ import { disclosureBox } from './collision.ts';
 import { readableLabels } from './representation.ts';
 import { scaleLevel, type Bounds } from './geometry.ts';
 
-// Four readable stages: roots, one child layer, two child layers, all detail. The final
-// stage has no artificial depth cap, including deeply imported branches.
-const DEPTH_THRESHOLDS = [.25, .50, .80];
-const DEPTH_BUDGETS = [0, 1, 2, Infinity];
-export function zoomDepth(zoom: number, previous?: number): number {
-    let stage = previous === undefined ? 0 : Math.max(0, DEPTH_BUDGETS.indexOf(previous));
-    const margin = previous === undefined ? 0 : .025;
-    while (stage < DEPTH_THRESHOLDS.length && zoom >= DEPTH_THRESHOLDS[stage] + margin) stage++;
-    while (stage > 0 && zoom < DEPTH_THRESHOLDS[stage - 1] - margin) stage--;
-    return DEPTH_BUDGETS[stage];
+// Every actual hierarchy level gets a reachable zoom band. Deeper imported branches
+// share the remaining camera range rather than jumping from level three to all detail.
+function depthBoundary(depth: number, maxDepth: number): number {
+    if (depth <= 3) return [.08, .25, .50, .80][depth];
+    return .80 * Math.pow(2.35 / .80, (depth - 3) / (maxDepth - 3));
+}
+function depthMargin(depth: number, maxDepth: number): number {
+    const boundary = depthBoundary(depth, maxDepth);
+    const next = depth < maxDepth ? depthBoundary(depth + 1, maxDepth) : 2.5;
+    return Math.min(.025, (boundary - depthBoundary(depth - 1, maxDepth)) / 4, (next - boundary) / 4);
+}
+export function zoomDepth(zoom: number, previous?: number, maxDepth = 3): number {
+    const estimate = maxDepth > 3 && zoom >= .8 ? 3 + Math.floor(Math.log(zoom / .8) / Math.log(2.35 / .8) * (maxDepth - 3)) : 0;
+    let depth = Math.min(maxDepth, Math.max(0, Number.isFinite(previous) ? previous! : estimate));
+    while (depth < maxDepth && zoom >= depthBoundary(depth + 1, maxDepth) + (previous === undefined ? 0 : depthMargin(depth + 1, maxDepth))) depth++;
+    while (depth > 0 && zoom < depthBoundary(depth, maxDepth) - (previous === undefined ? 0 : depthMargin(depth, maxDepth))) depth--;
+    return depth;
+}
+
+/** One ordinary wheel step opens or closes exactly one level. Its zoom stays inside
+ * that level's stable band, so the camera snapshot restores the same disclosure on reopen. */
+export function hierarchyWheelZoom(zoom: number, depth: number, maxDepth: number, delta: number, step: number): number {
+    if (!delta || !step) return zoom;
+    const next = Math.max(0, Math.min(maxDepth, depth + step));
+    const lower = next ? depthBoundary(next, maxDepth) + depthMargin(next, maxDepth) + 1e-8 : .08;
+    const upper = next < maxDepth ? depthBoundary(next + 1, maxDepth) - depthMargin(next + 1, maxDepth) - 1e-8 : 2.5;
+    const center = Math.max(lower, Math.min(upper, [.16, .38, .65, 1][next] ?? (lower + upper) / 2));
+    const proposed = zoom * Math.exp(-delta * .0015);
+    const target = next === depth ? proposed : step > 0 ? Math.max(center, proposed) : Math.min(center, proposed);
+    return Math.max(lower, Math.min(upper, target));
 }
 
 /** The same theme roles identify node levels and incoming arrows. Exact depth remains visible

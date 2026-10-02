@@ -24,16 +24,18 @@ async function boot(page: Page, profile = 'editorial-warm', style = 'curve', zoo
     await expect(page.locator('[data-thought-id="a"]')).toBeVisible();
     return p;
 }
-async function wheelTo(page: Page, target: number) {
+async function pinchTo(page: Page, target: number) {
+    await page.keyboard.down('Control');
     await page.mouse.move(80, 100);
     const zoom = () => page.locator('.world').evaluate(el => new DOMMatrix(getComputedStyle(el).transform).a);
     for (let i = 0; i < 10; i++) {
         const current = await zoom();
         if (Math.abs(current - target) < .001) break;
-        const delta = Math.max(-240, Math.min(240, Math.log(current / target) / .0015));
+        const delta = Math.max(-60, Math.min(60, Math.log(current / target) / .006));
         await page.mouse.wheel(0, delta);
         await expect.poll(zoom).not.toBe(current);
     }
+    await page.keyboard.up('Control');
     await expect.poll(zoom).toBeCloseTo(target, 2);
     await page.waitForTimeout(180); // Finish the camera's normal stable-commit debounce.
 }
@@ -112,9 +114,9 @@ for (const profile of ['editorial-warm', 'studio-slate', 'quiet-forest', 'graphi
                 expect((await lineStyle(page, pair[0], pair[1])).marker).toContain('hierarchy-direction-');
             }
             await page.screenshot({ path: info.outputPath(`${profile}-${style}-all.png`) });
-            // Real wheel input crosses the all-detail boundary while preserving canonical geometry.
+            // Continuous pinch input crosses the deepest-level boundary while preserving canonical geometry.
             await page.mouse.move(80, 100);
-            await wheelTo(page, .65);
+            await pinchTo(page, .65);
             await expect(node(page, 'd')).toHaveCount(0);
             await expect(node(page, 'c')).toBeVisible();
             await expect(node(page, 'c').getByTestId('branch-expand')).toBeVisible();
@@ -129,14 +131,14 @@ test('zoom stages, explicit expansion and Find preserve readable current context
     await boot(page);
     const before = await readThoughts(page);
     await page.mouse.move(80, 100);
-    await wheelTo(page, .65);
+    await pinchTo(page, .65);
     await expect(node(page, 'd')).toHaveCount(0);
     await expect(node(page, 'c')).toBeVisible();
-    await wheelTo(page, .38);
+    await pinchTo(page, .38);
     await expect(node(page, 'c')).toHaveCount(0);
     await expect(node(page, 'b')).toBeVisible();
     await expect(node(page, 'b').getByTestId('branch-expand')).toContainText('1 个下级');
-    await wheelTo(page, .16);
+    await pinchTo(page, .16);
     await expect(node(page, 'b')).toHaveCount(0);
     await expect(node(page, 'a')).toBeVisible();
     await expect(page.getByTestId('hierarchy-disclosure')).toContainText('顶层');
@@ -161,7 +163,7 @@ test('zoom stages, explicit expansion and Find preserve readable current context
 test('branch collapse follows the new depth on reparent, undo and redo', async ({ page }) => {
     await boot(page);
     await reparent(page, 'c', 'A 层级想法');
-    await wheelTo(page, .65);
+    await pinchTo(page, .65);
     await expect(node(page, 'd')).toBeVisible();
     await expect(edge(page, 'c', 'd')).toHaveAttribute('data-depth', '2');
     await page.keyboard.press('Control+z');
@@ -192,4 +194,71 @@ test('Find at low zoom reveals full long wording with current parent context', a
     await page.keyboard.press('Escape');
     await expect(node(page, 'd')).toHaveCount(0);
     expect(JSON.parse(await readThoughts(page)).d.text).toBe(wording);
+});
+
+
+async function notch(page: Page, direction: 'up' | 'down') {
+    await page.mouse.move(80, 100);
+    const before = await page.locator('.world').evaluate(el => new DOMMatrix(getComputedStyle(el).transform).a);
+    await page.mouse.wheel(0, direction === 'up' ? -120 : 120);
+    await expect.poll(() => page.locator('.world').evaluate(el => new DOMMatrix(getComputedStyle(el).transform).a)).not.toBe(before);
+    await expect.poll(() => page.getByTestId('field').getAttribute('data-camera-moving')).toBeNull();
+    const after = await page.locator('.world').evaluate(el => new DOMMatrix(getComputedStyle(el).transform).a);
+    expect(direction === 'up' ? after > before : after < before).toBe(true);
+}
+
+test('one upward notch adds the next level and one downward notch removes the deepest level', async ({ page }, info) => {
+    await boot(page, 'editorial-warm', 'curve', .38);
+    const before = await readThoughts(page);
+    await expect(node(page, 'b')).toBeVisible();
+    await expect(node(page, 'c')).toHaveCount(0);
+    await page.screenshot({ path: info.outputPath('wheel-before-A-B.png') });
+    await notch(page, 'up');
+    await expect(node(page, 'c')).toBeVisible();
+    await expect(node(page, 'd')).toHaveCount(0);
+    await expect(page.getByTestId('hierarchy-disclosure')).toContainText('第 3 层');
+    await page.screenshot({ path: info.outputPath('wheel-up-A-B-C.png') });
+    await notch(page, 'down');
+    await expect(node(page, 'b')).toBeVisible();
+    await expect(node(page, 'c')).toHaveCount(0);
+    await notch(page, 'down');
+    await expect(node(page, 'b')).toHaveCount(0);
+    await expect(node(page, 'a')).toBeVisible();
+    await expect(node(page, 'a').getByTestId('branch-expand')).toContainText('1 个下级');
+    await page.screenshot({ path: info.outputPath('wheel-down-A.png') });
+    await page.reload();
+    await expect(node(page, 'b')).toHaveCount(0);
+    await notch(page, 'up');
+    await expect(node(page, 'b')).toBeVisible();
+    await expect(node(page, 'c')).toHaveCount(0);
+    await notch(page, 'up');
+    await expect(node(page, 'c')).toBeVisible();
+    await expect(node(page, 'd')).toHaveCount(0);
+    await page.reload();
+    await expect(node(page, 'c')).toBeVisible();
+    await expect(node(page, 'd')).toHaveCount(0);
+    expect(await readThoughts(page)).toBe(before);
+});
+
+test('wheel steps use current reparented levels and close a manually opened child', async ({ page }) => {
+    await boot(page);
+    await reparent(page, 'c', 'A 层级想法');
+    await page.mouse.click(80, 100); // Release protected selection before normal disclosure.
+    await pinchTo(page, .38);
+    await expect(node(page, 'b')).toBeVisible();
+    await expect(node(page, 'c')).toBeVisible();
+    await expect(node(page, 'd')).toHaveCount(0);
+    await notch(page, 'up');
+    await expect(node(page, 'd')).toBeVisible();
+    await notch(page, 'down');
+    await expect(node(page, 'd')).toHaveCount(0);
+    await notch(page, 'down');
+    await expect(node(page, 'b')).toHaveCount(0);
+    await expect(node(page, 'c')).toHaveCount(0);
+    await node(page, 'a').getByTestId('branch-expand').click();
+    await expect(node(page, 'b')).toBeVisible();
+    await expect(node(page, 'c')).toBeVisible();
+    await notch(page, 'down');
+    await expect(node(page, 'b')).toHaveCount(0);
+    await expect(node(page, 'c')).toHaveCount(0);
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AIRuntime, intentAllowedForAction } from '../../src/ai/runtime.ts';
+import { AIRuntime, intentAllowedForAction, semanticQualityAllowed } from '../../src/ai/runtime.ts';
 import { UNKNOWN_CAPABILITIES, type AIProvider } from '../../src/ai/contracts.ts';
 import { createProject, makeThought, type ThinkingOperation } from '../../src/core/model.ts';
 import { ProjectController } from '../../src/core/controller.ts';
@@ -28,6 +28,13 @@ describe('Phase 3A action permissions and operation lifecycle', () => {
         expect(intentAllowedForAction('probe', 'request_deep_dive')).toBe(false);
         expect(intentAllowedForAction('probe', 'request_thread')).toBe(false);
         expect(intentAllowedForAction('probe', 'request_crystal_preview')).toBe(false);
+    });
+
+    it('rejects generic relation labels and orientation questions', () => {
+        expect(semanticQualityAllowed('probe', { type: 'surface_relation', a: 'a', b: 'b', kind: 'gap', label: '可能算它的一个方向' })).toBe(false);
+        expect(semanticQualityAllowed('probe', { type: 'surface_relation', a: 'a', b: 'b', kind: 'tension', label: '方向与应用场景', explanation: '一个想法描述领域范围，另一个把它落到具体应用上。' })).toBe(true);
+        expect(semanticQualityAllowed('question', { type: 'surface_question', text: '你现在是想拿计算机视觉做点什么——一个课题、一份工作，还是先了解看看？' })).toBe(false);
+        expect(semanticQualityAllowed('question', { type: 'surface_question', text: '如果只能先验证一件事，哪条证据会改变你对这个方向的判断？' })).toBe(true);
     });
 
     it('drops an out-of-mode Deep Dive request even when it is globally legal', async () => {

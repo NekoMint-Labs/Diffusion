@@ -27,8 +27,23 @@ export class MockAIProvider implements AIProvider {
         let intents: AIResponse['intents'];
         if (intent.kind === 'probe' && first && second) {
             const pair = `${first.text} ${second.text}`;
-            const label = /HCI/u.test(pair) && /就业|工作不好找|不好就业|不好找工作/u.test(pair) ? '喜欢，但不敢完全押上去' : /读研|探索/u.test(pair) && /三年|时间.*长|成本/u.test(pair) ? '多点探索，也多花时间' : chinese ? '两边像在互相牵制' : t('Possible missing link');
-            intents = [{ type: 'surface_relation', a: first.id, b: second.id, kind: 'gap', label, explanation: chinese ? '这两条之间像有一处还没说清楚的牵连。' : t('The two thoughts may depend on a connection that has not been stated yet.') }];
+            const visualApplication = /计算机视觉/u.test(pair) && /稀疏视角|重建|智能体/u.test(pair);
+            const label = visualApplication
+                ? '领域到具体应用'
+                : /HCI/u.test(pair) && /就业|工作不好找|不好就业|不好找工作/u.test(pair)
+                    ? '喜欢与就业风险的取舍'
+                    : /读研|探索/u.test(pair) && /三年|时间.*长|成本/u.test(pair)
+                        ? '探索空间与时间成本的取舍'
+                        : chinese ? '' : t('Possible missing link');
+            if (!label) return { intents: [], providerLabel: this.label, mock: true };
+            const explanation = visualApplication
+                ? '一条说的是较宽的技术领域，另一条把它落到了具体的重建与智能体组合。'
+                : /HCI/u.test(pair) && /就业|工作不好找|不好就业|不好找工作/u.test(pair)
+                    ? '一条表达喜欢的方向，另一条指出就业面可能成为现实约束。'
+                    : /读研|探索/u.test(pair) && /三年|时间.*长|成本/u.test(pair)
+                        ? '一条期待更多探索空间，另一条提醒这段空间有明确的时间成本。'
+                        : t('The two thoughts may depend on a connection that has not been stated yet.');
+            intents = [{ type: 'surface_relation', a: first.id, b: second.id, kind: visualApplication ? 'bridge' : 'gap', label, explanation }];
         }
         else if (intent.kind === 'ask' && packet.retrieved.thoughts.some(thought => thought.id === 'earlier'))
             intents = [{ type: 'request_recall', thoughtId: 'earlier' }];
@@ -65,7 +80,9 @@ This is a deterministic demonstration of the reasoning surface, not model reason
                                 ? [`如果继续往里加东西，这个项目可能会越来越难收口。`, `所以下一步也许先看哪些东西其实可以不做，而不是继续补功能。`, `再往前一点，复杂度已经开始影响你能不能把它做完了。`, `如果核心体验已经成立，后面的新增内容可能要先证明自己值得留下。`, `这样的话，收敛范围本身就成了项目的一部分。`]
                                 : /探索|稳定方向|选个稳定/u.test(topic)
                                     ? [`如果两边都放不下，下一步可能要先看你现在最怕失去的是探索空间，还是尽快形成积累。`, `所以“稳定”可能得再具体一点，不然它会一直和“探索”一起拉着你。`, `再往前一步，也许可以看什么样的选择既不会立刻锁死方向，也能开始积累。`, `这样你不一定要先解决所有不确定，至少能让下一步不和两边同时冲突。`, `最后真正要推进的，可能是把“继续探索”从一种状态变成一种有边界的做法。`]
-                                    : [`那下一步可能不是马上定答案，而是先找一个能把这份不确定缩小一点的事实。`, `如果现在还说不上来，也许可以继续看是什么地方让你一直停在这里。`, `再往前一点，这件事可能需要一个更具体的判断条件。`, `所以先不用把它说得很确定，看看什么变化会让你的想法跟着变。`, `这样至少能把“有点拿不准”继续往前推一点。`];
+                                    : /计算机视觉/u.test(topic)
+                                ? [`先分清你想让机器完成的是识别、测量，还是从几张图里重建空间。`, `如果现在只有“计算机视觉”这个大方向，下一步最需要补的可能是一件具体的可观察任务。`, `同一组图片会比“模型更强”更早告诉你方向有没有走对：你希望它在哪个地方出错得更少？`, `把范围缩到一个能反复试的例子，才看得出你是在探索能力，还是只是在换技术名词。`, `如果没有一组能持续比较的图片，后面很难判断新方法到底带来了什么。`]
+                                : [`那下一步可能不是马上定答案，而是先找一个能把这份不确定缩小一点的具体事实。`, `如果现在还说不上来，也许可以指出是哪一处观察让你一直停在这里。`, `再往前一点，这件事可能需要一个明确的判断条件，而不是一个更大的目标。`, `所以先不用把它说得很确定，看看哪一个可观察变化会让你的想法跟着变。`, `这样至少能把“有点拿不准”落到一个可以继续检查的地方。`];
             const ideas = chinese ? chineseIdeas : [`If that is true, the next thing to work out is what would let “${topic}” actually happen.`, `Then the useful distinction may be whether “${topic}” gives real room to try things, or only more time on paper.`, `So the next step is probably to notice what would make this direction feel concrete rather than merely available.`, `That also makes the surrounding conditions matter: the same choice could create room or consume it.`, `Which means the value of this path may depend less on the label and more on how the time inside it is used.`];
             intents = ideas.slice(0, packet.maxCandidates).map(text => ({ type: 'surface_possibility' as const, text }));
         }

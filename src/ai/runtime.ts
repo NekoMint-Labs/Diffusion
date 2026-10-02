@@ -77,6 +77,23 @@ const ACTION_OUTPUTS: Record<UserIntent['kind'], ReadonlySet<SemanticIntent['typ
 export function intentAllowedForAction(kind: UserIntent['kind'], type: SemanticIntent['type']): boolean {
     return ACTION_OUTPUTS[kind].has(type);
 }
+
+/** Provider output can be structurally valid while still failing the product's thinking contract.
+ * Keep this gate deliberately small: it rejects only labels and questions that explicitly say almost
+ * nothing, leaving the model's substantive judgment intact. */
+export function semanticQualityAllowed(kind: UserIntent['kind'], candidate: SemanticIntent): boolean {
+    if (kind === 'probe' && candidate.type === 'surface_relation') {
+        const label = candidate.label.trim();
+        if (/^(?:可能|也许).*(?:方向|关联|关系|联系|相关)$/u.test(label)) return false;
+        if (/^(?:possible|potential)?\s*(?:missing\s+)?(?:link|relation|connection|direction)$/iu.test(label)) return false;
+    }
+    if (kind === 'question' && candidate.type === 'surface_question') {
+        const value = candidate.text.trim();
+        if (/^(?:你有什么想法|还有什么想法|要不要继续(?:想|探索)|你想(?:继续)?了解(?:一下)?吗)[？?]?$/u.test(value)) return false;
+        if (/^你现在是想.*(?:做点什么|做什么|了解看看)[？?]?$/u.test(value)) return false;
+    }
+    return true;
+}
 function operationKind(kind: UserIntent['kind']): ThinkingOperationKind {
     if (kind === 'probe' || kind === 'diffuse' || kind === 'continue' || kind === 'angle' || kind === 'question' || kind === 'organize') return kind;
     return 'ask';
@@ -233,6 +250,7 @@ export class AIRuntime {
             const accepted = response.intents.slice(0, packet.maxCandidates)
                 .filter(candidate => intentAllowedForAction(kind, candidate.type))
                 .filter(candidate => permissionFor(candidate, packet, this.controller.getSnapshot().project).allowed)
+                .filter(candidate => semanticQualityAllowed(kind, candidate))
                 .filter(candidate => !options.runId || ['surface_possibility', 'surface_question', 'surface_relation', 'surface_structure', 'respond_in_field', 'surface_evidence', 'request_recall'].includes(candidate.type));
             if (options.threadId) {
                 const body = accepted.map(candidate => 'text' in candidate ? candidate.text : candidate.type === 'surface_relation' ? `${candidate.kind}: ${candidate.label}` : '').filter(Boolean).join('\n\n');

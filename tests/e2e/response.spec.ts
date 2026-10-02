@@ -116,3 +116,97 @@ test.describe('Chinese response preview', () => {
         await page.screenshot({ path: testInfo.outputPath('reading-preview.png') });
     });
 });
+
+
+test('an unsubmitted response restores its wording and scope after reload, then clears after saving', async ({ page }) => {
+    await page.locator('[data-thought-id="unfinished"]').click();
+    await page.getByRole('button', { name: 'Respond to this question', exact: true }).click();
+    const input = page.getByRole('textbox', { name: 'Speak', exact: true });
+    const text = 'A draft about retaining context, to continue after reopening.';
+    await input.fill(text);
+    await expect(page.getByRole('status')).toHaveText('Draft saved on this device.');
+    await page.reload();
+    await expect(input).toHaveValue(text);
+    await expect(page.locator('.speak-references')).toContainText(question);
+    await expect(page.getByRole('button', { name: 'Save response', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Save response', exact: true }).click();
+    await expect(page.locator('[data-thought-id]').filter({ hasText: text })).toBeVisible();
+    await page.reload();
+    await expect(input).toHaveValue('');
+    await expect(page.locator('.speak-references')).toHaveCount(0);
+});
+
+test('responding to a second card reopens the unfinished draft on its original question', async ({ page }) => {
+    await page.locator('[data-thought-id="unfinished"]').click();
+    await page.getByRole('button', { name: 'Respond to this question', exact: true }).click();
+    const input = page.getByRole('textbox', { name: 'Speak', exact: true });
+    await input.fill('I have not finished responding to the background question.');
+    await input.press('Escape');
+    await page.locator('[data-thought-id="attention"]').click();
+    await page.getByRole('button', { name: 'Add my thoughts', exact: true }).click();
+    await expect(input).toHaveValue('I have not finished responding to the background question.');
+    await expect(page.locator('.speak-references')).toContainText(question);
+    await expect(page.locator('.notice')).toContainText('linked to another thought');
+});
+
+test('clearing an unsubmitted response remains cleared after reload', async ({ page }) => {
+    await page.locator('[data-thought-id="unfinished"]').click();
+    await page.getByRole('button', { name: 'Respond to this question', exact: true }).click();
+    const input = page.getByRole('textbox', { name: 'Speak', exact: true });
+    await input.fill('An old response draft.');
+    await expect(page.getByRole('status')).toHaveText('Draft saved on this device.');
+    await input.fill('');
+    await input.press('Escape');
+    await page.reload();
+    await expect(input).toHaveValue('');
+    await expect(page.getByRole('button', { name: 'Save response', exact: true })).toHaveCount(0);
+});
+
+test('a failed device write retains the response and reports its actual save status', async ({ page }) => {
+    await page.evaluate(() => {
+        const write = Storage.prototype.setItem;
+        Storage.prototype.setItem = function(key, value) {
+            if (key.startsWith('diffusion-response-draft:')) throw new DOMException('Full', 'QuotaExceededError');
+            return write.call(this, key, value);
+        };
+    });
+    await page.locator('[data-thought-id="unfinished"]').click();
+    await page.getByRole('button', { name: 'Respond to this question', exact: true }).click();
+    const input = page.getByRole('textbox', { name: 'Speak', exact: true });
+    await input.fill('Preserve this text even if storage is full.');
+    await expect(page.getByRole('status')).toHaveText('Draft is only kept in this window. Copy it before closing.');
+    await expect(input).toHaveValue('Preserve this text even if storage is full.');
+});
+
+test('a restored response keeps a missing reference and refuses to save against a different scope', async ({ page }) => {
+    await page.evaluate(() => localStorage.setItem('diffusion-response-draft:demo', JSON.stringify({
+        text: 'My response to the original two thoughts.', scope: ['unfinished', 'removed-thought'], updatedAt: Date.now(),
+    })));
+    await page.reload();
+    const input = page.getByRole('textbox', { name: 'Speak', exact: true });
+    await expect(input).toHaveValue('My response to the original two thoughts.');
+    await expect(page.locator('.speak-references')).toContainText('A referenced thought is no longer available.');
+    await page.getByRole('button', { name: 'Save response', exact: true }).click();
+    await expect(input).toHaveValue('My response to the original two thoughts.');
+    await expect(page.locator('[data-thought-id]')).toHaveCount(6);
+});
+
+test('response controls remain readable in dark mode', async ({ page }, testInfo) => {
+    await page.evaluate(() => localStorage.setItem('diffusion-settings', JSON.stringify({ theme: 'dark', locale: 'en', appearance: { profile: 'graphite-night' } })));
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await page.locator('[data-thought-id="unfinished"]').click();
+    const respond = page.getByRole('button', { name: 'Respond to this question', exact: true });
+    await respond.focus();
+    await expect(respond).toBeFocused();
+    await respond.click();
+    await page.getByRole('textbox', { name: 'Speak', exact: true }).fill('A saved response draft in dark mode.');
+    await expect(page.getByRole('status')).toHaveText('Draft saved on this device.');
+    await expect(page.getByRole('button', { name: 'Save response', exact: true })).toBeVisible();
+    await expect.poll(() => page.getByTestId('speak').evaluate(element => {
+        const style = getComputedStyle(element);
+        const matrix = new DOMMatrix(style.transform === 'none' ? undefined : style.transform);
+        return Number(style.opacity) > .995 && Math.abs(matrix.a - 1) < .001 && Math.abs(matrix.e) < .1 && Math.abs(matrix.f) < .1;
+    })).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('response-dark.png') });
+});

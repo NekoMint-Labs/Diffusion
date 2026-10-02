@@ -37,6 +37,21 @@ Keyboard ownership is a single ordered chain: IME composition is never a command
 
 The EN/ZH dictionary is small and reactive. User text, fetched passages and model replies are never rewritten for localization. Static coverage is checked independently of runtime component rendering.
 
+## Reading and authored responses
+
+Selecting a bounded Thought reveals read-only full-text disclosure through the existing anchored
+Surface. This does not edit, claim, or rewrite the material. A person's explicit response creates an
+InputRecord and a separate canonical Thought using the existing continuation lineage; it never
+calls a provider or automatically confirms a relation.
+
+An unfinished response is a device-local draft, separate from canonical ProjectState and portable
+exports. It retains its exact text and frozen reference IDs under a per-Field storage key. Reopening
+restores that scope; switching to a different response cannot silently retarget it. Missing
+references remain in the draft and prevent submission rather than being filtered into a new scope.
+A failed draft write retains the window's text and reports that it is not saved on the device.
+Optional background renderer failures are contained at the decorative layer so the Field remains
+usable; switching Field Style resets that layer's failure boundary.
+
 ## Threads and depth
 
 Thread stores frozen scope IDs plus text/kind/source references captured on creation. Explicit Add selection extends snapshots but does not silently refresh earlier wording. Field remains usable beside its split manuscript. Deep Dive has its own context rail and structured manuscript component, not the Thread rendered wider. The Field remains mounted but visually recedes completely in focus mode; exact return camera/selection is preserved.

@@ -44,7 +44,7 @@ function EmptyFieldInvitation() {
  * permanent legend here — the Shortcuts and Help surfaces own it — so the only disclosure is a
  * tertiary Shift+Enter cue inside the focused writing row.
  */
-export function Speak({ textareaRef, words, onWords, onSubmit, onStop, onCompose, onExit, composing, empty, typography, scopeIds, references, mode = 'think' }: {
+export function Speak({ textareaRef, words, onWords, onSubmit, onStop, onCompose, onExit, composing, empty, typography, scopeIds, references, mode = 'think', draftSaved = false }: {
     textareaRef: RefObject<HTMLTextAreaElement | null>;
     words: string;
     onWords: (value: string) => void;
@@ -58,6 +58,7 @@ export function Speak({ textareaRef, words, onWords, onSubmit, onStop, onCompose
     scopeIds: string[];
     references: { id: string; text: string }[];
     mode?: 'think' | 'respond';
+    draftSaved?: boolean;
 }) {
     const busy = useUI(state => state.busy);
     const reduced = useReducedMotion();
@@ -136,7 +137,7 @@ export function Speak({ textareaRef, words, onWords, onSubmit, onStop, onCompose
                 {/* The illumination layer. CSS-only, opacity 0 at rest: it fades in *with* the
                     material, so the surface reads as one lit object rather than a flat rectangle. */}
                 <span className="speak-light" aria-hidden="true"/>
-                {composing && scoped && <span className="speak-scope" data-testid="speak-scope">{t(mode === 'respond' ? 'Responding to' : scopeIds.length === 1 ? 'Thinking with this thought' : 'Thinking with {count} thoughts', { count: scopeIds.length })}</span>}
+                {composing && scoped && <div className="speak-context-line"><span className="speak-scope" data-testid="speak-scope">{t(mode === 'respond' ? 'Responding to' : scopeIds.length === 1 ? 'Thinking with this thought' : 'Thinking with {count} thoughts', { count: scopeIds.length })}</span>{mode === 'respond' && words.trim() && <span className="speak-draft-status" role="status" data-saved={draftSaved}>{t(draftSaved ? 'Draft saved on this device.' : 'Draft is only kept in this window. Copy it before closing.')}</span>}</div>}
                 {composing && scoped && <div className="speak-references" id="speak-references" aria-label={t('Referenced thoughts')}>
                     {references.slice(0, 3).map(reference => <blockquote key={reference.id} title={reference.text}>{referenceExcerpt(reference.text)}</blockquote>)}
                     {references.length > 3 && <span>{t('And {count} more thoughts', { count: references.length - 3 })}</span>}

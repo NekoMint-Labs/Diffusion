@@ -166,11 +166,12 @@
 
 /* --- Command UI: the same shell as a surface, denser ---------------------- */
 .command-menu-positioner { z-index: var(--layer-surface); width: max-content; max-width: calc(100vw - 32px); }
-.command-menu { position: relative; min-width: 188px; max-width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); overflow: auto; padding: 5px; background: transparent; border: 0; border-radius: var(--radius-surface); box-shadow: none; outline: none; }
+.command-menu { position: relative; min-width: 188px; max-width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); overflow: visible; padding: 5px; background: transparent; border: 0; border-radius: var(--radius-surface); box-shadow: none; outline: none; }
 .command-menu-shared-shell { position: absolute; inset: 0; z-index: 0; border: 1px solid var(--boundary); border-radius: inherit; background: var(--surface-raised); box-shadow: var(--shadow-float); pointer-events: none; }
 .command-menu-columns { position: relative; z-index: 1; display: flex; align-items: flex-start; }
 .command-menu-content { position: relative; z-index: 1; min-width: 188px; }
-.command-menu-secondary { min-width: 196px; margin-left: 5px; padding-left: 5px; border-left: 1px solid var(--boundary); }
+.command-menu-secondary { position: absolute; min-width: 196px; max-height: calc(100dvh - 48px); overflow: auto; padding: 5px; border: 1px solid var(--boundary); border-radius: var(--radius-surface); background: var(--surface-raised); box-shadow: var(--shadow-float); }
+.command-menu-content[data-primary-panel] { max-height: calc(100dvh - 58px); overflow: auto; }
 .command-menu-item { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 20px; width: 100%; min-height: 32px; text-align: left; padding: 6px 9px; font-size: var(--type-label-size); border-radius: var(--radius-control); color: var(--ink-secondary); cursor: pointer; user-select: none; transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease; }
 .command-menu-item[data-highlighted] { outline: none; background: var(--surface-2); color: var(--ink-primary); }
 .command-menu-copy { display: flex; flex: 1; min-width: 0; flex-direction: column; align-items: flex-start; gap: 2px; }

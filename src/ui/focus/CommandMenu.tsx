@@ -2,6 +2,7 @@ import type React from 'react';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion, useIsPresent, useReducedMotion } from 'motion/react';
 import { Menu } from '@base-ui/react/menu';
+import { autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/react';
 import { t } from '../../shared/i18n.ts';
 import type { Point } from '../../core/model.ts';
 import type { MenuRow } from '../commands/compose.ts';
@@ -11,6 +12,8 @@ const MORE_HOVER_DELAY = 160;
 
 /** One coordinated popup owns both the primary menu and its secondary column.
  *
+ * The secondary column is positioned independently so opening it cannot resize or flip the primary.
+ * A short leave delay bridges pointer travel without defeating outside dismissal.
  * The important boundary is pointer ownership: More never portals a submenu across a gap, and it
  * never replaces the primary choices. Hover reveals the secondary column after a short deliberate
  * delay; click/keyboard pins it until the popup itself is dismissed. The command registry still
@@ -31,6 +34,10 @@ export function CommandMenu({ anchor, point, rows, moreRows = [], scope, note, p
     const [secondaryOpen, setSecondaryOpen] = useState(false);
     const [pinned, setPinned] = useState(false);
     const secondary = useRef<HTMLDivElement>(null);
+    const secondaryPosition = useFloating({ open: secondaryOpen, placement: 'right-start',
+        middleware: [offset(3), flip({ padding: 16 }), shift({ padding: 16 })], whileElementsMounted: autoUpdate });
+    const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const cancelLeave = () => { if (leaveTimer.current) clearTimeout(leaveTimer.current); leaveTimer.current = null; };
     const moreButton = useRef<HTMLElement | null>(null);
     const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const cancelMoreHover = () => {
@@ -40,6 +47,7 @@ export function CommandMenu({ anchor, point, rows, moreRows = [], scope, note, p
     };
     const openSecondary = (pin = false, focus = false) => {
         cancelMoreHover();
+        cancelLeave();
         setSecondaryOpen(true);
         if (pin) setPinned(true);
         if (focus) requestAnimationFrame(() => secondary.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus());
@@ -51,7 +59,7 @@ export function CommandMenu({ anchor, point, rows, moreRows = [], scope, note, p
             hoverTimer.current = null;
         }, MORE_HOVER_DELAY);
     };
-    useEffect(() => () => cancelMoreHover(), []);
+    useEffect(() => () => { cancelMoreHover(); cancelLeave(); }, []);
     useLayoutEffect(() => {
         if (!present) return;
         setSecondaryOpen(false);
@@ -96,7 +104,13 @@ export function CommandMenu({ anchor, point, rows, moreRows = [], scope, note, p
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ ...EXIT_UNOWNED, scale: reduced ? 1 : .985, y: reduced ? 0 : -2, transition: recedeTransition(Boolean(reduced)) }}
                     transition={surfaceTransition(Boolean(reduced))}
-                    onPointerLeave={() => { cancelMoreHover(); if (!pinned) setSecondaryOpen(false); }}
+                    onPointerEnter={cancelLeave}
+                    onPointerLeave={event => {
+                        if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return;
+                        cancelMoreHover();
+                        cancelLeave();
+                        if (!pinned) leaveTimer.current = setTimeout(() => { leaveTimer.current = null; setSecondaryOpen(false); }, 240);
+                    }}
                     onKeyDownCapture={event => {
                         if (event.key === 'Tab') {
                             event.preventDefault();
@@ -120,7 +134,7 @@ export function CommandMenu({ anchor, point, rows, moreRows = [], scope, note, p
                             </Menu.Item>)}
                             {moreRows.length > 0 && <Menu.Item key="more" className="command-menu-item command-menu-more" data-command="more" closeOnClick={false} label={t('More')}
                                 aria-haspopup="menu" aria-expanded={secondaryOpen}
-                                ref={element => { moreButton.current = element; }}
+                                ref={element => { moreButton.current = element; secondaryPosition.refs.setReference(element); }}
                                 onPointerEnter={scheduleMoreHover} onPointerLeave={cancelMoreHover}
                                 onKeyDown={event => {
                                     if (event.key === 'ArrowRight' || event.key === 'Enter' || event.key === ' ') {
@@ -132,7 +146,7 @@ export function CommandMenu({ anchor, point, rows, moreRows = [], scope, note, p
                                 <span>{t('More')}</span><span className="command-menu-caret" aria-hidden="true"/>
                             </Menu.Item>}
                         </div>
-                        {secondaryOpen && moreRows.length > 0 && <div ref={secondary} className="command-menu-content command-menu-secondary" data-secondary-panel="true" data-testid={`${scope}-more-menu`} aria-label={t(scope === 'field' ? 'Field actions' : 'More thought actions')}>
+                        {secondaryOpen && moreRows.length > 0 && <div ref={element => { secondary.current = element; secondaryPosition.refs.setFloating(element); }} style={secondaryPosition.floatingStyles} data-side={secondaryPosition.placement.split('-')[0]} className="command-menu-content command-menu-secondary" data-secondary-panel="true" data-testid={`${scope}-more-menu`} aria-label={t(scope === 'field' ? 'Field actions' : 'More thought actions')}>
                             {moreRows.map(row => <Menu.Item key={row.id} className="command-menu-item" data-command={row.id} data-separator={row.separator || undefined} aria-keyshortcuts={row.keyshortcuts} label={row.label} onClick={activate(row)}>
                                 <span className="command-menu-copy"><span>{row.label}</span>{row.description && <small>{row.description}</small>}</span>{row.hint && <kbd aria-hidden="true">{row.hint}</kbd>}
                             </Menu.Item>)}

@@ -1,6 +1,6 @@
 import { t } from '../../shared/i18n.ts';
 import { useLocale } from '../useLocale.ts';
-import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { memo, useLayoutEffect, useRef, useState } from 'react';
 import type { Ghost, Thought } from '../../core/model.ts';
 import { isAuthoredExample } from '../../core/demo.ts';
 import type { GeometryCache } from '../../field/spatial/index.ts';
@@ -29,7 +29,7 @@ interface Props {
     onEdit: (id: string, text: string) => void;
     onCancel: () => void;
     onReject?: (id: string) => void;
-    onMeasure?: (id: string) => void;
+    onMeasure?: (id: string, initial?: boolean) => void;
     onHover?: (id: string | null) => void;
 }
 export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, selected, emphasis, settling, find, editing, level, depth, root, parentText, hasChildren, collapsedCount = 0, onExpand, geometry, onEdit, onCancel, onReject, onMeasure, onHover }: Props) {
@@ -44,13 +44,13 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
     const proposal = ghost && 'proposal' in item ? item.proposal : undefined;
     const proposalKind = ghost && 'proposalKind' in item ? item.proposalKind : undefined;
     const proposalAction = ghost && 'proposalAction' in item ? item.proposalAction : undefined;
-    useEffect(() => {
+    useLayoutEffect(() => {
         const el = ref.current;
         if (!el)
             return;
-        const measure = () => { geometry.measure(item.id, el.offsetWidth, el.offsetHeight); onMeasure?.(item.id); };
-        measure();
-        const observer = new ResizeObserver(measure);
+        const measure = (initial = false) => { geometry.measure(item.id, el.offsetWidth, el.offsetHeight); onMeasure?.(item.id, initial); };
+        measure(true);
+        const observer = new ResizeObserver(() => measure());
         observer.observe(el);
         return () => observer.disconnect();
     }, [item.id, geometry, level, onMeasure]);

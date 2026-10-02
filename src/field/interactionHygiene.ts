@@ -37,18 +37,25 @@ export function commitDraggedItems(controller: ProjectController, positions: Rec
     for (const [key, point] of ghostMoves) controller.moveGhost(key, point, { detach: true });
     return { canonical, ghosts: ghostMoves.map(([key]) => key) };
 }
-export function correctMeasuredGhost(key: string, corrected: Set<string>, controller: ProjectController, geometry: GeometryCache, itemIds: string[], camera: Camera, viewport: ViewportRect, screenObstacles: readonly Bounds[] = []): void {
-    if (corrected.has(key) || !controller.getSnapshot().session.ghosts[key]) return;
+export function correctMeasuredGhost(key: string, controller: ProjectController, geometry: GeometryCache, itemIds: string[], camera: Camera, viewport: ViewportRect, screenObstacles: readonly Bounds[] = []): void {
+    const ghost = controller.getSnapshot().session.ghosts[key];
+    if (!ghost || ghost.spatialDetached) return;
     const bounds = geometry.get(key);
     if (!bounds) return;
-    corrected.add(key);
     const occupied = itemIds.filter(id => id !== key).map(id => geometry.get(id)).filter((candidate): candidate is Bounds => !!candidate);
     const reserved = screenObstacles.map(rect => {
         const point = screenToWorld({ x: rect.x - viewport.left - 12, y: rect.y - viewport.top - 12 }, camera);
         return { ...point, width: (rect.width + 24) / camera.zoom, height: (rect.height + 24) / camera.zoom };
     });
-    const point = correctSevereOverlap(bounds, occupied, viewportBounds(camera, viewport.width, viewport.height, 0), reserved);
-    if (Math.abs(point.x - bounds.x) > .5 || Math.abs(point.y - bounds.y) > .5) controller.moveGhost(key, point);
+    // A pending arrival must clear even a small obstruction. Intentional canonical overlaps
+    // still use the separate severe-overlap policy in the drag path.
+    const gap = 6 / camera.zoom;
+    const exclusions = occupied.map(box => ({ x: box.x - gap, y: box.y - gap, width: box.width + gap * 2, height: box.height + gap * 2 }));
+    const point = correctSevereOverlap(bounds, [], viewportBounds(camera, viewport.width, viewport.height, 0), [...exclusions, ...reserved]);
+    if (Math.abs(point.x - bounds.x) > .5 || Math.abs(point.y - bounds.y) > .5) {
+        controller.moveGhost(key, point);
+        geometry.setPosition(key, point.x, point.y);
+    }
 }
 
 export function keepRelationCandidate(controller: ProjectController, relationId: string): void {
@@ -85,4 +92,21 @@ export function relationPlacementObstacles(visible: string[], geometry: Geometry
     obstacles.push(screenRectToWorld({ x: viewport.left + viewport.width - 190, y: viewport.top, width: 190, height: 90 }));
     if (scopePlacement) obstacles.push(screenRectToWorld(scopePlacement));
     return obstacles;
+}
+
+/** Run after coalesced layout, using all mounted reading boxes and current UI exclusions. */
+export function correctVisibleGhosts(controller: ProjectController, geometry: GeometryCache, camera: Camera, viewport: ViewportRect, field: HTMLElement | null, world: HTMLElement | null, measure = false): void {
+    // Initial layout runs before paint. Read every mounted box so child order cannot leave
+    // the source at its earlier flat-card size when the first proposal is placed.
+    if (measure) for (const element of world?.querySelectorAll<HTMLElement>('[data-thought-id]') ?? []) {
+        geometry.measure(element.dataset.thoughtId!, element.offsetWidth, element.offsetHeight);
+    }
+    const reserved = [...field?.closest('.app')?.querySelectorAll<HTMLElement>('.identity, .global-actions, [data-testid="speak"], .notice') ?? []]
+        .filter(element => element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden')
+        .map(element => element.getBoundingClientRect());
+    const snapshot = controller.getSnapshot(), ids = [...Object.keys(snapshot.project.thoughts), ...Object.keys(snapshot.session.ghosts)];
+    for (const ghost of Object.values(snapshot.session.ghosts)) {
+        if (world?.querySelector(`[data-thought-id="${CSS.escape(ghost.id)}"]`))
+            correctMeasuredGhost(ghost.id, controller, geometry, ids, camera, viewport, reserved);
+    }
 }

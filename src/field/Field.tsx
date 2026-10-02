@@ -32,7 +32,7 @@ import { FieldBackgroundLayer } from '../ui/fieldBackgrounds/FieldBackgroundLaye
 import { SpatialActivityLayer } from '../ui/motion/SpatialActivityLayer.tsx';
 import { claimWithSettle, dismissGhostWithDissolve, presentMaterialSettle } from '../ui/motion/spatialGrammar.ts';
 import type { ConnectionStyle, FieldStyleId } from '../ui/appearance.ts';
-import { commitDraggedItems, correctMeasuredGhost, correctSingleDraggedThought, deleteFieldSelection, ignoreRelationCandidate, keepRelationCandidate, relationPlacementObstacles } from './interactionHygiene.ts';
+import { commitDraggedItems, correctVisibleGhosts, correctSingleDraggedThought, deleteFieldSelection, ignoreRelationCandidate, keepRelationCandidate, relationPlacementObstacles } from './interactionHygiene.ts';
 export interface FieldHandle {
     focus: () => void;
     camera: () => Camera;
@@ -116,7 +116,6 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const liveHierarchy = useRef(hierarchy);
     liveHierarchy.current = hierarchy;
     const focus = useMemo(() => focusFor(project, session, ui.selection), [project, session, ui.selection]);
-    const correctedGhosts = useRef(new Set<string>());
     useLayoutEffect(() => {
         const state = useUI.getState();
         const selection = state.selection.filter(key => !!items[key]);
@@ -145,7 +144,6 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
                 geometry.remove(key);
         for (const item of Object.values(items))
             geometry.setPosition(item.id, item.x, item.y);
-        correctedGhosts.current = new Set([...correctedGhosts.current].filter(key => newKeys.has(key)));
         known.current = newKeys;
         refreshVisible(camera.current?.get() ?? project.camera, true);
     }, [items, session.recalls, project.camera, geometry, refreshVisible]);
@@ -512,14 +510,16 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const handleThoughtEdit = useCallback((key: string, text: string) => { const snapshot = controller.getSnapshot(); if (snapshot.session.ghosts[key]) presentMaterialSettle([key]); const thought = snapshot.session.ghosts[key] ? controller.claim(key) : snapshot.project.thoughts[key]; if (thought && thought.text !== text) controller.dispatch({ type: 'thought.edit', id: key, text }); useUI.getState().patch({ editing: null }); }, [controller]);
     const handleThoughtCancel = useCallback(() => { const key = useUI.getState().editing; const t = key ? controller.getSnapshot().project.thoughts[key] : null; if (t && !t.text.trim())
         controller.dispatch({ type: 'thought.delete', ids: [t.id] }); useUI.getState().patch({ editing: null, selection: useUI.getState().selection.filter(k => !!controller.getSnapshot().project.thoughts[k] || !!controller.getSnapshot().session.ghosts[k]) }); }, [controller]);
-    const handleGhostMeasured = useCallback((key: string) => {
+    const handleGhostMeasured = useCallback((key: string, initial = false) => {
         const cam = camera.current?.get() ?? controller.getSnapshot().project.camera;
-        recordMeasurement(key, geometry.get(key), liveItems.current[key], cam, !!viewport.current?.hasAttribute('data-camera-moving'), () => refreshVisible(camera.current?.get() ?? cam, true));
-        const app = viewport.current?.closest('.app');
-        const reserved = [...app?.querySelectorAll<HTMLElement>('.identity, .global-actions, [data-testid="speak"], .notice') ?? []]
-            .filter(element => element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden')
-            .map(element => element.getBoundingClientRect());
-        correctMeasuredGhost(key, correctedGhosts.current, controller, geometry, Object.keys(liveItems.current), camera.current?.get() ?? controller.getSnapshot().project.camera, rect.current, reserved);
+        if (initial && liveItems.current[key] && 'scopeIds' in liveItems.current[key] && !gesture.current) correctVisibleGhosts(controller, geometry, cam, rect.current, viewport.current, world.current, true);
+        // Coalesce the whole layout: the source may resize after a newly mounted Ghost.
+        // Every settled measurement can correct pending material; no ID is permanently marked done.
+        recordMeasurement(key, geometry.get(key), liveItems.current[key], cam, !!viewport.current?.hasAttribute('data-camera-moving'), () => {
+            const activeCamera = camera.current?.get() ?? cam;
+            if (!gesture.current) correctVisibleGhosts(controller, geometry, activeCamera, rect.current, viewport.current, world.current);
+            refreshVisible(activeCamera, true);
+        });
     }, [controller, geometry, refreshVisible, recordMeasurement]);
     const keepCandidate = useCallback((relationId: string) => keepRelationCandidate(controller, relationId), [controller]);
     const ignoreCandidate = useCallback((relationId: string) => ignoreRelationCandidate(controller, relationId), [controller]);
@@ -636,7 +636,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         return null; const item = items[key]; if (!item)
         return null; return <ThoughtView key={key} item={item} ghost={key in session.ghosts} recalled={session.recalls.includes(key)} selected={ui.selection.includes(key)} settling={ui.spatialTransition?.material === true && ui.spatialTransition.scopeIds.includes(key)} find={findEmphasis(key)} emphasis={!focus.selected.size ? 'normal' : focus.selected.has(key) ? 'selected' : focus.direct.has(key) ? 'direct' : focus.nearby.has(key) ? 'nearby' : focus.peripheral.has(key) ? 'peripheral' : 'receded'} editing={ui.editing === key} level={level} depth={hierarchy.depth.get(key) ?? 0} root={hierarchy.originalRoots.has(key)} parentText={items[hierarchy.parent.get(key) ?? '']?.text} hasChildren={!!hierarchy.children.get(key)?.length} collapsedCount={(hierarchy.children.get(key) ?? []).filter(id => !visibleSet.has(id)).length} onExpand={expandBranch} geometry={geometry} onEdit={handleThoughtEdit} onCancel={handleThoughtCancel} onMeasure={handleGhostMeasured} onHover={setHoveredThought} onReject={key => dismissGhostWithDissolve(controller, key, () => { const state = useUI.getState(); state.patch({ selection: state.selection.filter(id => id !== key) }); })}/>; })}
     {offscreenMatches.map((key, index) => { const edge = recallEdge(project.thoughts[key], stableCamera, rect.current.width, rect.current.height, index); const hit = find?.current === key; return <button className="find-edge" data-current={hit || undefined} key={'find-' + key} style={{ left: edge.x, top: edge.y }} onClick={() => onRevealMatch(key)} title={project.thoughts[key].text}><span aria-hidden="true" style={{ display: 'inline-block', transform: `rotate(${edge.angle}deg)` }}>&#8594;</span> {t(hit ? 'Next match' : 'Match elsewhere')}</button>; })}
-   {Object.values(project.regions).filter(region => level !== 'local' ? disclosedLandmarks.has('region:' + region.id) : ui.regionId === region.id).map(region => <button className="region-label" data-active={ui.regionId === region.id || undefined} onClick={() => onRegion(region.id, { x: region.x, y: region.y })} key={region.id} style={{ transform: `translate(${region.x}px,${region.y}px) scale(var(--inverse-zoom))` }}><span>{t(region.name)}</span><small>{t('{count} thoughts', { count: region.members.length })}</small></button>)}
+   {Object.values(project.regions).filter(region => level === 'atlas' && disclosedLandmarks.has('region:' + region.id)).map(region => <button className="region-label" data-active={ui.regionId === region.id || undefined} onClick={() => onRegion(region.id, { x: region.x, y: region.y })} key={region.id} style={{ transform: `translate(${region.x}px,${region.y}px) scale(var(--inverse-zoom))` }}><span>{t(region.name)}</span><small>{t('{count} thoughts', { count: region.members.length })}</small></button>)}
    {level === 'atlas' && frontiers.filter(key => disclosedLandmarks.has('frontier:' + key)).map(key => { const t = project.thoughts[key]; return <button className="frontier-label" key={'frontier-' + key} onClick={() => { controller.wake(key); ui.patch({ selection: [key] }); camera.current?.set({ x: rect.current.width / 2 - t.x - 128, y: rect.current.height / 2 - t.y - 30, zoom: 1 }); camera.current?.commit(); }} style={{ transform: `translate(${t.x}px,${t.y}px) scale(var(--inverse-zoom))` }}><span aria-hidden="true">&#9671;</span> {semanticExcerpt(t.text, 'atlas', 'thought')}</button>; })}
   </div>
     {hierarchy.children.size > 0 && <div className="hierarchy-disclosure" data-testid="hierarchy-disclosure" role="status">{t('Showing: {levels}', { levels: disclosureState.current.depth >= disclosureState.current.maxDepth ? t('All levels') : disclosureState.current.depth === 0 ? t('Top level') : t('Through level {level}', { level: disclosureState.current.depth + 1 }) })}</div>}

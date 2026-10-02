@@ -103,7 +103,7 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .thought.ghost:hover .proposal-reject, .thought.ghost[data-selected="true"] .proposal-reject, .proposal-reject:focus-visible { opacity: .72; }
 .proposal-reject:hover { color: var(--ink-primary); opacity: 1; }
 .field .thought.ghost { --ghost-unit: 1; padding: calc(12px * var(--ghost-unit)) calc(38px * var(--ghost-unit)) calc(11px * var(--ghost-unit)) calc(20px * var(--ghost-unit)); }
-.field:not([data-level="local"]) .thought.ghost { --ghost-unit: var(--inverse-zoom); }
+.field:not([data-level="local"]) .thought.ghost { --ghost-unit: max(1, calc(.68 * var(--inverse-zoom))); }
 .thought.ghost .proposal-reject { top: calc(7px * var(--ghost-unit)); right: calc(7px * var(--ghost-unit)); width: calc(24px * var(--ghost-unit)); height: calc(24px * var(--ghost-unit)); font-size: calc(18px * var(--ghost-unit)); }
 .thought.ghost .thought-selected-dot { top: calc(38px * var(--ghost-unit)); right: calc(17px * var(--ghost-unit)); width: calc(4px * var(--ghost-unit)); height: calc(4px * var(--ghost-unit)); }
 .field[data-level] .thought.ghost .ghost-label { display: block; }
@@ -200,6 +200,16 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .field[data-hierarchy="true"] .thought[data-size="wide"]:not(.ghost):not(.editing):not(.crystal):not(.source) { width: calc(328px * var(--hierarchy-reading-unit)); }
 .field[data-hierarchy="true"] .thought:not(.ghost) .hierarchy-context { display: grid; grid-template-columns: minmax(0, 1fr); }
 .field[data-hierarchy="true"][data-level] .thought[data-size]:not(.ghost) .thought-preview { max-width: none; }
+
+/* Pending suggestions share a bounded reading footprint across zoom tiers. Metadata keeps
+   its readable screen size, and parent wording gets one stable row rather than wrapping. */
+.field[data-level] .thought.ghost { --ghost-unit: max(1, calc(.68 * var(--inverse-zoom))); font-size: calc(var(--thought-size) * var(--ghost-unit)); padding: calc(12px * var(--ghost-unit)) calc(38px * var(--ghost-unit)) calc(11px * var(--ghost-unit)) calc(20px * var(--ghost-unit)); }
+.field[data-level] .thought.ghost[data-size="compact"] { width: calc(176px * var(--ghost-unit)); }
+.field[data-level] .thought.ghost[data-size="regular"] { width: calc(256px * var(--ghost-unit)); }
+.field[data-level] .thought.ghost[data-size="wide"] { width: calc(328px * var(--ghost-unit)); }
+.field[data-level] .thought.ghost .hierarchy-context { display: grid; grid-template-columns: minmax(0, 1fr); }
+.field[data-level] .thought.ghost .thought-preview { max-width: none; }
+.field[data-level] .thought.ghost .ghost-label { font-size: calc(var(--type-meta-size) * max(1, var(--inverse-zoom))); }
 
 /* --- First-use invitation -------------------------------------------------
    Decoration only, and it lives with the input it points at rather than in the middle of the Field,

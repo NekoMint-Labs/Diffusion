@@ -56,7 +56,7 @@ function estimatedBounds(project: ProjectState, session: SessionState): Record<s
 
 /** Pre-mount placement first chooses a semantic posture, then resolves collisions.
  * Geometry is presentation only: existing canonical coordinates are never rearranged here.
- * Real DOM geometry is still measured after mount and may receive one local correction pass. */
+ * Real DOM geometry is measured after layout; pending arrivals are corrected again when their reading boxes change. */
 export function placePossibility(project: ProjectState, session: SessionState, anchor: Point, ordinal = 0, scopeIds: string[] = [], visibleBounds?: Bounds, text = '', mode: ResultPlacementMode = 'default'): Point {
     const resultSize = estimateItemSize({ text, kind: 'thought' });
     const preferredDistance = RESULT_PREFERRED_DISTANCE;

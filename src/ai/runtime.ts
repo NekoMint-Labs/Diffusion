@@ -7,7 +7,7 @@ import { abortableDelay, type AIProvider } from './contracts.ts';
 import { ThinkingError, failureText, type ThinkingFailure } from './errors.ts';
 import type { Bounds } from '../field/spatial/geometry.ts';
 import { placePossibility } from '../field/spatial/placement.ts';
-import { repeatedWording } from './diversity.ts';
+import { angleAvoidancePrompt, repeatedWording } from './diversity.ts';
 import { registerOperationCancellation } from './operationControl.ts';
 
 /** Names the model that answered alongside the provider, without inventing one the provider never
@@ -111,10 +111,12 @@ export class AIRuntime {
     private hooks: RuntimeHooks;
     private active: AbortController | null = null;
     private serial = 0;
+    private angleScope = '';
+    private recentAngles: string[] = [];
     requestCount = 0;
     constructor(controller: ProjectController, provider: () => Promise<AIProvider>, hooks: RuntimeHooks) { this.controller = controller; this.provider = provider; this.hooks = hooks; }
     cancel() { this.active?.abort(); }
-    dispose() { this.serial++; this.active?.abort(); this.active = null; }
+    dispose() { this.serial++; this.active?.abort(); this.active = null; this.angleScope = ''; this.recentAngles = []; }
 
     private begin(kind: ThinkingOperationKind, scopeIds: string[], parent?: AbortSignal, activity?: ThinkingActivityKind) {
         this.cancel();
@@ -244,7 +246,16 @@ export class AIRuntime {
                 const record = this.controller.getSnapshot().project.sources[source.id];
                 if (record) this.controller.dispatch({ type: 'source.update', source: { ...record, lastSubmitted: { at: Date.now(), provider: provider.label, characters: source.excerpt.length, requestId: started.requestId } } }, 'system');
             }
-            const response = await provider.respond(packet, { kind, text, requestId: started.requestId }, started.abort.signal);
+            // Only this selected, unchanged Angle context remembers prior frames. Thread remains
+            // governed by its frozen manuscript, and Diffuse retains its explicit run-local budget.
+            const angleScope = kind === 'angle' && !options.threadId
+                ? JSON.stringify([packet.projectId, packet.scope, packet.local, packet.continuations, packet.relations, packet.retrieved, packet.permissions]) : null;
+            if (angleScope !== null && angleScope !== this.angleScope) {
+                this.angleScope = angleScope;
+                this.recentAngles = [];
+            }
+            const requestText = angleScope === null ? text : angleAvoidancePrompt(text, this.recentAngles);
+            const response = await provider.respond(packet, { kind, text: requestText, requestId: started.requestId }, started.abort.signal);
             if (started.abort.signal.aborted || started.ticket !== this.serial) {
                 if (started.ticket === this.serial) this.settle(started, 'cancelled');
                 return { status: 'cancelled', emitted };
@@ -263,12 +274,14 @@ export class AIRuntime {
                 .filter(candidate => intentAllowedForAction(kind, candidate.type))
                 .filter(candidate => permissionFor(candidate, packet, this.controller.getSnapshot().project).allowed)
                 .filter(candidate => semanticQualityAllowed(kind, candidate))
+                .filter(candidate => angleScope === null || candidate.type === 'surface_possibility' && !repeatedWording(candidate.text, [...packet.scope.map(item => item.text), ...this.recentAngles]))
                 .filter(candidate => !options.excludeTexts || candidate.type === 'surface_possibility' && !repeatedWording(candidate.text, [...packet.scope.map(item => item.text), ...options.excludeTexts]))
                 .filter(candidate => !options.runId || ['surface_possibility', 'surface_question', 'surface_relation', 'surface_structure', 'respond_in_field', 'surface_evidence', 'request_recall'].includes(candidate.type));
             if (options.threadId) {
                 const body = accepted.map(candidate => 'text' in candidate ? candidate.text : candidate.type === 'surface_relation' ? `${candidate.kind}: ${candidate.label}` : '').filter(Boolean).join('\n\n');
                 if (body) {
                     this.controller.dispatch({ type: 'thread.message', id: options.threadId, message: { id: id('message'), role: 'assistant', text: body, at: Date.now(), provider: provenance } }, 'system');
+
                     emitted++;
                     const thread = this.controller.getSnapshot().project.threads[options.threadId];
                     if (thread) this.controller.dispatch({ type: 'thread.capsule', id: thread.id, capsule: rebuildCapsule(thread, this.controller.getSnapshot().project) }, 'system');
@@ -284,6 +297,9 @@ export class AIRuntime {
                     const candidate = accepted[index];
                     this.emit(candidate, packet, provenance, options, kind, index);
                     if (candidate.type === 'surface_relation') relationLabel = candidate.label;
+                    if (angleScope !== null && candidate.type === 'surface_possibility') {
+                        this.recentAngles = [...this.recentAngles, candidate.text].slice(-6);
+                    }
                     emitted++;
                     if (index < accepted.length - 1) await abortableDelay(220, started.abort.signal);
                 }

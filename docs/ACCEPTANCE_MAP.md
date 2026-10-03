@@ -34,7 +34,7 @@ A useful local interaction and passing fixture-backed gates do not establish rep
 | Issue criterion | Implemented / exercised | Remaining before closeout |
 |---|---|---|
 | A1 — distinct action semantics | Dedicated Continue, Angle, Question, Relation, Organize and Diffuse contracts; typed output permissions; scoped continuation background | Compare the applicable actions on the same real problem/selection with the live provider. Prompt wording alone is insufficient. |
-| A2 — no paraphrase regression | Run-local bounded avoidance wording and conservative literal-repeat exclusion; ignored proposals remain excluded within that run | Repeated live outputs must be reviewed for synonym rewrites, generic prompts, filler and premature conclusions. The lexical filter is not a semantic-paraphrase detector. |
+| A2 — no paraphrase regression | Run-local bounded avoidance wording and conservative literal-repeat exclusion; repeated explicit Angle requests remember at most six prior frames for unchanged selected context, including ignored proposals, as negative data only | Repeated live outputs must be reviewed for synonym rewrites, generic prompts, filler and premature conclusions. The lexical filter is not a semantic-paraphrase detector. |
 | A3 — possibility quality | One proposal per exploration step, explicit direction/time budgets, honest empty-result feedback | Record whether each real result is relevant, concrete, non-trivial, concise and uncertain enough; a positive general usability report does not replace this review. |
 | A4 — user agency | Core permission gates; Keep/Ignore and reopen paths; canonical source/camera invariants in mounted regression tests | Include both decisions in the real-scenario trial; never treat a selected Ghost or successful request as commitment. |
 | A5 — three real scenario categories | Product direction and the contributor's technical research are available as candidate scenarios | Complete product/project, technical trade-off and unfamiliar complex-judgment trials, using actual problems rather than authored toy examples. |
@@ -47,7 +47,13 @@ Portable regression coverage includes [bounded diversity](../tests/unit/diffuseD
 [persisted responses](../tests/e2e/response.spec.ts) and
 [visible continuation placement](../tests/e2e/continuationPlacement.spec.ts).
 
-The current live trial on 2026-10-03 stopped on DeepSeek authentication failure before returning a
-usable result. A2/A3/A5 remain unverified. No credentials or private scenario transcripts are tracked.
-Further changes should address observed failures in this matrix rather than add unrelated features.
+The 2026-10-03 trial initially stopped on DeepSeek authentication failure. After the contributor
+configured the session, limited real outputs were captured and reviewed. Repeated Angle frames and
+an Organize proposal that treated compatible approaches as alternatives motivated focused repairs.
+Organize now asks for a supported unresolved premise or evidence gap, preserving conditional concerns
+and allowing no note rather than inventing one. Growing anchored surfaces recompute their position so
+controls remain within the viewport. These samples do not establish A2/A3/A5 across three real
+scenario categories; the complete repeated matrix and uploaded-head CI remain outstanding.
+No credentials or private scenario transcripts are tracked. Public tests use authored fixtures and
+prove boundaries, geometry and lifecycle, not semantic originality or scientific correctness.
 Keep Issue #10 open until its acceptance is supported and the owner explicitly requests closure.

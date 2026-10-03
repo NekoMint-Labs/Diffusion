@@ -96,3 +96,32 @@ test('an empty Continue clearly reports no new card without moving the source or
     expect(await page.locator('.world').evaluate(element => (element as HTMLElement).style.transform)).toBe(transform);
     await page.screenshot({ path: testInfo.outputPath('no-new-card-feedback.png') });
 });
+
+test('a second explicit Angle request avoids an ignored frame without expanding owned scope', async ({ page }) => {
+    const requests: { packet: ContextPacket; intent: UserIntent }[] = [];
+    const text = 'An authored alternative frame about the cost of attention.';
+    await page.route('**/api/respond', async route => {
+        requests.push(route.request().postDataJSON());
+        await route.fulfill({ json: { providerLabel: 'Repeated Angle fixture / not live', mock: true, intents: [{ type: 'surface_possibility', text }] } });
+    });
+    const source = page.locator('[data-thought-id="attention"]');
+    await source.click();
+    await page.getByTestId('scope-angle').click();
+    await page.getByRole('button', { name: '1', exact: true }).click();
+    await page.getByTestId('action-preview-run').click();
+    const ghost = page.locator('.thought.ghost');
+    await expect(ghost).toHaveCount(1);
+    await ghost.click({ button: 'right' });
+    await page.getByTestId('thought-menu').getByRole('menuitem', { name: 'Ignore', exact: true }).click();
+    await expect(ghost).toHaveCount(0);
+    await source.click();
+    await page.getByTestId('scope-angle').click();
+    await page.getByRole('button', { name: '1', exact: true }).click();
+    await page.getByTestId('action-preview-run').click();
+    await expect(page.locator('.notice[role="status"]')).toContainText('No new suggestion was surfaced this time.');
+    expect(requests).toHaveLength(2);
+    expect(requests[1].packet).toEqual(requests[0].packet);
+    expect(JSON.stringify(requests[1].packet)).not.toContain(text);
+    expect(requests[1].intent.text).toContain(text);
+    await expect(ghost).toHaveCount(0);
+});

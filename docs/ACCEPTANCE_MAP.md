@@ -90,7 +90,7 @@ A useful local interaction and passing fixture-backed gates do not establish rep
 | Issue criterion | Implemented / exercised | Remaining before closeout |
 |---|---|---|
 | A1 — distinct action semantics | Dedicated Continue, Angle, Question, Relation, Organize and Diffuse contracts; typed output permissions; scoped continuation background | Compare the applicable actions on the same real problem/selection with the live provider. Prompt wording alone is insufficient. |
-| A2 — no paraphrase regression | Run-local bounded avoidance wording and conservative literal-repeat exclusion; repeated explicit Angle requests remember at most six prior frames for unchanged selected context, including ignored proposals, as negative data only | Repeated live outputs must be reviewed for synonym rewrites, generic prompts, filler and premature conclusions. The lexical filter is not a semantic-paraphrase detector. |
+| A2 — no paraphrase regression | Run-local bounded avoidance wording; Continue, Angle and Question discard echoes of request-supplied thoughts and pending Ghosts attached to the selected scope, plus same-response literal repeats, after conservative Unicode/whitespace/punctuation normalization. Repeated explicit Angle requests remember at most six prior frames for unchanged selected context, including ignored proposals, as negative data only; Ask rejects a small exact set of context-free Chinese/English opener questions after Unicode and punctuation normalization | Repeated live outputs must be reviewed for synonym rewrites, generic prompts, filler and premature conclusions. These literal filters do not detect semantic paraphrases. |
 | A3 — possibility quality | One proposal per exploration step, explicit direction/time budgets, honest empty-result feedback | Record whether each real result is relevant, concrete, non-trivial, concise and uncertain enough; a positive general usability report does not replace this review. |
 | A4 — user agency | Core permission gates; Keep/Ignore and reopen paths; canonical source/camera invariants in mounted regression tests | Include both decisions in the real-scenario trial; never treat a selected Ghost or successful request as commitment. |
 | A5 — three real scenario categories | Product direction and the contributor's technical research are available as candidate scenarios | Complete product/project, technical trade-off and unfamiliar complex-judgment trials, using actual problems rather than authored toy examples. |
@@ -113,3 +113,21 @@ scenario categories; the complete repeated matrix and uploaded-head CI remain ou
 No credentials or private scenario transcripts are tracked. Public tests use authored fixtures and
 prove boundaries, geometry and lifecycle, not semantic originality or scientific correctness.
 Keep Issue #10 open until its acceptance is supported and the owner explicitly requests closure.
+
+
+### Remaining Issue #10 closeout trial
+
+For each of the three real scenario categories, retain the person's actual starting selection and
+compare applicable actions on that same scope: Continue should add a consequence or constraint;
+Angle should change the frame; Question should expose an assumption or missing distinction;
+Relation needs multiple suitable thoughts; Organize should reveal existing structure; Diffuse
+should stay within its explicit budget. Repeat Continue and Angle with unchanged owned scope,
+including an ignored suggestion, to check whether a different wording still repeats the same frame.
+
+Record provider/model, candidate revision, action, repeat index and a brief assessment of relevance,
+novelty, specificity, concision and preserved uncertainty. Include both Ignore and Keep/Claim,
+checking original wording, stored positions and camera before and after. A useful empty result is
+allowed; do not count it as a novel possibility. Keep private prompts, outputs and screenshots
+local; publish only contributor-approved anonymized observations. A deterministic fixture verifies
+filtering and lifecycle, never the semantic scores in this trial. A2/A3/A5 remain unverified until
+the repeated live results support them.

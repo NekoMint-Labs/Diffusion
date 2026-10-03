@@ -38,6 +38,23 @@ describe('Phase 3A action permissions and operation lifecycle', () => {
         expect(semanticQualityAllowed('question', { type: 'surface_question', text: '如果只能先验证一件事，哪条证据会改变你对这个方向的判断？' })).toBe(true);
     });
 
+    it('rejects only exact context-free Ask openers across punctuation and language', () => {
+        const generic = [
+            '你想聊些什么？',
+            '你想从哪里开始！',
+            '  WHAT WOULD YOU LIKE TO EXPLORE?  ',
+            'Is there anything else you want to know?',
+        ];
+        for (const text of generic) {
+            expect(semanticQualityAllowed('question', { type: 'surface_question', text })).toBe(false);
+        }
+        for (const text of [
+            '如果只能先验证一件事，哪条证据会改变你对这个方向的判断？',
+            'Which measurement would distinguish view-selection gains from extra compute?',
+        ]) {
+            expect(semanticQualityAllowed('question', { type: 'surface_question', text })).toBe(true);
+        }
+    });
     it('drops an out-of-mode Deep Dive request even when it is globally legal', async () => {
         const controller = new ProjectController(project(), async () => {});
         const routed: string[] = [];

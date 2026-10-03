@@ -58,7 +58,7 @@ usable; switching Field Style resets that layer's failure boundary.
 
 `DiffuseSession` owns a run-local list of surfaced wording, including subsequently ignored Ghosts. It supplies at most six short JSON-quoted excerpts as untrusted negative constraints in the existing intent text, never as owned scope, background, evidence or durable history. Each step may surface at most one possibility; default three directions remain bounded by the explicit direction/time budget. Pause/resume retain the exclusions; a new run resets them. An empty, invalid or repeated step ends without automatic replacement requests. `surfaced` counts actual proposals independently of attempted `used` steps.
 
-The runtime exclusion is deliberately lexical (normalized whitespace/case and terminal punctuation), including verbatim selected-scope copies. It preserves internal technical operators and does not assert semantic paraphrase detection. Diverse framing is an action contract that still requires repeated live-model evaluation. The request schema, provider boundary, canonical state, web permissions and user commitment path are unchanged.
+The runtime exclusion is deliberately lexical (normalized Unicode, whitespace/case and terminal punctuation), covering verbatim copies of request-supplied thoughts and pending Ghosts attached to the selected scope for Continue, Angle and Question. Unrelated canvas thoughts and proposals are outside the duplicate check. It preserves internal technical operators and does not assert semantic paraphrase detection. Diverse framing is an action contract that still requires repeated live-model evaluation. The request schema, provider boundary, canonical state, web permissions and user commitment path are unchanged.
 
 ## Threads and depth
 

@@ -6,7 +6,7 @@ import { failureText } from '../../ai/errors.ts';
 import type { CredentialStore } from '../../credentials/contracts.ts';
 import { BuiltInDiscoveryRuntime, CustomDiscoveryRuntime, type DiscoveryRuntime } from '../../discovery/runtime.ts';
 import { DiscoveryEvidenceProvider } from '../../discovery/engine.ts';
-import { discoveryAvailable, type DiscoveryStatus } from '../../discovery/contracts.ts';
+import { customDiscoveryURL, discoveryAvailable, type DiscoveryStatus } from '../../discovery/contracts.ts';
 import { SourceParser } from '../../evidence/parser.ts';
 import { SourceImporter } from '../../evidence/importer.ts';
 import type { ProjectController } from '../../core/controller.ts';
@@ -73,7 +73,7 @@ export function useThinkingService({ controller, repository, settings, settingsR
     const engine = useMemo<DiscoveryRuntime | null>(() => {
         if (!settings.discovery.external || !discoveryAvailable(discovery)) return null;
         if (discovery.engine === 'built-in' && runTimes.builtIn) return new BuiltInDiscoveryRuntime(runTimes.builtIn);
-        if (discovery.engine === 'custom' && settings.discovery.customUrl) return new CustomDiscoveryRuntime(settings.discovery.customUrl);
+        if (discovery.engine === 'custom' && settings.discovery.customUrl) return new CustomDiscoveryRuntime(customDiscoveryURL(settings.discovery.customUrl));
         return null;
     }, [settings.discovery.external, settings.discovery.customUrl, discovery.engine, discovery.ready.length, runTimes.builtIn]);
     const evidence = useMemo(() => engine ? new DiscoveryEvidenceProvider(engine) : null, [engine]);

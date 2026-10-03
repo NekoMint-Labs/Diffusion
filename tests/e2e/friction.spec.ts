@@ -291,12 +291,9 @@ test('an unusable custom discovery address is never reported as available', asyn
     await expect(search.getByTestId('discovery-status')).toContainText('The discovery address is not usable');
     await search.getByTestId('discovery-url').fill('https://search.example.org/normalized');
     await search.getByTestId('discovery-url').blur();
-    // A usable address with a source that holds no key still cannot search, and says so.
-    await expect(search.getByTestId('discovery-status')).toContainText('A key is still needed');
-    await expect(search.getByTestId('discovery-status')).not.toContainText('Available');
-    // Configuration is insufficient evidence: the explicit test must actually return a result.
-    await search.getByTestId('source-key-exa').fill('exa-key-0123456789');
-    await search.getByTestId('source-key-save-exa').click();
+    // The custom endpoint owns its credentials; local built-in keys do not gate it.
+    await expect(search.getByTestId('source-key-exa')).toHaveCount(0);
+    await expect(search.getByTestId('discovery-missing-key')).toHaveCount(0);
     await expect(search.getByTestId('discovery-status')).toContainText('Not tested');
     await expect(search.getByTestId('search-test')).toBeEnabled();
 });

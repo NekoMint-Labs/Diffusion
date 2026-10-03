@@ -179,3 +179,35 @@ it('caps ordinary hierarchy reading while retaining the flat Field manual wheel 
     expect(hierarchyWheelZoom(1, 0, 0, -120, 1)).toBeGreaterThan(1);
     expect(hierarchyWheelZoom(2.5, 0, 0, -120, 1)).toBe(2.5);
 });
+
+
+it('keeps first non-source Atlas anchors through source-only ancestry and excludes deeper detail from fit', () => {
+    const items = {
+        source: { ...makeThought('Source', { x: 100, y: 100 }, 1, 'source'), kind: 'source' as const },
+        nested: { ...makeThought('Nested source', { x: 150, y: 100 }, 1, 'nested'), kind: 'source' as const, derivedFrom: ['source'] },
+        a: { ...makeThought('Branch anchor', { x: 400, y: 200 }, 1, 'a'), derivedFrom: ['nested'], sourceId: 'document', origin: { sourceId: 'document' } },
+        b: { ...makeThought('Deep descendant', { x: 9000, y: 9000 }, 1, 'b'), derivedFrom: ['a'] },
+        sibling: { ...makeThought('Other branch', { x: 800, y: 200 }, 1, 'sibling'), derivedFrom: ['source'] },
+        g: { id: 'g', text: 'Pending', x: 1000, y: 300, createdAt: 1, scopeIds: ['a'] },
+    };
+    const hierarchy = thoughtHierarchy(items), before = JSON.stringify(items);
+    const base = { items, hierarchy, found: Object.keys(items), viewport: { width: 1440, height: 960 }, depth: 0, selection: [], editing: null, recalls: [], expanded: new Set<string>(), measured: () => undefined };
+    for (const zoom of [.08, .16, .25]) {
+        const result = discloseHierarchy({ ...base, camera: { x: 0, y: 0, zoom } });
+        expect(result.visible).toEqual(['a', 'sibling']);
+        expect(result.eligible.sort()).toEqual(['a', 'sibling']);
+        expect(result.hidden).toEqual(expect.arrayContaining(['source', 'nested', 'b', 'g']));
+        expect(result.suggestions).toEqual(['g']);
+        const culled = discloseHierarchy({ ...base, found: ['b', 'g'], camera: { x: 0, y: 0, zoom } });
+        expect(culled.visible).toEqual([]);
+        expect(culled.eligible.sort()).toEqual(['a', 'sibling']);
+    }
+    expect(discloseHierarchy({ ...base, branches: { source: false }, camera: { x: 0, y: 0, zoom: .16 } }).eligible).toEqual([]);
+    expect(discloseHierarchy({ ...base, branches: { a: false }, camera: { x: 0, y: 0, zoom: .16 } }).visible).toEqual(['a', 'sibling']);
+    expect(discloseHierarchy({ ...base, depth: 4, camera: { x: 0, y: 0, zoom: 1 } }).visible).toEqual(Object.keys(items).sort());
+    expect(JSON.stringify(items)).toBe(before);
+    expect(hierarchy.parent.get('a')).toBe('nested'); expect(hierarchy.depth.get('a')).toBe(2);
+    // An explicit organizational parent is authoritative; provenance alone must not promote it.
+    Object.assign(items.a, { organizingParentId: 'sibling' });
+    expect(discloseHierarchy({ ...base, hierarchy: thoughtHierarchy(items), camera: { x: 0, y: 0, zoom: .16 } }).visible).toEqual(['sibling']);
+});

@@ -2,6 +2,8 @@
 
 Windows x64，2026-10-02。此安装包包含 Issue #11 的全部已实现优化及后续反馈修复，源码位于组织仓库的 `codex/issue11-feedback-repairs` 分支，审查入口为 [PR #17](https://github.com/NekoMint-Labs/Diffusion/pull/17)。前置界面优化位于依赖 PR #13–#16，均已包含在安装包中。
 
+**版本说明（2026-10-03）：** 本文下载入口与下方截图对应旧安装包 `05c4144`，不包含其后的设置/语义缩放、菜单和最终两项评论修复。当前 PR #17 产品候选为 `9377a95c8161e127623401f0db9e14637abe5c98`；本轮修复、回归及尚待完成的 Windows 原生验收见 [复验记录](NATIVE_UX_ACCEPTANCE.md)。旧 Release 未更新，请勿用旧包验收当前候选。
+
 ## 下载与安装
 
 从 [体验版 Release](https://github.com/NekoMint-Labs/Diffusion/releases/tag/issue11-preview-20261002) 下载 `Diffusion-05c4144-three-fixes-x64-setup.exe`。关闭旧版后运行安装包。应用内部版本号仍为 `0.3.0`；本体验版通过发布标签、文件名及源码提交区分。
@@ -31,7 +33,7 @@ Windows x64，2026-10-02。此安装包包含 Issue #11 的全部已实现优化
 
 ## 已执行验证
 
-最新产品源码通过 TypeScript/生产构建、45 个单元测试文件共 338 项、266 项离线契约及源码检查；37 项针对菜单、连续生成、区域、层级、编辑、Find、拖动和主题的浏览器回归通过，另加 3 项菜单实际调用计数检查。Windows release 编译、NSIS 打包、发现引擎源码校验及发行许可证整理完成。
+本安装包产品源码通过 TypeScript/生产构建、45 个单元测试文件共 338 项、266 项离线契约及源码检查；37 项针对菜单、连续生成、区域、层级、编辑、Find、拖动和主题的浏览器回归通过，另加 3 项菜单实际调用计数检查。Windows release 编译、NSIS 打包、发现引擎源码校验及发行许可证整理完成。
 
 此前 `2e34c92` 的完整浏览器套件与线上 CI 已通过；它们是历史证据。当前提交的完整 CI/E2E 结果请查看 [PR #17 检查](https://github.com/NekoMint-Labs/Diffusion/pull/17/checks)。编译和浏览器测试不能代替本安装包的真实中文输入法、原生焦点、系统缩放及在线服务体验。
 

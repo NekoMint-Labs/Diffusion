@@ -75,3 +75,17 @@ allowed; do not count it as a novel possibility. Keep private prompts, outputs a
 local; publish only contributor-approved anonymized observations. A deterministic fixture verifies
 filtering and lifecycle, never the semantic scores in this trial. A2/A3/A5 remain unverified until
 the repeated live results support them.
+
+### 2026-10-03 — one local real-model observation
+
+One bounded Angle run on the contributor's technical-research scenario completed and displayed a single temporary proposal; the browser reported no console errors. DeepSeek had been configured in the app previously, but its model identifier was not rechecked during this run. The proposal offered a potentially useful distinction between two task framings: relevant, concise, and appropriately tentative, but still high-level rather than operational. This is one promising observation only: it does not establish repeated novelty or A2/A3/A5 acceptance. Ignore/Keep was not exercised, and the proposal was left temporary; no canonical state was changed. The prompt, full output, and screenshots remain private and are not recorded here.
+
+### 2026-10-03 — DeepSeek live acceptance pass
+
+The session-held DeepSeek credential was verified through the app's real connection probe. Model discovery returned two provider-supplied IDs; the trial used the configured `deepseek-v4-pro` model after rechecking the discovered list. No credential value, private screenshot, or full provider transcript is recorded here.
+
+- **Technical / unfamiliar judgment — Ask:** on the sparse-view reconstruction and agent-view-selection problem, two live question proposals were surfaced. Both named a concrete uncertainty rather than using a generic opener. One question was ignored and disappeared without changing the selected source; the other was kept and became an ordinary Thought in place, with its question wording retained. This exercises both A4 paths.
+- **Technical / unfamiliar judgment — Continue:** a completed run surfaced bounded continuation material near the selected scope. The run did not mutate canonical authored thoughts; repeated-output review remains open because one pass is not enough to establish A2.
+- **Technical / unfamiliar judgment — Another Angle:** a repeated run completed with no new proposal after the scoped avoidance checks. This is recorded as an honest empty result, not counted as novelty; the UI still needs a human-visible capture of the empty-result notice during a live run.
+
+This pass supports provider connectivity, concrete Ask semantics, agency, and empty-result handling. Product-direction and separate technical-trade-off scenarios, plus repeated Continue/Angle review, remain before A2/A3/A5 can be marked complete.

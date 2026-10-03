@@ -93,8 +93,11 @@ export function semanticQualityAllowed(kind: UserIntent['kind'], candidate: Sema
         if (/^(?:possible|potential)?\s*(?:missing\s+)?(?:link|relation|connection|direction)$/iu.test(label)) return false;
     }
     if (kind === 'question' && candidate.type === 'surface_question') {
-        const value = candidate.text.trim();
-        if (/^(?:你有什么想法|还有什么想法|要不要继续(?:想|探索)|你想(?:继续)?了解(?:一下)?吗)[？?]?$/u.test(value)) return false;
+        const value = candidate.text.normalize('NFKC').toLocaleLowerCase().trim()
+            .replace(/[?？!！。．.]+$/u, '').replace(/\s+/gu, ' ');
+        // These are context-free conversation openers, not questions about the selected thought.
+        // Keep the list exact and small: semantic paraphrase quality still needs live review.
+        if (/^(?:你有什么想法|还有什么想法|你还有什么想法呢|要不要继续(?:想|探索)|你想(?:继续)?了解(?:一下)?吗|你想聊些什么|你想从哪里开始|你想探索什么|你想了解什么|还有什么想了解的吗|你还想了解些什么|what do you think|what would you like to (?:explore|talk about|think about)|is there anything else (?:you(?:'|’)d like to|you want to) (?:explore|know))$/u.test(value)) return false;
         if (/^你现在是想.*(?:做点什么|做什么|了解看看)[？?]?$/u.test(value)) return false;
     }
     return true;

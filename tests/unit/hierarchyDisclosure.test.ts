@@ -21,17 +21,18 @@ it('has stable reversible depth boundaries with a real hysteresis interval', () 
     expect(zoomDepth(.80, 3)).toBe(3);
     expect(zoomDepth(.77, 3)).toBe(2);
 });
-it('discloses by depth while selected, edited, pending and authored roots remain eligible', () => {
+it('discloses by depth with explicit editing exceptions and aggregate-only Atlas suggestions', () => {
     const p = createProject();
     for (const [index, id] of ['a', 'b', 'c', 'd'].entries()) p.thoughts[id] = { ...makeThought(id, { x: index * 1800, y: 100 }, 1, id), ...(index ? { derivedFrom: [String.fromCharCode(96 + index)], generationAction: 'continue' as const } : {}) };
     const ghost: Ghost = { id: 'g', text: 'Pending', x: 0, y: 2300, createdAt: 1, scopeIds: ['d'] };
     const items = { ...p.thoughts, g: ghost }, hierarchy = thoughtHierarchy(items);
     const base = { items, hierarchy, found: Object.keys(items), camera: { x: 40, y: 50, zoom: .08 }, viewport: { width: 1440, height: 960 }, depth: 0, selection: [], editing: null, recalls: [], expanded: new Set<string>(), measured: () => undefined };
-    expect(discloseHierarchy(base).visible).toEqual(['a', 'g']);
+    expect(discloseHierarchy(base).visible).toEqual(['a']);
+    expect(discloseHierarchy(base).suggestions).toEqual(['g']);
     const editing = discloseHierarchy({ ...base, selection: ['c'], editing: 'd' });
     expect(editing.visible).toContain('d');
-    expect([...editing.visible, ...editing.roots].sort()).toEqual(['a', 'b', 'c', 'd', 'g']);
-    expect(discloseHierarchy({ ...base, expanded: new Set(['a']), camera: { x: 40, y: 50, zoom: .10 } }).visible).toEqual(['a', 'b', 'g']);
+    expect([...editing.visible, ...editing.roots].sort()).toEqual(['a', 'b', 'c', 'd']);
+    expect(discloseHierarchy({ ...base, expanded: new Set(['a']), camera: { x: 40, y: 50, zoom: .10 } }).visible).toEqual(['a']);
     p.thoughts.a.organizingParentId = 'd';
     expect(thoughtHierarchy(p.thoughts).originalRoots.has('a')).toBe(true);
 });
@@ -75,8 +76,8 @@ it('keeps every imported depth reachable and reveals protected ancestry without 
     const before = JSON.stringify(items);
     const base = { items, hierarchy: thoughtHierarchy(items), found: Object.keys(items), camera: { x: 0, y: 0, zoom: 1 }, viewport: { width: 1440, height: 1600 }, depth: zoomDepth(2.5, undefined, 11), selection: [], editing: null, recalls: [], expanded: new Set<string>(), measured: () => undefined };
     expect(discloseHierarchy(base).visible).toHaveLength(12);
-    expect(discloseHierarchy({ ...base, depth: 0, selection: ['n3'] }).visible).toEqual(['n0', 'n1', 'n2', 'n3']);
-    expect(discloseHierarchy({ ...base, depth: 0, matches: new Set(['n4']) }).visible).toEqual(['n0', 'n1', 'n2', 'n3', 'n4']);
+    expect(discloseHierarchy({ ...base, depth: 0, selection: ['n3'] }).visible).toEqual(['n0']);
+    expect(discloseHierarchy({ ...base, depth: 0, currentMatch: 'n4' }).visible).toEqual(['n0', 'n1', 'n2', 'n3', 'n4']);
     expect(JSON.stringify(items)).toBe(before);
 });
 it('collapses an adopted original root by its current depth while retaining its discoverable anchor', () => {
@@ -161,7 +162,7 @@ it('strict wheel disclosure hides selected deeper nodes and retains close ancest
     expect(JSON.stringify(items)).toBe(before);
     expect(base.selection).toEqual(['z-root', 'c-third']);
     expect(discloseHierarchy({ ...base, camera: { x: 0, y: 0, zoom: .38 }, depth: 1, editing: 'c-third' }).visible).toContain('c-third');
-    expect(discloseHierarchy({ ...base, camera: { x: 0, y: 0, zoom: .38 }, depth: 1, matches: new Set(['c-third']) }).visible).toContain('c-third');
+    expect(discloseHierarchy({ ...base, camera: { x: 0, y: 0, zoom: .38 }, depth: 1, currentMatch: 'c-third' }).visible).toContain('c-third');
 });
 
 it('caps ordinary hierarchy reading while retaining the flat Field manual wheel range', () => {

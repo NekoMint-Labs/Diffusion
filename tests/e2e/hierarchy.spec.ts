@@ -107,6 +107,7 @@ test('dragging a third thought across a source trace reroutes the trace before c
     const route = page.locator('[data-causal-id="causal:a:b"] .causal-trace-visual');
     // The horizontal fixture first draws estimated boxes, then uses actual text measurements.
     // Capture the measured route so undo is compared with the same geometry on every platform.
+    await page.evaluate(async () => { await document.fonts.ready; await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))); });
     await expect.poll(() => route.evaluate(path => {
         const line = path as SVGGeometryElement;
         const start = line.getPointAtLength(0).matrixTransform(line.getScreenCTM()!);
@@ -117,7 +118,9 @@ test('dragging a third thought across a source trace reroutes the trace before c
         const cx = source.left + source.width / 2, cy = source.top + source.height / 2;
         const dx = target.left + target.width / 2 - cx, dy = target.top + target.height / 2 - cy;
         const distance = Math.min(source.width / 2 / Math.abs(dx), source.height / 2 / Math.abs(dy));
-        return Math.hypot(start.x - (cx + dx * distance), start.y - (cy + dy * distance));
+        const end = line.getPointAtLength(line.getTotalLength()).matrixTransform(line.getScreenCTM()!);
+        const targetDistance = Math.min(target.width / 2 / Math.abs(dx), target.height / 2 / Math.abs(dy));
+        return Math.max(Math.hypot(start.x - (cx + dx * distance), start.y - (cy + dy * distance)), Math.hypot(end.x - (cx + dx - dx * targetDistance), end.y - (cy + dy - dy * targetDistance)));
     })).toBeLessThan(1);
     const original = await route.getAttribute('d');
     const moving = page.locator('[data-thought-id="d"]');
@@ -136,6 +139,9 @@ test('dragging a third thought across a source trace reroutes the trace before c
     await page.screenshot({ path: info.outputPath('drag-obstacle-route.png') });
     await page.mouse.up();
     await page.keyboard.press('Control+z');
+    // The drag can select a relation-probe pair. Selected branch controls change measured height;
+    // compare the restored route under the same unselected presentation as the original capture.
+    await page.getByTestId('field').click({ position: { x: 80, y: 500 } });
     await expect(route).toHaveAttribute('d', original!);
 });
 

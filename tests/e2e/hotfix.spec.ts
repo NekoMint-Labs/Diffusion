@@ -3,8 +3,7 @@ import { choose, openSection } from './selects.ts';
 
 /** Phase 3B.1 hotfix: three behaviours that were fragile in a real session.
  *
- *  - "More" is no longer a hover submenu in its own portal. It is a second page of the same popup,
- *    so moving the pointer toward the advanced rows can never lose the whole menu;
+ *  - More uses a Base UI submenu and safe pointer travel while preserving the primary choices;
  *  - unscoped words are acknowledged locally at once (the composer clears, the person's own
  *    sentence stays visible) and only a later model failure falls back to their wording;
  *  - ordinary unscoped writing performs decomposition only; relation discovery stays an explicit
@@ -172,7 +171,11 @@ test('a compound paragraph becomes several manipulable proposals', async ({ page
         { text: '读研可能让我有更多时间探索', sourceQuotes: ['读研可能让我多一点时间探索'] },
         { text: '我不确定三年研究生值不值', sourceQuotes: ['我也不知道三年到底值不值'] },
     ] }));
-    await expect(page.locator('article.thought.ghost')).toHaveCount(3, { timeout: 15000 });
+    const ghosts = page.locator('article.thought.ghost'), review = page.getByTestId('suggestion-review-toggle');
+    await expect.poll(async () => await ghosts.count() + (await review.count() ? Number((await review.innerText()).match(/\d+/)?.[0] ?? 0) : 0), { timeout: 15000 }).toBe(3);
+    if (await review.count()) await review.click();
+    const represented = [...await ghosts.locator('.thought-preview').allTextContents(), ...await page.getByTestId('suggestion-review').locator('section > p').allTextContents()];
+    expect(represented.sort()).toEqual(['我还没决定要不要考研', '读研可能让我有更多时间探索', '我不确定三年研究生值不值'].sort());
     // The paragraph is not collapsed into one committed Thought: each part stays its own proposal.
     await expect(page.locator('article.thought:not(.ghost)').filter({ hasText: paragraph })).toHaveCount(0);
 });

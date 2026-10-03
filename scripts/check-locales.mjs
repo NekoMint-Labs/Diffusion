@@ -18,10 +18,19 @@ function entries(node) {
     ts.forEachChild(node, entries);
 }
 entries(dictionary);
+const english = ts.createSourceFile('en.ts', fs.readFileSync(path.join(root, 'src/locales/en.ts'), 'utf8'), ts.ScriptTarget.Latest, true);
+const semanticKeys = [];
+function semanticEntries(node) {
+    if (ts.isPropertyAssignment(node) && ts.isStringLiteral(node.name)) semanticKeys.push(node.name.text);
+    ts.forEachChild(node, semanticEntries);
+}
+semanticEntries(english);
 
-const missing = new Map();
+const missing = new Map(semanticKeys.filter(key => !keys.has(key)).map(key => [key, 'src/locales/en.ts']));
 const raw = [];
 const unlocalized = [];
+const metadataFiles = new Set(['src/ai/providers.ts', 'src/discovery/contracts.ts']);
+const descriptiveMetadata = /^(description|keyHint|hint|helpText|message|copy)$/;
 const textAssignments = new Set(['textContent', 'innerText', 'innerHTML']);
 const visibleAttributes = new Set(['aria-label', 'placeholder', 'subtitle', 'title']);
 
@@ -62,8 +71,18 @@ function walk(dir) {
             const file = path.relative(root, full);
             const source = ts.createSourceFile(file, fs.readFileSync(full, 'utf8'), ts.ScriptTarget.Latest, true, full.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
             function visit(node) {
+                // Runtime metadata must carry facts or semantic keys, never prose hidden from JSX scanning.
+                if (metadataFiles.has(file.replaceAll('\\', '/')) && ts.isPropertyAssignment(node)) {
+                    const name = node.name.getText(source).replace(/['"]/g, '');
+                    if (descriptiveMetadata.test(name)) unlocalized.push({ file, kind: 'descriptive-metadata', text: name });
+                    if (name.endsWith('Key')) addMissing(node.initializer, file);
+                }
                 if (ts.isCallExpression(node)) {
-                    if (isTranslation(node)) addMissing(node.arguments[0], file);
+                    if (isTranslation(node)) {
+                        addMissing(node.arguments[0], file);
+                        const argument = node.arguments[0];
+                        if (argument && ts.isPropertyAccessExpression(argument) && argument.name.text === 'keyHint') unlocalized.push({ file, kind: 'dynamic-provider-copy', text: argument.getText(source) });
+                    }
                     else if (isNoticeCall(node) || isFeedbackSetter(node)) addUnlocalized(node.arguments[0], file, isNoticeCall(node) ? 'notice' : 'feedback');
                     else if (ts.isIdentifier(node.expression) && node.expression.text === 'useState' && isPromptState(node)) addUnlocalized(node.arguments[0], file, 'helper');
                 }

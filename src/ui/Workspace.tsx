@@ -134,6 +134,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         selection: { provider: settings.provider, model: settings.model, thinkingDepth: settings.thinkingDepth, gateway: settings.gateway, token: settings.token, baseUrl: settings.baseUrl, protocol: settings.protocol },
         credentials: capabilities.credentials,
         keyPresent: capabilities.storedAIKeys[settings.provider] === true,
+        credentialRevision: capabilities.credentialRevision,
     });
     const { runtime, diffuse, evidence, importer, hooks, stopDiffuseForIntent } = useThinkingService({
         controller, repository, settings, settingsRef,
@@ -232,7 +233,8 @@ export function Workspace({ controller, repository, platform, startupError, onSw
     }
 
     const rename = useFieldRename({ project, controller, focusField: () => field.current?.focus(), announce: notice });
-    const commandContext: CommandContext = { project, selection: ui.selection, editing: ui.editing, surface: ui.surface, canUndo: controller.canUndo, canRedo: controller.canRedo };
+    const activeSelection = ui.selection.filter(id => ui.fieldVisibleIds === null || ui.fieldVisibleIds.includes(id));
+    const commandContext: CommandContext = { project, selection: activeSelection, editing: ui.editing, surface: ui.surface, canUndo: controller.canUndo, canRedo: controller.canRedo };
     const commands = buildCommands({
         // Re-invoking Find must return focus to its query field even while it is already open.
         openSurface: (surface, origin) => { if (surface === 'find')
@@ -279,15 +281,15 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         surfaces.openSurface('settings');
     }
     const actionModel = contextualActionModel(commands, commandContext);
-    const selectedGhosts = ui.selection.map(key => session.ghosts[key]).filter((ghost): ghost is Ghost => !!ghost);
-    const ghostMenu = selectedGhosts.length > 0 && selectedGhosts.length === ui.selection.length && !selectedGhosts.some(ghost => ghost.proposal);
+    const selectedGhosts = activeSelection.map(key => session.ghosts[key]).filter((ghost): ghost is Ghost => !!ghost);
+    const ghostMenu = selectedGhosts.length > 0 && selectedGhosts.length === activeSelection.length && !selectedGhosts.some(ghost => ghost.proposal);
     const ghostQuestion = ghostMenu && selectedGhosts.every(ghost => ghost.proposalKind === 'question');
     const ghostRows = ghostMenu ? [
-        ...(ghostQuestion ? [{ id: 'answer', label: t('Answer'), run: () => handleAIProposalAction(ui.selection, 'answer') }] : []),
-        { id: 'keep', label: t('Keep this'), run: () => handleAIProposalAction(ui.selection, 'keep') },
-        { id: 'ignore', label: t('Ignore'), run: () => handleAIProposalAction(ui.selection, 'ignore') },
-        { id: 'continue', label: t('Continue thinking'), run: () => handleAIProposalAction(ui.selection, 'continue') },
-        { id: 'angle', label: t('Another angle'), run: () => handleAIProposalAction(ui.selection, 'angle') },
+        ...(ghostQuestion ? [{ id: 'answer', label: t('Answer'), run: () => handleAIProposalAction(activeSelection, 'answer') }] : []),
+        { id: 'keep', label: t('Keep this'), run: () => handleAIProposalAction(activeSelection, 'keep') },
+        { id: 'ignore', label: t('Ignore'), run: () => handleAIProposalAction(activeSelection, 'ignore') },
+        { id: 'continue', label: t('Continue thinking'), run: () => handleAIProposalAction(activeSelection, 'continue') },
+        { id: 'angle', label: t('Another angle'), run: () => handleAIProposalAction(activeSelection, 'angle') },
     ] : [];
     const menuItems = ui.menu
         ? scope === 'thought' && ghostMenu ? (ui.menu.mode === 'secondary' ? ghostRows.filter(row => row.id === 'angle' || ghostQuestion && row.id === 'continue') : ghostRows) : scope === 'thought'
@@ -314,6 +316,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         // exploration.
         failure: (failure, subject) => failureNotice(failure, subject, intents.retryable.current),
         anchor: actions.anchor,
+        visibleIds: () => new Set(field.current?.visibleIds() ?? []),
         bounds: () => field.current?.viewBounds() ?? { x: 0, y: 0, width: 1440, height: 900 },
         route: (kind, text, ids, provider) => { if (kind === 'crystal')
             intents.previewCrystal(ids, text);
@@ -347,7 +350,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
   <AnimatePresence initial={false}>
   {ui.menu && <CommandMenu key="menu" anchor={ui.menu.anchor} point={ui.menu.point} rows={menuItems} moreRows={menuMoreItems} scope={ui.menu.scope} note={ui.menu.scope === 'field' ? t('Saved on this device as you work.') : undefined} placement={ui.menu.mode === 'secondary' ? 'right-start' : ui.menu.point ? 'bottom-start' : 'bottom-end'} onClose={() => surfaces.transient.closeMenu(ui.menu!)}/>}
   {ui.surface === 'palette' && <CommandPalette key="palette" commands={commands} context={commandContext} platform={platformKind} onClose={() => surfaces.closeSurface()}/>}
-  {ui.surface === 'settings' && <SettingsSurface key="settings" initialSection={settingsSection} settings={settings} capabilities={thinking.capabilities} check={thinking.check} modelList={thinking.models} modelFailure={thinking.modelFailure} verifying={thinking.busy} configurationChanged={thinking.dirty} storedKeys={capabilities.storedAIKeys} sourceKeys={capabilities.storedSourceKeys} secureStore={buildCapabilities.secureCredentials} discovery={capabilities.status} onChange={updateSettings} onVerify={thinking.verify} onRefreshModels={thinking.refreshModels} onCredentialChange={capabilities.refreshPresence} onClose={() => surfaces.closeSurface()}/>}
+  {ui.surface === 'settings' && <SettingsSurface key="settings" initialSection={settingsSection} settings={settings} capabilities={thinking.capabilities} check={thinking.check} gatewayReachable={thinking.gatewayReachable} modelList={thinking.models} modelFailure={thinking.modelFailure} verifying={thinking.busy} configurationChanged={thinking.dirty} storedKeys={capabilities.storedAIKeys} sourceKeys={capabilities.storedSourceKeys} onTestSearch={capabilities.testSearch} secureStore={buildCapabilities.secureCredentials} discovery={capabilities.status} onChange={updateSettings} onVerify={thinking.verify} onRefreshModels={thinking.refreshModels} onCredentialChange={capabilities.refreshPresence} onClose={() => surfaces.closeSurface()}/>}
   </AnimatePresence>
   </LayoutGroup>
   {/* Owned places recede; a projection anchored to a Thought or a pointer closes at once. */}
@@ -362,7 +365,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
 
   {ui.surface === 'relation' && ui.relationId && <RelationSurface controller={controller} relationId={ui.relationId} anchor={ui.anchor ?? undefined} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'source' && ui.sourceId && project.sources[ui.sourceId] && <SourceSurface source={project.sources[ui.sourceId]} repository={repository} platform={platform} anchor={ui.anchor ?? undefined} onRead={evidence ? signal => importer.read(ui.sourceId!, evidence, '', signal) : undefined} onClose={() => surfaces.closeSurface()}/>}
-  {ui.surface === 'evidence' && <EvidenceSurface onOpen={url => void platform.openExternal(url).catch(error => deviceFailureNotice('link', error))} provider={evidence} initial={ui.selection.map(k => project.thoughts[k]?.text ?? '').join(' ').slice(0, 1000)} scopeIds={[...ui.selection]} onBring={intents.bringEvidence} onConfigure={() => runNoticeAction('search-settings')} onClose={() => surfaces.closeSurface()}/>}
+  {ui.surface === 'evidence' && <EvidenceSurface onOpen={url => void platform.openExternal(url).catch(error => deviceFailureNotice('link', error))} provider={evidence} initial={activeSelection.map(k => project.thoughts[k]?.text ?? '').join(' ').slice(0, 1000)} scopeIds={[...activeSelection]} onBring={intents.bringEvidence} onConfigure={() => runNoticeAction('search-settings')} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'find' && <FindSurface key={findEpoch} query={find.query} count={find.matches.length} index={find.index} onQuery={find.search} onNavigate={find.step} onClose={() => surfaces.closeSurface()}/>}
   <AnimatePresence initial={false}>
   {ui.surface === 'history' && <HistorySurface key="history" project={project} scope={surfaces.historyScope} onClose={() => surfaces.closeSurface()}/>}
@@ -376,7 +379,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
   {ui.surface === 'diffuse' && <DiffuseSurface session={diffuse} project={project} scopeIds={surfaces.diffuseScope} canWeb={!!evidence} onBring={intents.bringEvidence} onClose={() => surfaces.closeSurface(false)}/>}
   <AnimatePresence initial={false}>{ui.surface === 'restore' && <RestoreSurface key="restore" platform={platform} repository={repository} onSwitch={onSwitchProject} onClose={() => surfaces.closeSurface()}/>}</AnimatePresence>
   <DiffuseIndicator session={diffuse} onReview={() => surfaces.openSurface('diffuse')}/>
-    <AnimatePresence initial={false}>{(intents.speakScope !== null || !ui.selection.length) && !isGlobalModal(ui.surface) && !ui.menu && <Speak key="speak" textareaRef={speak} words={intents.words} onWords={intents.setWords} onSubmit={() => intents.submit({ localOnly: tutorial.active })} onStop={() => { stopDiffuseForIntent(); runtime.cancel(); }} onCompose={intents.compose} onExit={intents.exitSpeak} composing={intents.speakScope !== null} empty={!Object.keys(project.thoughts).length && !Object.keys(session.ghosts).length && !(ui.operation?.kind === 'ingest' && ui.operation.phase === 'pending')} typography={settings.thoughtTypography} scopeIds={intents.speakScope ?? []}/>}</AnimatePresence>
+    <AnimatePresence initial={false}>{(intents.speakScope !== null || !activeSelection.length) && !isGlobalModal(ui.surface) && !ui.menu && <Speak key="speak" textareaRef={speak} words={intents.words} onWords={intents.setWords} onSubmit={() => intents.submit({ localOnly: tutorial.active })} onStop={() => { stopDiffuseForIntent(); runtime.cancel(); }} onCompose={intents.compose} onExit={intents.exitSpeak} composing={intents.speakScope !== null} empty={!Object.keys(project.thoughts).length && !Object.keys(session.ghosts).length && !(ui.operation?.kind === 'ingest' && ui.operation.phase === 'pending')} typography={settings.thoughtTypography} scopeIds={intents.speakScope ?? []}/>}</AnimatePresence>
     {(startupError || persistenceError || ui.notice) && <FeedbackLine onBottomHeight={setBottomNoticeHeight} text={persistenceError ? deviceFailureText('save') : t(startupError || ui.notice)} tone={persistenceError || startupError ? 'error' : ui.noticeTone} secondary={ui.notice === t('Demo possibilities / no live model was used.') ? 'demo' : undefined} action={persistenceError ? <Button variant="ghost" size="sm" onClick={() => void fields.exportCanonical()}>{t('Export')}</Button> : ui.noticeAction ? <Button variant="ghost" size="sm" data-testid="notice-action" onClick={() => runNoticeAction(ui.noticeAction!.kind)}>{t(ui.noticeAction.label)}</Button> : undefined}/>}
    <FirstFieldTutorialCoach active={tutorial.active} phase={tutorial.phase} settled={tutorial.settled} onSkip={tutorial.skip} onFinish={tutorial.finish}/>
    <ProgressiveTutorialCoach enabled={!tutorial.active}/>

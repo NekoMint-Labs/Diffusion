@@ -6,6 +6,13 @@ import { correctSevereOverlap } from './spatial/collision.ts';
 import { screenToWorld, viewportBounds, type Bounds } from './spatial/geometry.ts';
 import type { GeometryCache } from './spatial/index.ts';
 
+/** Inputs, surfaces and a long Find result own their scrolling instead of zooming the canvas. */
+export function ownsWheelInput(target: HTMLElement): boolean {
+    if (target.closest('textarea,input,[data-surface]')) return true;
+    const reading = target.closest<HTMLElement>('[data-find="current"] .thought-preview');
+    return !!reading && reading.scrollHeight > reading.clientHeight;
+}
+
 interface ViewportRect { left: number; top: number; width: number; height: number; }
 
 export function correctSingleDraggedThought(positions: Record<string, Point>, bypass: boolean, geometry: GeometryCache, itemIds: string[], camera: Camera, viewport: ViewportRect): string[] {
@@ -104,7 +111,7 @@ export function correctVisibleGhosts(controller: ProjectController, geometry: Ge
     const reserved = [...field?.closest('.app')?.querySelectorAll<HTMLElement>('.identity, .global-actions, [data-testid="speak"], .notice') ?? []]
         .filter(element => element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden')
         .map(element => element.getBoundingClientRect());
-    const snapshot = controller.getSnapshot(), ids = [...Object.keys(snapshot.project.thoughts), ...Object.keys(snapshot.session.ghosts)];
+    const snapshot = controller.getSnapshot(), ids = [...world?.querySelectorAll<HTMLElement>('[data-thought-id]') ?? []].map(element => element.dataset.thoughtId!);
     for (const ghost of Object.values(snapshot.session.ghosts)) {
         if (world?.querySelector(`[data-thought-id="${CSS.escape(ghost.id)}"]`))
             correctMeasuredGhost(ghost.id, controller, geometry, ids, camera, viewport, reserved);

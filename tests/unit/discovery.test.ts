@@ -50,7 +50,7 @@ describe('discoveryInvocation hands the native layer identifiers, never secrets'
         // reappears here, so does the opportunity to read a secret in JavaScript.
         for (const id of DISCOVERY_SOURCE_IDS) {
             const descriptor = DISCOVERY_SOURCES[id];
-            expect(Object.keys(descriptor).sort()).toEqual(['id', 'keyHint', 'label']);
+            expect(Object.keys(descriptor).sort()).toEqual(['id', 'keyUrl', 'label']);
             expect(JSON.stringify(descriptor)).not.toMatch(/_API_KEY|_ENABLED/);
         }
     });

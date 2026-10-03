@@ -13,7 +13,7 @@ export function SuggestionReview({ elementRef, suggestions, thoughts, onAction }
 }) {
     const [open, setOpen] = useState(false);
     return <div ref={elementRef} className="suggestion-review" data-testid="suggestion-review" data-surface="true" onPointerDown={event => event.stopPropagation()} onKeyDown={event => { event.stopPropagation(); if (event.key === 'Escape') { event.preventDefault(); setOpen(false); } }}>
-        <Button variant="ghost" size="sm" data-testid="suggestion-review-toggle" aria-expanded={open} onClick={() => setOpen(!open)}>{t('Review {count} suggestions', { count: suggestions.length })}</Button>
+        <Button variant="ghost" size="sm" className="review-toggle" data-testid="suggestion-review-toggle" aria-expanded={open} onClick={() => setOpen(!open)}>{t('Review {count} suggestions', { count: suggestions.length })}</Button>
         {open && <div className="suggestion-review-list">
             {suggestions.map(ghost => <section key={ghost.id} data-origin-scope={ghost.scopeIds.join(' ')}>
                 <small>{t('AI suggestion · not kept')}</small>

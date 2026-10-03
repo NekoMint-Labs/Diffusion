@@ -96,7 +96,7 @@
 
 /* Settings read as sections of one page. The surface already supplies their outer boundary. */
 .settings-form .ui-surface-group { border: 0; border-radius: 0; background: transparent; overflow: visible; }
-.settings-form .ui-surface-group + .ui-surface-group { border-top: 1px solid var(--boundary); padding-top: var(--space-3); }
+.settings-form .ui-surface-group + .ui-surface-group { padding-top: var(--space-3); }
 .settings-form .ui-surface-group-heading { padding: 8px 0; border: 0; }
 .settings-form .ui-setting-row { padding-inline: 0; }
 .ui-setting-label, .ui-setting-description { overflow-wrap: anywhere; }
@@ -105,3 +105,9 @@
   .ui-setting-control { justify-content: flex-start; flex-wrap: wrap; }
   .ui-setting-control > input, .ui-setting-control .settings-key-row { width: 100%; min-width: 0; }
 }
+
+.api-key-help { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.api-key-help a { color: var(--ink-secondary); text-underline-offset: 3px; }
+.settings-form .ui-setting-row { border-bottom: 0; }
+.settings-form .ui-setting-row + .ui-setting-row { border-top: 0; }
+.settings-form .settings-note { margin: 4px 0 12px; }

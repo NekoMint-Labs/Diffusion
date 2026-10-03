@@ -73,13 +73,15 @@ The first implementation may use a simple grid / bucket. Keep the interface repl
 
 As the user zooms out, representation becomes cheaper:
 
-- Pending Ghost stays directly reviewable, through text or a bounded screen-space entry
+- Pending Ghost: Local full card, Neighborhood excerpt, Atlas summary entry; card and summary are mutually exclusive
 - Only connectors with two disclosed endpoints render
-- Thought full text → shortened → compact root/selected anchor; descendants disclose by depth
+- Thought full text → shortened → compact root anchor; descendants disclose by depth and explicit session folds
 - Crystal → landmark
 - Region → label / landmark
 
 Atlas must not render every project detail simultaneously. Sparse viewports retain readable root excerpts. Dense viewports retain at most 64 reading labels; additional original roots and protected canonical objects share one SVG anchor path and a searchable entry rendering at most 30 results. Local retains its 240-object cap. Pending suggestions remain inspectable without zooming. Depth and collision disclosure are presentation only, with hysteresis and stable source-based hierarchy; neither writes positions. Actual reading measurements supersede estimates after layout, coalesced outside camera animation.
+
+The disclosure projection is shared by rendering, new selection/action scopes, collision placement and camera fitting. Selection alone is not a visibility exception; only editing or explicit navigation can temporarily reveal a target and its necessary ancestors. Hidden descendants do not enlarge normal fit-to-content. Explicit parent folds preserve nested choices and share the existing undo order without entering exports; ordinary wheel steps create no undo entries. Camera positioning uses the measured safe screen area and never rewrites authored coordinates. Secondary metadata is removed in distant views rather than enlarged inversely.
 
 ## 7. Relations
 

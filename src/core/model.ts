@@ -199,6 +199,8 @@ export interface ThinkingOperation {
     resultCount?: number;
 }
 export interface SessionState {
+    /** Explicit branch disclosure is session-only, never portable project data. */
+    branchDisclosure?: Record<string, boolean>;
     ghosts: Record<string, Ghost>;
     phenomena: Record<string, Phenomenon>;
     structures: Record<string, StructureProposal>;

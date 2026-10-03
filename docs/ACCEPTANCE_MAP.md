@@ -5,7 +5,7 @@ This map separates implemented contracts from executed evidence and physical/ope
 | Requirement | Current implementation | Executed evidence | Remaining acceptance |
 |---|---|---|---|
 | Product identity and AI authority | Core permission gates; provider output remains transient until explicit Claim/Bring/confirm | Offline/unit authority, Crystal, Claim, Fork, Diffuse, and mounted browser flows | Real-provider semantic behavior is **UNVERIFIED** |
-| Camera and spatial hot path | One imperative `CameraController`; pointer-frequency work stays outside React state | Camera/interaction unit tests and complete Playwright suite | Native high-DPI/trackpad behavior on Windows is **UNVERIFIED** |
+| Camera and spatial hot path | One imperative `CameraController`; pointer-frequency work stays outside React state | Camera/interaction unit tests and complete Playwright suite | 150% native viewport checks are recorded below; 100%/125% system scale and physical trackpad behavior remain **UNVERIFIED** |
 | Full-bleed Field materials | Paper Texture (default), Topography, Threads, Waves, and Silk are lazy viewport-bounded screen-space renderers; all are pointer-inert presentation outside camera ownership | Field background unit/offline contracts plus production-background and material-gallery Playwright coverage | GPU/driver matrix and extended visual dogfood |
 | Adaptive Thought geometry | Bounded compact/regular/wide sizing; editing freezes width; mounted interaction uses cached DOM measurements, while kind-aware pre-mount/disclosure estimates mirror ordinary, Source, and Crystal CSS widths | Unicode/punctuation/multiline and mixed-kind placement unit cases; edit-stability, lasso, drag, Scope Hub, and semantic-disclosure E2E | Chinese IME in native WebView2 is **UNVERIFIED** |
 | Selection, focus, and relations | Semantic scope without camera travel or AI call; established relations wake; context recedes without disappearing | Unit contracts and mounted interaction/visual E2E | Extended real-project perception review |
@@ -16,8 +16,14 @@ This map separates implemented contracts from executed evidence and physical/ope
 | Persistence and migration | Existing Dexie database, in-place migration, single-flight save queue, portable recovery | Migration/repository tests and mounted browser persistence flows | Multi-tab coordination and measured IndexedDB disk latency |
 | Localization and accessibility | Reactive EN/ZH dictionary, IME guards, semantic roles and focus return | Locale checks and Chromium keyboard/role assertions | Native Chinese IME and screen-reader matrix are **UNVERIFIED** |
 | Browser delivery | Production Vite bundle served to Chromium; full suite uses one worker and no retries | Earlier main stabilization: two complete runs at 148 passed / 8 skipped; Issue #11 candidate results are in STATUS | Broader browser engine matrix |
-| Desktop delivery | One shared frontend, narrow Tauri adapters, freshly rebuilt Windows discovery sidecar | Fresh sidecar build/hash check, 25 Windows native tests and a newly built NSIS installer; earlier installed-client evidence is separate | Repaired installer, real IME, dialogs, credentials and packaged-sidecar runtime remain pending |
+| Desktop delivery | One shared frontend, narrow Tauri adapters, freshly rebuilt Windows discovery sidecar | Fresh sidecar build/hash check, 25 Windows native tests and a newly built NSIS installer; earlier installed-client evidence is separate | Current installer compiled and its release program checked in WebView2; installed-client IME/dialogs/credentials/live sidecar remain pending |
 | Performance and bundle | Grid/culling/measurement boundaries retained; main chunk warning remains visible | Spatial/storage/history benchmarks and successful production build | Main chunk splitting requires measured benefit; no speculative split selected |
+
+## PR #17 Windows review, 2026-10-03
+
+The current pass is recorded in [NATIVE_UX_ACCEPTANCE](NATIVE_UX_ACCEPTANCE.md), including the twelve-comment mapping, current display/undo/camera contract, provider and search checks, source compatibility, and precise reference versus reuse notes. Earlier evidence below describes earlier candidates. The current installer and final command results are identified in [STATUS](../STATUS.md) and its acceptance delivery manifest.
+
+More edge coverage now includes center, all four edges and all four corners with horizontal/diagonal travel, click pinning, keyboard return and exactly-once actions. Added regressions cover nested folds, invisible selected descendants, Atlas card/summary exclusivity, full-row keyboard activation, multi-source preservation, stale requests, empty model lists, refused key storage, provider draft isolation and long-result scrolling. Windows system scaling is recorded separately from browser DPR/media emulation. The requester still owns final native acceptance; no issue close or merge is implied.
 
 ## Stabilization acceptance
 
@@ -61,7 +67,7 @@ Deep hierarchy wheel acceptance also covers a 12-level mounted chain in warm/gra
 
 ### Final collected feedback and organization preview
 
-The current installable preview and source identity are recorded at the top of [STATUS](../STATUS.md#issue-11-current-organization-preview-2026-10-02), with [Chinese experience steps and fixed-size screenshots](ISSUE11_PREVIEW.md). These latest `05c4144` checks supplement the earlier full-suite evidence above.
+The current installable preview and source identity are recorded at the top of [STATUS](../STATUS.md), with [Chinese experience steps and fixed-size screenshots](ISSUE11_PREVIEW.md). These latest `05c4144` checks supplement the earlier full-suite evidence above.
 
 | Final feedback | Reproducible evidence | Remaining boundary |
 |---|---|---|

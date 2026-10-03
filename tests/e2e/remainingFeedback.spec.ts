@@ -30,7 +30,7 @@ async function write(page: Page, x: number, y: number, text: string) {
     return page.locator(`[data-thought-id="${id}"]`);
 }
 
-for (const position of [{ name: 'center', x: 650, y: 420 }, { name: 'bottom', x: 650, y: 830 }, { name: 'right', x: 1190, y: 430 }]) {
+for (const position of [{ name: 'center', x: 650, y: 420 }, { name: 'bottom', x: 650, y: 830 }, { name: 'right', x: 1190, y: 430 }, { name: 'left', x: 60, y: 430 }, { name: 'top', x: 650, y: 100 }, { name: 'top-left', x: 60, y: 100 }, { name: 'top-right', x: 1190, y: 100 }, { name: 'bottom-left', x: 60, y: 830 }, { name: 'bottom-right', x: 1190, y: 830 }]) {
     test(`More supports pointer travel and pinned click at the ${position.name}`, async ({ page }, info) => {
         await prepare(page);
         const thought = await write(page, position.x, position.y, '菜单交互验收');
@@ -43,6 +43,9 @@ for (const position of [{ name: 'center', x: 650, y: 420 }, { name: 'bottom', x:
             await more.hover();
             const panel = page.getByTestId('thought-more-menu');
             await expect(panel).toBeVisible();
+            const bounds = (await panel.boundingBox())!;
+            expect(bounds.x).toBeGreaterThanOrEqual(0); expect(bounds.y).toBeGreaterThanOrEqual(0);
+            expect(bounds.x + bounds.width).toBeLessThanOrEqual(1440); expect(bounds.y + bounds.height).toBeLessThanOrEqual(960);
             const start = (await more.boundingBox())!;
             expect(Math.abs(start.x - before.x)).toBeLessThan(2);
             expect(Math.abs(start.y - before.y)).toBeLessThan(2);
@@ -127,41 +130,40 @@ for (const initialZoom of [1, .4, .08]) {
             await page.getByTestId('scope-continue').click();
             await page.getByTestId('action-preview-run').click();
             const ghost = page.locator('article.ghost');
-            await expect(ghost).toHaveCount(1);
-            await expect(ghost).toContainText(texts[round].slice(0, 12));
-            await settle(page);
-            const boxes = await ghost.evaluate(element => {
-                const g = element.getBoundingClientRect();
-                const overlaps = [...document.querySelectorAll('article.thought:not(.ghost)')].map(node => {
-                    const b = node.getBoundingClientRect();
-                    return Math.max(0, Math.min(g.right, b.right) - Math.max(g.left, b.left)) * Math.max(0, Math.min(g.bottom, b.bottom) - Math.max(g.top, b.top));
+            const toggle = page.getByTestId('suggestion-review-toggle');
+            await expect.poll(async () => await ghost.count() + await toggle.count()).toBe(1);
+            const onCanvas = await ghost.count() === 1;
+            if (onCanvas) {
+                const tier = await page.getByTestId('field').getAttribute('data-level');
+                await expect(ghost).toContainText(texts[round].slice(0, 12)); await settle(page);
+                const boxes = await ghost.evaluate(element => {
+                    const g = element.getBoundingClientRect(), world = new DOMMatrixReadOnly(getComputedStyle(document.querySelector('.world')!).transform);
+                    const overlaps = [...document.querySelectorAll('article.thought:not(.ghost)')].map(node => { const b = node.getBoundingClientRect(); return Math.max(0, Math.min(g.right, b.right) - Math.max(g.left, b.left)) * Math.max(0, Math.min(g.bottom, b.bottom) - Math.max(g.top, b.top)); });
+                    return { width: g.width, height: g.height, overlaps, font: parseFloat(getComputedStyle(element).fontSize) * world.a };
                 });
-                const style = getComputedStyle(element);
-                const world = new DOMMatrixReadOnly(getComputedStyle(document.querySelector('.world')!).transform);
-                const parent = element.querySelector('.hierarchy-parent')!.getBoundingClientRect();
-                const level = element.querySelector('.hierarchy-level')!.getBoundingClientRect();
-                return { width: g.width, height: g.height, overlaps, font: parseFloat(style.fontSize) * world.a, parent: parent.toJSON(), level: level.toJSON() };
-            });
-            await info.attach(`generation-${round}`, { body: JSON.stringify(boxes), contentType: 'application/json' });
-            await page.screenshot({ path: info.outputPath(`generation-${round}.png`) });
-            expect(Math.max(...boxes.overlaps)).toBeLessThanOrEqual(1);
-            expect(boxes.width).toBeLessThanOrEqual(335);
-            expect(boxes.height).toBeLessThanOrEqual(245);
-            expect(boxes.font).toBeGreaterThanOrEqual(10);
-            expect(boxes.parent.width).toBeGreaterThan(50);
-            expect(boxes.parent.bottom).toBeLessThanOrEqual(boxes.level.bottom + 20);
-            await expect(ghost.locator('.ghost-label')).toContainText('尚未保留');
-            await expect(ghost.locator('.hierarchy-parent')).toBeVisible();
-            for (const [id, value] of Object.entries(roots)) expect((await readProject(page)).thoughts[id]).toEqual(value);
-            await ghost.click();
-            if (round === 0) {
-                await page.getByTestId('scope-hub').getByRole('button', { name: '留下', exact: true }).click();
-                await expect(ghost).toHaveCount(0);
-                await expect.poll(async () => Object.keys((await readProject(page)).thoughts).length).toBe(2);
-                await page.locator('article.thought').filter({ hasText: texts[0].slice(0, 12) }).click();
+                expect(Math.max(...boxes.overlaps)).toBeLessThanOrEqual(1);
+                expect(boxes.width).toBeLessThanOrEqual(335); expect(boxes.height).toBeLessThanOrEqual(245); expect(boxes.font).toBeGreaterThanOrEqual(10);
+                if (tier === 'local') { await expect(ghost.locator('.hierarchy-parent')).toBeVisible(); await expect(ghost.locator('.ghost-label')).toContainText('尚未保留'); }
+                else { await expect(ghost.locator('.hierarchy-parent')).toHaveCount(0); await expect(ghost.locator('.proposal-reject')).toHaveCount(0); }
+                await ghost.click();
             } else {
-                await ghost.locator('.proposal-reject').click();
+                await toggle.click(); await expect(page.getByTestId('suggestion-review')).toContainText(texts[round]);
                 await expect(ghost).toHaveCount(0);
+            }
+            await page.screenshot({ path: info.outputPath(`generation-${round}.png`) });
+            for (const [id, value] of Object.entries(roots)) expect((await readProject(page)).thoughts[id]).toEqual(value);
+            if (round === 0) {
+                if (onCanvas) await page.getByTestId('scope-hub').getByRole('button', { name: '留下', exact: true }).click();
+                else await page.getByTestId('suggestion-keep').click();
+                await expect.poll(async () => Object.keys((await readProject(page)).thoughts).length).toBe(2);
+                // New actions use a visible scope; the kept child stays folded at Atlas.
+                await root.click();
+            } else {
+                if (onCanvas) {
+                    await ghost.click({ button: 'right' });
+                    await page.getByTestId('thought-menu').locator('[data-command="ignore"]').click();
+                } else await page.getByTestId('suggestion-ignore').click();
+                await expect(ghost).toHaveCount(0); await expect(toggle).toHaveCount(0);
                 expect(Object.keys((await readProject(page)).thoughts)).toHaveLength(2);
             }
         }

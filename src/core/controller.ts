@@ -13,7 +13,8 @@ export type SaveProject = (state: ProjectState) => Promise<void>;
 const undoable = new Set(['thought.create', 'thought.edit', 'thought.move', 'thought.delete', 'thought.keep', 'thought.release', 'thought.reparent', 'ghost.claim', 'crystal.form', 'crystal.create', 'crystal.continue', 'relation.confirm', 'relation.remove', 'source.add', 'fork.bring', 'field.rename']);
 /** One user-level history step: the Field before the action, plus transient objects it consumed. */
 interface HistoryStep {
-    project: ProjectState;
+    project?: ProjectState;
+    disclosure?: Record<string, boolean>;
     ghosts?: Ghost[];
 }
 export class ProjectController {
@@ -273,10 +274,24 @@ export class ProjectController {
         this.persist();
         this.emit();
     }
+    /** Explicit folding shares deliberate undo order without persisting presentation. */
+    setBranchExpanded(id: string, expanded: boolean): void {
+        if (!this.current.project.thoughts[id] || this.current.session.branchDisclosure?.[id] === expanded) return;
+        this.undoStack.push({ disclosure: { ...this.current.session.branchDisclosure } });
+        if (this.undoStack.length > 60) this.undoStack.shift();
+        this.redoStack = [];
+        this.setSession({ ...this.current.session, branchDisclosure: { ...this.current.session.branchDisclosure, [id]: expanded } });
+    }
     undo() {
         const step = this.undoStack.pop();
         if (!step)
             return;
+        if (step.disclosure) {
+            this.redoStack.push({ disclosure: { ...this.current.session.branchDisclosure } });
+            this.setSession({ ...this.current.session, branchDisclosure: step.disclosure });
+            return;
+        }
+        if (!step.project) return;
         this.redoStack.push({ project: this.current.project, ghosts: step.ghosts });
         this.restore(step.project, 'Reconsidered the last deliberate change');
         if (step.ghosts?.length)
@@ -286,6 +301,12 @@ export class ProjectController {
         const step = this.redoStack.pop();
         if (!step)
             return;
+        if (step.disclosure) {
+            this.undoStack.push({ disclosure: { ...this.current.session.branchDisclosure } });
+            this.setSession({ ...this.current.session, branchDisclosure: step.disclosure });
+            return;
+        }
+        if (!step.project) return;
         this.undoStack.push({ project: this.current.project, ghosts: step.ghosts });
         if (step.ghosts?.length) {
             const ghosts = { ...this.current.session.ghosts };

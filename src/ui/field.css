@@ -334,3 +334,16 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .field-overlay-dock { display: none; position: fixed; z-index: var(--layer-selection); background: var(--field-bg); border-top: 1px solid var(--boundary); pointer-events: none; }
 
 .thought.recall[data-selected="true"] { --thought-ink-presence: 1; color: var(--ink-primary); }
+
+/* Native acceptance: detail disappears with distance; controls keep honest hit areas. */
+.suggestion-review { padding: 0; }
+.suggestion-review .review-toggle { width: 100%; min-height: 36px; padding: 8px 14px; justify-content: flex-start; border-radius: inherit; }
+.suggestion-review-list, .root-review > input { margin: 0 10px 8px; }
+.hierarchy-disclosure { top: auto; bottom: 16px; left: auto; right: 16px; display: flex; gap: 8px; align-items: center; pointer-events: auto; }
+.hierarchy-disclosure button { color: var(--ink-secondary); background: var(--surface-1); border: 1px solid var(--boundary); border-radius: var(--radius-control); padding: 4px 8px; cursor: pointer; }
+.hierarchy-disclosure span { background: var(--surface-1); padding: 4px 8px; }
+.field:not([data-level="local"]) .hierarchy-context { display: none; }
+.field[data-level="atlas"] .thought:not(.editing) .thought-preview { max-height: calc(58px * var(--inverse-zoom)); overflow: hidden; }
+.field[data-level="neighborhood"] .ghost { padding: calc(4px * var(--inverse-zoom)); }
+.field[data-level="neighborhood"] .ghost .thought-preview { max-height: calc(64px * var(--inverse-zoom)); overflow: hidden; }
+.field[data-level] .thought[data-find="current"] .thought-preview { max-height: calc(55vh * var(--inverse-zoom)); overflow-y: auto; }

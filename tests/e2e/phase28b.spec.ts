@@ -50,13 +50,13 @@ test('Search & Evidence is reachable and states its capability before any search
     await openSettings(page);
     await openSection(page, 'search');
     const search = settings(page).locator('#setting-search');
-    await expect(search).toContainText('Search & Evidence');
+    await expect(search).toContainText('Web search');
     // Looking outside the Field is opt-in and off by default, and the status says exactly that.
     await expect(search.getByTestId('external-exploration')).not.toBeChecked();
     const status = search.getByTestId('discovery-status');
     await expect(status).toHaveAttribute('data-tone', 'unconfigured');
     await expect(status).toContainText('Off');
-    await expect(status).toContainText('Nothing outside this Field will be searched');
+    await expect(search.getByTestId('search-test')).toHaveCount(0);
     // With nothing to look outside the Field, there is nothing to configure: no source is offered.
     await expect(search.getByTestId('source-exa')).toHaveCount(0);
 });
@@ -86,8 +86,8 @@ test('enabling a source reveals its key field and says the key is still missing'
     const search = settings(page).locator('#setting-search');
     await search.getByTestId('external-exploration').check();
     await expect(search.getByTestId('source-exa')).toBeVisible();
-    // A source that is off has no key field; turning it on is what asks for the credential.
-    await expect(search.getByTestId('source-key-exa')).toHaveCount(0);
+    // Selecting a source configures it without changing the existing enabled-source set.
+    await expect(search.getByTestId('source-key-exa')).toBeVisible();
     await search.getByTestId('source-exa').check();
     await expect(search.getByTestId('source-key-exa')).toBeVisible();
     // A chosen source is not a ready source, and the note says which is which — in the singular,

@@ -50,7 +50,7 @@ export interface ProviderDescriptor {
     /** Headers a provider requires beyond authentication. */
     extraHeaders: Record<string, string>;
     requiresKey: boolean;
-    keyHint: string;
+    keyUrl: string | null;
     capabilities: ProviderCapabilities;
 }
 
@@ -62,7 +62,7 @@ export const DIRECT_PROVIDERS: Record<DirectProviderId, ProviderDescriptor> = {
         baseUrl: 'https://api.openai.com/v1', editableBaseUrl: false, editableProtocol: false,
         modelsPath: '/models', modelsShape: 'openai', maxTokensField: 'max_output_tokens',
         auth: { header: 'Authorization', prefix: 'Bearer ' }, extraHeaders: {}, requiresKey: true,
-        keyHint: 'Create a key at platform.openai.com. It is stored in this device\u2019s secure store.',
+        keyUrl: "https://platform.openai.com/api-keys",
         capabilities: { modelDiscovery: true, manualModel: true, structuredOutput: true, thinking: { supported: false, modes: [] }, nativeWebSearch: false, vision: true },
     },
     anthropic: {
@@ -75,7 +75,7 @@ export const DIRECT_PROVIDERS: Record<DirectProviderId, ProviderDescriptor> = {
         // documented opt-in for exactly this situation — a desktop shell calling the API with a
         // credential the user holds on their own machine.
         extraHeaders: { 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' }, requiresKey: true,
-        keyHint: 'Create a key at console.anthropic.com. It is stored in this device\u2019s secure store.',
+        keyUrl: "https://console.anthropic.com/settings/keys",
         // Anthropic genuinely exposes a reasoning-effort control (`output_config.effort`), so the
         // depth control means two real things here. Every other provider only gets the output
         // budget, and the UI says so rather than implying parity.
@@ -86,7 +86,7 @@ export const DIRECT_PROVIDERS: Record<DirectProviderId, ProviderDescriptor> = {
         baseUrl: 'https://generativelanguage.googleapis.com/v1beta', editableBaseUrl: false, editableProtocol: false,
         modelsPath: '/models', modelsShape: 'gemini', maxTokensField: 'maxOutputTokens',
         auth: { header: 'x-goog-api-key', prefix: '' }, extraHeaders: {}, requiresKey: true,
-        keyHint: 'Create a key at aistudio.google.com. It is stored in this device\u2019s secure store.',
+        keyUrl: "https://aistudio.google.com/apikey",
         capabilities: { modelDiscovery: true, manualModel: true, structuredOutput: true, thinking: { supported: false, modes: [] }, nativeWebSearch: true, vision: true },
     },
     deepseek: {
@@ -94,7 +94,7 @@ export const DIRECT_PROVIDERS: Record<DirectProviderId, ProviderDescriptor> = {
         baseUrl: 'https://api.deepseek.com', editableBaseUrl: false, editableProtocol: false,
         modelsPath: '/models', modelsShape: 'openai', maxTokensField: 'max_tokens',
         auth: { header: 'Authorization', prefix: 'Bearer ' }, extraHeaders: {}, requiresKey: true,
-        keyHint: 'Create a key at platform.deepseek.com. It is stored in this device\u2019s secure store.',
+        keyUrl: "https://platform.deepseek.com/api_keys",
         capabilities: { modelDiscovery: true, manualModel: true, structuredOutput: true, thinking: { supported: false, modes: [] }, nativeWebSearch: false, vision: false },
     },
     compatible: {
@@ -102,7 +102,7 @@ export const DIRECT_PROVIDERS: Record<DirectProviderId, ProviderDescriptor> = {
         baseUrl: '', editableBaseUrl: true, editableProtocol: true,
         modelsPath: '/models', modelsShape: 'openai', maxTokensField: 'max_tokens',
         auth: { header: 'Authorization', prefix: 'Bearer ' }, extraHeaders: {}, requiresKey: false,
-        keyHint: 'Works with any OpenAI-compatible endpoint, including a local server. Leave blank for an unauthenticated local endpoint.',
+        keyUrl: null,
         capabilities: { modelDiscovery: true, manualModel: true, structuredOutput: true, thinking: { supported: false, modes: [] }, nativeWebSearch: false, vision: false },
     },
 };

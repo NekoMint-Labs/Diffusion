@@ -26,6 +26,7 @@ These files govern implementation. Read the ones your change touches.
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Current implementation ownership and the shared architectural boundaries. The authority on *where code lives and what may not be crossed*. |
 | [CONVENTIONS.md](CONVENTIONS.md) | Repository naming and implementation conventions: TypeScript/React, files, modules, CSS, product identifiers, tests. |
 | [TESTING.md](TESTING.md) | The verification strategy: which layer owns which test, what each command proves, and where its claims stop. |
+| [NATIVE_UX_ACCEPTANCE.md](NATIVE_UX_ACCEPTANCE.md) | PR #17 Windows feedback, repair mapping, reuse/license record and native acceptance limits. |
 | [ACCEPTANCE_MAP.md](ACCEPTANCE_MAP.md) | Product contract → implementation → executed evidence → remaining acceptance. |
 | [VERIFICATION.md](VERIFICATION.md) | Short entry point that routes to the verification, performance, migration and status documents. |
 | [specs/01_PRODUCT_ARCHITECTURE_AND_BOUNDARIES.md](specs/01_PRODUCT_ARCHITECTURE_AND_BOUNDARIES.md) | Product semantics and authority boundaries: the Field, Thought/Ghost/Recall/Crystal, relations, Thread/Deep Dive, evidence, diffusing. |

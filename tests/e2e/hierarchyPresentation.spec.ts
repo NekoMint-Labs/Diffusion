@@ -78,7 +78,7 @@ test('current-parent styles update across the whole branch, history and reopenin
     expect(await lineStyle(page, 'a', 'c')).toEqual(s1);
     expect(await lineStyle(page, 'c', 'd')).toEqual(s2);
     await expect(node(page, 'c').getByTestId('hierarchy-context')).toContainText('第 2 层');
-    await expect(node(page, 'c').getByTestId('hierarchy-context')).toContainText('上级：A 层级想法');
+    await expect(node(page, 'c').getByTestId('hierarchy-context')).toContainText('归属：A 层级想法');
     await expect(node(page, 'c')).toHaveAttribute('data-origin-scope', 'b');
     await page.screenshot({ path: info.outputPath('reparented-current-chain.png') });
     await page.keyboard.press('Control+z');
@@ -149,7 +149,7 @@ test('zoom stages, explicit expansion and Find preserve readable current context
     await page.locator('.find-bar input').fill('D 层级想法');
     await expect(node(page, 'd')).toBeVisible();
     await expect(node(page, 'd').getByTestId('hierarchy-context')).toContainText('第 4 层');
-    await expect(node(page, 'd').getByTestId('hierarchy-context')).toContainText('上级：C 层级想法');
+    await expect(node(page, 'd').getByTestId('hierarchy-context')).toContainText('归属：C 层级想法');
     await expect(node(page, 'd').locator('.thought-preview')).toHaveText('D 层级想法');
     await page.screenshot({ path: info.outputPath('find-deep-current-context.png') });
     await page.keyboard.press('Escape');
@@ -157,7 +157,7 @@ test('zoom stages, explicit expansion and Find preserve readable current context
     await expect(page.locator('.world')).toHaveAttribute('style', camera!);
     await node(page, 'a').getByTestId('branch-expand').click();
     await expect(node(page, 'b')).toBeVisible();
-    await expect(node(page, 'b').getByTestId('hierarchy-context')).toContainText('第 2 层');
+    await expect(node(page, 'b').getByTestId('hierarchy-context')).toHaveCount(0);
     expect(await readThoughts(page)).toBe(before);
 });
 
@@ -191,7 +191,7 @@ test('Find at low zoom reveals full long wording with current parent context', a
     await page.keyboard.press('Control+f');
     await page.locator('.find-bar input').fill('D 深层完整文字');
     await expect(node(page, 'd').locator('.thought-preview')).toHaveText(wording);
-    await expect(node(page, 'd').getByTestId('hierarchy-context')).toContainText('上级：C 层级想法');
+    await expect(node(page, 'd').getByTestId('hierarchy-context')).toContainText('归属：C 层级想法');
     await page.keyboard.press('Escape');
     await expect(node(page, 'd')).toHaveCount(0);
     expect(JSON.parse(await readThoughts(page)).d.text).toBe(wording);

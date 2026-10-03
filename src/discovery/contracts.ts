@@ -18,12 +18,12 @@ export interface DiscoverySourceDescriptor {
      * from, and the credential slot it is stored under, are the native layer's own vocabulary
      * (`src-tauri/src/discovery_env.rs`): a name the webview does not need to know is a name it can
      * never accidentally start filling in. */
-    keyHint: string;
+    keyUrl: string;
 }
 export const DISCOVERY_SOURCES: Record<DiscoverySourceId, DiscoverySourceDescriptor> = {
-    exa: { id: 'exa', label: 'Exa', keyHint: 'exa.ai' },
-    tavily: { id: 'tavily', label: 'Tavily', keyHint: 'tavily.com' },
-    brave: { id: 'brave', label: 'Brave', keyHint: 'brave.com/search/api' },
+    exa: { id: 'exa', label: 'Exa', keyUrl: 'https://dashboard.exa.ai/api-keys' },
+    tavily: { id: 'tavily', label: 'Tavily', keyUrl: 'https://app.tavily.com' },
+    brave: { id: 'brave', label: 'Brave', keyUrl: 'https://api.search.brave.com/app/keys' },
 };
 
 /** Which engine performs discovery. `built-in` is the bundled one and is the normal desktop path;

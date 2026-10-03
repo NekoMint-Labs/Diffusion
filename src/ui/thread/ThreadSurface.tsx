@@ -5,7 +5,7 @@ import type { Point } from '../../core/model.ts';
 import type { ProjectController } from '../../core/controller.ts';
 import type { AIRuntime } from '../../ai/runtime.ts';
 import { useProject } from '../hooks.ts';
-import { useUI } from '../store.ts';
+import { useUI, visibleSelection } from '../store.ts';
 import { Surface } from '../surfaces/Surface.tsx';
 import { Button } from '../primitives/Button.tsx';
 import { SurfaceEmpty } from '../primitives/SurfaceEmpty.tsx';
@@ -72,7 +72,7 @@ export function ThreadSurface({ controller, runtime, threadId, onClose, onFocus,
                 </article>
             </div>
         </Surface>;
-    return <Surface key="thread" title={msg('Thinking with')} subtitle={thread.title} level="split" onClose={onClose} actions={<><Button variant="ghost" size="sm" onClick={() => controller.dispatch({ type: 'thread.scope', id: threadId, ids: ui.selection })}>{msg('Add current selection')}</Button><Button variant="outline" size="sm" onClick={onFocus}>{msg('Go deeper')}</Button></>}>
+    return <Surface key="thread" title={msg('Thinking with')} subtitle={thread.title} level="split" onClose={onClose} actions={<><Button variant="ghost" size="sm" onClick={() => controller.dispatch({ type: 'thread.scope', id: threadId, ids: visibleSelection(ui) })}>{msg('Add current selection')}</Button><Button variant="outline" size="sm" onClick={onFocus}>{msg('Go deeper')}</Button></>}>
         <div className="thread-scope">{scope.map(item => <span key={item.id}>{item.text}</span>)}</div>
         {empty}
         <div className="manuscript">{history}</div>

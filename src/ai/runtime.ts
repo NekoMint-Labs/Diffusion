@@ -26,6 +26,7 @@ export interface RuntimeHooks {
     failure?: (failure: ThinkingFailure, subject: string) => void;
     route: (kind: 'thread' | 'deep' | 'crystal', text: string, scopeIds: string[], provider: string) => void;
     anchor: () => Point;
+    visibleIds?: () => ReadonlySet<string>;
     bounds?: () => { x: number; y: number; width: number; height: number };
 }
 export interface RunOptions extends CompileOptions {
@@ -169,7 +170,7 @@ export class AIRuntime {
                 const unit = extraction.units[index];
                 const key = id('ghost');
                 const snapshot = this.controller.getSnapshot();
-                const point = placePossibility(snapshot.project, snapshot.session, anchor, index, [], this.hooks.bounds?.(), unit.text);
+                const point = placePossibility(snapshot.project, snapshot.session, anchor, index, [], this.hooks.bounds?.(), unit.text, 'default', this.hooks.visibleIds?.());
                 const providerCredit = extraction.providerLabel || provider.label;
                 this.controller.addGhost({
                     id: key, text: unit.text, ...point, createdAt: Date.now(), scopeIds: [],
@@ -297,14 +298,14 @@ export class AIRuntime {
                 const text = candidate.type === 'surface_evidence' ? `${candidate.outcome}: ${candidate.text}` : candidate.text;
                 const proposalAction = action === 'continue' || action === 'angle' ? action : undefined;
                 const mode = candidate.type === 'surface_evidence' ? 'evidence' : action === 'continue' ? 'continue' : action === 'angle' ? 'branch' : 'default';
-                const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), text, mode);
+                const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), text, mode, this.hooks.visibleIds?.());
                 this.controller.addGhost({ id: key, text, ...point, createdAt: Date.now(), scopeIds, runId: options.runId, origin: provenance, proposalKind: 'thought' as const, ...(proposalAction ? { proposalAction } : {}) });
                 options.onEmission?.(key);
                 break;
             }
             case 'surface_question': {
                 const key = id('ghost');
-                const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), candidate.text, 'question');
+                const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), candidate.text, 'question', this.hooks.visibleIds?.());
                 this.controller.addGhost({ id: key, text: candidate.text, ...point, createdAt: Date.now(), scopeIds, runId: options.runId, origin: provenance, proposalKind: 'question', proposalAction: 'question' });
                 options.onEmission?.(key);
                 break;

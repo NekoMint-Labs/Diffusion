@@ -35,6 +35,10 @@ test('Atlas offers readable pending suggestions without manual zoom', async ({ p
     await page.screenshot({ path: info.outputPath('atlas-results.png') });
     await review.getByTestId('suggestion-keep').first().click();
     await expect(page.locator('article.ghost')).toHaveCount(0);
+    // Keep commits the suggestion; Atlas continues to summarize its descendant branch.
+    await expect(page.getByTestId('suggestion-review-toggle')).toHaveCount(0);
+    await expect(page.locator('article.thought').filter({ hasText: '希望能支持按课程分类希望能支持按课程分类课程' })).toHaveCount(0);
+    await page.locator('article.thought').getByTestId('branch-expand').click();
     await expect(page.locator('article.thought').filter({ hasText: '希望能支持按课程分类希望能支持按课程分类课程' })).toBeVisible();
 });
 

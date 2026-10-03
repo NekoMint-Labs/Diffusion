@@ -2,35 +2,33 @@
 
 Diffusion is a quiet thinking medium for ideas before commitment. This file describes the current checkout: what works, which subsystem owns it, what was freshly verified, and what remains incomplete. It is not a changelog. Historical phase reports and prior verification records remain under [`docs/history/`](docs/history/README.md).
 
-## Issue #11 current organization preview (2026-10-02)
+## PR #17 Windows feedback repair pass (2026-10-03)
 
-All implemented Issue #11 changes, including prerequisites #13–#16 and the latest five feedback commits, are available through [PR #17](https://github.com/NekoMint-Labs/Diffusion/pull/17). Organization members can download the [Windows x64 prerelease](https://github.com/NekoMint-Labs/Diffusion/releases/tag/issue11-preview-20261002); the [Chinese preview guide](docs/ISSUE11_PREVIEW.md) lists changes, reproducible steps and two fixed-size fixture screenshots.
+This pass implements the maintainer's twelve-item Windows review on top of `943fd8e`. The [repair and acceptance record](docs/NATIVE_UX_ACCEPTANCE.md) maps each report to its implementation, regressions, reference/reuse boundary and remaining native checks. Source identity, installer SHA-256, screenshots and complete command logs are bundled with the local acceptance delivery; PR #17 remains unmerged and Issue #11 remains open.
 
-The current product source is `05c4144`. The latest repairs stabilize More at viewport edges and during pointer travel, bound Ghost reading geometry, recheck actual pending-suggestion overlap before paint and after later size changes, preserve manual drag placement, and restrict Region labels to Atlas. Earlier local follow-ups supply current-parent depth styling, strict one-level wheel disclosure, shallow-parent retention during collapse and a normal-reading ceiling for deep hierarchies. Existing Thought coordinates and original sources remain intact.
+Visibility now has one projection shared by rendering, selection/action scope, collision and fitting. Local shows full content, Neighborhood shows excerpts, and Atlas aggregates pending suggestions without duplicate cards. Explicit session folds preserve nested choices and use the existing undo order. Camera positioning respects measured UI space without moving authored Thoughts. More uses Base UI's native submenu relationship and collision handling. Settings use a short provider/key/model/test path, and Source history is separate from searchable organization controls. Chinese runtime provider copy uses semantic keys and fixed terminology.
 
-| Current gate | Evidence at `05c4144` |
+| Gate | Current result |
 |---|---|
-| TypeScript / production build | Passed; existing large-chunk warning retained |
-| Unit suite | 45 files / 338 tests passed |
-| Offline / locale / source-size | 266 contracts passed; source checks PASS |
-| Focused mounted browser regression | 37 distinct cases passed: seven final feedback cases, drag ownership, light/dark/reduced motion, hierarchy/presentation, zoomed writing and Find; three menu action-count cases additionally passed |
-| Windows packaging | Release executable and NSIS x64 0.3.0 installer built; bundled discovery source check passed and distribution licenses resolved |
-| Installer identity | `Diffusion-05c4144-three-fixes-x64-setup.exe`, 15,305,013 bytes, SHA-256 `0c4637de19fdad5b2797519c7ddbb437b38b0dce5d675e9f85660661330412a9` |
-| Current complete CI / E2E | See [PR #17 checks](https://github.com/NekoMint-Labs/Diffusion/pull/17/checks); older results below are revision-specific evidence |
+| TypeScript, core, static imports, locale, source size | Passed; 935 locale entries, no missing/dynamic-copy findings |
+| Unit / offline / native Rust | 344 / 266 / 25 passed |
+| Complete E2E with repaired-case reruns | 274 cases have final passing evidence; 0 unresolved failures, 0 skips; raw complete-run and rerun logs retained |
+| Browser size/DPR/theme/motion matrix | 24 passed; browser emulation, separate from Windows system settings |
+| Native WebView2 | 8 combinations passed at actual 150% system scale, 1440×880 and 1280×720, light/dark; reduced motion uses media emulation |
+| Production / Windows NSIS / licenses | Passed; existing >500 kB main-chunk warning; 1000 license files, 5 MPL source records, 0 unresolved |
+| Pending operator acceptance | Windows 100%/125%, real IME, system reduced-motion preference, installed-client dialogs/credentials/live providers and final user experience |
 
-Browser checks retain one worker and zero retries. The generated-response fixtures exercise the actual UI but do not qualify live providers. Source-size growth and small-area overlap have direct unit coverage; early fixed geometry alone did not reliably reproduce the requester's screenshot overlap. First-pass failures exposed pointer/focus and delayed-measurement regressions; final focused runs passed after correction. No private user files or logs are included in the published preview.
-
-The installer includes all product changes through `05c4144`; the subsequent publication commit changes documentation/screenshots only. Earlier locally delivered installers are superseded by this preview. Final native operator acceptance remains open: real IME, focus, OS scaling, native dialogs, credentials, packaged-sidecar runtime and online services are separate checks. This publication does not merge the dependent PR stack or close #11.
+The published [2026-10-02 preview](https://github.com/NekoMint-Labs/Diffusion/releases/tag/issue11-preview-20261002) and its `05c4144` product source are an earlier baseline, not this candidate. Earlier evidence below is revision-specific. A compiled package or browser emulation does not certify native system scaling, real IME, live providers or the requester's final experience acceptance.
 
 ## Issue #11 candidate — acceptance still open
 
 The dependent draft stack is [#13](https://github.com/NekoMint-Labs/Diffusion/pull/13) → [#14](https://github.com/NekoMint-Labs/Diffusion/pull/14) → [#15](https://github.com/NekoMint-Labs/Diffusion/pull/15) → [#16](https://github.com/NekoMint-Labs/Diffusion/pull/16) → [feedback repairs #17](https://github.com/NekoMint-Labs/Diffusion/pull/17). This follow-up starts at `b447da9` and implements the requester's collected items 4–10. The requester explicitly authorized one optional organization field while preserving original sources and older projects. Database names/versions, the portable envelope and public AI APIs are unchanged. Issue #10 model quality and #12 release qualification remain outside this work.
 
-- At Atlas/neighborhood zoom, pending suggestions have a bounded screen-space reading and Keep/Ignore entry. Editing and Find stay discoverable; ordinary wheel steps collapse selected deeper content while retaining the selected scope; completion feedback belongs to the request's frozen scope. Empty, failed, cancelled and late responses remain distinct.
+- At Atlas/neighborhood zoom, pending suggestions have a bounded screen-space reading and Keep/Ignore entry. Editing and Find stay discoverable; ordinary wheel steps collapse selected deeper content while excluding hidden selections from newly issued actions; completion feedback belongs to the request's frozen scope. Empty, failed, cancelled and late responses remain distinct.
 - Scope overflow retains its trigger and last valid rectangle through exit into another surface. Click, hover, keyboard, Escape and existing edit actions remain available.
 - Ghosts use the approved soft paper body, one fine pencil rail, explicit unaccepted wording and reserved dismiss/selection space. Accepted Thought material and in-place commitment remain intact.
 - `thought.reparent` is an explicit user-only, undoable command. Optional `organizingParentId` is separate from `derivedFrom` / `generationAction`; wording, coordinates and child branches do not move. The source inspector and organization control share the existing overflow entry.
-- Ordinary wheel notches zoom in/out and disclose/close exactly one current hierarchy level. Every imported depth has a reachable stable zoom band within normal 100% reading size; repeated upward notches cannot enlarge the hierarchy further. Explicit pinch/manual zoom remains continuous and camera snapshots restore the disclosed level. Level and current-parent labels plus branch counts remain readable below 100% zoom. Dense original roots retain world-coordinate anchors and a searchable reading entry. Cached rendered bounds feed disclosure; there is still one imperative camera and no per-frame React tree update.
+- Ordinary wheel notches zoom in/out and disclose/close exactly one current hierarchy level. Every imported depth has a reachable stable zoom band within normal 100% reading size; repeated upward notches cannot enlarge the hierarchy further. Explicit pinch/manual zoom remains continuous and camera snapshots restore the disclosed level. Secondary level/parent labels are removed in distant views; branch summaries and child counts retain navigation. Dense original roots retain world-coordinate anchors and a searchable reading entry. Cached rendered bounds feed disclosure; there is still one imperative camera and no per-frame React tree update.
 - Parent arrows come only from the current effective hierarchy. Color and line pattern identify the child depth, including descendants of a reparented branch; original source IDs remain in the inspector and semantic relations retain their own layer. Device-local curve/elbow styling cannot edit project data. Boundary routing avoids visible cards, including a third card dragged across an existing trace; impossible routes are omitted while provenance stays available in the inspector.
 - Slate, forest and graphite have distinct blue, green and neutral palettes across surfaces and all five backgrounds; warm paper and custom accent preferences are retained.
 

@@ -238,6 +238,7 @@ test('the editorial hierarchy orders as the design documents it, and the role si
     const sectionTitle = await readRole(page.locator('#setting-appearance > h3'));
     const label = await readRole(page.locator('#setting-appearance .ui-setting-label').first());
     await openSection(page, 'ai');
+    await choose(page, 'provider-select', 'compatible');
     const helper = await readRole(page.locator('#setting-ai .settings-note').first());
     const status = await readRole(page.locator('#setting-ai .status-line').first());
     // The shortcut reference moved out of Settings into its own surface. Its two typographic roles

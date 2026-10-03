@@ -262,6 +262,10 @@ test('continue-thinking proposal does not inherit drag ownership from its source
     const ghost = page.locator(`[data-thought-id="${ghostId}"]`);
     expect((await project(page)).thoughts[ghostId]).toBeUndefined();
 
+    // Pending arrivals get one coalesced collision correction after text/source measurement.
+    // Compare ownership only after that arrival geometry has settled; drag assertions remain exact.
+    let lastBounds = '', stableSince = Date.now();
+    await expect.poll(async () => { const bounds = JSON.stringify(await ghost.boundingBox()); if (bounds !== lastBounds) { lastBounds = bounds; stableSince = Date.now(); } return Date.now() - stableSince; }).toBeGreaterThan(150);
     const anchorStart = await anchorThought.boundingBox();
     const ghostStart = await ghost.boundingBox();
     if (!anchorStart || !ghostStart) throw new Error('proposal bounds unavailable');
@@ -490,7 +494,9 @@ test('Scope Hub follows selection geometry and transfers exact scope to Speak', 
     await expect(page.locator('.thought.ghost').first()).toBeVisible();
     const demoNotice = page.locator('.notice[data-secondary="demo"]');
     await expect(demoNotice).toBeVisible();
-    expect((await demoNotice.boundingBox())!.y).toBeLessThan(100);
+    const noticeBox = (await demoNotice.boundingBox())!, titleBox = (await page.locator('.identity').boundingBox())!;
+    expect(noticeBox.y).toBeGreaterThan(titleBox.y + titleBox.height);
+    expect(noticeBox.y + noticeBox.height).toBeLessThanOrEqual(page.viewportSize()!.height);
     expect((await project(page)).thoughts.attention).toMatchObject({ x: before.thoughts.attention.x, y: before.thoughts.attention.y });
     // The feedback/coaching lane may reserve the bottom of the window. Clear scope in
     // the actual Field, rather than clicking a fixed window coordinate outside it.

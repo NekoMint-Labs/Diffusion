@@ -1,14 +1,15 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Combobox } from '@base-ui/react/combobox';
 import { t as msg } from '../../shared/i18n.ts';
 import type { Settings } from '../settings.ts';
-import { UNKNOWN_CAPABILITIES, type ConnectionCheck, type ThinkingCapabilities } from '../../ai/contracts.ts';
+import { type ConnectionCheck, type ThinkingCapabilities } from '../../ai/contracts.ts';
 import { DIRECT_PROVIDER_IDS, DIRECT_PROVIDERS, WIRE_PROTOCOLS, type DirectProviderId, type ProviderId, type WireProtocol } from '../../ai/providers.ts';
 import { failureText, type ThinkingFailure } from '../../ai/errors.ts';
 import { aiCredential, type CredentialId } from '../../credentials/contracts.ts';
 import { Select } from '../primitives/Select.tsx';
 import { StatusLine, type StatusTone } from '../primitives/Status.tsx';
 import { Button } from '../primitives/Button.tsx';
+import { ApiKeyLink } from '../primitives/ApiKeyLink.tsx';
 import { SettingRow } from '../primitives/SettingRow.tsx';
 import { SurfaceGroup } from '../primitives/SurfaceGroup.tsx';
 
@@ -23,16 +24,6 @@ const PROVIDER_LABEL: Record<ProviderId, string> = {
     deepseek: 'DeepSeek',
     compatible: 'OpenAI compatible',
     gateway: 'Diffusion Gateway',
-};
-const PROVIDER_HINT: Record<ProviderId, string> = {
-    off: 'Thinking is off. The Field stays manual: nothing is sent anywhere.',
-    demo: 'Demo mode answers with authored example text. It is not a model and does not search the web.',
-    openai: 'Uses your OpenAI account directly. No gateway or build configuration is needed.',
-    anthropic: 'Uses your Anthropic account directly. No gateway or build configuration is needed.',
-    gemini: 'Uses your Google AI account directly. No gateway or build configuration is needed.',
-    deepseek: 'Uses your DeepSeek account directly through the OpenAI-compatible interface.',
-    compatible: 'Any OpenAI-compatible endpoint, including a local server you run yourself.',
-    gateway: 'A Diffusion Gateway you or your team operates. Useful for shared secrets, policy and browser deployments.',
 };
 
 /** Escape belongs to the product, not to a closed suggestion list.
@@ -77,10 +68,11 @@ function escapeFromAClosedList(open: boolean) {
  *    a reasoning control, changes nothing but length. A provider that really reasons (Anthropic)
  *    keeps its control in the normal path, where it means something.
  */
-export function AISettings({ settings, capabilities, check, modelList, modelFailure, verifying, configurationChanged, storedKeys, secureStore, onChange, onVerify, onRefreshModels, onCredentialChange }: {
+export function AISettings({ settings, capabilities, check, gatewayReachable = false, modelList, modelFailure, verifying, configurationChanged, storedKeys, secureStore, onChange, onVerify, onRefreshModels, onCredentialChange }: {
     settings: Settings;
     capabilities: ThinkingCapabilities | null;
     check: ConnectionCheck | null;
+    gatewayReachable?: boolean;
     modelList: string[] | null;
     /** Why the last model listing failed, when it did. Never a reason to block manual entry. */
     modelFailure: ThinkingFailure | null;
@@ -91,7 +83,7 @@ export function AISettings({ settings, capabilities, check, modelList, modelFail
     onChange: (settings: Settings) => void;
     onVerify: () => void;
     onRefreshModels: () => void;
-    onCredentialChange: () => void;
+    onCredentialChange: () => void | Promise<void>;
 }) {
     const [keyDraft, setKeyDraft] = useState('');
     const [keyError, setKeyError] = useState('');
@@ -102,6 +94,9 @@ export function AISettings({ settings, capabilities, check, modelList, modelFail
     const [modelOpen, setModelOpen] = useState(false);
     const set = <K extends keyof Settings>(key: K, value: Settings[K]) => onChange({ ...settings, [key]: value });
     const provider = settings.provider;
+    const currentProvider = useRef(provider);
+    currentProvider.current = provider;
+    useEffect(() => { setKeyDraft(''); setKeyError(''); setModelOpen(false); }, [provider]);
     const direct = (DIRECT_PROVIDER_IDS as string[]).includes(provider) ? DIRECT_PROVIDERS[provider as DirectProviderId] : null;
     const keyPresent = storedKeys[provider] === true;
     const credentialId: CredentialId | null = direct ? aiCredential(direct.id) : null;
@@ -125,7 +120,7 @@ export function AISettings({ settings, capabilities, check, modelList, modelFail
             if (draft.length < 8) { setKeyError(msg('That key looks too short. Check it and try again.')); return false; }
             await store.store(credentialId, draft);
             setKeyDraft('');
-            onCredentialChange();
+            await onCredentialChange();
             return true;
         }
         catch { setKeyError(msg('The credential store refused the change.')); return false; }
@@ -137,16 +132,22 @@ export function AISettings({ settings, capabilities, check, modelList, modelFail
             const store = await createCredentialStore(secureStore);
             await store.forget(credentialId);
             setKeyDraft('');
-            onCredentialChange();
+            await onCredentialChange();
         }
         catch { setKeyError(msg('The credential store refused the change.')); }
     }
     /** A deliberate check acts on what the person can see: a key still sitting in the field is
      * committed first, so Test connection never reports on a configuration that is not on screen. */
-    async function withTypedKey(run: () => void): Promise<void> {
+    const latestActions = useRef({ onVerify, onRefreshModels });
+    latestActions.current = { onVerify, onRefreshModels };
+    async function withTypedKey(action: 'connection' | 'models'): Promise<void> {
+        const requestedProvider = provider;
         if (keyDraft.trim() && !await saveKey())
             return;
-        run();
+        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+        if (requestedProvider !== currentProvider.current) return;
+        if (action === 'connection') latestActions.current.onVerify();
+        else latestActions.current.onRefreshModels();
     }
 
     /** The honest state vocabulary. "Ready" is only ever shown after a real request succeeded; a
@@ -159,7 +160,8 @@ export function AISettings({ settings, capabilities, check, modelList, modelFail
         if (provider === 'compatible' && !settings.baseUrl.trim()) return { tone: 'unconfigured', label: msg('Not configured'), detail: msg('Enter the base URL.') };
         if (direct && direct.requiresKey && !keyPresent) return { tone: 'unconfigured', label: msg('Not configured'), detail: keyDraft.trim() ? msg('Save the key to use it.') : msg('Add an API key.') };
         if (verifying) return { tone: 'checking', label: msg('Checking...') };
-        if (configurationChanged) return { tone: 'limited', label: msg('Configuration changed'), detail: msg('Test again to confirm this provider answers.') };
+        if (configurationChanged || keyDraft.trim()) return { tone: 'limited', label: msg('Configuration changed'), detail: msg('Test again to confirm this provider answers.') };
+        if (gatewayReachable) return { tone: 'limited', label: msg('settings.ai.gatewayReachable'), detail: msg(capabilities?.configured ? 'settings.ai.gatewayUnverified' : 'settings.ai.gatewayUnconfigured') };
         if (check?.ok) return { tone: 'connected', label: msg('Ready'), detail: check.effectiveModel ? msg('Verified with {model}.', { model: check.effectiveModel }) : settings.model || undefined };
         if (check && !check.ok) return { tone: 'error', label: msg('Failed'), detail: failureText(check.failure as ThinkingFailure, direct?.label ?? msg('The provider')) };
         if (!settings.model.trim() && direct) return { tone: 'limited', label: msg('Model not chosen'), detail: msg('Choose a model, or type one.') };
@@ -183,103 +185,59 @@ export function AISettings({ settings, capabilities, check, modelList, modelFail
         </Combobox.Portal>
     </Combobox.Root>;
 
-    const depthRow = (description: string) => <SettingRow label={msg('Thinking depth')} description={description} setting="thinking-depth">
-        <Select testId="depth-select" ariaLabel={msg('Thinking depth')} value={settings.thinkingDepth}
+    const depthRow = (reasoning: boolean) => <SettingRow label={msg(reasoning ? 'Thinking depth' : 'settings.ai.outputLimit')} setting={reasoning ? 'thinking-depth' : 'output-limit'}>
+        <Select testId="depth-select" ariaLabel={msg(reasoning ? 'Thinking depth' : 'settings.ai.outputLimit')} value={settings.thinkingDepth}
             onChange={value => set('thinkingDepth', value as Settings['thinkingDepth'])}
-            options={DEPTHS.map(level => ({ value: level, label: msg(depthLabel[level]) }))}/>
+            options={DEPTHS.map(level => ({ value: level, label: msg(reasoning || level === 'auto' ? depthLabel[level] : ({ light: 'settings.ai.short', standard: 'settings.ai.standard', deep: 'settings.ai.long' } as const)[level]) }))}/>
     </SettingRow>;
-
     return <>
         <h3>{msg('AI')}</h3>
-        <p className="settings-note">{msg('Who helps Diffusion think? A possibility is only ever a possibility: nothing here can move, delete or confirm what you wrote.')}</p>
         <SurfaceGroup>
-            <SettingRow label={msg('Provider')} description={<span data-testid="provider-hint">{msg(PROVIDER_HINT[provider])}</span>} setting="thinking-service">
-                <Select testId="provider-select" ariaLabel={msg('Provider')} value={provider}
-                    onChange={value => set('provider', value as ProviderId)}
+            <SettingRow label={msg('Provider')} setting="thinking-service">
+                <Select testId="provider-select" ariaLabel={msg('Provider')} value={provider} onChange={value => set('provider', value as ProviderId)}
                     options={(['off', 'demo', ...DIRECT_PROVIDER_IDS, 'gateway'] as ProviderId[]).map(id => ({ value: id, label: msg(PROVIDER_LABEL[id]) }))}/>
             </SettingRow>
-            {(provider === 'off' || provider === 'demo') && <div className="ui-group-status"><StatusLine {...status} testId="ai-status"/></div>}
+            {direct && <p className="settings-note" data-testid="provider-hint">{provider === 'compatible' ? msg('settings.ai.compatible') : msg('settings.ai.direct', { provider: direct.label })}</p>}
+            {(provider === 'off' || provider === 'demo') && <StatusLine {...status} testId="ai-status"/>}
         </SurfaceGroup>
-        {direct && <>
-            <SurfaceGroup>
-                {direct.editableBaseUrl && <SettingRow label={msg('Base URL')} setting="base-url">
-                    <input aria-label={msg('Base URL')} data-testid="base-url" value={settings.baseUrl} placeholder="https://host/v1" onChange={event => set('baseUrl', event.target.value)}/>
-                </SettingRow>}
-                <SettingRow label={msg('API key')} description={keyPresent ? msg('The key is held in this device\u2019s secure store, never in Settings, an export or a log.') : direct.requiresKey ? msg(direct.keyHint) : msg('Leave blank when the endpoint needs no key.')} setting="api-key">
-                    <span className="settings-key-row">
-                        <input aria-label={msg('API key')} id={`provider-key-field-${provider}`} type="password" autoComplete="off" data-testid="provider-key" value={keyDraft} placeholder={keyPresent ? msg('Stored securely') : direct.requiresKey ? msg('Not set') : msg('Optional')}
-                            onChange={event => setKeyDraft(event.target.value)}/>
-                        {keyPresent && !keyDraft.trim()
-                            ? <Button variant="outline" size="sm" data-testid="provider-key-remove" onClick={() => void removeKey()}>{msg('Remove')}</Button>
-                            : <Button variant="solid" size="sm" data-testid="provider-key-save" disabled={!keyDraft.trim()} onClick={() => void saveKey()}>{msg('Save')}</Button>}
-                    </span>
-                </SettingRow>
-                {!secureStore && <div className="ui-setting-inset"><p className="settings-note">{msg('This build keeps the key for this session only.')}</p></div>}
-                {keyError && <div className="ui-setting-inset"><p className="settings-error" data-testid="provider-key-error">{keyError}</p></div>}
-            </SurfaceGroup>
-            <SurfaceGroup>
-                <SettingRow label={msg('Model')} description={<span data-testid="model-summary">{modelFailure
-                    ? msg('No model list could be read from this endpoint. You can still type the model id your provider gave you.')
-                    : offered.length
-                        ? msg('This provider offers {count} models. You can also type any model id.', { count: offered.length })
-                        : msg('No model list has been fetched. Type the model id your provider gave you; nothing is guessed for you.')}</span>} setting="model">
-                    <span className="settings-key-row settings-model-row">
-                        {modelField}
-                        <Button variant="outline" size="sm" data-testid="refresh-models" disabled={verifying !== null} onClick={() => void withTypedKey(onRefreshModels)}>{msg('Refresh models')}</Button>
-                    </span>
-                </SettingRow>
-                {modelFailure && <div className="ui-setting-inset"><p className="settings-note">{failureText(modelFailure, direct.label)}</p></div>}
-                <div className="ui-group-footer">
-                    <StatusLine {...status} testId="ai-status"/>
-                    <Button variant="solid" size="sm" data-testid="test-connection" disabled={verifying !== null} onClick={() => void withTypedKey(onVerify)}>{msg('Test connection')}</Button>
-                </div>
-                <div className="ui-setting-inset"><p className="settings-note">{msg('Testing sends one small real request to your provider and may count toward your usage. It never changes the Field.')}</p></div>
-            </SurfaceGroup>
-            {reasons && <SurfaceGroup>
-                {depthRow(msg('{provider} exposes a reasoning control, so depth sets both how much it thinks and how much it may write.', { provider: direct.label }))}
-                <span className="sr-only" data-testid="depth-note">{msg('{provider} exposes a reasoning control, so depth sets both how much it thinks and how much it may write.', { provider: direct.label })}</span>
-            </SurfaceGroup>}
-            {(direct.editableProtocol || !reasons) && <SurfaceGroup>
-                <div className="ui-disclosure-row">
-                    <Button variant="ghost" size="sm" data-testid="ai-advanced" aria-expanded={advanced} onClick={() => setAdvanced(value => !value)}>{advanced ? msg('Hide advanced') : msg('Advanced')}</Button>
-                </div>
+        {direct && <SurfaceGroup>
+            {direct.editableBaseUrl && <SettingRow label={msg('Base URL')} setting="base-url">
+                <input aria-label={msg('Base URL')} data-testid="base-url" value={settings.baseUrl} placeholder="https://host/v1" onChange={event => set('baseUrl', event.target.value)}/>
+            </SettingRow>}
+            <SettingRow label={msg('settings.ai.apiKey')} setting="api-key" description={<ApiKeyLink url={direct.keyUrl}/>}>
+                <span className="settings-key-row">
+                    <input aria-label={msg('settings.ai.apiKey')} id={`provider-key-field-${provider}`} type="password" autoComplete="off" data-testid="provider-key" value={keyDraft} placeholder={keyPresent ? msg('Stored securely') : msg('settings.ai.keyPrompt')} onChange={event => setKeyDraft(event.target.value)}/>
+                    {keyPresent && !keyDraft.trim()
+                        ? <Button variant="outline" size="sm" data-testid="provider-key-remove" onClick={() => void removeKey()}>{msg('Remove')}</Button>
+                        : <Button variant="solid" size="sm" data-testid="provider-key-save" disabled={!keyDraft.trim()} onClick={() => void saveKey()}>{msg('Save')}</Button>}
+                </span>
+            </SettingRow>
+            {keyPresent && <p className="settings-note">{msg(secureStore ? 'settings.ai.keyStored' : 'settings.ai.keySession')}</p>}
+            {keyError && <p className="settings-error" role="alert" data-testid="provider-key-error">{keyError}</p>}
+            <SettingRow label={msg('Model')} setting="model">
+                <span className="settings-key-row settings-model-row">{modelField}<Button variant="outline" size="sm" data-testid="refresh-models" disabled={verifying !== null} onClick={() => void withTypedKey('models')}>{msg('Refresh models')}</Button></span>
+            </SettingRow>
+            <p className="settings-note" data-testid="model-summary">{modelFailure ? failureText(modelFailure, direct.label) : modelList === null ? msg('settings.ai.modelsUnfetched') : modelList.length ? msg('settings.ai.modelsCount', { count: modelList.length }) : msg('settings.ai.modelsEmpty')}</p>
+            <div className="ui-group-footer"><StatusLine {...status} testId="ai-status"/><Button variant="solid" size="sm" data-testid="test-connection" disabled={verifying !== null} onClick={() => void withTypedKey('connection')}>{msg('Test connection')}</Button></div>
+            <p className="settings-note">{msg('settings.ai.testCost')}</p>
+            {reasons && depthRow(true)}
+            {(direct.editableProtocol || !reasons) && <>
+                <Button variant="ghost" size="sm" data-testid="ai-advanced" aria-expanded={advanced} onClick={() => setAdvanced(value => !value)}>{advanced ? msg('Hide advanced') : msg('Advanced')}</Button>
                 {advanced && <div className="ui-disclosure-content">
-                    {direct.editableProtocol && <SettingRow label={msg('Protocol')} description={msg('Only change this if your endpoint speaks the other protocol.')} setting="protocol">
-                        <Select testId="protocol-select" ariaLabel={msg('Protocol')} value={settings.protocol}
-                            onChange={value => set('protocol', value as WireProtocol)}
-                            options={WIRE_PROTOCOLS.filter(id => id === 'chat-completions' || id === 'responses').map(id => ({ value: id, label: msg(id === 'responses' ? 'Responses' : 'Chat completions') }))}/>
-                    </SettingRow>}
-                    {!reasons && <>
-                        {depthRow(msg('{provider} has no reasoning control Diffusion asks for. Depth sets only how much output the provider may write.', { provider: direct.label }))}
-                        <span className="sr-only" data-testid="depth-note">{msg('{provider} has no reasoning control Diffusion asks for. Depth sets only how much output the provider may write.', { provider: direct.label })}</span>
-                    </>}
+                    {direct.editableProtocol && <SettingRow label={msg('Protocol')} setting="protocol"><Select testId="protocol-select" ariaLabel={msg('Protocol')} value={settings.protocol} onChange={value => set('protocol', value as WireProtocol)} options={WIRE_PROTOCOLS.filter(id => id === 'chat-completions' || id === 'responses').map(id => ({ value: id, label: msg(id === 'responses' ? 'Responses' : 'Chat completions') }))}/></SettingRow>}
+                    {!reasons && depthRow(false)}
                 </div>}
-            </SurfaceGroup>}
-        </>}
-        {provider === 'gateway' && <>
-            <SurfaceGroup>
-                <SettingRow label={msg('Gateway address')} setting="gateway-url">
-                    <input aria-label={msg('Gateway address')} data-testid="gateway-url" value={settings.gateway} placeholder={msg('Blank = same-origin /api')} onChange={event => set('gateway', event.target.value)}/>
-                </SettingRow>
-                <SettingRow label={msg('Session token')} setting="gateway-token">
-                    <input aria-label={msg('Session token')} type="password" autoComplete="off" data-testid="gateway-token" value={settings.token} onChange={event => set('token', event.target.value)}/>
-                </SettingRow>
-                <div className="ui-group-footer">
-                    <StatusLine {...status} testId="ai-status"/>
-                    <Button variant="solid" size="sm" data-testid="test-connection" disabled={verifying !== null} onClick={onVerify}>{msg('Test connection')}</Button>
-                </div>
-                <div className="ui-setting-inset"><p className="settings-note">{msg('A gateway holds the upstream keys for you, which is how a shared or browser deployment is meant to work. On this device you can also connect a provider directly above.')}</p></div>
-            </SurfaceGroup>
-            {capabilities && capabilities !== UNKNOWN_CAPABILITIES && <SurfaceGroup>
-                <SettingRow label={msg('Model')} description={<span data-testid="gateway-capability">{msg('This gateway reported {count} declared models.', { count: capabilities.models.length })}</span>} setting="model">
-                    {capabilities.models.length
-                        ? <Select testId="model-select" ariaLabel={msg('Model')} value={settings.model} onChange={value => set('model', value)} options={[{ value: '', label: msg('Gateway default') }, ...capabilities.models.map(name => ({ value: name, label: name }))]}/>
-                        : <input data-testid="model-input" aria-label={msg('Model')} value={settings.model} maxLength={200} placeholder={msg('Gateway default')} onChange={event => set('model', event.target.value)}/>}
-                </SettingRow>
-            </SurfaceGroup>}
-            <SurfaceGroup>
-                {depthRow(capabilities?.depth.supported ? msg('Depth sets how much output the gateway asks the provider for.') : msg('This gateway reports no depth control.'))}
-            </SurfaceGroup>
-        </>}
+            </>}
+        </SurfaceGroup>}
+        {provider === 'gateway' && <SurfaceGroup>
+            <p className="settings-note">{msg('settings.ai.gateway')}</p>
+            <SettingRow label={msg('Gateway address')} setting="gateway-url"><input aria-label={msg('Gateway address')} data-testid="gateway-url" value={settings.gateway} placeholder={msg('Blank = same-origin /api')} onChange={event => set('gateway', event.target.value)}/></SettingRow>
+            <SettingRow label={msg('Session token')} setting="gateway-token"><input aria-label={msg('Session token')} type="password" autoComplete="off" data-testid="gateway-token" value={settings.token} onChange={event => set('token', event.target.value)}/></SettingRow>
+            <SettingRow label={msg('Model')} setting="model">
+                {capabilities?.models.length ? <Select testId="model-select" ariaLabel={msg('Model')} value={settings.model} onChange={value => set('model', value)} options={[{ value: '', label: msg('Gateway default') }, ...capabilities.models.map(name => ({ value: name, label: name }))]}/> : <input data-testid="model-input" aria-label={msg('Model')} value={settings.model} maxLength={200} placeholder={msg('Gateway default')} onChange={event => set('model', event.target.value)}/>}
+            </SettingRow>
+            <div className="ui-group-footer"><StatusLine {...status} testId="ai-status"/><Button variant="solid" size="sm" data-testid="test-connection" disabled={verifying !== null} onClick={onVerify}>{msg('Test connection')}</Button></div>
+            {capabilities?.depth.supported && <><Button variant="ghost" size="sm" data-testid="ai-advanced" aria-expanded={advanced} onClick={() => setAdvanced(value => !value)}>{msg('Advanced')}</Button>{advanced && depthRow(false)}</>}
+        </SurfaceGroup>}
     </>;
 }

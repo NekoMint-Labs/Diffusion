@@ -4,7 +4,7 @@ import type { ProjectController } from '../../core/controller.ts';
 import type { DiffuseSession } from '../../ai/diffuse.ts';
 import type { AIRuntime } from '../../ai/runtime.ts';
 import type { FieldHandle } from '../../field/Field.tsx';
-import { useUI, type Surface as SurfaceName } from '../store.ts';
+import { useUI, visibleSelection, type Surface as SurfaceName } from '../store.ts';
 import type { CrystalDraft } from '../surfaces/CrystalPreview.tsx';
 import { useTransientFocus } from './useTransientFocus.ts';
 
@@ -31,11 +31,12 @@ export function useWorkspaceSurfaces({ controller, field, diffuse, runtime, find
     function openSurface(surface: SurfaceName, origin?: Point) {
         transient.capture();
         const state = useUI.getState();
-        if (surface === 'lineage') setLineageId(state.selection.length === 1 ? state.selection[0] : null);
+        const selection = visibleSelection(state);
+        if (surface === 'lineage') setLineageId(selection.length === 1 ? selection[0] : null);
         if (surface === 'history')
-            setHistoryScope([...state.selection]);
+            setHistoryScope([...selection]);
         if (surface === 'diffuse')
-            setDiffuseScope(diffuse.getSnapshot().config?.scopeIds ?? [...state.selection]);
+            setDiffuseScope(diffuse.getSnapshot().config?.scopeIds ?? [...selection]);
         useUI.getState().patch({
             surface, relationId: null, anchor: origin ?? null,
             returnPoint: surface === 'thread-focus' && state.returnPoint

@@ -2,7 +2,29 @@
 
 日期：2026-10-03（Asia/Shanghai）。下面先记录当前整合候选，再保留等待 #17 新提交时的历史预检。
 
-## 当前整合候选
+## 最新双方输入同步（2026-10-03）
+
+- #11 输入：PR #17 `639818ad6c2a9123c9f92989f6f2bcba81936b98`，产品修复为 `9377a95c8161e127623401f0db9e14637abe5c98`。
+- #10 输入：草稿 PR #18 `c9a3cc6dfe5091af158e6837a9544b2441e3309c`，包含 `533c3ee` 局部字面去重、`a94b5f7` 受控连接测试与 `c9a3cc6` 无上下文 Ask 开场过滤。
+- 整合产品提交：`fc3fd199d782c71fb5e9216d62d8cd53cc5d11c7`；继续使用独立分支 `codex/integration-issue10-11` 与草稿 [#19](https://github.com/NekoMint-Labs/Diffusion/pull/19)。双方完整提交均为候选祖先。
+
+依赖顺序仍为 `#13 → #14 → #15 → #16 → #17`；#17 已包含前置改动。同步 #17 自动合并；同步 #18 唯一文本冲突为 `tests/e2e/friction.spec.ts`。合为一条受控 `/v1/responses` 401 route，同时保留请求模型、刚保存的夹具密钥、身份验证错误与未保存新密钥的“Configuration changed”断言。没有削弱断言、添加重试或跳过。
+
+运行时仍同时传递 `visibleIds` 和实测 `measurements`，保留初次/后续尺寸变化修正、低缩放阅读/回应与稳定相机；前端 continuation 和网关 schema 保持同步，来源仍使用 `derivedFrom`。局部去重只比较本请求上下文、相关 pending Ghost 和本批结果；它不证明同义复述已消除。
+
+#17 的 custom discovery 独立就绪/测试与 Source 分支 Atlas 锚点修复现已纳入；没有将 #10 改动写回 #17。最新整合的 TypeScript/core、生产构建、54 文件/411 单元、266 离线、960 文案和源码大小检查通过，既有大块体积警告保留。
+
+整合产品 `fc3fd19` 的远端 [CI](https://github.com/NekoMint-Labs/Diffusion/actions/runs/37134333211) 和 [完整 E2E](https://github.com/NekoMint-Labs/Diffusion/actions/runs/37134333208) 全部通过。读取四个执行 job 的日志：Interaction 1/3 为 94 passed，2/3 为 91 passed / 12 skipped，3/3 为 81 passed，production backgrounds 为 31 passed；合计 **297 passed / 12 既有开发用例 skipped / 0 failed**，六个 job 全绿，各 runner 单 worker、零重试。远端完整通过后停止重复本地全量运行，其部分日志保留且不宣称完整本地全绿。
+
+当前生产构建的 1280×720 浅色/减少动态与深色/普通动态复核全部通过，并查看四张截图。设置显示“直接连接 OpenAI API。”与“输出长度上限”，密钥帮助为中文；建议汇总容器 560×38px、按钮 558×36px，右端点击与 Space/Enter 作用一致；Atlas 完整 Ghost 数为 0，仅保留汇总入口；受控生成前后原想法样式坐标和相机完全相同。低缩放回应入口为 80×32 屏幕像素，页面没有未捕获错误。证据为忽略目录 `verification/integration-preflight/integration-sync-visual-result.json`、`integration-sync-ai-{light,dark}.png` 和 `integration-sync-atlas-{light,dark}.png`，脚本为 `.tmp/integration-sync-visual-probe.mjs`；这些不代替真实模型或 Windows 原生证据。
+
+验证命令沿用仓库入口的底层 CLI：`node node_modules/typescript/bin/tsc --noEmit`、`node node_modules/vite/bin/vite.js build`、`node node_modules/vitest/vitest.mjs run`，以及 `check:offline` 的五个原始命令。Windows 英文 fixture 使用 `NODE_OPTIONS=--no-experimental-global-navigator`。Playwright 适配仅更换 Windows 启动语法、隔离端口和证据路径，不改套件/断言/worker/retries。最初 esbuild 受到沙箱父目录读取权限阻断，完整测试没有启动；授权运行后构建通过。旧解压诊断 trace 被离线扫描误当作源码，已移出仓库并保留，随后原检查完整通过。
+
+本轮未生成新安装包。#12 继续负责 Windows 原生验收，#10 的真实模型 A2/A3/A5 仍待对应试用。草稿 #19 和 Issue #10/#11 保持开放；没有合并 PR。
+
+共同本地试用应先记录候选 SHA，再覆盖下面历史清单中的动作/停止/Keep/Ignore/归属/阅读/缩放/重开路径。使用 `git fetch origin`、`git switch codex/integration-issue10-11`、`git pull --ff-only`、`pnpm install --frozen-lockfile`、`pnpm run dev`；已有分支先处理自己的未提交修改，勿覆盖私人项目或凭据。当前整合没有新安装包，旧 Release `05c4144` 不用于本候选验收。
+
+## 历史整合候选（33bd1a7 + 38eab8a）
 
 - #11 输入：PR #17，`33bd1a7fdf19c9b0f5f54571fc1842d2bc3707e7`；在 Windows 验收反馈修复 `19bbd42` 上追加已独立验证的菜单修复。
 - #10 输入：草稿 PR #18，`38eab8a09ee008aa50270a136a3ac4bedd1dfa37`。

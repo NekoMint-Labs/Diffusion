@@ -23,7 +23,7 @@ The Quiet Editorial Field uses a shared token system for both themes, text-like 
 
 Field materials have one production architecture: Paper Texture (the default), Topography, Threads, Waves, and Silk are lazy renderers inside `src/ui/fieldBackgrounds/`. The host is viewport-bounded and screen-space, so camera frames update only the Thought/phenomenon world and never write background CSS variables onto `.app`. Every material remains pointer-inert, `aria-hidden`, and outside the camera-owned world.
 
-Thought width is deterministic and bounded (`compact`, `regular`, or `wide`) from text content. Editing freezes the measured pre-edit width and applies a new class only after commit. Mounted interaction uses cached `ResizeObserver` geometry. Before an item mounts—and when semantic disclosure decides which labels may mount—deterministic kind-aware estimates mirror the CSS widths for ordinary Thoughts, Sources, and Crystals; measurement supersedes the local estimate after render. Collision correction and lasso use rendered bounds when available, while disclosure, initial placement, and Region observation deliberately use those bounded estimates rather than inventing a second renderer.
+Thought width is deterministic and bounded (`compact`, `regular`, or `wide`) from text content. Editing freezes the measured pre-edit width and applies a new class only after commit. Mounted interaction uses cached `ResizeObserver` geometry. Before an item mounts—and when semantic disclosure decides which labels may mount—deterministic kind-aware estimates mirror the CSS widths for ordinary Thoughts, Sources, and Crystals; measurement supersedes the local estimate after render. Collision correction and lasso use rendered bounds when available, while disclosure and Region observation use bounded estimates. AI result placement reads the existing measurement cache at emission time and falls back to a four-line preview estimate for unmounted cards. Continue prefers nearby visible clear slots; post-mount correction may move only a new, non-detached Ghost into the viewport, never its canonical source or the camera.
 
 Appearance is device-local presentation state owned by `src/ui/appearance.ts`, `src/ui/workspace/useWorkspaceSettings.ts`, `src/ui/fieldBackgrounds/`, and the atmosphere layer. Theme/Profile, Field Style, Accent, and Image Atmosphere are independent; Field Presence and Ambient Motion are bounded controls. Reduced Motion sets effective ambient movement to zero without changing the stored preference. None of these settings enter canonical `ProjectState`, project Dexie records, collision, camera authority, or `GeometryCache`. Decorative Field layers stay full-bleed in viewport space, pointer-inert, and `aria-hidden`; the camera-owned world continues to contain DOM Thoughts and SVG phenomena only.
 
@@ -63,6 +63,14 @@ Messages are response history, not canonical Field content. Bring from a respons
 ## Sources, providers and trust
 
 Explicit intent compiles a bounded packet -> replaceable provider -> semantic intent validation -> Core permission gate -> session candidates/permitted presentation. Canonical state is not handed to a model as a mutable object.
+
+For explicit Field selections, the context compiler may supply up to four direct durable lineage
+sources as background, within the existing local/text limits. Optional request-only
+`continuations` maps selected IDs to the supplied source IDs. Selection remains primary; lineage
+is provenance, not a confirmed semantic relation or endorsement. No ancestors are recursively
+loaded, no Ghost is included, and Thread snapshots do not gain live lineage. A changed/deleted
+supplied source or removed lineage invalidates the remaining in-flight result. This adds no
+canonical fields or automatic provider calls.
 
 Phase 3A gives unscoped authored input a separate structured-ingestion contract. The exact text is first persisted as an `InputRecord`; extraction then returns bounded Thought/Question proposals whose exact `sourceQuotes` are resolved deterministically into ranges over that record, followed by a separate relation-inference pass over validated proposal IDs. Those results remain session `Ghost` / tentative `Phenomenon` state until the person claims, edits, keeps or confirms them. A failed/disabled ingestion falls back to one canonical Thought containing the authored text, while the raw input remains durable. This path reuses provider transport but is deliberately not squeezed through `SemanticIntent`.
 

@@ -41,6 +41,7 @@ export interface FieldHandle {
     visibleIds: () => string[];
     screenPoint: (point: Point) => Point;
     viewBounds: () => Bounds;
+    itemBounds: () => Record<string, Bounds>;
 }
 export interface FieldFind {
     matches: Set<string>;
@@ -219,6 +220,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         camera: () => camera.current?.get() ?? project.camera,
         screenPoint: (point) => { const p = worldToScreen(point, camera.current?.get() ?? project.camera); return { x: p.x + rect.current.left, y: p.y + rect.current.top }; },
         viewBounds: () => viewportBounds(camera.current?.get() ?? project.camera, rect.current.width, rect.current.height, 0),
+        itemBounds: () => Object.fromEntries([...Object.keys(controller.getSnapshot().project.thoughts), ...Object.keys(controller.getSnapshot().session.ghosts)].flatMap(key => { const box = geometry.getMeasured(key); return box ? [[key, { ...box }]] : []; })),
         restore: (c) => { camera.current?.set(c, true); },
         centerPoint: () => camera.current?.worldPoint({ x: rect.current.width / 2 - 125, y: rect.current.height / 2 - 50 }) ?? { x: 300, y: 250 },
         centerOn: (ids) => { const boxes = ids.map(k => geometry.get(k)).filter((b): b is Bounds => !!b); if (!boxes.length)

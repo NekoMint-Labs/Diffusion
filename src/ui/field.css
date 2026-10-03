@@ -290,6 +290,8 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 /* Read-only disclosure and explicit context for a person's own response. */
 /* Selection actions occupy a separate footprint; they never resize measured Thought geometry. */
 .thought-local-actions { position: absolute; top: calc(100% + 7px); left: 0; width: 100%; display: flex; flex-wrap: wrap; gap: 4px 12px; }
+/* A proposal caption remains visible above its separate read control. */
+.thought.ghost .thought-local-actions { top: calc(100% + 22px); }
 .thought-read, .thought-respond { display: block; min-height: 32px; margin: 0; padding: 5px 4px; border: 0; background: none; color: var(--ink-secondary); font: var(--type-label-size)/1.5 var(--ui-font); cursor: pointer; }
 .thought-read:hover, .thought-read:focus-visible, .thought-respond:hover, .thought-respond:focus-visible { color: var(--ink-primary); text-decoration: underline; }
 .speak-references { margin: 0 5px 9px; max-height: min(150px, 24dvh); overflow: auto; overscroll-behavior: contain; color: var(--ink-secondary); font: var(--type-helper-size)/1.6 var(--ui-font); }

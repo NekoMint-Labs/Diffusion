@@ -245,3 +245,66 @@ for (const [name, text, actionCount] of [
         expect(await card.boundingBox()).toEqual(before);
     });
 }
+
+
+for (const decision of ['ignore', 'claim'] as const) {
+    test('continuing a persisted response sends its original question as background: ' + decision, async ({ page }) => {
+        const packets: import('../../src/core/semantics.ts').ContextPacket[] = [];
+        await page.route('**/api/respond', async route => {
+            packets.push(route.request().postDataJSON().packet);
+            await route.fulfill({ json: { providerLabel: 'Continuation fixture / not live', mock: true, intents: [{ type: 'surface_possibility', text: 'An authored fixture for the continuation workflow.' }] } });
+        });
+        await page.locator('[data-thought-id="unfinished"]').click();
+        await page.getByRole('button', { name: 'Respond to this question', exact: true }).click();
+        const reply = 'I want to retain the context, but I am unsure which part matters.';
+        await page.getByRole('textbox', { name: 'Speak', exact: true }).fill(reply);
+        await page.getByRole('button', { name: 'Save response', exact: true }).click();
+        const response = page.locator('[data-thought-id]').filter({ hasText: reply });
+        await expect(response).toBeVisible();
+        const responseId = await response.getAttribute('data-thought-id');
+        expect(packets).toHaveLength(0);
+        // This scenario starts from a persisted response; mounting alone does not prove the
+        // asynchronous repository write has committed before a page navigation.
+        await expect.poll(() => page.evaluate(thoughtId => new Promise(resolve => {
+            const opening = indexedDB.open('diffusion-explorer-v1');
+            opening.onerror = () => resolve(null);
+            opening.onsuccess = () => {
+                const db = opening.result;
+                const request = db.transaction('projects').objectStore('projects').get('demo');
+                request.onerror = () => { db.close(); resolve(null); };
+                request.onsuccess = () => { db.close(); resolve(request.result?.thoughts?.[thoughtId!]?.text ?? null); };
+            };
+        }), responseId)).toBe(reply);
+        await page.reload();
+        await page.getByTestId('global-more').click();
+        await page.getByTestId('global-menu').getByRole('menuitem', { name: 'Settings', exact: true }).click();
+        const { choose } = await import('./selects.ts');
+        await choose(page, 'provider-select', 'gateway');
+        await page.getByRole('button', { name: 'Return to Field', exact: true }).click();
+        await response.click();
+        await page.getByTestId('scope-continue').click();
+        await page.getByTestId('action-preview-run').click();
+        const ghost = page.locator('.thought.ghost').filter({ hasText: 'An authored fixture for the continuation workflow.' });
+        await expect(ghost).toBeVisible();
+        expect(packets).toHaveLength(1);
+        expect(packets[0].scope.map(item => item.id)).toEqual([responseId]);
+        expect(packets[0].continuations).toEqual([{ thoughtId: responseId, sourceIds: ['unfinished'] }]);
+        expect(packets[0].local.find(item => item.id === 'unfinished')?.text).toBe(question);
+        await expect(ghost).toHaveAttribute('data-origin-scope', responseId!);
+        if (decision === 'ignore') {
+            await ghost.click({ button: 'right' });
+            await page.getByTestId('thought-menu').getByRole('menuitem', { name: 'Ignore', exact: true }).click();
+            await expect(ghost).toHaveCount(0);
+            await page.reload();
+            await expect(page.locator('[data-thought-id]').filter({ hasText: 'An authored fixture for the continuation workflow.' })).toHaveCount(0);
+        } else {
+            await ghost.click();
+            await page.getByTestId('scope-hub').getByRole('button', { name: 'Keep this', exact: true }).click();
+            await expect(page.locator('[data-kind="thought"]').filter({ hasText: 'An authored fixture for the continuation workflow.' })).toBeVisible();
+            await page.reload();
+            await expect(page.locator('[data-kind="thought"]').filter({ hasText: 'An authored fixture for the continuation workflow.' })).toHaveAttribute('data-origin-scope', responseId!);
+        }
+        await expect(page.locator('[data-thought-id="unfinished"] p')).toHaveText(question);
+        await expect(response).toContainText(reply);
+    });
+}

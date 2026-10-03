@@ -319,6 +319,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         failure: (failure, subject) => failureNotice(failure, subject, intents.retryable.current),
         anchor: actions.anchor,
         bounds: () => field.current?.viewBounds() ?? { x: 0, y: 0, width: 1440, height: 900 },
+        measurements: () => field.current?.itemBounds() ?? {},
         route: (kind, text, ids, provider) => { if (kind === 'crystal')
             intents.previewCrystal(ids, text);
         else

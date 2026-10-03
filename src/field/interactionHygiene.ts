@@ -38,13 +38,19 @@ export function commitDraggedItems(controller: ProjectController, positions: Rec
     return { canonical, ghosts: ghostMoves.map(([key]) => key) };
 }
 export function correctMeasuredGhost(key: string, corrected: Set<string>, controller: ProjectController, geometry: GeometryCache, itemIds: string[], camera: Camera, viewport: ViewportRect): void {
-    if (corrected.has(key) || !controller.getSnapshot().session.ghosts[key]) return;
+    const ghost = controller.getSnapshot().session.ghosts[key];
+    if (corrected.has(key) || !ghost || ghost.spatialDetached) return;
     const bounds = geometry.get(key);
     if (!bounds) return;
     corrected.add(key);
     const occupied = itemIds.filter(id => id !== key).map(id => geometry.get(id)).filter((candidate): candidate is Bounds => !!candidate);
-    const point = correctSevereOverlap(bounds, occupied, viewportBounds(camera, viewport.width, viewport.height, 0));
-    if (Math.abs(point.x - bounds.x) > .5 || Math.abs(point.y - bounds.y) > .5) controller.moveGhost(key, point);
+    const view = viewportBounds(camera, viewport.width, viewport.height, 0);
+    if (ghost.proposalAction === 'continue') view.height = Math.max(0, view.height - 64);
+    const point = correctSevereOverlap(bounds, occupied, view, true);
+    if (Math.abs(point.x - bounds.x) > .5 || Math.abs(point.y - bounds.y) > .5) {
+        controller.moveGhost(key, point);
+        geometry.setPosition(key, point.x, point.y);
+    }
 }
 
 export function keepRelationCandidate(controller: ProjectController, relationId: string): void {

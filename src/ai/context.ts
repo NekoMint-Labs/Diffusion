@@ -36,7 +36,27 @@ export function compileContext(project: ProjectState, selection: string[], optio
     const scopeSet = new Set(scope.map(t => t.id));
     const relations = Object.values(project.relations).filter(r => scopeSet.has(r.a) || scopeSet.has(r.b)).slice(0, 16).map(({ a, b, kind, label }) => ({ a, b, kind, label: label.slice(0, 300) }));
     const related = new Set(relations.flatMap(r => [r.a, r.b]));
-    const local = all.filter(t => !scopeSet.has(t.id) && related.has(t.id)).slice(0, 12).map(brief);
+    // Selection remains the subject. Direct durable lineage supplies bounded background, not
+    // a semantic relation or a recursive history. Threads keep their frozen context contract.
+    const continuationBackground = new Set<string>();
+    const continuations: NonNullable<ContextPacket['continuations']> = [];
+    if (explicit && !thread) {
+        for (const item of scope) {
+            const sourceIds: string[] = [];
+            for (const key of new Set(project.thoughts[item.id]?.derivedFrom ?? [])) {
+                if (key === item.id || !project.thoughts[key]) continue;
+                if (!scopeSet.has(key) && !continuationBackground.has(key)) {
+                    if (continuationBackground.size >= 4) continue;
+                    continuationBackground.add(key);
+                }
+                sourceIds.push(key);
+                if (sourceIds.length === 4) break;
+            }
+            if (sourceIds.length) continuations.push({ thoughtId: item.id, sourceIds });
+        }
+    }
+    const localIds = new Set([...continuationBackground, ...all.filter(t => !scopeSet.has(t.id) && related.has(t.id)).map(t => t.id)]);
+    const local = [...localIds].slice(0, 12).map(key => brief(project.thoughts[key]));
     // Recall retrieval is literal query matching, not a learned preference or hidden recommendation.
     const query = options.query?.toLocaleLowerCase().trim() ?? '';
     const retrievedThoughts = query.length >= 2 ? all.filter(t => !scopeSet.has(t.id) && t.text.toLocaleLowerCase().includes(query)).slice(0, 4).map(brief) : [];
@@ -58,6 +78,7 @@ export function compileContext(project: ProjectState, selection: string[], optio
         sources.push(...external);
     }
     return { contract: CORE_CONTRACT, projectId: project.id, scopeMode: explicit ? 'selection' : 'field', scope, local, relations,
+        ...(continuations.length ? { continuations } : {}),
         ...(thread ? { thread: { id: thread.id, capsule: rebuildCapsule(thread, project), recent: thread.messages.slice(-6).map(m => ({ role: m.role, text: m.text.slice(0, 1600) })) } } : {}),
         retrieved: { thoughts: retrievedThoughts, sources }, permissions: { web: !!options.web, projectSources: !!options.projectSources }, tools: ['surface_possibility', 'surface_question', 'surface_relation', 'surface_structure', 'request_thread', 'request_deep_dive', 'request_crystal_preview'], maxCandidates: Math.max(1, Math.min(5, options.maxCandidates ?? 3)) };
 }

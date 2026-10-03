@@ -5,6 +5,7 @@ import type { ProjectController } from '../core/controller.ts';
 import { compileContext, rebuildCapsule, type CompileOptions } from './context.ts';
 import { abortableDelay, type AIProvider } from './contracts.ts';
 import { ThinkingError, failureText, type ThinkingFailure } from './errors.ts';
+import type { Bounds } from '../field/spatial/geometry.ts';
 import { placePossibility } from '../field/spatial/placement.ts';
 import { registerOperationCancellation } from './operationControl.ts';
 
@@ -26,7 +27,8 @@ export interface RuntimeHooks {
     failure?: (failure: ThinkingFailure, subject: string) => void;
     route: (kind: 'thread' | 'deep' | 'crystal', text: string, scopeIds: string[], provider: string) => void;
     anchor: () => Point;
-    bounds?: () => { x: number; y: number; width: number; height: number };
+    bounds?: () => Bounds;
+    measurements?: () => Readonly<Record<string, Bounds>>;
 }
 export interface RunOptions extends CompileOptions {
     runId?: string;
@@ -186,7 +188,7 @@ export class AIRuntime {
                 const unit = extraction.units[index];
                 const key = id('ghost');
                 const snapshot = this.controller.getSnapshot();
-                const point = placePossibility(snapshot.project, snapshot.session, anchor, index, [], this.hooks.bounds?.(), unit.text);
+                const point = placePossibility(snapshot.project, snapshot.session, anchor, index, [], this.hooks.bounds?.(), unit.text, 'default', this.hooks.measurements?.());
                 const providerCredit = extraction.providerLabel || provider.label;
                 this.controller.addGhost({
                     id: key, text: unit.text, ...point, createdAt: Date.now(), scopeIds: [],
@@ -246,7 +248,14 @@ export class AIRuntime {
             }
             const provenance = credited(response.providerLabel || provider.label, response.model);
             const validScope = () => { const project = this.controller.getSnapshot().project; return project.id === packet.projectId && packet.scope.every(item => (options.threadId ? (project.threads[options.threadId]?.scopeSnapshot?.[item.id] ?? project.thoughts[item.id]) : project.thoughts[item.id])?.text.slice(0, 1600) === item.text); };
-            if (!validScope()) throw new Error(t('The scope changed while thinking. Ask again with its new wording.'));
+            const validContinuation = () => {
+                const project = this.controller.getSnapshot().project;
+                return (packet.continuations ?? []).every(link => link.sourceIds.every(key => {
+                    const supplied = packet.scope.find(item => item.id === key) ?? packet.local.find(item => item.id === key);
+                    return project.thoughts[link.thoughtId]?.derivedFrom?.includes(key) && supplied && project.thoughts[key]?.text.slice(0, 1600) === supplied.text;
+                }));
+            };
+            if (!validScope() || !validContinuation()) throw new Error(t('The scope changed while thinking. Ask again with its new wording.'));
             const accepted = response.intents.slice(0, packet.maxCandidates)
                 .filter(candidate => intentAllowedForAction(kind, candidate.type))
                 .filter(candidate => permissionFor(candidate, packet, this.controller.getSnapshot().project).allowed)
@@ -267,7 +276,7 @@ export class AIRuntime {
                         if (started.ticket === this.serial) this.settle(started, 'cancelled');
                         return { status: 'cancelled', emitted };
                     }
-                    if (!validScope()) throw new Error(t('The scope changed during reveal. Remaining possibilities were discarded.'));
+                    if (!validScope() || !validContinuation()) throw new Error(t('The scope changed during reveal. Remaining possibilities were discarded.'));
                     const candidate = accepted[index];
                     this.emit(candidate, packet, provenance, options, kind, index);
                     if (candidate.type === 'surface_relation') relationLabel = candidate.label;
@@ -314,14 +323,14 @@ export class AIRuntime {
                 const text = candidate.type === 'surface_evidence' ? `${candidate.outcome}: ${candidate.text}` : candidate.text;
                 const proposalAction = action === 'continue' || action === 'angle' ? action : undefined;
                 const mode = candidate.type === 'surface_evidence' ? 'evidence' : action === 'continue' ? 'continue' : action === 'angle' ? 'branch' : 'default';
-                const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), text, mode);
+                const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), text, mode, this.hooks.measurements?.());
                 this.controller.addGhost({ id: key, text, ...point, createdAt: Date.now(), scopeIds, runId: options.runId, origin: provenance, proposalKind: 'thought' as const, ...(proposalAction ? { proposalAction } : {}) });
                 options.onEmission?.(key);
                 break;
             }
             case 'surface_question': {
                 const key = id('ghost');
-                const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), candidate.text, 'question');
+                const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), candidate.text, 'question', this.hooks.measurements?.());
                 this.controller.addGhost({ id: key, text: candidate.text, ...point, createdAt: Date.now(), scopeIds, runId: options.runId, origin: provenance, proposalKind: 'question', proposalAction: 'question' });
                 options.onEmission?.(key);
                 break;

@@ -1,5 +1,7 @@
 /* Product copy only. English source keys are the fallback dictionary. */
 export const zh: Record<string, string> = {
+  "No new suggestion was surfaced this time.": "这次没有出现新的建议。",
+  "No new direction was surfaced. This exploration has ended.": "这次没有出现新的方向，探索已结束。",
   "Upstream returned malformed JSON.": "\u4e0a\u6e38\u8fd4\u56de\u4e86\u683c\u5f0f\u9519\u8bef\u7684 JSON\u3002",
   "Thought typography": "\u601d\u7eea\u5b57\u4f53",
   "Editorial Serif": "\u4e66\u5377\u886c\u7ebf",

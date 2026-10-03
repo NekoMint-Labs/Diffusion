@@ -54,6 +54,12 @@ A failed draft write retains the window's text and reports that it is not saved 
 Optional background renderer failures are contained at the decorative layer so the Field remains
 usable; switching Field Style resets that layer's failure boundary.
 
+## Bounded exploration diversity
+
+`DiffuseSession` owns a run-local list of surfaced wording, including subsequently ignored Ghosts. It supplies at most six short JSON-quoted excerpts as untrusted negative constraints in the existing intent text, never as owned scope, background, evidence or durable history. Each step may surface at most one possibility; default three directions remain bounded by the explicit direction/time budget. Pause/resume retain the exclusions; a new run resets them. An empty, invalid or repeated step ends without automatic replacement requests. `surfaced` counts actual proposals independently of attempted `used` steps.
+
+The runtime exclusion is deliberately lexical (normalized whitespace/case and terminal punctuation), including verbatim selected-scope copies. It preserves internal technical operators and does not assert semantic paraphrase detection. Diverse framing is an action contract that still requires repeated live-model evaluation. The request schema, provider boundary, canonical state, web permissions and user commitment path are unchanged.
+
 ## Threads and depth
 
 Thread stores frozen scope IDs plus text/kind/source references captured on creation. Explicit Add selection extends snapshots but does not silently refresh earlier wording. Field remains usable beside its split manuscript. Deep Dive has its own context rail and structured manuscript component, not the Thread rendered wider. The Field remains mounted but visually recedes completely in focus mode; exact return camera/selection is preserved.

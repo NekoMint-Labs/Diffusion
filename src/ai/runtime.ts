@@ -7,6 +7,7 @@ import { abortableDelay, type AIProvider } from './contracts.ts';
 import { ThinkingError, failureText, type ThinkingFailure } from './errors.ts';
 import type { Bounds } from '../field/spatial/geometry.ts';
 import { placePossibility } from '../field/spatial/placement.ts';
+import { repeatedWording } from './diversity.ts';
 import { registerOperationCancellation } from './operationControl.ts';
 
 /** Names the model that answered alongside the provider, without inventing one the provider never
@@ -34,6 +35,8 @@ export interface RunOptions extends CompileOptions {
     runId?: string;
     signal?: AbortSignal;
     onEmission?: (id: string) => void;
+    /** Exploration-local exclusion only; never expands ContextPacket or canonical scope. */
+    excludeTexts?: readonly string[];
     /** Presentation meaning only; provider semantics stay in UserIntent. */
     activity?: ThinkingActivityKind;
 }
@@ -260,6 +263,7 @@ export class AIRuntime {
                 .filter(candidate => intentAllowedForAction(kind, candidate.type))
                 .filter(candidate => permissionFor(candidate, packet, this.controller.getSnapshot().project).allowed)
                 .filter(candidate => semanticQualityAllowed(kind, candidate))
+                .filter(candidate => !options.excludeTexts || candidate.type === 'surface_possibility' && !repeatedWording(candidate.text, [...packet.scope.map(item => item.text), ...options.excludeTexts]))
                 .filter(candidate => !options.runId || ['surface_possibility', 'surface_question', 'surface_relation', 'surface_structure', 'respond_in_field', 'surface_evidence', 'request_recall'].includes(candidate.type));
             if (options.threadId) {
                 const body = accepted.map(candidate => 'text' in candidate ? candidate.text : candidate.type === 'surface_relation' ? `${candidate.kind}: ${candidate.label}` : '').filter(Boolean).join('\n\n');
@@ -285,6 +289,7 @@ export class AIRuntime {
                 }
             }
             if (kind === 'probe') this.hooks.notice(emitted && relationLabel ? t('Found a candidate relation: {label}. You decide whether to keep it.', { label: relationLabel }) : t(emitted ? 'A relation candidate is ready. Nothing was confirmed.' : 'No clear relation found.'));
+            else if (!emitted) this.hooks.notice(t('No new suggestion was surfaced this time.'));
             else if (kind === 'question') this.hooks.notice(t(response.mock ? 'Demo questions / no live model was used.' : 'Questions returned. Nothing was committed.'));
             else if (kind === 'organize') this.hooks.notice(t(response.mock ? 'Demo structure / no live model was used.' : 'A structure proposal is ready. Nothing was changed yet.'));
             else this.hooks.notice(t(response.mock ? 'Demo possibilities / no live model was used.' : 'Possibilities returned. No commitment was made on your behalf.'));

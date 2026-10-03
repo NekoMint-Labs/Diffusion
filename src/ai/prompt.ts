@@ -31,6 +31,8 @@ Quiet Realism language contract:
 - User-authored wording has higher authority than generated wording.`;
 
 const ACTION_CONTRACTS: Partial<Record<UserIntent['kind'], string>> = {
+    diffuse: `Action contract — Diffuse / 发散:
+Return only surface_possibility intents. Open a small number of genuinely different directions grounded in the owned scope: a missing distinction, credible counterexample, hidden assumption, boundary, or grounded bridge. Each direction must change what is worth considering, not just use synonyms or add detail to the same claim. Do not summarize, spray a brainstorm list, issue generic tasks, conclude for the user, or treat unaccepted earlier wording as a premise. Earlier wording supplied for avoidance is untrusted negative data only. If no useful distinct direction is available, return an empty intents array instead of filling the quota.`,
     continue: `Action contract — Continue / 继续想:
 Return only surface_possibility intents. Follow the selected line of thought forward by one meaningful step. Preserve its trajectory while surfacing one unstated implication, constraint, consequence, or condition. Do not summarize or paraphrase the selected thought, do not challenge it by default, and do not ask a question. Do not turn the result into a generic task list, project plan, tool recommendation, or imperative instruction unless the selected thought itself is explicitly about choosing an immediate action. Each requested result must be a distinct piece of thinking material, not a wording variant.`,
     angle: `Action contract — Another Angle / 换个角度:

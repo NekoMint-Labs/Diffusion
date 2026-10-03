@@ -24,3 +24,30 @@ This map separates implemented contracts from executed evidence and physical/ope
 The five recorded deterministic browser failures were resolved at their actual ownership seams: transient focus/Escape handoff, successor-surface ownership, Base UI menu navigation semantics, Settings motion contract sampling, and queued camera-frame commit. No retry, blanket timeout, or skipped test was added. Two consecutive clean full Playwright runs promote the suite to a blocking CI workflow.
 
 The v0.1 layered product checklist is kept as provenance at [`history/v0.1/kickoff-pack/07_FULL_BUILD_ACCEPTANCE_CHECKLIST.md`](history/v0.1/kickoff-pack/07_FULL_BUILD_ACCEPTANCE_CHECKLIST.md). Human-feel questions in that document are not auto-checked by passing tests.
+
+
+## Issue #10 — thinking material acceptance
+
+These incremental changes are scoped to Issue #10, not completion of release/native acceptance.
+A useful local interaction and passing fixture-backed gates do not establish repeated live-model quality.
+
+| Issue criterion | Implemented / exercised | Remaining before closeout |
+|---|---|---|
+| A1 — distinct action semantics | Dedicated Continue, Angle, Question, Relation, Organize and Diffuse contracts; typed output permissions; scoped continuation background | Compare the applicable actions on the same real problem/selection with the live provider. Prompt wording alone is insufficient. |
+| A2 — no paraphrase regression | Run-local bounded avoidance wording and conservative literal-repeat exclusion; ignored proposals remain excluded within that run | Repeated live outputs must be reviewed for synonym rewrites, generic prompts, filler and premature conclusions. The lexical filter is not a semantic-paraphrase detector. |
+| A3 — possibility quality | One proposal per exploration step, explicit direction/time budgets, honest empty-result feedback | Record whether each real result is relevant, concrete, non-trivial, concise and uncertain enough; a positive general usability report does not replace this review. |
+| A4 — user agency | Core permission gates; Keep/Ignore and reopen paths; canonical source/camera invariants in mounted regression tests | Include both decisions in the real-scenario trial; never treat a selected Ghost or successful request as commitment. |
+| A5 — three real scenario categories | Product direction and the contributor's technical research are available as candidate scenarios | Complete product/project, technical trade-off and unfamiliar complex-judgment trials, using actual problems rather than authored toy examples. |
+| A6 — engineering quality | Unit/offline/build and complete mounted gates; AI-off/tutorial/Stop paths retained; no new retries, skips or weakened assertions | Validate the uploaded head's remote CI and review. Native/release qualification owned by Issue #12 remains separate. |
+
+Portable regression coverage includes [bounded diversity](../tests/unit/diffuseDiversity.test.ts),
+[empty-result feedback](../tests/unit/emptyThinkingFeedback.test.ts),
+[continuation context](../tests/unit/continuationContext.test.ts),
+[mounted exploration](../tests/e2e/diverseExploration.spec.ts),
+[persisted responses](../tests/e2e/response.spec.ts) and
+[visible continuation placement](../tests/e2e/continuationPlacement.spec.ts).
+
+The current live trial on 2026-10-03 stopped on DeepSeek authentication failure before returning a
+usable result. A2/A3/A5 remain unverified. No credentials or private scenario transcripts are tracked.
+Further changes should address observed failures in this matrix rather than add unrelated features.
+Keep Issue #10 open until its acceptance is supported and the owner explicitly requests closure.

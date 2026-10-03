@@ -23,7 +23,7 @@ The Quiet Editorial Field uses a shared token system for both themes, text-like 
 
 Field materials have one production architecture: Paper Texture (the default), Topography, Threads, Waves, and Silk are lazy renderers inside `src/ui/fieldBackgrounds/`. The host is viewport-bounded and screen-space, so camera frames update only the Thought/phenomenon world and never write background CSS variables onto `.app`. Every material remains pointer-inert, `aria-hidden`, and outside the camera-owned world.
 
-Thought width is deterministic and bounded (`compact`, `regular`, or `wide`) from text content. Editing freezes the measured pre-edit width and applies a new class only after commit. Mounted interaction uses cached `ResizeObserver` geometry. Before mount, deterministic kind-aware estimates mirror CSS widths; actual reading boxes supersede estimates for disclosure after render. The reading cache records its text, tier and zoom so counter-scaled labels can be projected without treating their screen size as local geometry. Ghost correction, lasso and connector routing use cached rendered bounds when available. Pending Ghost correction is coalesced after layout and reruns on changed measurements, clears even partial overlap, and respects manually detached proposals. Pending reading footprints remain bounded across zoom tiers. Region labels appear only in Atlas overview, including after a Region was selected; hiding a label never changes Region data.
+Thought width is deterministic and bounded (`compact`, `regular`, or `wide`) from text content. Editing freezes the measured pre-edit width and applies a new class only after commit. Mounted interaction uses cached `ResizeObserver` geometry. Before mount, deterministic kind-aware estimates mirror CSS widths; actual reading boxes supersede estimates for disclosure after render. The reading cache records its text, tier and zoom so counter-scaled labels can be projected without treating their screen size as local geometry. Ghost correction, lasso and connector routing use cached rendered bounds when available. Pending Ghost correction is coalesced after layout and reruns on changed measurements, clears even partial overlap, and respects manually detached proposals. Pending reading footprints remain bounded across zoom tiers. Region labels appear only in Atlas overview, including after a Region was selected; hiding a label never changes Region data. AI result placement uses current mounted reading bounds and a four-line estimate for unmounted previews. Continue prefers nearby clear slots inside the safe viewport and reserves its separate reading control; only eligible transient Ghosts receive correction, never canonical sources or the camera.
 
 Appearance is device-local presentation state owned by `src/ui/appearance.ts`, `src/ui/workspace/useWorkspaceSettings.ts`, `src/ui/fieldBackgrounds/`, and the atmosphere layer. Theme/Profile, Field Style, Accent, and Image Atmosphere are independent; Field Presence and Ambient Motion are bounded controls. Reduced Motion sets effective ambient movement to zero without changing the stored preference. None of these settings enter canonical `ProjectState`, project Dexie records, collision, camera authority, or `GeometryCache`. Decorative Field layers stay full-bleed in viewport space, pointer-inert, and `aria-hidden`; the camera-owned world continues to contain DOM Thoughts and SVG phenomena only.
 
@@ -37,6 +37,29 @@ Keyboard ownership is a single ordered chain: IME composition is never a command
 
 The EN/ZH dictionary is small and reactive. User text, fetched passages and model replies are never rewritten for localization. Static coverage is checked independently of runtime component rendering.
 
+## Reading and authored responses
+
+Selecting a bounded Thought reveals read-only full-text disclosure through the existing anchored
+Surface. Selected read/respond controls have a separate measured UI footprint for Hub placement;
+they never resize a Thought or enter collision, lasso, or canonical geometry. This does not edit,
+claim, or rewrite the material. A person's explicit response creates an
+InputRecord and a separate canonical Thought using the existing continuation lineage; it never
+calls a provider or automatically confirms a relation.
+
+An unfinished response is a device-local draft, separate from canonical ProjectState and portable
+exports. It retains its exact text and frozen reference IDs under a per-Field storage key. Reopening
+restores that scope; switching to a different response cannot silently retarget it. Missing
+references remain in the draft and prevent submission rather than being filtered into a new scope.
+A failed draft write retains the window's text and reports that it is not saved on the device.
+Optional background renderer failures are contained at the decorative layer so the Field remains
+usable; switching Field Style resets that layer's failure boundary.
+
+## Bounded exploration diversity
+
+`DiffuseSession` owns a run-local list of surfaced wording, including subsequently ignored Ghosts. It supplies at most six short JSON-quoted excerpts as untrusted negative constraints in the existing intent text, never as owned scope, background, evidence or durable history. Each step may surface at most one possibility; default three directions remain bounded by the explicit direction/time budget. Pause/resume retain the exclusions; a new run resets them. An empty, invalid or repeated step ends without automatic replacement requests. `surfaced` counts actual proposals independently of attempted `used` steps.
+
+The runtime exclusion is deliberately lexical (normalized Unicode, whitespace/case and terminal punctuation), covering verbatim copies of request-supplied thoughts and pending Ghosts attached to the selected scope for Continue, Angle and Question. Unrelated canvas thoughts and proposals are outside the duplicate check. It preserves internal technical operators and does not assert semantic paraphrase detection. Diverse framing is an action contract that still requires repeated live-model evaluation. The request schema, provider boundary, canonical state, web permissions and user commitment path are unchanged.
+
 ## Threads and depth
 
 Thread stores frozen scope IDs plus text/kind/source references captured on creation. Explicit Add selection extends snapshots but does not silently refresh earlier wording. Field remains usable beside its split manuscript. Deep Dive has its own context rail and structured manuscript component, not the Thread rendered wider. The Field remains mounted but visually recedes completely in focus mode; exact return camera/selection is preserved.
@@ -46,6 +69,14 @@ Messages are response history, not canonical Field content. Bring from a respons
 ## Sources, providers and trust
 
 Explicit intent compiles a bounded packet -> replaceable provider -> semantic intent validation -> Core permission gate -> session candidates/permitted presentation. Canonical state is not handed to a model as a mutable object.
+
+For explicit Field selections, the context compiler may supply up to four direct durable lineage
+sources as background, within the existing local/text limits. Optional request-only
+`continuations` maps selected IDs to the supplied source IDs. Selection remains primary; lineage
+is provenance, not a confirmed semantic relation or endorsement. No ancestors are recursively
+loaded, no Ghost is included, and Thread snapshots do not gain live lineage. A changed/deleted
+supplied source or removed lineage invalidates the remaining in-flight result. This adds no
+canonical fields or automatic provider calls.
 
 Phase 3A gives unscoped authored input a separate structured-ingestion contract. The exact text is first persisted as an `InputRecord`; extraction then returns bounded Thought/Question proposals whose exact `sourceQuotes` are resolved deterministically into ranges over that record, followed by a separate relation-inference pass over validated proposal IDs. Those results remain session `Ghost` / tentative `Phenomenon` state until the person claims, edits, keeps or confirms them. A failed/disabled ingestion falls back to one canonical Thought containing the authored text, while the raw input remains durable. This path reuses provider transport but is deliberately not squeezed through `SemanticIntent`.
 
@@ -151,6 +182,7 @@ The rule that must hold with more than one animation technology present:
 - Semantic ownership never waits for animation: a dismissed owner stops owning input, `role`, `aria-hidden` and its test id immediately, and its exit is only a visual echo. `pointerEvents` is applied at once, never animated.
 - A **menu is not a dialog**. A Diffusion menu is a bounded projection and the Field stays live underneath it, so the menu library's modal mode is off: Base UI's default modal menu renders a full-screen invisible layer that absorbs the first outside press, which would make selecting a Thought or placing the caret take two clicks.
 - **Focus follows the gesture.** One coordinator (`useTransientFocus`) is the only authority that restores focus. It treats a pointer press outside an open owner as the user choosing a new target and focuses what they pressed; a keyboard dismissal has no such gesture and returns to the opener. A popup library's own return-focus is disabled rather than left to disagree with it.
+- Header menu requests defer mounting by one frame; the focus coordinator cancels them on a newer pointer/key gesture and checks the ownership epoch before opening. An old menu cannot supersede a successor place. Anchored surfaces observe content and viewport changes through Floating UI so asynchronous results remain inside the viewport.
 - A transient owner claims focus from an effect on its own ownership flag, never from mount-time `autoFocus`: when an owner is re-opened before its exit finishes, `AnimatePresence` revives the same key instead of remounting the child, so a mount-only focus is never applied and the owner appears without input focus.
 - Reduced motion collapses a role to zero duration rather than hiding the change, for both technologies: a GSAP sequence is not built at all when the user asks for reduced motion, because the state change it decorates has already happened.
 - CSS never owns a property Motion or GSAP animates on the same element (`transition: all` is prohibited). The empty-field invitation carries no CSS transition precisely because an authored GSAP sequence animates its opacity and transform.

@@ -2,7 +2,25 @@
 
 Diffusion is a quiet thinking medium for ideas before commitment. This file describes the current checkout: what works, which subsystem owns it, what was freshly verified, and what remains incomplete. It is not a changelog. Historical phase reports and prior verification records remain under [`docs/history/`](docs/history/README.md).
 
-## PR #17 Windows feedback repair pass (2026-10-03)
+## Issue #10 / #11 synchronized candidate (2026-10-03)
+
+The independent integration draft [#19](https://github.com/NekoMint-Labs/Diffusion/pull/19) now includes #17 head `639818ad6c2a9123c9f92989f6f2bcba81936b98` (product `9377a95`) and #18 head `c9a3cc6dfe5091af158e6837a9544b2441e3309c`. Product integration is `fc3fd199d782c71fb5e9216d62d8cd53cc5d11c7`. Both complete input revisions are ancestors; #13–#16 are already included through #17.
+
+Custom discovery readiness and Source-derived Atlas anchors now include #17's final review repairs. Scoped literal duplicate filtering, controlled connection verification and context-free Ask opener filtering now include #18's latest repairs. The sole new textual conflict merged the controlled connection route while retaining model/key/authentication and Configuration changed assertions. Existing visible-ID/measurement forwarding and camera/provenance/organization boundaries are preserved.
+
+Local application/core TypeScript, production build, 54 files / 411 unit tests, 266 offline tests, 960 locale entries, source-size and diff checks passed. Exact-product-head [CI](https://github.com/NekoMint-Labs/Diffusion/actions/runs/37134333211) and [complete E2E](https://github.com/NekoMint-Labs/Diffusion/actions/runs/37134333208) passed: 297 passed, 12 existing dev-only skips, zero failures; all six jobs passed, one worker per runner and zero retries. The duplicate local full E2E was stopped after remote full-suite success; its partial log is retained and is not claimed as a completed pass.
+
+Fixed-size visual follow-up is recorded in [the integration record](docs/ISSUE10_11_INTEGRATION_PREFLIGHT.md). No new native installer was produced. #12 owns final Windows acceptance and #10 retains real-model A2/A3/A5 closeout; #10/#11 remain open and no PR is merged.
+
+## Earlier Issue #10 / #11 integration candidate (33bd1a7 + 38eab8a)
+
+The independent `codex/integration-issue10-11` branch combines #17 `33bd1a7` and draft #18 `38eab8a`; #17 includes #13–#16. Fifteen textual conflicts were resolved while preserving selected-content priority, separate provenance/organization, user decisions over tentative AI results, original Thought coordinates and camera stability. The [integration record](docs/ISSUE10_11_INTEGRATION_PREFLIGHT.md) documents the seams, exact inputs and earlier failed evidence.
+
+TypeScript/production build, 266 offline tests and 54 files / 400 unit tests passed. Initial full E2E: 273 passed, 18 failed, 12 existing dev-only skips. After repairs, all 93 affected and related focus/geometry cases passed, one worker and zero retries. Title-by-title evidence audit: 295 distinct final passing cases, 12 existing skips, no unresolved failures across 307 cases; this is full-run plus affected-suite evidence, not a claim of a final single all-green full run. Fresh 1280×720 light/dark render checks qualified AI settings copy, full-row suggestion review and Atlas aggregation. Read/respond controls retain 32 screen-pixel height and clear the Hub.
+
+The independent #17 menu repair was separately built and checked (344 unit, 266 offline, 11 mounted-browser cases) before publication. This integration has no new native package or live-model qualification. The Windows and installer results in the next section belong to the earlier #17 repair pass at `19bbd42`, not this integration. #12 retains native acceptance; #10/#11 remain open and no PR is merged.
+
+## Earlier PR #17 Windows feedback repair pass (19bbd42, 2026-10-03)
 
 This pass implements the maintainer's twelve-item Windows review on top of `943fd8e`. The [repair and acceptance record](docs/NATIVE_UX_ACCEPTANCE.md) maps each report to its implementation, regressions, reference/reuse boundary and remaining native checks. Source identity, installer SHA-256, screenshots and complete command logs are bundled with the local acceptance delivery; PR #17 remains unmerged and Issue #11 remains open.
 

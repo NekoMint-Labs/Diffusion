@@ -7,6 +7,7 @@ async function openMenu(page: Page, trigger: MenuTrigger, command: string) {
     await page.getByTestId(trigger).click();
     const scope = trigger === 'field-title' ? 'field' : 'global';
     const root = page.getByTestId(`${scope}-menu`);
+    await expect(root).toBeVisible();
     const direct = root.locator(`[data-command="${command}"]`);
     if (await direct.count()) {
         await direct.click();
@@ -119,6 +120,27 @@ test('Ctrl K replaces the menu with the command palette; a delayed menu callback
     await page.keyboard.press('Escape'); await expect(page.getByTestId('global-more')).toBeFocused();
 });
 
+for (const action of ['palette', 'escape', 'outside'] as const) {
+    test(`a pending menu yields to ${action} before its first animation frame`, async ({ page }) => {
+        await page.goto('/demo?locale=en');
+        await expect(page.locator('[data-thought-id="attention"]')).toBeVisible();
+        await page.clock.install();
+        await page.clock.pauseAt(new Date(Date.now() + 1000));
+        // Freeze paint to exercise the interval between the click and the deferred menu mount.
+        await page.getByTestId('global-more').focus();
+        await page.getByTestId('global-more').dispatchEvent('click');
+        if (action === 'outside') await page.mouse.click(8, 500);
+        else await page.keyboard.press(action === 'palette' ? 'Control+k' : 'Escape');
+        await page.clock.runFor(100);
+        await expect(page.getByTestId('global-menu')).toHaveCount(0);
+        if (action === 'palette') {
+            await expect(page.locator('#command-palette-input')).toBeFocused();
+            await page.keyboard.press('Escape');
+            await page.clock.runFor(100);
+        } else await expect(page.getByRole('dialog')).toHaveCount(0);
+        await expect(page.getByTestId(action === 'outside' ? 'field' : 'global-more')).toBeFocused();
+    });
+}
 for (const typography of ['serif', 'sans']) for (const [profile, tone] of [['editorial-warm', 'light'], ['graphite-night', 'dark']] as const) for (const locale of ['en', 'zh']) {
     test(`preference matrix ${typography}/${profile}/${locale}: persist, no inference, no project replacement`, async ({ page }) => {
         let requests = 0;

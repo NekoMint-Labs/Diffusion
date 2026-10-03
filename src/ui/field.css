@@ -234,7 +234,7 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .scope-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
 /* The action's own size belongs to `materials.css`; this rule keeps only what the toolbar's
    behaviour needs — each action owns its own pointer. */
-.scope-actions button { padding: 6px 10px; border-radius: var(--radius-hair); color: var(--ink-secondary); pointer-events: auto; transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease, opacity var(--motion-instant) ease; }
+.scope-actions button { min-height: 32px; padding: 7px 11px; border-radius: var(--radius-hair); color: var(--ink-secondary); pointer-events: auto; transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease, opacity var(--motion-instant) ease; }
 .scope-actions button:hover:not(:disabled) { color: var(--ink-primary); background: var(--attention-soft); }
 .scope-actions button:active:not(:disabled) { opacity: .62; }
 .scope-actions button:focus-visible { color: var(--ink-primary); outline-offset: 1px; }
@@ -275,17 +275,16 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .speak textarea::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
 .speak[data-composing="true"] textarea { text-align: left; color: var(--ink-primary); }
 .speak textarea::placeholder { color: var(--ink-tertiary); font-size: var(--type-composer-hint-size); line-height: calc(var(--type-composer-line) * var(--type-composer-size)); }
-/* Focused, the surface is one row: writing, the optional cue, and the compact action. Its 24px
-   input, 8px vertical padding, and border keep the visible material at 42px; multiline text alone
-   increases that footprint. */
-.speak[data-composing="true"] .speak-shell { display: flex; flex-direction: column; padding: 8px 10px; background: color-mix(in srgb, var(--surface-1) 97%, transparent); border: 1px solid color-mix(in srgb, var(--boundary) 82%, transparent); border-radius: var(--radius-surface); box-shadow: 0 16px 40px -28px color-mix(in srgb, var(--ink-primary) 36%, transparent), 0 1px 3px color-mix(in srgb, var(--ink-primary) 7%, transparent); }
+/* The 32px action keeps its hit area while 4px vertical shell padding and the border keep
+   a single writing row at 42px. Multiline text and explicit references grow the surface. */
+.speak[data-composing="true"] .speak-shell { display: flex; flex-direction: column; padding: 4px 10px; background: color-mix(in srgb, var(--surface-1) 97%, transparent); border: 1px solid color-mix(in srgb, var(--boundary) 82%, transparent); border-radius: var(--radius-surface); box-shadow: 0 16px 40px -28px color-mix(in srgb, var(--ink-primary) 36%, transparent), 0 1px 3px color-mix(in srgb, var(--ink-primary) 7%, transparent); }
 .speak[data-composing="true"] .speak-shell::before { display: none; }
 .speak[data-composing="true"] .speak-row { gap: 8px; }
 .speak[data-state="submitting"] .speak-shell { opacity: .68; }
 .speak-light { position: absolute; z-index: -1; inset: 0; border-radius: inherit; background: radial-gradient(120% 96% at 42% -6%, color-mix(in srgb, var(--attention) 6%, transparent) 0%, transparent 62%); opacity: 0; pointer-events: none; transition: opacity var(--motion-control) var(--ease-out-ui); }
 .speak[data-composing="true"] .speak-light { background: color-mix(in srgb, var(--attention) 3%, transparent); opacity: .7; }
 /* The action is text-level commitment rather than a second card. */
-.speak-action { display: inline-flex; align-items: center; gap: 3px; flex: none; min-height: 26px; padding: 3px 4px; border: 0; border-radius: var(--radius-control); background: transparent; color: var(--ink-tertiary); font: var(--type-label-size)/1 var(--ui-font); white-space: nowrap; transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease; }
+.speak-action { display: inline-flex; align-items: center; gap: 4px; flex: none; min-height: 32px; padding: 6px 9px; border: 0; border-radius: var(--radius-control); background: transparent; color: var(--ink-tertiary); font: var(--type-label-size)/1 var(--ui-font); white-space: nowrap; transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease; }
 .speak-action:hover:not(:disabled), .speak-action:focus-visible { color: var(--ink-primary); background: color-mix(in srgb, var(--surface-2) 54%, transparent); }
 .speak-action-key { color: var(--ink-tertiary); }
 /* Shortcut copy participates in the writing row, reserves no vertical space when it is hidden, and is
@@ -293,7 +292,9 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .speak-shortcut { display: none; align-items: center; gap: 3px; flex: none; color: var(--ink-tertiary); font: var(--type-hint-size)/1 var(--ui-font); white-space: nowrap; pointer-events: none; }
 .speak textarea:focus ~ .speak-shortcut { display: inline-flex; }
 .speak-shortcut kbd { border-color: transparent; background: transparent; padding: 0; color: inherit; }
-.speak-scope { display: flex; align-items: center; gap: 6px; margin: 0 5px 6px; color: var(--ink-tertiary); font: var(--type-helper-size)/1.5 var(--ui-font); animation: settle-actions var(--motion-micro) var(--ease-out-ui) both; }
+.speak-context-line { display: flex; align-items: center; gap: 10px; margin: 0 5px 6px; flex-wrap: wrap; }
+.speak-draft-status { color: var(--ink-secondary); font: var(--type-hint-size)/1.5 var(--ui-font); }
+.speak-scope { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--ink-tertiary); font: var(--type-helper-size)/1.5 var(--ui-font); animation: settle-actions var(--motion-micro) var(--ease-out-ui) both; }
 .speak-scope::before { content: ""; flex: none; width: 4px; height: 4px; border-radius: 50%; background: var(--attention); opacity: .75; }
 
 
@@ -347,3 +348,13 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .field[data-level="neighborhood"] .ghost { padding: calc(4px * var(--inverse-zoom)); }
 .field[data-level="neighborhood"] .ghost .thought-preview { max-height: calc(64px * var(--inverse-zoom)); overflow: hidden; }
 .field[data-level] .thought[data-find="current"] .thought-preview { max-height: calc(55vh * var(--inverse-zoom)); overflow-y: auto; }
+/* Read-only disclosure and explicit context for a person's own response. */
+/* Selection actions occupy a separate footprint; they never resize measured Thought geometry. */
+.thought-local-actions { position: absolute; top: calc(100% + 7px * var(--inverse-zoom)); left: 0; width: 100%; display: flex; flex-wrap: wrap; gap: calc(4px * var(--inverse-zoom)) calc(12px * var(--inverse-zoom)); }
+/* A proposal caption remains visible above its separate read control. */
+.thought.ghost .thought-local-actions { top: calc(100% + 22px * var(--inverse-zoom)); }
+.thought-read, .thought-respond { display: block; min-height: calc(32px * var(--inverse-zoom)); margin: 0; padding: calc(5px * var(--inverse-zoom)) calc(4px * var(--inverse-zoom)); border: 0; background: none; color: var(--ink-secondary); font: calc(var(--type-label-size) * var(--inverse-zoom))/1.5 var(--ui-font); cursor: pointer; }
+.thought-read:hover, .thought-read:focus-visible, .thought-respond:hover, .thought-respond:focus-visible { color: var(--ink-primary); text-decoration: underline; }
+.speak-references { margin: 0 5px 9px; max-height: min(150px, 24dvh); overflow: auto; overscroll-behavior: contain; color: var(--ink-secondary); font: var(--type-helper-size)/1.6 var(--ui-font); }
+.speak-references blockquote { margin: 4px 0; padding-left: 9px; border-left: 2px solid var(--boundary); overflow-wrap: anywhere; }
+.speak-references > span { display: block; margin-top: 4px; color: var(--ink-helper); }

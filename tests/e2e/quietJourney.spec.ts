@@ -3,9 +3,20 @@ import { test, expect } from '@playwright/test';
 test.use({ viewport: { width: 1280, height: 720 }, reducedMotion: 'reduce' });
 test('an empty Field grows through proposals, explicit relations and a confirmed Crystal', async ({ page }, testInfo) => {
     await page.addInitScript(() => {
-        localStorage.setItem('diffusion-settings', JSON.stringify({ locale: 'zh', provider: 'demo' }));
+        localStorage.setItem('diffusion-settings', JSON.stringify({ locale: 'zh', provider: 'gateway' }));
         // Tutorial has its own real-interaction suite; this journey uses ordinary thinking actions.
         localStorage.setItem('diffusion-first-field-tutorial-v1', JSON.stringify({ status: 'complete' }));
+    });
+    // The demo provider deliberately leaves unknown pairs unanswered. This authored journey
+    // owns a specific controlled response rather than requiring a generic model relation.
+    await page.route('**/api/respond', route => {
+        const { intent, packet } = route.request().postDataJSON();
+        const intents = intent.kind === 'probe'
+            ? [{ type: 'surface_relation', a: packet.scope[0].id, b: packet.scope[1].id, kind: 'gap', label: '时间上限约束学习计划', explanation: '每天可投入的时间决定了计划中可以持续完成的目标大小。' }]
+            : intent.kind === 'crystal'
+                ? [{ type: 'request_crystal_preview', text: '先保留每天都能完成的小目标' }]
+                : [{ type: 'surface_possibility', text: '先选一个每天都能完成的小目标，再观察一周。' }, { type: 'surface_possibility', text: '把学习任务限制在当天真实可用的时间内。' }];
+        return route.fulfill({ json: { providerLabel: 'Journey fixture / not live', mock: true, intents } });
     });
     await page.goto('/?locale=zh');
     await expect(page.locator('article.thought')).toHaveCount(0);

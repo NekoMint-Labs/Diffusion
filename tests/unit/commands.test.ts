@@ -23,6 +23,7 @@ function harness(state: ProjectState = project()) {
         controller,
         findRelation: note('findRelation') as never,
         ask: note('ask') as never,
+        respond: note('respond') as never,
         openThread: note('openThread') as never,
         previewCrystal: note('previewCrystal') as never,
         continueCrystal: note('continueCrystal') as never,

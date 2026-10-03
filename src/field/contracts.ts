@@ -7,12 +7,13 @@ export interface FieldHandle {
     camera: () => Camera;
     restore: (c: Camera) => void;
     centerOn: (ids: string[]) => void;
-    reveal: (ids: string[]) => void;
+    reveal: (ids: string[], options?: { preserveCamera?: boolean }) => void;
     centerPoint: () => Point;
     zoomOut: () => void;
     visibleIds: () => string[];
     screenPoint: (point: Point) => Point;
     viewBounds: () => Bounds;
+    itemBounds: () => Record<string, Bounds>;
 }
 export interface FieldFind {
     matches: Set<string>;

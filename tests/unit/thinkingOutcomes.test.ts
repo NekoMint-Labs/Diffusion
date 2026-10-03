@@ -22,7 +22,7 @@ it('distinguishes an empty or action-incompatible response from success', async 
         const f = fixture(async () => ({ providerLabel: 'Fixture', mock: false, intents }));
         expect(await f.runtime.run('continue', '', ['a'])).toEqual({ status: 'completed', emitted: 0 });
         expect(f.operations.at(-1)?.resultCount).toBe(0);
-        expect(f.notices.at(-1)).toBe(t('No usable results returned. Try another direction.'));
+        expect(f.notices.at(-1)).toBe(t('No new suggestion was surfaced this time.'));
         expect(Object.keys(f.controller.getSnapshot().session.ghosts)).toHaveLength(0);
     }
 });

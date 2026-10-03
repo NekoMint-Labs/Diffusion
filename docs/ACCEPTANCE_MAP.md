@@ -89,3 +89,7 @@ The session-held DeepSeek credential was verified through the app's real connect
 - **Technical / unfamiliar judgment — Another Angle:** a repeated run completed with no new proposal after the scoped avoidance checks. This is recorded as an honest empty result, not counted as novelty; the UI still needs a human-visible capture of the empty-result notice during a live run.
 
 This pass supports provider connectivity, concrete Ask semantics, agency, and empty-result handling. Product-direction and separate technical-trade-off scenarios, plus repeated Continue/Angle review, remain before A2/A3/A5 can be marked complete.
+- **Product / project direction:** I tried the real current decision about whether to keep iterating locally or upload the Draft before all Issue #10 scenarios are complete. This run returned no new field proposal, so it is recorded as an honest empty result rather than a quality success.
+- **Technical trade-off:** on the actual “same number of views vs same information amount” trade-off, one live question surfaced the confound between the agent's selection quality and the reconstruction method's contribution. It was specific to the decision and preserved the unresolved comparison.
+
+The three scenario categories are now exercised at least once, but the product-direction run did not produce a useful possibility and the repeated Continue/Angle matrix is still incomplete. A2/A3 therefore remain open.

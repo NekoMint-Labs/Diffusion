@@ -300,9 +300,25 @@ for (const decision of ['ignore', 'claim'] as const) {
         } else {
             await ghost.click();
             await page.getByTestId('scope-hub').getByRole('button', { name: 'Keep this', exact: true }).click();
-            await expect(page.locator('[data-kind="thought"]').filter({ hasText: 'An authored fixture for the continuation workflow.' })).toBeVisible();
+            const kept = page.locator('[data-kind="thought"]').filter({ hasText: 'An authored fixture for the continuation workflow.' });
+            await expect(kept).toBeVisible();
+            const keptId = await kept.getAttribute('data-thought-id');
+            await expect.poll(() => page.evaluate(({ thoughtId, sourceId }) => new Promise(resolve => {
+                const opening = indexedDB.open('diffusion-explorer-v1');
+                opening.onerror = () => resolve(false);
+                opening.onsuccess = () => {
+                    const db = opening.result;
+                    const request = db.transaction('projects').objectStore('projects').get('demo');
+                    request.onerror = () => { db.close(); resolve(false); };
+                    request.onsuccess = () => {
+                        const thought = request.result?.thoughts?.[thoughtId!];
+                        db.close();
+                        resolve(thought?.text === 'An authored fixture for the continuation workflow.' && thought?.derivedFrom?.includes(sourceId));
+                    };
+                };
+            }), { thoughtId: keptId!, sourceId: responseId! })).toBe(true);
             await page.reload();
-            await expect(page.locator('[data-kind="thought"]').filter({ hasText: 'An authored fixture for the continuation workflow.' })).toHaveAttribute('data-origin-scope', responseId!);
+            await expect(page.locator(`[data-thought-id="${keptId}"]`)).toHaveAttribute('data-origin-scope', responseId!);
         }
         await expect(page.locator('[data-thought-id="unfinished"] p')).toHaveText(question);
         await expect(response).toContainText(reply);

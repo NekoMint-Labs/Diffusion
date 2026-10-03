@@ -68,7 +68,10 @@ export default function App() {
         throw new Error(t('The requested world could not be loaded.')); useUI.getState().patch({ selection: [], editing: null, surface: 'none', threadId: null, sourceId: null, regionId: null, relationId: null, returnPoint: null, carry: [], busy: false, operation: null, notice: '' }); setController(new ProjectController(reenterProject(project), state => repository.saveProject(state))); setArrivedId(projectId); try {
         localStorage.setItem('diffusion-active-project', projectId);
     }
-    catch { /* Re-entry falls back to Main. */ } };
+    catch { /* Re-entry falls back to Main. */ }
+    // Let the new Workspace commit before the caller reports completion. This keeps the first
+    // pointer interaction on a freshly created Field from racing the old Workspace handoff.
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve())); };
     if (!controller || !platform)
         return <main className="app"><p style={{ padding: 40 }}>{t('Opening the Field...')}</p></main>;
     return <MotionConfig reducedMotion="user"><Workspace key={controller.getSnapshot().project.id} controller={controller} repository={repository} platform={platform} startupError={startupError} arrived={arrivedId === controller.getSnapshot().project.id} onSwitchProject={switchProject}/></MotionConfig>;

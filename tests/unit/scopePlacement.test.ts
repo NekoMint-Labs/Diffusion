@@ -191,3 +191,41 @@ describe('clear placement for measured screen controls', () => {
         expect(clearScopePlacement({ ...options, selectionBounds: { x: 400, y: 300, width: 100, height: 70 }, hubSize: { width: 1400, height: 44 } })).toBeNull();
     });
 });
+
+describe('continuation in a narrow reading viewport', () => {
+    const wording = '如果智能体决定下一张图从哪里拍，就必须用当前已经能算出来的不确定性作为依据，不能等待最后的重建分数。'.repeat(3);
+    it('uses measured source height and puts a long continuation nearby without moving authored cards', () => {
+        const project = createProject('narrow');
+        project.thoughts.a = makeThought('稀疏视角重建和智能体的结合', { x: 190, y: 310 }, 1, 'a');
+        project.thoughts.b = { ...makeThought(wording, { x: 153, y: 415 }, 1, 'b'), derivedFrom: ['a'], generationAction: 'continue' };
+        const before = JSON.stringify(project);
+        const measured = { a: { x: 190, y: 310, width: 256, height: 43 }, b: { x: 153, y: 415, width: 328, height: 120 } };
+        const point = placePossibility(project, emptySession(), { x: 0, y: 0 }, 0, ['b'], { x: 0, y: 0, width: 898, height: 804 }, wording, 'continue', undefined, measured);
+        const preview = { ...point, width: 328, height: 138 };
+        expect(point.x).toBeGreaterThanOrEqual(0);
+        expect(point.y).toBeGreaterThanOrEqual(0);
+        expect(point.x + preview.width).toBeLessThanOrEqual(898);
+        expect(point.y + preview.height).toBeLessThanOrEqual(804);
+        expect(distanceBetween(preview, measured.b)).toBeGreaterThanOrEqual(36);
+        expect(distanceBetween(preview, measured.b)).toBeLessThanOrEqual(128);
+        expect(JSON.stringify(project)).toBe(before);
+    });
+    it('reserves bounded previews for successive results before they have been measured', () => {
+        const project = createProject('successive');
+        project.thoughts.a = makeThought(wording, { x: 153, y: 415 }, 1, 'a');
+        const session = emptySession();
+        const measured = { a: { x: 153, y: 415, width: 328, height: 120 } };
+        const results = [];
+        for (let i = 0; i < 3; i++) {
+            const point = placePossibility(project, session, { x: 0, y: 0 }, i, ['a'], { x: 0, y: 0, width: 898, height: 804 }, wording, 'continue', undefined, measured);
+            const box = { ...point, width: 328, height: 138 };
+            expect(point.x).toBeGreaterThanOrEqual(0);
+            expect(point.y).toBeGreaterThanOrEqual(0);
+            expect(point.x + box.width).toBeLessThanOrEqual(898);
+            expect(point.y + box.height).toBeLessThanOrEqual(804);
+            expect(results.every(previous => !overlaps(previous, box))).toBe(true);
+            results.push(box);
+            session.ghosts['g' + i] = { id: 'g' + i, text: wording, ...point, scopeIds: ['a'], createdAt: 2 };
+        }
+    });
+});

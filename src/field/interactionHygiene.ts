@@ -58,7 +58,9 @@ export function correctMeasuredGhost(key: string, controller: ProjectController,
     // still use the separate severe-overlap policy in the drag path.
     const gap = 6 / camera.zoom;
     const exclusions = occupied.map(box => ({ x: box.x - gap, y: box.y - gap, width: box.width + gap * 2, height: box.height + gap * 2 }));
-    const point = correctSevereOverlap(bounds, [], viewportBounds(camera, viewport.width, viewport.height, 0), [...exclusions, ...reserved]);
+    const view = viewportBounds(camera, viewport.width, viewport.height, 0);
+    if (ghost.proposalAction === 'continue') view.height = Math.max(0, view.height - 64 / camera.zoom);
+    const point = correctSevereOverlap(bounds, [], view, [...exclusions, ...reserved], true);
     if (Math.abs(point.x - bounds.x) > .5 || Math.abs(point.y - bounds.y) > .5) {
         controller.moveGhost(key, point);
         geometry.setPosition(key, point.x, point.y);

@@ -6,7 +6,9 @@ import { isAuthoredExample } from '../../core/demo.ts';
 import type { GeometryCache } from '../../field/spatial/index.ts';
 import { thoughtSizeClass } from '../../field/spatial/collision.ts';
 import { hierarchyStyle } from '../../field/spatial/hierarchyDisclosure.ts';
+import type { Bounds } from '../../field/spatial/geometry.ts';
 import { semanticExcerpt } from '../../field/spatial/representation.ts';
+import { isQuestion } from '../workspace/response.ts';
 import { TransientTextPresence } from '../motion/TransientTextPresence.tsx';
 interface Props {
     item: Thought | Ghost;
@@ -30,12 +32,18 @@ interface Props {
     onCancel: () => void;
     onReject?: (id: string) => void;
     onMeasure?: (id: string, initial?: boolean) => void;
+    onActionsMeasure?: (id: string, bounds: Bounds | null) => void;
     onHover?: (id: string | null) => void;
+    onRead: (id: string) => void;
+    onRespond: (id: string) => void;
 }
-export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, selected, emphasis, settling, find, editing, level, depth, root, parentText, hasChildren, collapsedCount = 0, onExpand, geometry, onEdit, onCancel, onReject, onMeasure, onHover }: Props) {
+export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, selected, emphasis, settling, find, editing, level, depth, root, parentText, hasChildren, collapsedCount = 0, onExpand, geometry, onEdit, onCancel, onReject, onMeasure, onActionsMeasure, onHover, onRead, onRespond }: Props) {
     useLocale();
     const ref = useRef<HTMLElement>(null);
     const input = useRef<HTMLTextAreaElement>(null);
+    const preview = useRef<HTMLDivElement>(null);
+    const localActions = useRef<HTMLDivElement>(null);
+    const [truncated, setTruncated] = useState(false);
     const settled = useRef(false);
     const wasEditing = useRef(false);
     const focusOnDraft = useRef(false);
@@ -48,12 +56,27 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
         const el = ref.current;
         if (!el)
             return;
-        const measure = (initial = false) => { geometry.measure(item.id, el.offsetWidth, el.offsetHeight); onMeasure?.(item.id, initial); };
+        const measure = (initial = false) => {
+            geometry.measure(item.id, el.offsetWidth, el.offsetHeight);
+            const content = preview.current;
+            setTruncated(Boolean(content && content.scrollHeight > content.clientHeight + 1));
+            onMeasure?.(item.id, initial);
+        };
         measure(true);
         const observer = new ResizeObserver(() => measure());
         observer.observe(el);
         return () => observer.disconnect();
-    }, [item.id, geometry, level, onMeasure]);
+    }, [item.id, item.text, editing, geometry, level, onMeasure]);
+    useLayoutEffect(() => {
+        const actions = localActions.current;
+        if (!actions || !onActionsMeasure) return;
+        const measure = () => onActionsMeasure(item.id, { x: actions.offsetLeft, y: actions.offsetTop, width: actions.offsetWidth, height: actions.offsetHeight });
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(actions);
+        if (ref.current) observer.observe(ref.current);
+        return () => { observer.disconnect(); onActionsMeasure(item.id, null); };
+    }, [item.id, item.text, selected, editing, truncated, level, onActionsMeasure]);
     useLayoutEffect(() => {
         const entering = editing && !wasEditing.current;
         wasEditing.current = editing;
@@ -107,7 +130,7 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
         <span className="hierarchy-level">{depth ? t('Level {level}', { level: depth + 1 }) : t('Top level')}</span>
         {parentText !== undefined && <span className="hierarchy-parent">{t('Parent: {parent}', { parent: parentText })}</span>}
     </div>}
-   <div className="thought-preview">{editing ? <textarea ref={input} aria-label={t('Edit thought')} value={draft} maxLength={20000} onChange={e => setDraft(e.target.value)} onBlur={save} onKeyDown={e => {
+   <div ref={preview} className="thought-preview">{editing ? <textarea ref={input} aria-label={t('Edit thought')} value={draft} maxLength={20000} onChange={e => setDraft(e.target.value)} onBlur={save} onKeyDown={e => {
                 e.stopPropagation();
                 if (e.nativeEvent.isComposing || e.keyCode === 229)
                     return;
@@ -124,6 +147,10 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
                 ? <TransientTextPresence phase={ghost ? 'ghost' : 'recall'}>{short || t('A thought, not yet in words...')}</TransientTextPresence>
                 : <p>{short || t('A thought, not yet in words...')}</p>}</div>
     {!editing && hasChildren && (collapsedCount > 0 || selected) && <button type="button" className="branch-expand" data-testid="branch-expand" aria-expanded={collapsedCount === 0} onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); onExpand?.(item.id); }}><span aria-hidden="true">{collapsedCount ? '▸ ' : '▾ '}</span>{collapsedCount ? t('Show {count} children', { count: collapsedCount }) : t('Collapse branch')}</button>}
+    {selected && !editing && (!ghost && kind === 'thought' || truncated || short !== text) && <div ref={localActions} className="thought-local-actions" onPointerDown={event => event.stopPropagation()}>
+        {!ghost && kind === 'thought' && <button type="button" className="thought-respond" data-testid="thought-respond" onClick={event => { event.stopPropagation(); onRespond(item.id); }}>{t(isQuestion(item) ? 'Respond to this question' : 'Add my thoughts')}</button>}
+        {(truncated || short !== text) && <button type="button" className="thought-read" aria-haspopup="dialog" onClick={event => { event.stopPropagation(); onRead(item.id); }}>{t('Read full text')}</button>}
+    </div>}
     {selected && <span className="thought-selected-dot" aria-hidden="true"/>}
     {kind === 'source' && <span className="thought-meta">{t('Source')}</span>}
     {ghost && <span className="thought-meta ghost-label">{t(proposal ? 'From your words · not kept' : 'AI suggestion · not kept')}</span>}

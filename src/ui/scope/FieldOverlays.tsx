@@ -3,7 +3,8 @@ import type { Camera, Ghost, Thought, ThinkingOperation } from '../../core/model
 import { SuggestionReview } from './SuggestionReview.tsx';
 import { RootReview } from './RootReview.tsx';
 import type { GeometryCache } from '../../field/spatial/index.ts';
-import { worldToScreen } from '../../field/spatial/geometry.ts';
+import { worldToScreen, type Bounds } from '../../field/spatial/geometry.ts';
+import { selectionUIBounds } from '../../field/useThoughtMeasurements.ts';
 import { cancelThinkingOperation, canCancelThinkingOperation } from '../../ai/operationControl.ts';
 import { t } from '../../shared/i18n.ts';
 import { Button } from '../primitives/Button.tsx';
@@ -16,6 +17,7 @@ interface Props {
     viewport: RefObject<HTMLDivElement | null>;
     camera: () => Camera;
     geometry: GeometryCache;
+    actionBounds: ReadonlyMap<string, Bounds>;
     visibleIds: string[];
     selection: string[];
     scope: ScopeHubProps | null;
@@ -64,10 +66,10 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         const liveKeys = new Set(controls.map(item => item.key));
         for (const key of docked.current) if (!liveKeys.has(key)) docked.current.delete(key);
         const occupied = state.visibleIds.flatMap(id => {
-            const bounds = state.geometry.get(id);
-            if (!bounds) return [];
-            const point = worldToScreen(bounds, camera);
-            return [{ id, x: viewport.x + point.x, y: viewport.y + point.y, width: bounds.width * camera.zoom, height: bounds.height * camera.zoom }];
+            return selectionUIBounds([id], state.geometry, state.actionBounds).map(bounds => {
+                const point = worldToScreen(bounds, camera);
+                return { id, x: viewport.x + point.x, y: viewport.y + point.y, width: bounds.width * camera.zoom, height: bounds.height * camera.zoom };
+            });
         });
         const reserved = [...app.querySelectorAll<HTMLElement>('[data-testid="speak"], .notice, .identity, .global-actions')]
             .filter(element => element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden')
@@ -80,11 +82,9 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             element.style.display = '';
             element.style.maxWidth = `${Math.max(0, viewport.width - 32)}px`;
             const width = Math.ceil(element.offsetWidth), height = Math.ceil(element.offsetHeight);
-            const anchor = unionScopeBounds(item.ids.flatMap(id => {
-                const bounds = state.geometry.get(id);
-                if (!bounds) return [];
+            const anchor = unionScopeBounds(selectionUIBounds(item.ids, state.geometry, state.actionBounds).map(bounds => {
                 const point = worldToScreen(bounds, camera);
-                return [{ x: viewport.x + point.x, y: viewport.y + point.y, width: bounds.width * camera.zoom, height: bounds.height * camera.zoom }];
+                return { x: viewport.x + point.x, y: viewport.y + point.y, width: bounds.width * camera.zoom, height: bounds.height * camera.zoom };
             }));
             const candidate = anchor && !item.forceDock && !docked.current.has(item.key) ? clearScopePlacement({
                 selectionBounds: anchor, viewportBounds: viewport, hubSize: { width, height },

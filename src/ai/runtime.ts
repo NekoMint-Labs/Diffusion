@@ -5,7 +5,9 @@ import type { ProjectController } from '../core/controller.ts';
 import { compileContext, rebuildCapsule, type CompileOptions } from './context.ts';
 import { abortableDelay, type AIProvider } from './contracts.ts';
 import { ThinkingError, failureText, type ThinkingFailure } from './errors.ts';
+import type { Bounds } from '../field/spatial/geometry.ts';
 import { placePossibility } from '../field/spatial/placement.ts';
+import { angleAvoidancePrompt, repeatedWording } from './diversity.ts';
 import { registerOperationCancellation } from './operationControl.ts';
 
 /** Names the model that answered alongside the provider, without inventing one the provider never
@@ -26,13 +28,16 @@ export interface RuntimeHooks {
     failure?: (failure: ThinkingFailure, subject: string) => void;
     route: (kind: 'thread' | 'deep' | 'crystal', text: string, scopeIds: string[], provider: string) => void;
     anchor: () => Point;
-    visibleIds?: () => ReadonlySet<string>;
-    bounds?: () => { x: number; y: number; width: number; height: number };
+    visibleIds?: () => ReadonlySet<string> | undefined;
+    bounds?: () => Bounds;
+    measurements?: () => Readonly<Record<string, Bounds>>;
 }
 export interface RunOptions extends CompileOptions {
     runId?: string;
     signal?: AbortSignal;
     onEmission?: (id: string) => void;
+    /** Exploration-local exclusion only; never expands ContextPacket or canonical scope. */
+    excludeTexts?: readonly string[];
     /** Presentation meaning only; provider semantics stay in UserIntent. */
     activity?: ThinkingActivityKind;
 }
@@ -78,6 +83,23 @@ const ACTION_OUTPUTS: Record<UserIntent['kind'], ReadonlySet<SemanticIntent['typ
 export function intentAllowedForAction(kind: UserIntent['kind'], type: SemanticIntent['type']): boolean {
     return ACTION_OUTPUTS[kind].has(type);
 }
+
+/** Provider output can be structurally valid while still failing the product's thinking contract.
+ * Keep this gate deliberately small: it rejects only labels and questions that explicitly say almost
+ * nothing, leaving the model's substantive judgment intact. */
+export function semanticQualityAllowed(kind: UserIntent['kind'], candidate: SemanticIntent): boolean {
+    if (kind === 'probe' && candidate.type === 'surface_relation') {
+        const label = candidate.label.trim();
+        if (/^(?:可能|也许).*(?:方向|关联|关系|联系|相关)$/u.test(label)) return false;
+        if (/^(?:possible|potential)?\s*(?:missing\s+)?(?:link|relation|connection|direction)$/iu.test(label)) return false;
+    }
+    if (kind === 'question' && candidate.type === 'surface_question') {
+        const value = candidate.text.trim();
+        if (/^(?:你有什么想法|还有什么想法|要不要继续(?:想|探索)|你想(?:继续)?了解(?:一下)?吗)[？?]?$/u.test(value)) return false;
+        if (/^你现在是想.*(?:做点什么|做什么|了解看看)[？?]?$/u.test(value)) return false;
+    }
+    return true;
+}
 function operationKind(kind: UserIntent['kind']): ThinkingOperationKind {
     if (kind === 'probe' || kind === 'diffuse' || kind === 'continue' || kind === 'angle' || kind === 'question' || kind === 'organize') return kind;
     return 'ask';
@@ -90,10 +112,12 @@ export class AIRuntime {
     private hooks: RuntimeHooks;
     private active: AbortController | null = null;
     private serial = 0;
+    private angleScope = '';
+    private recentAngles: string[] = [];
     requestCount = 0;
     constructor(controller: ProjectController, provider: () => Promise<AIProvider>, hooks: RuntimeHooks) { this.controller = controller; this.provider = provider; this.hooks = hooks; }
     cancel() { this.active?.abort(); }
-    dispose() { this.serial++; this.active?.abort(); this.active = null; }
+    dispose() { this.serial++; this.active?.abort(); this.active = null; this.angleScope = ''; this.recentAngles = []; }
 
     private begin(kind: ThinkingOperationKind, scopeIds: string[], parent?: AbortSignal, activity?: ThinkingActivityKind) {
         this.cancel();
@@ -170,7 +194,7 @@ export class AIRuntime {
                 const unit = extraction.units[index];
                 const key = id('ghost');
                 const snapshot = this.controller.getSnapshot();
-                const point = placePossibility(snapshot.project, snapshot.session, anchor, index, [], this.hooks.bounds?.(), unit.text, 'default', this.hooks.visibleIds?.());
+                const point = placePossibility(snapshot.project, snapshot.session, anchor, index, [], this.hooks.bounds?.(), unit.text, 'default', this.hooks.visibleIds?.(), this.hooks.measurements?.());
                 const providerCredit = extraction.providerLabel || provider.label;
                 this.controller.addGhost({
                     id: key, text: unit.text, ...point, createdAt: Date.now(), scopeIds: [],
@@ -223,22 +247,42 @@ export class AIRuntime {
                 const record = this.controller.getSnapshot().project.sources[source.id];
                 if (record) this.controller.dispatch({ type: 'source.update', source: { ...record, lastSubmitted: { at: Date.now(), provider: provider.label, characters: source.excerpt.length, requestId: started.requestId } } }, 'system');
             }
-            const response = await provider.respond(packet, { kind, text, requestId: started.requestId }, started.abort.signal);
+            // Only this selected, unchanged Angle context remembers prior frames. Thread remains
+            // governed by its frozen manuscript, and Diffuse retains its explicit run-local budget.
+            const angleScope = kind === 'angle' && !options.threadId
+                ? JSON.stringify([packet.projectId, packet.scope, packet.local, packet.continuations, packet.relations, packet.retrieved, packet.permissions]) : null;
+            if (angleScope !== null && angleScope !== this.angleScope) {
+                this.angleScope = angleScope;
+                this.recentAngles = [];
+            }
+            const requestText = angleScope === null ? text : angleAvoidancePrompt(text, this.recentAngles);
+            const response = await provider.respond(packet, { kind, text: requestText, requestId: started.requestId }, started.abort.signal);
             if (started.abort.signal.aborted || started.ticket !== this.serial) {
                 if (started.ticket === this.serial) this.settle(started, 'cancelled');
                 return { status: 'cancelled', emitted };
             }
             const provenance = credited(response.providerLabel || provider.label, response.model);
             const validScope = () => { const project = this.controller.getSnapshot().project; return project.id === packet.projectId && packet.scope.every(item => (options.threadId ? (project.threads[options.threadId]?.scopeSnapshot?.[item.id] ?? project.thoughts[item.id]) : project.thoughts[item.id])?.text.slice(0, 1600) === item.text); };
-            if (!validScope()) throw new Error(t('The scope changed while thinking. Ask again with its new wording.'));
+            const validContinuation = () => {
+                const project = this.controller.getSnapshot().project;
+                return (packet.continuations ?? []).every(link => link.sourceIds.every(key => {
+                    const supplied = packet.scope.find(item => item.id === key) ?? packet.local.find(item => item.id === key);
+                    return project.thoughts[link.thoughtId]?.derivedFrom?.includes(key) && supplied && project.thoughts[key]?.text.slice(0, 1600) === supplied.text;
+                }));
+            };
+            if (!validScope() || !validContinuation()) throw new Error(t('The scope changed while thinking. Ask again with its new wording.'));
             const accepted = response.intents.slice(0, packet.maxCandidates)
                 .filter(candidate => intentAllowedForAction(kind, candidate.type))
                 .filter(candidate => permissionFor(candidate, packet, this.controller.getSnapshot().project).allowed)
+                .filter(candidate => semanticQualityAllowed(kind, candidate))
+                .filter(candidate => angleScope === null || candidate.type === 'surface_possibility' && !repeatedWording(candidate.text, [...packet.scope.map(item => item.text), ...this.recentAngles]))
+                .filter(candidate => !options.excludeTexts || candidate.type === 'surface_possibility' && !repeatedWording(candidate.text, [...packet.scope.map(item => item.text), ...options.excludeTexts]))
                 .filter(candidate => !options.runId || ['surface_possibility', 'surface_question', 'surface_relation', 'surface_structure', 'respond_in_field', 'surface_evidence', 'request_recall'].includes(candidate.type));
             if (options.threadId) {
                 const body = accepted.map(candidate => 'text' in candidate ? candidate.text : candidate.type === 'surface_relation' ? `${candidate.kind}: ${candidate.label}` : '').filter(Boolean).join('\n\n');
                 if (body) {
                     this.controller.dispatch({ type: 'thread.message', id: options.threadId, message: { id: id('message'), role: 'assistant', text: body, at: Date.now(), provider: provenance } }, 'system');
+
                     emitted++;
                     const thread = this.controller.getSnapshot().project.threads[options.threadId];
                     if (thread) this.controller.dispatch({ type: 'thread.capsule', id: thread.id, capsule: rebuildCapsule(thread, this.controller.getSnapshot().project) }, 'system');
@@ -250,16 +294,19 @@ export class AIRuntime {
                         if (started.ticket === this.serial) this.settle(started, 'cancelled');
                         return { status: 'cancelled', emitted };
                     }
-                    if (!validScope()) throw new Error(t('The scope changed during reveal. Remaining possibilities were discarded.'));
+                    if (!validScope() || !validContinuation()) throw new Error(t('The scope changed during reveal. Remaining possibilities were discarded.'));
                     const candidate = accepted[index];
                     this.emit(candidate, packet, provenance, options, kind, index);
                     if (candidate.type === 'surface_relation') relationLabel = candidate.label;
+                    if (angleScope !== null && candidate.type === 'surface_possibility') {
+                        this.recentAngles = [...this.recentAngles, candidate.text].slice(-6);
+                    }
                     emitted++;
                     if (index < accepted.length - 1) await abortableDelay(220, started.abort.signal);
                 }
             }
-            if (!emitted && kind !== 'probe') this.hooks.notice(t('No usable results returned. Try another direction.'));
-            else if (kind === 'probe') this.hooks.notice(emitted && relationLabel ? t('Found a candidate relation: {label}. You decide whether to keep it.', { label: relationLabel }) : t(emitted ? 'A relation candidate is ready. Nothing was confirmed.' : 'No clear relation found.'));
+            if (kind === 'probe') this.hooks.notice(emitted && relationLabel ? t('Found a candidate relation: {label}. You decide whether to keep it.', { label: relationLabel }) : t(emitted ? 'A relation candidate is ready. Nothing was confirmed.' : 'No clear relation found.'));
+            else if (!emitted) this.hooks.notice(t('No new suggestion was surfaced this time.'));
             else if (kind === 'question') this.hooks.notice(t(response.mock ? 'Demo questions / no live model was used.' : 'Questions returned. Nothing was committed.'));
             else if (kind === 'organize') this.hooks.notice(t(response.mock ? 'Demo structure / no live model was used.' : 'A structure proposal is ready. Nothing was changed yet.'));
             else this.hooks.notice(t(response.mock ? 'Demo possibilities / no live model was used.' : 'Possibilities returned. No commitment was made on your behalf.'));
@@ -298,14 +345,14 @@ export class AIRuntime {
                 const text = candidate.type === 'surface_evidence' ? `${candidate.outcome}: ${candidate.text}` : candidate.text;
                 const proposalAction = action === 'continue' || action === 'angle' ? action : undefined;
                 const mode = candidate.type === 'surface_evidence' ? 'evidence' : action === 'continue' ? 'continue' : action === 'angle' ? 'branch' : 'default';
-                const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), text, mode, this.hooks.visibleIds?.());
+                const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), text, mode, this.hooks.visibleIds?.(), this.hooks.measurements?.());
                 this.controller.addGhost({ id: key, text, ...point, createdAt: Date.now(), scopeIds, runId: options.runId, origin: provenance, proposalKind: 'thought' as const, ...(proposalAction ? { proposalAction } : {}) });
                 options.onEmission?.(key);
                 break;
             }
             case 'surface_question': {
                 const key = id('ghost');
-                const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), candidate.text, 'question', this.hooks.visibleIds?.());
+                const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), candidate.text, 'question', this.hooks.visibleIds?.(), this.hooks.measurements?.());
                 this.controller.addGhost({ id: key, text: candidate.text, ...point, createdAt: Date.now(), scopeIds, runId: options.runId, origin: provenance, proposalKind: 'question', proposalAction: 'question' });
                 options.onEmission?.(key);
                 break;

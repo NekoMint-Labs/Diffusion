@@ -8,6 +8,9 @@ import type { MenuRow } from '../commands/compose.ts';
 import { EXIT_UNOWNED, GLOBAL_TRANSIENT_SHELL_LAYOUT_ID, layoutTransition, recedeTransition, surfaceTransition } from '../motion.ts';
 
 const MORE_HOVER_DELAY = 160;
+// A tall submenu can put the destination well below More. Let diagonal travel finish
+// before Base UI's hover close commits; click pinning and explicit dismissal stay separate.
+const MORE_CLOSE_DELAY = 400;
 
 /** Base UI owns each popup's positioning, submenu pointer travel and keyboard focus.
  * Click pins the hover-open submenu; the existing transient owner closes the entire menu.
@@ -65,7 +68,6 @@ export function CommandMenu({ anchor, point, rows, moreRows = [], scope, note, p
         <Menu.Portal>
             <Menu.Positioner anchor={anchorProp} className="command-menu-positioner" positionMethod="fixed"
                 side={side} align={align} sideOffset={placement === 'right-start' ? 3 : 8}
-                style={{ pointerEvents: 'none' }}
                 collisionAvoidance={{ side: 'flip', align: 'shift', fallbackAxisSide: 'end' }} collisionPadding={16}>
                 <Menu.Popup finalFocus={false} render={(props, state) => <motion.div {...(props as React.ComponentProps<typeof motion.div>)} role={present ? 'menu' : undefined} aria-hidden={present ? undefined : true} inert={present ? undefined : true}
                     data-surface="true" data-testid={present ? `${scope}-menu` : undefined} data-side={state.side}
@@ -79,6 +81,15 @@ export function CommandMenu({ anchor, point, rows, moreRows = [], scope, note, p
                         if (event.key === 'Tab') {
                             event.preventDefault();
                             onClose();
+                            return;
+                        }
+                        if (event.key === 'ArrowRight' && event.target instanceof HTMLElement && event.target.closest('[data-command="more"]')) {
+                            // The controlled child may already be hover-open; entering it still
+                            // transfers focus, including when viewport collision flips its side.
+                            event.preventDefault();
+                            event.stopPropagation();
+                            setSecondaryOpen(true);
+                            requestAnimationFrame(() => secondaryPopup.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus());
                             return;
                         }
                         if ((event.key === 'ArrowLeft' || event.key === 'Escape') && secondaryOpen && event.target instanceof HTMLElement && event.target.closest('[data-secondary-panel]')) {
@@ -100,7 +111,7 @@ export function CommandMenu({ anchor, point, rows, moreRows = [], scope, note, p
                                 if (!open && pinned && String(details.reason).includes('hover')) { details.cancel(); return; }
                                 setSecondaryOpen(open); if (!open) setPinned(false);
                             }}>
-                                <Menu.SubmenuTrigger ref={moreButton} className="command-menu-item command-menu-more" data-command="more" label={t('More')} delay={MORE_HOVER_DELAY} closeDelay={160} onClick={event => { setPinned(true); setSecondaryOpen(true); if (event.detail === 0) requestAnimationFrame(() => secondaryPopup.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus()); }}>
+                                <Menu.SubmenuTrigger ref={moreButton} className="command-menu-item command-menu-more" data-command="more" label={t('More')} delay={MORE_HOVER_DELAY} closeDelay={MORE_CLOSE_DELAY} onClick={event => { setPinned(true); setSecondaryOpen(true); if (event.detail === 0) requestAnimationFrame(() => secondaryPopup.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus()); }}>
                                     <span>{t('More')}</span><span className="command-menu-caret" aria-hidden="true"/>
                                 </Menu.SubmenuTrigger>
                                 <Menu.Portal><Menu.Positioner side="right" align="start" sideOffset={3} collisionPadding={16} collisionAvoidance={{ side: 'flip', align: 'shift', fallbackAxisSide: 'end' }} className="command-menu-positioner" positionMethod="fixed">

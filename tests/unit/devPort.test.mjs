@@ -54,10 +54,14 @@ describe('real sockets', () => {
     servers.push(await listen());
     const taken = servers[0].address().port;
     expect(await isPortFree(taken)).toBe(false);
-    expect(await isPortFree(taken - 1)).toBe(true);
     const picked = await pickDevPort({ start: taken });
     expect(picked).toBeGreaterThan(taken);
     expect(await isPortFree(picked)).toBe(true);
+    // An adjacent OS-assigned port may be occupied or reserved on Windows. Prove the free
+    // state using the same socket we control, after verifying discovery while it is bound.
+    const controlled = servers.shift();
+    await new Promise(resolve => controlled.close(resolve));
+    expect(await isPortFree(taken)).toBe(true);
   });
 
   it('falls back to an OS-assigned free port', async () => {

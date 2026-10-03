@@ -110,20 +110,27 @@ function free(bounds: Bounds, occupied: readonly Bounds[]): boolean {
 /**
  * Local collision correction only. If the requested position is not severely overlapping anything,
  * it is left alone; otherwise only this rectangle searches outward for the nearest clear slot.
+ * New Ghost arrivals may also request viewport containment; intentional drag positions do not.
  */
-export function correctSevereOverlap(desired: Bounds, occupied: readonly Bounds[], viewport?: Bounds, reserved: readonly Bounds[] = []): Point {
+export function correctSevereOverlap(desired: Bounds, occupied: readonly Bounds[], viewport?: Bounds, reserved: readonly Bounds[] = [], keepInView = false): Point {
     // UI regions are strict exclusions for newly arriving material; user-authored overlaps
     // retain the ordinary severe-overlap threshold when no reserved regions are supplied.
-    if (!occupied.some(other => severeOverlap(desired, other)) && free(desired, reserved)) return { x: desired.x, y: desired.y };
+    if ((!keepInView || inside(desired, viewport)) && !occupied.some(other => severeOverlap(desired, other)) && free(desired, reserved)) return { x: desired.x, y: desired.y };
     occupied = [...occupied, ...reserved];
 
+    const origin = keepInView && viewport ? {
+        ...desired,
+        x: clamp(desired.x, viewport.x, Math.max(viewport.x, viewport.x + viewport.width - desired.width)),
+        y: clamp(desired.y, viewport.y, Math.max(viewport.y, viewport.y + viewport.height - desired.height)),
+    } : desired;
+    if (inside(origin, viewport) && free(origin, occupied)) return { x: origin.x, y: origin.y };
     const candidates: Bounds[] = [];
     const step = 28;
     for (let ring = 1; ring <= 18; ring++) {
         const radius = ring * step;
         for (let slot = 0; slot < 16; slot++) {
             const angle = slot * Math.PI / 8;
-            candidates.push({ ...desired, x: desired.x + Math.cos(angle) * radius, y: desired.y + Math.sin(angle) * radius });
+            candidates.push({ ...desired, x: origin.x + Math.cos(angle) * radius, y: origin.y + Math.sin(angle) * radius });
         }
     }
     const chosen = candidates.find(candidate => inside(candidate, viewport) && free(candidate, occupied));

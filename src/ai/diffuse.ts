@@ -5,6 +5,7 @@ import type { ProjectController } from '../core/controller.ts';
 import type { WebEvidenceProvider } from '../evidence/contracts.ts';
 import { abortableDelay } from './contracts.ts';
 import type { AIRuntime } from './runtime.ts';
+import { explorationPrompt } from './diversity.ts';
 export interface DiffuseConfig {
     scopeIds: string[];
     prompt: string;
@@ -20,6 +21,7 @@ export interface DiffuseState {
     runId: string;
     config: DiffuseConfig | null;
     used: number;
+    surfaced: number;
     remainingSeconds: number;
     reason: string;
     evidence: EvidenceCandidate[];
@@ -27,7 +29,7 @@ export interface DiffuseState {
 const angles = ['Name a missing question.', 'Try a counterexample.', 'Expose a hidden assumption.', 'Look for a boundary where the thought stops applying.', 'Offer an unexpected but grounded bridge.', 'Propose a small observation, without turning it into a task list.'];
 const reframingAxes = ['Reverse one assumption behind the current framing.', 'Reframe this through opportunity cost rather than immediate benefit.', 'Change the time horizon used to see the problem.', 'Ask what alternative path could satisfy the same need.', 'Reframe around what the user is actually optimizing for.'];
 export class DiffuseSession {
-    private state: DiffuseState = { phase: 'idle', runId: '', config: null, used: 0, remainingSeconds: 0, reason: '', evidence: [] };
+    private state: DiffuseState = { phase: 'idle', runId: '', config: null, used: 0, surfaced: 0, remainingSeconds: 0, reason: '', evidence: [] };
     private controller: ProjectController;
     private runtime: Pick<AIRuntime, 'run' | 'cancel'>;
     private provider: () => WebEvidenceProvider | null;
@@ -40,6 +42,7 @@ export class DiffuseSession {
     private searched = false;
     private claimedCandidates = new Set<string>();
     private baseTexts = new Map<string, string>();
+    private attemptedTexts: string[] = [];
     private unsubscribe: () => void;
     constructor(controller: ProjectController, runtime: Pick<AIRuntime, 'run' | 'cancel'>, provider: () => WebEvidenceProvider | null, stepDelay = 450) { this.controller = controller; this.runtime = runtime; this.provider = provider; this.delay = stepDelay; this.unsubscribe = controller.subscribe(() => this.observeUserOwnership()); }
     getSnapshot = () => this.state;
@@ -60,9 +63,10 @@ export class DiffuseSession {
         this.stop(t('Restarted explicitly.'));
         this.searched = false;
         this.claimedCandidates.clear();
+        this.attemptedTexts = [];
         this.baseTexts = new Map(scope.map(k => [k, project.thoughts[k].text]));
         this.deadline = Date.now() + config.seconds * 1000;
-        this.update({ phase: 'running', runId: id('diffuse'), config: { ...config, scopeIds: scope }, used: 0, remainingSeconds: config.seconds, reason: '', evidence: [] });
+        this.update({ phase: 'running', runId: id('diffuse'), config: { ...config, scopeIds: scope }, used: 0, surfaced: 0, remainingSeconds: config.seconds, reason: '', evidence: [] });
         this.timer = setInterval(() => { const remaining = Math.max(0, Math.ceil((this.deadline - Date.now()) / 1000)); this.update({ remainingSeconds: remaining }); if (!remaining)
             this.stop(t('The time limit was reached.')); }, 1000);
         void this.drive();
@@ -85,7 +89,7 @@ export class DiffuseSession {
         if (this.state.phase !== 'idle')
             this.update({ phase: 'stopped', reason });
     }
-    clear() { this.stop(); this.update({ phase: 'idle', config: null, reason: '', evidence: [] }); }
+    clear() { this.stop(); this.attemptedTexts = []; this.claimedCandidates.clear(); this.update({ phase: 'idle', config: null, used: 0, surfaced: 0, reason: '', evidence: [] }); }
     dispose() { this.stop(t('Project closed.')); this.unsubscribe(); this.listeners.clear(); }
     private observeUserOwnership() {
         if (!['running', 'paused'].includes(this.state.phase))
@@ -101,6 +105,11 @@ export class DiffuseSession {
                 this.stop(t('One of the starting thoughts changed. Start a new exploration to use its new wording.'));
                 return;
             }
+    }
+    private finish(reason: string) {
+        if (this.timer) clearInterval(this.timer);
+        this.timer = null;
+        this.update({ phase: 'complete', reason });
     }
     private async drive() {
         const config = this.state.config;
@@ -127,7 +136,15 @@ export class DiffuseSession {
                 this.update({ used: step + 1 });
                 const angleMode = config.mode === 'angle';
                 const stepContract = angleMode ? reframingAxes[step % reframingAxes.length] : angles[step % angles.length];
-                const result = await this.runtime.run(angleMode ? 'angle' : 'diffuse', `${config.prompt}\n\nStep ${step + 1}: ${stepContract}\nUse only the supplied owned scope and permitted sources. Never build on an unclaimed possibility.`, config.scopeIds, { runId: this.state.runId, signal: abort.signal, projectSources: config.projectSources, web: config.web, evidence: [], maxCandidates: angleMode ? 1 : 2, activity: 'radiate', onEmission: key => this.claimedCandidates.add(key) });
+                const result = await this.runtime.run(angleMode ? 'angle' : 'diffuse', explorationPrompt(config.prompt, step, stepContract, this.attemptedTexts), config.scopeIds, {
+                    runId: this.state.runId, signal: abort.signal, projectSources: config.projectSources, web: config.web, evidence: [], maxCandidates: 1,
+                    excludeTexts: [...this.attemptedTexts], activity: 'radiate', onEmission: key => {
+                        this.claimedCandidates.add(key);
+                        const ghost = this.controller.getSnapshot().session.ghosts[key];
+                        if (ghost) this.attemptedTexts.push(ghost.text);
+                        this.update({ surfaced: this.state.surfaced + 1 });
+                    },
+                });
                 if (!valid())
                     return;
                 if (result.status === 'failed') {
@@ -138,15 +155,14 @@ export class DiffuseSession {
                     this.stop(t('The active request was cancelled.'));
                     return;
                 }
+                if (!result.emitted) {
+                    this.finish(t('No new direction was surfaced. This exploration has ended.'));
+                    return;
+                }
                 if (this.state.used < config.steps)
                     await abortableDelay(this.delay, abort.signal);
             }
-            if (valid()) {
-                if (this.timer)
-                    clearInterval(this.timer);
-                this.timer = null;
-                this.update({ phase: 'complete', reason: t('The exploration finished. Nothing further will be sent.') });
-            }
+            if (valid()) this.finish(t('The exploration finished. Nothing further will be sent.'));
         }
         catch (error) {
             if (valid())

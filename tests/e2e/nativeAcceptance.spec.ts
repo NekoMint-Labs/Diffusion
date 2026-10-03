@@ -130,6 +130,11 @@ test('folded selected descendants cannot move with a newly issued keyboard actio
     expect(hiddenX).toBe(820);
     await page.keyboard.press('Control+z'); // Undo the move, then restore the explicit fold.
     await page.keyboard.press('Control+z'); await expect(leaf).toBeVisible();
+    // Mounted undo does not mean the asynchronous project write has committed yet.
+    await expect.poll(() => page.evaluate(() => new Promise<number>(resolve => {
+        const request = indexedDB.open('diffusion-explorer-v1');
+        request.onsuccess = () => { const db = request.result; const get = db.transaction('projects').objectStore('projects').get('main'); get.onsuccess = () => { db.close(); resolve(get.result.thoughts.root.x); }; };
+    }))).toBe(300);
     await page.reload(); await expect(leaf).toBeVisible();
     const positions = await page.evaluate(() => new Promise<Record<string, { x: number; y: number }>>(resolve => {
         const request = indexedDB.open('diffusion-explorer-v1');

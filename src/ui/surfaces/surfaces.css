@@ -526,3 +526,6 @@ h3.history-day { display: flex; align-items: center; gap: 12px; margin: 30px 0 1
 
 .command-menu-positioner { max-width: calc(100vw - 32px); }
 .command-menu-secondary { max-height: var(--available-height, calc(100dvh - 32px)); }
+/* Full wording is read outside the zoomed Field, without entering its editor. */
+.surface.anchored.thought-reader { width: min(460px, calc(100vw - 48px)); max-height: min(620px, calc(100dvh - 64px)); }
+.thought-reader-text { white-space: pre-wrap; color: var(--ink-primary); font: var(--thought-size)/1.75 var(--thought-font); }

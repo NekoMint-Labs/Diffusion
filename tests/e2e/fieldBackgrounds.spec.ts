@@ -7,6 +7,7 @@ const styles = ['paper-texture', 'topography', 'threads', 'waves', 'silk'] as co
 async function openAppearance(page: Page) {
     await page.getByTestId('global-more').click();
     const menu = page.getByTestId('global-menu');
+    await expect(menu).toBeVisible();
     const direct = menu.locator('[data-command="settings"]');
     if (await direct.count()) await direct.click();
     else {

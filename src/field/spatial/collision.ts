@@ -80,7 +80,11 @@ export function disclosureBox(text: string, zoom: number, kind: ThoughtKind = 't
     const level: ThoughtZoomLevel = zoom > .62 ? 'local' : zoom > .27 ? 'neighborhood' : 'atlas';
     const semanticWidth = kind === 'thought' ? THOUGHT_WIDTHS[thoughtSizeClass(text)][level] : SEMANTIC_WIDTHS[kind][level];
     const width = level === 'local' ? size.width * zoom : semanticWidth;
-    return { width, height: size.height * zoom };
+    // Low-zoom type is counter-scaled; its screen height must not shrink with world zoom.
+    if (level === 'local') return { width, height: size.height * zoom };
+    const font = level === 'atlas' ? 13 : 14;
+    const lines = Math.min(4, Math.max(1, Math.ceil(lineUnits(text.slice(0, level === 'atlas' ? 72 : 88)) * font * .5 / Math.max(1, width - 16))));
+    return { width, height: lines * font * 1.5 + 18 };
 }
 
 export function overlapArea(a: Bounds, b: Bounds): number {

@@ -4,6 +4,8 @@ export type StyleProfileId = typeof STYLE_PROFILE_IDS[number];
 
 export const FIELD_STYLE_IDS = ['paper-texture', 'topography', 'threads', 'waves', 'silk'] as const;
 export type FieldStyleId = typeof FIELD_STYLE_IDS[number];
+export const CONNECTION_STYLES = ['curve', 'elbow'] as const;
+export type ConnectionStyle = typeof CONNECTION_STYLES[number];
 
 export const ACCENT_IDS = ['oxide', 'amber', 'moss', 'slate', 'plum', 'custom'] as const;
 export type AccentId = typeof ACCENT_IDS[number];
@@ -32,6 +34,7 @@ export interface ImageAtmosphereSettings {
 export interface AppearanceSettings {
     profile: StyleProfileId;
     fieldStyle: FieldStyleId;
+    connectionStyle: ConnectionStyle;
     fieldPresence: number;
     ambientMotion: number;
     accent: AccentId;
@@ -93,6 +96,7 @@ export const DEFAULT_IMAGE_ATMOSPHERE: ImageAtmosphereSettings = {
 export const DEFAULT_APPEARANCE: AppearanceSettings = {
     profile: 'editorial-warm',
     fieldStyle: 'paper-texture',
+    connectionStyle: 'curve',
     fieldPresence: DEFAULT_PRESET.fieldPresence,
     ambientMotion: 50,
     accent: 'oxide',
@@ -122,6 +126,7 @@ export function normalizeAppearanceSettings(value: unknown): AppearanceSettings 
     return {
         profile,
         fieldStyle,
+        connectionStyle: CONNECTION_STYLES.includes(raw.connectionStyle as ConnectionStyle) ? raw.connectionStyle as ConnectionStyle : 'curve',
         fieldPresence: bounded(raw.fieldPresence, preset.fieldPresence),
         ambientMotion: bounded(raw.ambientMotion, DEFAULT_APPEARANCE.ambientMotion),
         accent: ACCENT_IDS.includes(raw.accent as AccentId) ? raw.accent as AccentId : DEFAULT_APPEARANCE.accent,

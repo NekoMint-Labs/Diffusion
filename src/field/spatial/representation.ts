@@ -44,11 +44,11 @@ export function semanticExcerpt(text: string, level: SemanticZoomLevel, kind: 't
 }
 
 /** Find keeps the current zoom. A pre-mount cache width does not describe semantic disclosure. */
-export function revealCamera(bounds: Bounds, item: { text: string; kind?: ThoughtKind } | undefined, zoom: number, viewport: { width: number; height: number }): Camera {
+export function revealCamera(bounds: Bounds, item: { text: string; kind?: ThoughtKind } | undefined, zoom: number, viewport: { width: number; height: number; x?: number; y?: number }): Camera {
     const width = item ? disclosureBox(item.text, zoom, item.kind ?? 'thought').width : bounds.width * zoom;
     return {
-        x: viewport.width / 2 - bounds.x * zoom - width / 2,
-        y: viewport.height / 2 - (bounds.y + bounds.height / 2) * zoom,
+        x: (viewport.x ?? 0) + viewport.width / 2 - bounds.x * zoom - width / 2,
+        y: (viewport.y ?? 0) + viewport.height / 2 - (bounds.y + bounds.height / 2) * zoom,
         zoom,
     };
 }

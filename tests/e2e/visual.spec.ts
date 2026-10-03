@@ -238,6 +238,7 @@ test('the editorial hierarchy orders as the design documents it, and the role si
     const sectionTitle = await readRole(page.locator('#setting-appearance > h3'));
     const label = await readRole(page.locator('#setting-appearance .ui-setting-label').first());
     await openSection(page, 'ai');
+    await choose(page, 'provider-select', 'compatible');
     const helper = await readRole(page.locator('#setting-ai .settings-note').first());
     const status = await readRole(page.locator('#setting-ai .status-line').first());
     // The shortcut reference moved out of Settings into its own surface. Its two typographic roles
@@ -346,7 +347,9 @@ test('attention does not hide the rest of the Field: a distant Thought keeps its
         await page.mouse.wheel(0, 120);
     }
     await expect(page.getByTestId('field')).toHaveAttribute('data-level', 'neighborhood');
-    await page.getByTestId('field').dblclick({ position: { x: 1400, y: 900 } });
+    // The dense-root reading entry reserves a dock lane; choose inside the current Field bounds.
+    const usableField = (await page.getByTestId('field').boundingBox())!;
+    await page.getByTestId('field').dblclick({ position: { x: usableField.width - 40, y: usableField.height - 60 } });
     const editor = page.getByRole('textbox', { name: 'Edit thought' });
     await editor.fill('A far reference point');
     await editor.press('Enter');

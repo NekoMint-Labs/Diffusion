@@ -6,25 +6,25 @@ const src = file => fs.readFileSync(new URL(`../../src/${file}`, import.meta.url
 const between = (text, from, to) => text.slice(text.indexOf(from), text.indexOf(to));
 const count = (text, pattern) => (text.match(pattern) || []).length;
 
-// One popup, one portal: the nested submenu portal is what lost the whole menu in a real session.
-test('Phase 3D command menu has one coordinated secondary column and no second portal', () => {
+// Native acceptance supersedes the hand-positioned second column with Base UI submenu ownership.
+test('Native command menu delegates the secondary popup to Base UI', () => {
   const menu = src('ui/focus/CommandMenu.tsx');
-  assert.equal(count(menu, /<Menu\.Portal/g), 1);
-  assert.doesNotMatch(menu, /Menu\.SubmenuRoot/);
-  assert.doesNotMatch(menu, /Menu\.SubmenuTrigger/);
+  assert.equal(count(menu, /<Menu\.Portal/g), 2);
+  assert.match(menu, /Menu\.SubmenuRoot/);
+  assert.match(menu, /Menu\.SubmenuTrigger/);
   assert.doesNotMatch(menu, /command-submenu/);
   assert.match(menu, /secondaryOpen/);
   assert.match(menu, /MORE_HOVER_DELAY = 160/);
-  assert.match(menu, /data-command="more" closeOnClick=\{false\}/);
+  assert.match(menu, /setPinned\(true\); setSecondaryOpen\(true\)/);
   assert.match(menu, /data-secondary-panel/);
   assert.doesNotMatch(menu, /data-command="back"/);
 });
 
-// A second Positioner or Popup would be a second surface, so both columns must share one popup.
-test('Phase 3B.1 command menu renders exactly one positioner and one popup', () => {
+// Main and secondary content are separately positioned inside one Base UI menu tree.
+test('Each native menu popup owns a collision-aware positioner', () => {
   const menu = src('ui/focus/CommandMenu.tsx');
-  assert.equal(count(menu, /<Menu\.Positioner\b/g), 1);
-  assert.equal(count(menu, /<Menu\.Popup\b/g), 1);
+  assert.equal(count(menu, /<Menu\.Positioner\b/g), 2);
+  assert.equal(count(menu, /<Menu\.Popup\b/g), 2);
 });
 
 // Ingestion has one narrow model task and no automatic relation pass.

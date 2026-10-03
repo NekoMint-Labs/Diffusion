@@ -102,6 +102,27 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .proposal-reject { position: absolute; top: 7px; right: 7px; width: 22px; height: 22px; padding: 0; border: 0; background: transparent; color: var(--ink-tertiary); opacity: 0; cursor: pointer; }
 .thought.ghost:hover .proposal-reject, .thought.ghost[data-selected="true"] .proposal-reject, .proposal-reject:focus-visible { opacity: .72; }
 .proposal-reject:hover { color: var(--ink-primary); opacity: 1; }
+.field .thought.ghost { --ghost-unit: 1; padding: calc(12px * var(--ghost-unit)) calc(38px * var(--ghost-unit)) calc(11px * var(--ghost-unit)) calc(20px * var(--ghost-unit)); }
+.field:not([data-level="local"]) .thought.ghost { --ghost-unit: max(1, calc(.68 * var(--inverse-zoom))); }
+.thought.ghost .proposal-reject { top: calc(7px * var(--ghost-unit)); right: calc(7px * var(--ghost-unit)); width: calc(24px * var(--ghost-unit)); height: calc(24px * var(--ghost-unit)); font-size: calc(18px * var(--ghost-unit)); }
+.thought.ghost .thought-selected-dot { top: calc(38px * var(--ghost-unit)); right: calc(17px * var(--ghost-unit)); width: calc(4px * var(--ghost-unit)); height: calc(4px * var(--ghost-unit)); }
+.field[data-level] .thought.ghost .ghost-label { display: block; }
+.suggestion-review { position: fixed; z-index: var(--layer-scope); width: min(560px, calc(100vw - 32px)); padding: 4px 10px; border: 1px solid var(--boundary); border-radius: var(--radius-control); background: var(--surface-1); color: var(--ink-primary); font: var(--type-ui-size)/1.5 var(--ui-font); }
+.suggestion-review-list { max-height: min(30vh, 240px); overflow-y: auto; overscroll-behavior: contain; }
+.suggestion-review section { padding: 10px 4px; border-top: 1px solid var(--boundary); }
+.suggestion-review p { white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0; }
+.suggestion-review small { display: block; color: var(--ink-secondary); overflow-wrap: anywhere; }
+.root-review section button { text-align: start; white-space: normal; overflow-wrap: anywhere; }
+.root-anchors path { fill: var(--surface-1); stroke: var(--ink-secondary); stroke-width: 1; vector-effect: non-scaling-stroke; opacity: .65; }
+.hierarchy-context { --hierarchy-unit: max(1, var(--inverse-zoom)); --hierarchy-ink: var(--ink-secondary); display: flex; flex-wrap: wrap; gap: calc(3px * var(--hierarchy-unit)) calc(8px * var(--hierarchy-unit)); margin-bottom: calc(7px * var(--hierarchy-unit)); color: var(--hierarchy-ink); font: 500 calc(11px * var(--hierarchy-unit))/1.45 var(--ui-font); }
+.thought[data-depth-style="1"] .hierarchy-context { --hierarchy-ink: var(--hierarchy-level-1); }
+.thought[data-depth-style="2"] .hierarchy-context { --hierarchy-ink: var(--hierarchy-level-2); }
+.thought[data-depth-style="3"] .hierarchy-context { --hierarchy-ink: var(--hierarchy-level-3); }
+.thought[data-depth-style="4"] .hierarchy-context { --hierarchy-ink: var(--hierarchy-level-4); }
+.hierarchy-level { flex-shrink: 0; border-bottom: calc(2px * var(--hierarchy-unit)) solid currentColor; }
+.hierarchy-parent { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hierarchy-disclosure { position: absolute; top: 12px; left: 16px; z-index: var(--layer-selection); color: var(--ink-secondary); font: 400 12px/1.5 var(--ui-font); pointer-events: none; }
+.branch-expand { --hierarchy-unit: max(1, var(--inverse-zoom)); display: block; margin-top: calc(8px * var(--hierarchy-unit)); border: 0; background: transparent; color: var(--ink-secondary); cursor: pointer; padding: calc(2px * var(--hierarchy-unit)) 0; font: calc(var(--type-helper-size) * var(--hierarchy-unit))/1.5 var(--ui-font); }
 
 /* --- Phenomena layers: positioning only -----------------------------------
    The visuals of a Relation and of a causal trace are owned by `materials.css` and
@@ -169,6 +190,26 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .field[data-level="neighborhood"] .thought.crystal { width: calc(248px * var(--inverse-zoom)); font-size: calc(16px * var(--thought-scale) * var(--inverse-zoom)); }
 .field[data-level="atlas"] .thought.crystal { font-size: calc(18px * var(--thought-scale) * var(--inverse-zoom)); width: calc(240px * var(--inverse-zoom)); line-height: 1.4; }
 .field[data-level="atlas"] .thought.crystal::before { font-size: calc(13px * var(--inverse-zoom)); left: calc(-16px * var(--inverse-zoom)); }
+
+/* Hierarchy cards shrink continuously with the camera, stopping at a small reading
+   footprint. Changing local/neighborhood representation must never enlarge them. */
+.field[data-hierarchy="true"] .thought[data-kind="thought"]:not(.ghost):not(.editing),
+.field[data-hierarchy="true"] .thought[data-kind="question"]:not(.ghost):not(.editing) { --hierarchy-reading-unit: max(1, calc(.56 * var(--inverse-zoom))); font-size: calc(var(--thought-size) * var(--hierarchy-reading-unit)); padding: calc(8px * var(--hierarchy-reading-unit)); }
+.field[data-hierarchy="true"] .thought[data-size="compact"]:not(.ghost):not(.editing):not(.crystal):not(.source) { width: calc(176px * var(--hierarchy-reading-unit)); }
+.field[data-hierarchy="true"] .thought[data-size="regular"]:not(.ghost):not(.editing):not(.crystal):not(.source) { width: calc(256px * var(--hierarchy-reading-unit)); }
+.field[data-hierarchy="true"] .thought[data-size="wide"]:not(.ghost):not(.editing):not(.crystal):not(.source) { width: calc(328px * var(--hierarchy-reading-unit)); }
+.field[data-hierarchy="true"] .thought:not(.ghost) .hierarchy-context { display: grid; grid-template-columns: minmax(0, 1fr); }
+.field[data-hierarchy="true"][data-level] .thought[data-size]:not(.ghost) .thought-preview { max-width: none; }
+
+/* Pending suggestions share a bounded reading footprint across zoom tiers. Metadata keeps
+   its readable screen size, and parent wording gets one stable row rather than wrapping. */
+.field[data-level] .thought.ghost { --ghost-unit: max(1, calc(.68 * var(--inverse-zoom))); font-size: calc(var(--thought-size) * var(--ghost-unit)); padding: calc(12px * var(--ghost-unit)) calc(38px * var(--ghost-unit)) calc(11px * var(--ghost-unit)) calc(20px * var(--ghost-unit)); }
+.field[data-level] .thought.ghost[data-size="compact"] { width: calc(176px * var(--ghost-unit)); }
+.field[data-level] .thought.ghost[data-size="regular"] { width: calc(256px * var(--ghost-unit)); }
+.field[data-level] .thought.ghost[data-size="wide"] { width: calc(328px * var(--ghost-unit)); }
+.field[data-level] .thought.ghost .hierarchy-context { display: grid; grid-template-columns: minmax(0, 1fr); }
+.field[data-level] .thought.ghost .thought-preview { max-width: none; }
+.field[data-level] .thought.ghost .ghost-label { font-size: calc(var(--type-meta-size) * max(1, var(--inverse-zoom))); }
 
 /* --- First-use invitation -------------------------------------------------
    Decoration only, and it lives with the input it points at rather than in the middle of the Field,
@@ -293,3 +334,16 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .field-overlay-dock { display: none; position: fixed; z-index: var(--layer-selection); background: var(--field-bg); border-top: 1px solid var(--boundary); pointer-events: none; }
 
 .thought.recall[data-selected="true"] { --thought-ink-presence: 1; color: var(--ink-primary); }
+
+/* Native acceptance: detail disappears with distance; controls keep honest hit areas. */
+.suggestion-review { padding: 0; }
+.suggestion-review .review-toggle { width: 100%; min-height: 36px; padding: 8px 14px; justify-content: flex-start; border-radius: inherit; }
+.suggestion-review-list, .root-review > input { margin: 0 10px 8px; }
+.hierarchy-disclosure { top: auto; bottom: 16px; left: auto; right: 16px; display: flex; gap: 8px; align-items: center; pointer-events: auto; }
+.hierarchy-disclosure button { color: var(--ink-secondary); background: var(--surface-1); border: 1px solid var(--boundary); border-radius: var(--radius-control); padding: 4px 8px; cursor: pointer; }
+.hierarchy-disclosure span { background: var(--surface-1); padding: 4px 8px; }
+.field:not([data-level="local"]) .hierarchy-context { display: none; }
+.field[data-level="atlas"] .thought:not(.editing) .thought-preview { max-height: calc(58px * var(--inverse-zoom)); overflow: hidden; }
+.field[data-level="neighborhood"] .ghost { padding: calc(4px * var(--inverse-zoom)); }
+.field[data-level="neighborhood"] .ghost .thought-preview { max-height: calc(64px * var(--inverse-zoom)); overflow: hidden; }
+.field[data-level] .thought[data-find="current"] .thought-preview { max-height: calc(55vh * var(--inverse-zoom)); overflow-y: auto; }

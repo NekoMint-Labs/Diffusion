@@ -18,12 +18,12 @@ export interface DiscoverySourceDescriptor {
      * from, and the credential slot it is stored under, are the native layer's own vocabulary
      * (`src-tauri/src/discovery_env.rs`): a name the webview does not need to know is a name it can
      * never accidentally start filling in. */
-    keyHint: string;
+    keyUrl: string;
 }
 export const DISCOVERY_SOURCES: Record<DiscoverySourceId, DiscoverySourceDescriptor> = {
-    exa: { id: 'exa', label: 'Exa', keyHint: 'exa.ai' },
-    tavily: { id: 'tavily', label: 'Tavily', keyHint: 'tavily.com' },
-    brave: { id: 'brave', label: 'Brave', keyHint: 'brave.com/search/api' },
+    exa: { id: 'exa', label: 'Exa', keyUrl: 'https://dashboard.exa.ai/api-keys' },
+    tavily: { id: 'tavily', label: 'Tavily', keyUrl: 'https://app.tavily.com' },
+    brave: { id: 'brave', label: 'Brave', keyUrl: 'https://api.search.brave.com/app/keys' },
 };
 
 /** Which engine performs discovery. `built-in` is the bundled one and is the normal desktop path;
@@ -95,7 +95,7 @@ export interface DiscoveryStatus {
     engine: DiscoveryBackend | null;
     /** Whether that engine is present and usable at all. */
     engineReady: boolean;
-    /** Enabled sources that hold a credential. */
+    /** Built-in sources that hold a credential; custom endpoints manage their own sources. */
     ready: DiscoverySourceId[];
     /** Enabled sources still missing a credential. */
     missingKey: DiscoverySourceId[];
@@ -105,7 +105,7 @@ export interface DiscoveryStatus {
 }
 
 export function describeDiscovery(settings: DiscoverySettings, storedKeys: Partial<Record<DiscoverySourceId, boolean>>, platform: { builtInEngine: boolean }): DiscoveryStatus {
-    const chosen = enabledSources(settings);
+    const chosen = settings.backend === 'built-in' ? enabledSources(settings) : [];
     const keyed = chosen.filter(id => storedKeys[id] === true);
     const missing = chosen.filter(id => storedKeys[id] !== true);
     const engine: DiscoveryBackend | null = settings.backend === 'built-in' ? (platform.builtInEngine ? 'built-in' : null) : usableCustomDiscoveryURL(settings.customUrl) ? 'custom' : null;
@@ -120,5 +120,5 @@ export function describeDiscovery(settings: DiscoverySettings, storedKeys: Parti
 
 /** Whether an Explore that asked for external material can actually look outside the Field. */
 export function discoveryAvailable(status: DiscoveryStatus): boolean {
-    return status.engineReady && status.ready.length > 0;
+    return status.engineReady && (status.engine === 'custom' || status.ready.length > 0);
 }

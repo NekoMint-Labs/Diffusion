@@ -65,3 +65,33 @@ describe('causal trace presentation', () => {
         expect(causalEdges(project)).toHaveLength(3);
     });
 });
+
+it('rebuilds the entire current-parent branch on reparent, independence, undo and redo', () => {
+    const p = createProject();
+    for (const id of ['a', 'b', 'c', 'd', 'x']) p.thoughts[id] = makeThought(id, { x: 0, y: 0 }, 1, id);
+    for (const [child, parent] of [['b', 'a'], ['c', 'b'], ['d', 'c']]) Object.assign(p.thoughts[child], { derivedFrom: [parent], generationAction: 'continue' });
+    const controller = new ProjectController(p, async () => {});
+    const edges = () => causalEdges(controller.getSnapshot().project).map(({ parentId, childId, depth }) => [parentId, childId, depth]);
+    expect(edges()).toEqual([['a', 'b', 1], ['b', 'c', 2], ['c', 'd', 3]]);
+    controller.dispatch({ type: 'thought.reparent', id: 'x', parentId: 'a' });
+    controller.dispatch({ type: 'thought.reparent', id: 'c', parentId: 'a' });
+    expect(edges()).toEqual([['a', 'b', 1], ['a', 'c', 1], ['c', 'd', 2], ['a', 'x', 1]]);
+    expect(controller.getSnapshot().project.thoughts.c.derivedFrom).toEqual(['b']);
+    controller.undo(); expect(edges()).toEqual([['a', 'b', 1], ['b', 'c', 2], ['c', 'd', 3], ['a', 'x', 1]]);
+    controller.redo(); expect(edges()).toEqual([['a', 'b', 1], ['a', 'c', 1], ['c', 'd', 2], ['a', 'x', 1]]);
+    controller.dispatch({ type: 'thought.reparent', id: 'c', parentId: null });
+    expect(edges()).toEqual([['a', 'b', 1], ['c', 'd', 1], ['a', 'x', 1]]);
+});
+it('uses one surviving effective parent for multi-source suggestions and claimed thoughts', () => {
+    const p = createProject();
+    for (const id of ['a', 'b']) p.thoughts[id] = makeThought(id, { x: 0, y: 0 }, 1, id);
+    const controller = new ProjectController(p, async () => {});
+    controller.addGhost({ id: 'g', text: 'From both', x: 400, y: 0, createdAt: 1, scopeIds: ['a', 'b'], proposalKind: 'thought', proposalAction: 'question' });
+    const before = controller.getSnapshot();
+    expect(causalEdges(before.project, before.session.ghosts)).toHaveLength(1);
+    controller.claim('g');
+    expect(controller.getSnapshot().project.thoughts.g.derivedFrom).toEqual(['a', 'b']);
+    expect(causalEdges(controller.getSnapshot().project)).toEqual([expect.objectContaining({ parentId: 'a', childId: 'g', depth: 1 })]);
+    controller.dispatch({ type: 'thought.reparent', id: 'g', parentId: 'b' });
+    expect(causalEdges(controller.getSnapshot().project)).toEqual([expect.objectContaining({ parentId: 'b', childId: 'g', depth: 1 })]);
+});

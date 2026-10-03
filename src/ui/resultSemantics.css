@@ -5,23 +5,22 @@
 .thought.ghost:not(.editing)::before {
   content: "";
   position: absolute;
-  left: -7px;
-  top: 7px;
-  bottom: 7px;
-  width: 1px;
-  background: color-mix(in srgb, var(--pencil-trace) 82%, transparent);
-  opacity: .78;
+  left: calc(8px * var(--ghost-unit));
+  top: calc(12px * var(--ghost-unit));
+  bottom: calc(12px * var(--ghost-unit));
+  width: calc(2px * var(--ghost-unit));
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--pencil-trace) 74%, transparent);
+  opacity: 1;
 }
 .thought.ghost[data-proposal-action="continue"]::before {
   background: color-mix(in srgb, var(--pencil-trace) 92%, transparent);
 }
 .thought.ghost[data-proposal-action="angle"]::before {
-  width: 0;
-  background: none;
-  border-left: 1px dashed color-mix(in srgb, var(--pencil-trace) 86%, transparent);
+  background: color-mix(in srgb, var(--pencil-trace) 86%, transparent);
 }
 .thought.ghost:not(.editing) .thought-preview { color: inherit; }
-.thought.ghost .ghost-label { position: static; display: block; margin-top: 8px; color: var(--ink-helper); letter-spacing: .01em; font-size: var(--type-meta-size); opacity: 1; }
+.thought.ghost .ghost-label { position: static; display: block; margin-top: calc(11px * var(--ghost-unit)); color: var(--ink-secondary); letter-spacing: .01em; font-size: calc(var(--type-meta-size) * var(--ghost-unit)); opacity: 1; }
 
 /* A generated question stays a proposal, and its unresolved posture is visible before metadata. */
 .thought.ghost[data-proposal-kind="question"]::before {
@@ -65,21 +64,24 @@
   .thought.ghost[data-proposal-action="continue"], .thought.ghost[data-proposal-action="angle"], .thought.ghost[data-proposal-kind="question"] { animation: none; }
 }
 
-/* Phase 2 — causal lineage is a structural trajectory, never a semantic Relation. The visual path
-   is ~1px; a separate 12px hit path reserves future provenance/edit affordances without taking
-   pointer ownership today. */
+/* Current hierarchy owns color and line pattern. Source action and reparent history never
+   change the identity of a level; a separate hit path remains pointer-inert. */
 .causal-trace-layer { z-index: var(--layer-relation); }
-.causal-trace { --causal-presence: var(--causal-sleep-presence); }
-.causal-trace[data-causal-state="parent"] { --causal-presence: .38; }
-.causal-trace[data-causal-state="wake"] { --causal-presence: .56; }
+.causal-trace { --causal-presence: .72; --hierarchy-ink: var(--hierarchy-level-1); --hierarchy-dash: none; }
+.causal-trace[data-causal-state="parent"] { --causal-presence: .86; }
+.causal-trace[data-causal-state="wake"] { --causal-presence: 1; }
+.causal-trace[data-depth-style="2"] { --hierarchy-ink: var(--hierarchy-level-2); --hierarchy-dash: 7 4; }
+.causal-trace[data-depth-style="3"] { --hierarchy-ink: var(--hierarchy-level-3); --hierarchy-dash: 2 4; }
+.causal-trace[data-depth-style="4"] { --hierarchy-ink: var(--hierarchy-level-4); --hierarchy-dash: 10 3 2 3; }
 .causal-trace-visual {
   fill: none;
-  stroke: var(--trace);
-  stroke-width: 1.1;
+  stroke: var(--hierarchy-ink);
+  stroke-width: 1.8;
+  stroke-dasharray: var(--hierarchy-dash);
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
   opacity: var(--causal-presence);
-  transition: opacity var(--motion-attention) var(--ease-attention), stroke-width var(--motion-control) var(--ease-out-ui);
+  transition: opacity var(--motion-attention) var(--ease-attention);
 }
 .causal-trace-hit {
   fill: none;
@@ -88,10 +90,8 @@
   vector-effect: non-scaling-stroke;
   pointer-events: none;
 }
-.causal-trace[data-causal-action="angle"] .causal-trace-visual { stroke-width: 1.2; }
-.causal-trace[data-causal-action="question"] .causal-trace-visual { stroke-dasharray: 2 7; opacity: var(--causal-presence); }
-.causal-trace-terminal { fill: var(--trace); opacity: var(--causal-presence); transition: opacity var(--motion-attention) var(--ease-attention); }
-.causal-trace-question { fill: var(--trace); opacity: .58; font: 500 11px/1 var(--thought-font); paint-order: stroke; stroke: var(--field-bg); stroke-width: 4px; stroke-linejoin: round; }
+.causal-trace-terminal { fill: var(--hierarchy-ink); opacity: var(--causal-presence); transition: opacity var(--motion-attention) var(--ease-attention); }
+.causal-trace-question { fill: var(--hierarchy-ink); opacity: .8; font: 500 11px/1 var(--thought-font); paint-order: stroke; stroke: var(--field-bg); stroke-width: 4px; stroke-linejoin: round; }
 .field[data-dragging="true"] .causal-trace-visual, .field[data-dragging="true"] .causal-trace-terminal { transition: none; }
 
 /* A kept generated question stays visibly unresolved after it becomes canonical. This is posture,
@@ -108,7 +108,7 @@
 .region-label[data-active="true"] { color: var(--ink-primary); }
 
 /* Causal wake remains a directional provenance cue, independent of Region presentation. */
-.field[data-level="neighborhood"] .causal-trace[data-causal-state="sleep"] { --causal-presence: calc(var(--causal-sleep-presence) * .8); }
+.field:not([data-level="local"]) .causal-trace[data-causal-state="sleep"] { --causal-presence: var(--causal-sleep-presence); }
 .causal-trace[data-causal-state="wake"] .causal-trace-visual { animation: causal-trace-wake var(--motion-spatial) var(--ease-attention) both; }
 @keyframes causal-trace-wake { from { opacity: .12; stroke-dashoffset: 10; } to { opacity: var(--causal-presence); stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) {

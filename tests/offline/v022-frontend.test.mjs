@@ -41,7 +41,7 @@ test('floating positioning and visual motion are separated for command menus', (
     assert.match(menu, /className="command-menu-positioner"/);
     assert.match(menu, /anchor=\{anchorProp\}/);
     assert.match(menu, /positionMethod="fixed"/);
-    assert.match(menu, /collisionAvoidance=\{\{ side: 'flip', align: 'shift', fallbackAxisSide: 'none' \}\}/);
+    assert.match(menu, /collisionAvoidance=\{\{ side: 'flip', align: 'shift', fallbackAxisSide: 'end' \}\}/);
     // A menu is a bounded projection, not a dialog: it must not render a modal layer that absorbs
     // the outside press, and it must not become a second focus-restoration authority.
     assert.match(menu, /<Menu\.Root open=\{present\} modal=\{false\}/);

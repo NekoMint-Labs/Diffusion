@@ -272,7 +272,8 @@ test('the atmosphere is alive within seconds, not within a minute', async ({ pag
         const read = () => {
             const matrix = new DOMMatrix(getComputedStyle(element, '::before').transform);
             const distance = Math.hypot(matrix.e, matrix.f);
-            if (distance > 1 || performance.now() - start > 3000) resolve(Number(distance.toFixed(2)));
+            // Keep precision at the strict >1 threshold: 1.004 must not round back to 1.00.
+            if (distance > 1 || performance.now() - start > 3000) resolve(distance);
             else requestAnimationFrame(read);
         };
         requestAnimationFrame(read);

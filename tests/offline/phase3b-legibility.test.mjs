@@ -53,14 +53,14 @@ test('Phase 3B keeps SVG geometry separate from DOM relation UI and progressivel
   assert.match(labels, /RelationToken/);
   assert.match(token, /relation-label-overlay/);
   assert.match(token, /Candidate relation/);
-  // One popup, one portal: a nested submenu portal is what lost the menu in a real session.
-  assert.equal((menu.match(/<Menu\.Portal/g) || []).length, 1);
-  assert.doesNotMatch(menu, /Menu\.SubmenuRoot/);
-  assert.doesNotMatch(menu, /Menu\.SubmenuTrigger/);
-  // Advanced rows are a coordinated second column inside the same popup, never a second portal.
+  // Base UI coordinates two popup portals within the same menu tree.
+  assert.equal((menu.match(/<Menu\.Portal/g) || []).length, 2);
+  assert.match(menu, /Menu\.SubmenuRoot/);
+  assert.match(menu, /Menu\.SubmenuTrigger/);
+  // Hover and pin semantics remain within the same command registry.
   assert.match(menu, /secondaryOpen/);
   assert.match(menu, /MORE_HOVER_DELAY = 160/);
-  assert.match(menu, /data-command="more" closeOnClick=\{false\}/);
+  assert.match(menu, /setPinned\(true\); setSecondaryOpen\(true\)/);
   assert.match(menu, /data-secondary-panel/);
   assert.doesNotMatch(menu, /data-command="back"/);
   assert.match(compose, /contextualRows/);

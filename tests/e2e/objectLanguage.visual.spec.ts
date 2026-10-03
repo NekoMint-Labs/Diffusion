@@ -34,8 +34,10 @@ for (const profile of profiles) for (const [index, fieldStyle] of backgrounds.en
             }), { message: 'new suggestions clear measured Field chrome' }).toBe(false);
             await ghost.click();
             await expect(ghost.locator('.ghost-label')).toBeVisible();
-            await expect(ghost.locator('.ghost-boundary')).toHaveCSS('border-top-style', 'dashed');
-            await expect(ghost.locator('.ghost-boundary')).toHaveCSS('border-right-style', 'none');
+            // Approved paper-and-single-rail design replaces the former open dashed boundary.
+            await expect(ghost.locator('.ghost-boundary')).toHaveCount(0);
+            expect(await ghost.evaluate(el => getComputedStyle(el, '::before').width)).toBe('2px');
+            expect(await ghost.evaluate(el => getComputedStyle(el, '::after').content)).toBe('none');
             await expect(page.getByTestId('ai-proposal-keep')).toBeVisible();
             await expect(page.getByTestId('ai-proposal-ignore')).toBeVisible();
             await expect(page.locator('article.crystal').first()).toBeVisible();

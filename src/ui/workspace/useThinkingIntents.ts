@@ -8,7 +8,7 @@ import { continuedThought } from '../../core/world.ts';
 import type { ProjectController } from '../../core/controller.ts';
 import type { FieldHandle } from '../../field/Field.tsx';
 import type { ResultPlacementMode } from '../../field/spatial/placement.ts';
-import { useUI, type Surface as SurfaceName } from '../store.ts';
+import { useUI, visibleSelection, type Surface as SurfaceName } from '../store.ts';
 import type { CrystalDraft } from '../surfaces/CrystalPreview.tsx';
 import type { Settings } from '../settings.ts';
 import { aiOffNotice, deviceFailureNotice, notice } from './notice.ts';
@@ -48,15 +48,15 @@ export function useThinkingIntents({ controller, field, speak, surfaces, freePoi
 
     function exitSpeak() { setSpeakScope(null); useUI.getState().patch({ speakFocused: false }); }
     /** Writing over a selection speaks about that scope; focusing the surface states it. */
-    function compose() { setSpeakScope([...useUI.getState().selection]); }
+    function compose() { setSpeakScope([...visibleSelection(useUI.getState())]); }
     /** Ask reopens the writing surface with the current scope, as an explicit grounding. */
-    function ask(ids = useUI.getState().selection) { closeMenu(); stopDiffuseForIntent(); useUI.getState().patch({ speakFocused: true }); setSpeakScope([...ids]); }
+    function ask(ids = visibleSelection(useUI.getState())) { closeMenu(); stopDiffuseForIntent(); useUI.getState().patch({ speakFocused: true }); setSpeakScope([...ids]); }
     function findRelation(ids: string[]) {
         stopDiffuseForIntent();
         useUI.getState().patch({ selection: ids });
         void runtime.run('probe', 'Explore the relation without assuming one exists.', ids, { activity: 'bridge' });
     }
-    function openThread(scopeIds = useUI.getState().selection, deep = false, body?: string, provider?: string) {
+    function openThread(scopeIds = visibleSelection(useUI.getState()), deep = false, body?: string, provider?: string) {
         const project = controller.getSnapshot().project;
         let ids: string[];
         try {
@@ -75,7 +75,7 @@ export function useThinkingIntents({ controller, field, speak, surfaces, freePoi
         useUI.getState().patch({ threadId: thread.id });
     }
     /** A Crystal is never formed here: this only opens the editable preview. */
-    function previewCrystal(scopeIds = useUI.getState().selection, text?: string) {
+    function previewCrystal(scopeIds = visibleSelection(useUI.getState()), text?: string) {
         const project = controller.getSnapshot().project;
         const ids = scopeIds.filter(key => !!project.thoughts[key] && project.thoughts[key].kind !== 'source');
         if (!ids.length || ids.length === 1 && project.thoughts[ids[0]].kind === 'crystal') {
@@ -109,7 +109,7 @@ export function useThinkingIntents({ controller, field, speak, surfaces, freePoi
         // Yield once so the action visibly acknowledges itself before the local import completes.
         await new Promise<void>(resolve => setTimeout(resolve, 0));
         try {
-            const source = importer.candidate(candidate, freePoint(useUI.getState().selection, candidate.title, 'evidence'), existingSourceId);
+            const source = importer.candidate(candidate, freePoint(visibleSelection(useUI.getState()), candidate.title, 'evidence'), existingSourceId);
             // A brought reference keeps its existing directional arrival; no radial creation bloom.
             const placed = Object.values(controller.getSnapshot().project.thoughts).find(item => item.sourceId === source.id);
             if (placed) presentSpatialTransition('arrive', [placed.id]);
@@ -158,7 +158,7 @@ export function useThinkingIntents({ controller, field, speak, surfaces, freePoi
         const inputIds = [...new Set(ghosts.map(ghost => ghost.origin?.inputId).filter((value): value is string => !!value))];
         return inputIds.length === 1 ? inputIds[0] : null;
     }
-    function keepAllProposals(ids = useUI.getState().selection) {
+    function keepAllProposals(ids = visibleSelection(useUI.getState())) {
         const inputId = proposalInputId(ids);
         if (!inputId) return;
         const proposalIds = Object.values(controller.getSnapshot().session.ghosts).filter(ghost => ghost.proposal && ghost.origin?.inputId === inputId).map(ghost => ghost.id);
@@ -169,7 +169,7 @@ export function useThinkingIntents({ controller, field, speak, surfaces, freePoi
         observe(claimed.map(thought => thought.id));
         notice(t('Kept the proposed thoughts. Relations are still only candidates until you confirm them.'));
     }
-    function keepOriginalProposal(ids = useUI.getState().selection) {
+    function keepOriginalProposal(ids = visibleSelection(useUI.getState())) {
         const inputId = proposalInputId(ids);
         if (!inputId) return;
         const snapshot = controller.getSnapshot();
@@ -191,7 +191,7 @@ export function useThinkingIntents({ controller, field, speak, surfaces, freePoi
             return;
         stopDiffuseForIntent();
         const state = useUI.getState();
-        const scope = speakScope ?? state.selection;
+        const scope = speakScope ?? visibleSelection(state);
         const relationWords = /relation|relate|between|compare|explore|\u5173\u7cfb|\u4e4b\u95f4/i.test(text);
         const deep = /go deeper|deep dive|\u6df1\u5165/i.test(text);
         if ((state.surface === 'thread' || state.surface === 'thread-focus') && state.threadId) {

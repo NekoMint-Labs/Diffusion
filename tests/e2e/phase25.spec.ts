@@ -48,7 +48,7 @@ test('the AI section discloses only what the chosen provider needs', async ({ pa
     const ai = settings(page).locator('#setting-ai');
     // Off: the explanation and nothing else. No credential, no model, no depth.
     await expect(ai).toContainText('Off / manual Field only');
-    await expect(ai).toContainText('Thinking is off. The Field stays manual');
+    await expect(ai.locator('[data-testid="ai-status"]')).toContainText('Not configured');
     await expect(ai.locator('[data-testid="depth-select"]')).toHaveCount(0);
     await expect(ai.locator('[data-testid="model-select"]')).toHaveCount(0);
     await expect(ai.locator('[data-testid="model-input"]')).toHaveCount(0);
@@ -56,16 +56,17 @@ test('the AI section discloses only what the chosen provider needs', async ({ pa
     await expect(ai.locator('[data-testid="ai-status"]')).toHaveAttribute('data-tone', 'unconfigured');
     // Demo: the deterministic explanation, still no model, no depth and no credential.
     await choose(page, 'provider-select', 'demo');
-    await expect(ai).toContainText('Demo mode answers with authored example text');
+    await expect(ai).toContainText('Demo, not a model.');
     await expect(ai.locator('[data-testid="depth-select"]')).toHaveCount(0);
     await expect(ai.locator('[data-testid="model-input"]')).toHaveCount(0);
     await expect(ai.locator('input[type="password"]')).toHaveCount(0);
     await expect(ai.locator('[data-testid="ai-status"]')).toHaveAttribute('data-tone', 'limited');
-    // Gateway: a credential field, a depth control and a deliberate Test connection — but with no
+    // Gateway: a credential field, an editable model and a deliberate Test connection — but with no
     // address it claims nothing, and it does not report a capability it never asked for.
     await choose(page, 'provider-select', 'gateway');
     await expect(ai.locator('input[type="password"]')).toHaveCount(1);
-    await expect(ai.locator('[data-testid="depth-select"]')).toHaveCount(1);
+    await expect(ai.locator('[data-testid="depth-select"]')).toHaveCount(0);
+    await expect(ai.locator('[data-testid="model-input"]')).toBeVisible();
     await expect(ai.locator('[data-testid="gateway-capability"]')).toHaveCount(0);
     await expect(ai.locator('[data-testid="ai-status"]')).toHaveAttribute('data-tone', 'unconfigured');
     await expect(ai.locator('[data-testid="ai-status"]')).toContainText('Not configured');

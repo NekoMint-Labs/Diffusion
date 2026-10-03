@@ -1,7 +1,7 @@
 import { useRef, useState, type ChangeEvent, type CSSProperties } from 'react';
 import { t as msg } from '../../shared/i18n.ts';
 import {
-    ACCENT_IDS, FIELD_STYLE_IDS, IMAGE_ATMOSPHERE_FILE_LIMIT, STYLE_PROFILE_IDS,
+    ACCENT_IDS, FIELD_STYLE_IDS, IMAGE_ATMOSPHERE_FILE_LIMIT, STYLE_PROFILE_IDS, CONNECTION_STYLES, type ConnectionStyle,
     type AccentId, type AppearanceSettings, type FieldStyleId, type ImageAtmosphereSettings, type StyleProfileId,
 } from '../appearance.ts';
 import { analyzeImageSource, applyRecommendedImageSettings, changeAppearanceContext, getRecommendedImageSettings } from '../imageRecommendations.ts';
@@ -92,6 +92,9 @@ export function AppearanceSettings({ settings, onChange }: { settings: Settings;
             </SettingRow>
             <SettingRow label={msg('Field Presence')} setting="field-presence">
                 <input data-testid="field-presence" aria-label={msg('Field Presence')} type="range" min="0" max="100" step="1" value={appearance.fieldPresence} onChange={event => setAppearance({ fieldPresence: Number(event.target.value) })}/>
+            </SettingRow>
+            <SettingRow label={msg('Connection style')} setting="connection-style">
+                <Select testId="connection-style" ariaLabel={msg('Connection style')} value={appearance.connectionStyle} onChange={value => setAppearance({ connectionStyle: value as ConnectionStyle })} options={CONNECTION_STYLES.map(value => ({ value, label: msg(value === 'curve' ? 'Soft curves' : 'Elbow lines') }))} />
             </SettingRow>
             <SettingRow label={msg('Ambient Motion')} setting="ambient-motion">
                 <input data-testid="ambient-motion" aria-label={msg('Ambient Motion')} type="range" min="0" max="100" step="1" value={appearance.ambientMotion} onChange={event => setAppearance({ ambientMotion: Number(event.target.value) })}/>

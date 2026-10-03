@@ -95,7 +95,7 @@ export interface DiscoveryStatus {
     engine: DiscoveryBackend | null;
     /** Whether that engine is present and usable at all. */
     engineReady: boolean;
-    /** Enabled sources that hold a credential. */
+    /** Built-in sources that hold a credential; custom endpoints manage their own sources. */
     ready: DiscoverySourceId[];
     /** Enabled sources still missing a credential. */
     missingKey: DiscoverySourceId[];
@@ -105,7 +105,7 @@ export interface DiscoveryStatus {
 }
 
 export function describeDiscovery(settings: DiscoverySettings, storedKeys: Partial<Record<DiscoverySourceId, boolean>>, platform: { builtInEngine: boolean }): DiscoveryStatus {
-    const chosen = enabledSources(settings);
+    const chosen = settings.backend === 'built-in' ? enabledSources(settings) : [];
     const keyed = chosen.filter(id => storedKeys[id] === true);
     const missing = chosen.filter(id => storedKeys[id] !== true);
     const engine: DiscoveryBackend | null = settings.backend === 'built-in' ? (platform.builtInEngine ? 'built-in' : null) : usableCustomDiscoveryURL(settings.customUrl) ? 'custom' : null;
@@ -120,5 +120,5 @@ export function describeDiscovery(settings: DiscoverySettings, storedKeys: Parti
 
 /** Whether an Explore that asked for external material can actually look outside the Field. */
 export function discoveryAvailable(status: DiscoveryStatus): boolean {
-    return status.engineReady && status.ready.length > 0;
+    return status.engineReady && (status.engine === 'custom' || status.ready.length > 0);
 }

@@ -70,6 +70,26 @@ export function discloseHierarchy({ items, hierarchy, found, camera, viewport, d
         while (parent && !contextIds.has(parent)) { contextIds.add(parent); parent = hierarchy.parent.get(parent); }
     }
     const isRoot = (id: string) => hierarchy.parent.get(id) === null;
+    // Sources are omitted at Atlas. The first Thought on each source-only path stands in for
+    // that branch, using its existing coordinates and effective parent, never editing lineage.
+    const sourcePaths = new Map<string, boolean>();
+    const sourceOnlyPath = (id: string | null): boolean => {
+        const path: string[] = [];
+        let cursor = id;
+        while (cursor && !sourcePaths.has(cursor)) {
+            const item = items[cursor];
+            if (!item || !('kind' in item) || item.kind !== 'source') break;
+            path.push(cursor); cursor = hierarchy.parent.get(cursor) ?? null;
+        }
+        const onlySources = cursor === null || sourcePaths.get(cursor) === true;
+        for (const member of path) sourcePaths.set(member, onlySources);
+        return onlySources;
+    };
+    const atlasAnchors = new Set(tier === 'atlas' ? Object.keys(items).filter(id => {
+        const item = items[id];
+        return 'kind' in item && item.kind !== 'source' && sourceOnlyPath(hierarchy.parent.get(id) ?? null);
+    }) : []);
+
     const blocked = new Map<string, boolean>();
     const branchAllows = (id: string): boolean => {
         const path: string[] = [];
@@ -84,7 +104,7 @@ export function discloseHierarchy({ items, hierarchy, found, camera, viewport, d
         for (const member of path) blocked.set(member, hidden);
         if (hidden) return false;
         const directParent = hierarchy.parent.get(id) ?? '';
-        return isRoot(id) || (hierarchy.depth.get(id) ?? 0) <= depth || expanded.has(directParent);
+        return isRoot(id) || atlasAnchors.has(id) || (hierarchy.depth.get(id) ?? 0) <= depth || expanded.has(directParent);
     };
     const eligible = Object.keys(items).filter(id => {
         const item = items[id];
@@ -95,23 +115,23 @@ export function discloseHierarchy({ items, hierarchy, found, camera, viewport, d
         if (!branchAllows(id)) return false;
         if (ghost) return true;
         if (item.kind === 'source' && tier !== 'local') return false;
-        if (item.life === 'memory' && !isRoot(id) && !recalls.includes(id)) return false;
-        // At Atlas, branch detail is represented by its root, even if explicitly expanded.
-        return tier !== 'atlas' || isRoot(id) || item.kind === 'crystal';
+        if (item.life === 'memory' && !isRoot(id) && !atlasAnchors.has(id) && !recalls.includes(id)) return false;
+        // At Atlas, branch detail is represented by its non-source anchor, even if expanded.
+        return tier !== 'atlas' || atlasAnchors.has(id) || item.kind === 'crystal';
     });
     const eligibleSet = new Set(eligible);
     const candidates = found.filter(id => eligibleSet.has(id)).map(id => {
         const item = items[id], kind = 'kind' in item ? item.kind : 'thought';
         const box = measured(id);
         const size = box ? { width: box.width * camera.zoom, height: box.height * camera.zoom } : disclosureBox(item.text, camera.zoom, kind);
-        return { id, x: item.x, y: item.y, ...size, priority: id === editing ? 9 : id === currentMatch ? 8 : contextIds.has(id) ? 7 : 'scopeIds' in item ? 6 : kind === 'crystal' ? 5 : isRoot(id) ? 4 : 2 };
+        return { id, x: item.x, y: item.y, ...size, priority: id === editing ? 9 : id === currentMatch ? 8 : contextIds.has(id) ? 7 : 'scopeIds' in item ? 6 : kind === 'crystal' ? 5 : isRoot(id) || atlasAnchors.has(id) ? 4 : 2 };
     });
     const limit = tier === 'local' ? 240 : 64;
     const visible = tier === 'atlas' && !hierarchy.children.size
         ? readableLabels(candidates, camera, viewport, limit)
         : candidates.sort((a, b) => b.priority - a.priority || a.id.localeCompare(b.id)).slice(0, limit).map(item => item.id);
     const shown = new Set(visible);
-    const roots = found.filter(id => !shown.has(id) && 'kind' in items[id] && items[id].kind !== 'source' && (hierarchy.originalRoots.has(id) || eligibleSet.has(id) && (isRoot(id) || protectedIds.has(id))));
+    const roots = found.filter(id => !shown.has(id) && 'kind' in items[id] && items[id].kind !== 'source' && (hierarchy.originalRoots.has(id) || eligibleSet.has(id) && (isRoot(id) || atlasAnchors.has(id) || protectedIds.has(id))));
     return {
         visible: visible.sort(), roots: roots.sort(), eligible,
         hidden: Object.keys(items).filter(id => !eligibleSet.has(id)),

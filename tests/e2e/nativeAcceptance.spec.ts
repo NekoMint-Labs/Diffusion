@@ -75,7 +75,7 @@ for (const point of [{x: 8,y: 8}, {x: 1270,y: 8}, {x: 8,y: 710}, {x: 1270,y: 710
     });
 }
 
-test('search tests are explicit, content-free, and discard results after source changes', async ({ page }) => {
+test('search tests are explicit, content-free, and discard results after backend changes', async ({ page }) => {
     await boot(page); await page.keyboard.press('Control+,'); await openSection(page, 'search');
     await page.getByTestId('external-exploration').check(); await page.getByTestId('source-exa').check();
     await page.getByTestId('source-key-exa').fill('fixture-key-never-live'); await page.getByTestId('source-key-save-exa').click();
@@ -90,10 +90,12 @@ test('search tests are explicit, content-free, and discard results after source 
     await expect(page.getByTestId('search-test')).toBeEnabled(); expect(requests).toHaveLength(0);
     await page.getByTestId('search-test').click(); await expect.poll(() => requests.length).toBe(1);
     expect(requests).toEqual([{ query: 'Diffusion connection test', limit: 1 }]);
+    await choose(page, 'discovery-backend', 'built-in');
     await choose(page, 'search-provider', 'tavily'); finish!();
     await expect(page.getByTestId('discovery-status')).not.toContainText('已通过');
     await expect(page.getByTestId('discovery-status')).toContainText('密钥');
     await choose(page, 'search-provider', 'exa');
+    await choose(page, 'discovery-backend', 'custom');
     await page.unroute('https://search.example.org/search');
     await page.route('https://search.example.org/search', route => route.fulfill({ json: { candidates: [] } }));
     await page.getByTestId('search-test').click(); await expect(page.getByTestId('discovery-status')).toContainText('未返回结果');
@@ -209,4 +211,70 @@ test('a gateway metadata response never claims the model has been verified', asy
     await expect(status).toHaveAttribute('data-tone', 'limited'); expect(requests).toBe(1);
     await page.getByTestId('gateway-token').fill('changed-token'); await expect(status).toContainText('配置已更改');
     await expect(status).not.toContainText('网关可连接'); expect(requests).toBe(1);
+});
+
+
+test('custom search tests and runs without built-in keys, preserving settings across backend switches', async ({ page }, info) => {
+    await boot(page); await page.keyboard.press('Control+,'); await openSection(page, 'search');
+    await page.getByTestId('external-exploration').check();
+    await page.getByTestId('discovery-advanced').click(); await choose(page, 'discovery-backend', 'custom');
+    const requests: { query: string; limit: number }[] = [];
+    await page.route('https://search.example.org/search', route => {
+        requests.push(route.request().postDataJSON());
+        return route.fulfill({ json: { candidates: [{ id: 'fixture', title: 'Public fixture', url: 'https://example.org/reference', excerpt: 'A public test excerpt', inspected: 'Snippet only' }] } });
+    });
+    await expect(page.getByTestId('search-test')).toBeDisabled();
+    await page.getByTestId('discovery-url').fill('http://remote.example.org'); await page.getByTestId('discovery-url').blur();
+    await expect(page.getByTestId('search-test')).toBeDisabled();
+    await page.getByTestId('discovery-url').fill('https://search.example.org/'); await page.getByTestId('discovery-url').blur();
+    await expect(page.getByTestId('search-provider')).toHaveCount(0);
+    await expect(page.getByTestId('discovery-missing-key')).toHaveCount(0);
+    await expect(page.getByTestId('search-test')).toBeEnabled(); expect(requests).toEqual([]);
+    await page.getByTestId('search-test').click(); await expect(page.getByTestId('discovery-status')).toHaveAttribute('data-tone', 'connected');
+    expect(requests).toEqual([{ query: 'Diffusion connection test', limit: 1 }]);
+    await page.screenshot({ path: info.outputPath('custom-search-no-keys.png') });
+    await page.keyboard.press('Escape'); await page.locator('[data-thought-id="root"]').click(); await page.getByTestId('scope-angle').click();
+    await page.locator('.action-preview-options summary').click();
+    await page.getByRole('checkbox', { name: '使用网络搜索' }).check();
+    await page.getByTestId('action-preview-run').click();
+    await expect.poll(() => requests.length).toBeGreaterThan(1);
+    expect(requests[1].query).not.toBe('Diffusion connection test');
+    await page.keyboard.press('Control+,'); await openSection(page, 'search');
+    await page.getByTestId('discovery-advanced').click(); await choose(page, 'discovery-backend', 'built-in');
+    await page.getByTestId('source-exa').check(); await page.getByTestId('source-tavily').check();
+    await page.getByTestId('source-key-exa').fill('fixture-key-never-live'); await page.getByTestId('source-key-save-exa').click();
+    await expect(page.getByTestId('source-key-remove-exa')).toBeVisible();
+    const before = await page.evaluate(() => JSON.parse(localStorage.getItem('diffusion-settings')!).discovery);
+    await choose(page, 'discovery-backend', 'custom'); await expect(page.getByTestId('search-test')).toBeEnabled();
+    await choose(page, 'discovery-backend', 'built-in');
+    await expect(page.getByTestId('source-key-remove-exa')).toBeVisible(); await expect(page.getByTestId('source-tavily')).toBeChecked();
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('diffusion-settings')!).discovery)).toEqual(before);
+});
+
+test('source-derived Atlas retains its Thought anchor through fit and reopen without changing content', async ({ page }, info) => {
+    await boot(page);
+    const original = await page.evaluate(() => new Promise<any>((resolve, reject) => {
+        const request = indexedDB.open('diffusion-explorer-v1'); request.onerror = () => reject(request.error);
+        request.onsuccess = () => { const db = request.result, tx = db.transaction('projects', 'readwrite'), store = tx.objectStore('projects'), get = store.get('main');
+            get.onsuccess = () => { const project = get.result; project.thoughts.root.kind = 'source'; project.thoughts.root.sourceId = 'fixture';
+                project.sources.fixture = { id: 'fixture', title: 'Public source fixture', status: 'ready', mime: 'text/plain', excerpt: 'Public fixture', inspected: 'Full text', provenance: {} };
+                delete project.thoughts.child.organizingParentId; project.thoughts.child.derivedFrom = ['root']; project.thoughts.child.generationAction = 'continue'; project.thoughts.child.origin = { sourceId: 'fixture' };
+                project.thoughts.leaf.x = 9000; project.thoughts.leaf.y = 9000; store.put(project); tx.oncomplete = () => { db.close(); resolve(project.thoughts); }; };
+        };
+    }));
+    await page.reload(); await pinch(page, .16);
+    await expect(page.getByTestId('field')).toHaveAttribute('data-level', 'atlas');
+    await expect(page.locator('[data-thought-id="root"]')).toHaveCount(0);
+    await expect(page.locator('[data-thought-id="leaf"]')).toHaveCount(0);
+    const anchor = page.locator('[data-thought-id="child"]'); await expect(anchor).toBeVisible();
+    await page.keyboard.press('0'); await expect(anchor).toBeInViewport();
+    const box = (await anchor.boundingBox())!; expect(box.width).toBeGreaterThan(100);
+    await page.screenshot({ path: info.outputPath('source-branch-anchor.png') });
+    await expect.poll(() => page.getByTestId('field').getAttribute('data-camera-moving')).toBeNull();
+    await page.waitForTimeout(600); await page.reload(); await expect(anchor).toBeVisible();
+    const thoughts = await page.evaluate(() => new Promise<any>((resolve, reject) => {
+        const request = indexedDB.open('diffusion-explorer-v1'); request.onerror = () => reject(request.error);
+        request.onsuccess = () => { const db = request.result, get = db.transaction('projects').objectStore('projects').get('main'); get.onsuccess = () => { db.close(); resolve(get.result.thoughts); }; };
+    }));
+    expect(thoughts).toEqual(original);
 });

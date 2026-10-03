@@ -1,7 +1,7 @@
 import { t as msg } from '../../shared/i18n.ts';
 import { useCallback, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { motion, useIsPresent, useReducedMotion } from 'motion/react';
-import { FloatingFocusManager, FloatingPortal, useDismiss, useFloating, useInteractions, useRole, offset, flip, shift } from '@floating-ui/react';
+import { FloatingFocusManager, FloatingPortal, useDismiss, useFloating, useInteractions, useRole, offset, flip, shift, autoUpdate } from '@floating-ui/react';
 import type { Point } from '../../core/model.ts';
 import { useUI } from '../store.ts';
 import { isGlobalModal } from '../transient.ts';
@@ -57,6 +57,7 @@ export function Surface({ title, subtitle, level = 'split', anchor, onClose, chi
                 onClose();
         },
         placement: 'right-start', strategy: 'fixed', transform: false,
+        whileElementsMounted: autoUpdate,
         middleware: [offset(18), flip(), shift({ padding: 24 })],
     });
     useLayoutEffect(() => {

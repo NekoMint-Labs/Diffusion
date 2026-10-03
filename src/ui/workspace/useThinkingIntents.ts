@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { t } from '../../shared/i18n.ts';
 import { compileContext } from '../../ai/context.ts';
 import type { AIRuntime } from '../../ai/runtime.ts';
@@ -14,6 +14,8 @@ import type { Settings } from '../settings.ts';
 import { aiOffNotice, deviceFailureNotice, notice } from './notice.ts';
 import { useFirstThoughtEmergence } from '../motion/signature.ts';
 import { presentMaterialSettle, presentSpatialTransition } from '../motion/spatialGrammar.ts';
+import { saveResponse } from './response.ts';
+import { readResponseDraft, writeResponseDraft, clearResponseDraft, sameResponseScope } from './responseDraft.ts';
 import { sendThreadMessage } from '../thread/threadFlow.ts';
 
 /** Every deliberate way a person's intent becomes thinking.
@@ -36,8 +38,13 @@ export function useThinkingIntents({ controller, field, speak, surfaces, freePoi
     stopDiffuseForIntent: () => void;
     closeMenu: () => void;
 }) {
-    const [words, setWords] = useState('');
-    const [speakScope, setSpeakScope] = useState<string[] | null>(null);
+    const projectId = controller.getSnapshot().project.id;
+    const [initialResponseDraft] = useState(() => readResponseDraft(projectId));
+    const [words, setWords] = useState(initialResponseDraft?.text ?? '');
+    const [speakScope, setSpeakScope] = useState<string[] | null>(initialResponseDraft?.scope ?? null);
+    const [speakMode, setSpeakMode] = useState<'think' | 'respond'>(initialResponseDraft ? 'respond' : 'think');
+    const responseScope = useRef<string[] | null>(initialResponseDraft?.scope ?? null);
+    const [draftSaved, setDraftSaved] = useState(!!initialResponseDraft);
     const emergeFirstThought = useFirstThoughtEmergence();
     /** Whether the words currently in the composer are the ones a running request came from.
      *
@@ -46,11 +53,39 @@ export function useThinkingIntents({ controller, field, speak, surfaces, freePoi
      * not offer a control that would send an unrelated sentence into the wrong place. */
     const retryable = useRef(false);
 
+    useEffect(() => {
+        const scope = responseScope.current;
+        if (speakMode === 'respond' && scope?.length) setDraftSaved(writeResponseDraft(projectId, words, scope));
+    }, [projectId, speakMode, speakScope, words]);
     function exitSpeak() { setSpeakScope(null); useUI.getState().patch({ speakFocused: false }); }
-    /** Writing over a selection speaks about that scope; focusing the surface states it. */
-    function compose() { setSpeakScope([...useUI.getState().selection]); }
-    /** Ask reopens the writing surface with the current scope, as an explicit grounding. */
-    function ask(ids = useUI.getState().selection) { closeMenu(); stopDiffuseForIntent(); useUI.getState().patch({ speakFocused: true }); setSpeakScope([...ids]); }
+    function reopenResponse() {
+        closeMenu(); stopDiffuseForIntent(); setSpeakMode('respond');
+        setSpeakScope([...(responseScope.current ?? [])]);
+        useUI.getState().patch({ speakFocused: true });
+    }
+    /** Reopening a nonempty response always restores its original scope. */
+    function compose() {
+        if (words.trim() && responseScope.current) { setSpeakMode('respond'); setSpeakScope([...responseScope.current]); }
+        else { responseScope.current = null; setSpeakMode('think'); setSpeakScope([...useUI.getState().selection]); }
+    }
+    function ask(ids = useUI.getState().selection) {
+        if (speakMode === 'respond' && words.trim()) {
+            reopenResponse(); notice(t('Your response draft is still open. Reopen it or save it before starting another thought.')); return;
+        }
+        closeMenu(); stopDiffuseForIntent(); responseScope.current = null; setSpeakMode('think'); useUI.getState().patch({ speakFocused: true }); setSpeakScope([...ids]);
+    }
+    function respond(ids = useUI.getState().selection) {
+        const scope = [...new Set(ids)];
+        if (!scope.length || scope.some(key => !controller.getSnapshot().project.thoughts[key])) return;
+        if (words.trim() && responseScope.current && !sameResponseScope(responseScope.current, scope)) {
+            reopenResponse(); notice(t('Your response draft is linked to another thought. Reopen it or save it before responding here.')); return;
+        }
+        if (words.trim() && !responseScope.current) {
+            notice(t('Your current draft is still open. Finish it before starting a response.')); return;
+        }
+        responseScope.current = scope;
+        reopenResponse();
+    }
     function findRelation(ids: string[]) {
         stopDiffuseForIntent();
         useUI.getState().patch({ selection: ids });
@@ -192,6 +227,20 @@ export function useThinkingIntents({ controller, field, speak, surfaces, freePoi
         stopDiffuseForIntent();
         const state = useUI.getState();
         const scope = speakScope ?? state.selection;
+        if (speakMode === 'respond') {
+            const thought = saveResponse(controller, originalText, scope, freePoint(scope, text, 'continue'));
+            if (!thought) { notice(t('The referenced thought is no longer available. Your draft is still here.')); return; }
+            responseScope.current = null;
+            clearResponseDraft(projectId);
+            setSpeakMode('think');
+            setWords('');
+            exitSpeak();
+            useUI.getState().patch({ selection: [thought.id] });
+            observe([thought.id]);
+            field.current?.reveal([thought.id]);
+            notice(t('Your response is saved beside the referenced thought.'));
+            return;
+        }
         const relationWords = /relation|relate|between|compare|explore|\u5173\u7cfb|\u4e4b\u95f4/i.test(text);
         const deep = /go deeper|deep dive|\u6df1\u5165/i.test(text);
         if ((state.surface === 'thread' || state.surface === 'thread-focus') && state.threadId) {
@@ -301,5 +350,5 @@ export function useThinkingIntents({ controller, field, speak, surfaces, freePoi
             exitSpeak();
         }
     }
-    return { words, setWords, speakScope, exitSpeak, compose, ask, findRelation, submit, openThread, previewCrystal, continueCrystal, bringEvidence, keepAllProposals, keepOriginalProposal, retryable };
+    return { words, setWords, speakScope, speakMode, draftSaved, exitSpeak, compose, ask, respond, findRelation, submit, openThread, previewCrystal, continueCrystal, bringEvidence, keepAllProposals, keepOriginalProposal, retryable };
 }

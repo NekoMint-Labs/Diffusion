@@ -1,4 +1,4 @@
-import type { Point, ProjectState, SessionState } from '../../core/model.ts';
+import type { Point, ProjectState, SessionState, ThoughtKind } from '../../core/model.ts';
 import { GridIndex } from './index.ts';
 import { center, distanceBetween, intersects, type Bounds } from './geometry.ts';
 import { estimateItemSize } from './collision.ts';
@@ -6,6 +6,14 @@ import { estimateRelationLabelSize } from '../phenomena/relationLabelPlacement.t
 
 /** Stage G density: generated material should feel locally inhabited, not sprayed across a board. */
 export const RESULT_PREFERRED_DISTANCE = { min: 88, target: 136, max: 216 } as const;
+const CONTINUATION_DISTANCE = { min: 36, target: 52, max: 128 };
+
+/** Field previews show at most four lines; full wording must not reserve invisible space.
+ * Mounted reading geometry supersedes this conservative pre-mount footprint. */
+function previewSize(item: { text: string; kind?: ThoughtKind }) {
+    const size = estimateItemSize(item);
+    return { ...size, height: Math.min(size.height, 18 + 4 * 30) };
+}
 const RESULT_LOCAL_DENSITY_MARGIN = 96;
 const RESULT_CLEARANCE = 18;
 export type ResultPlacementMode = 'default' | 'continue' | 'branch' | 'question' | 'evidence' | 'landmark';
@@ -47,21 +55,23 @@ function along(scopeBounds: Bounds, resultSize: { width: number; height: number 
     return { x: resultCenter.x - resultSize.width / 2, y: resultCenter.y - resultSize.height / 2 };
 }
 
-function estimatedBounds(project: ProjectState, session: SessionState): Record<string, Bounds> {
+function estimatedBounds(project: ProjectState, session: SessionState, measured: Readonly<Record<string, Bounds>>): Record<string, Bounds> {
     return Object.fromEntries([...Object.values(project.thoughts), ...Object.values(session.ghosts)].map(item => {
-        const size = estimateItemSize(item);
-        return [item.id, { x: item.x, y: item.y, ...size }];
+        const size = measured[item.id] ?? previewSize(item);
+        return [item.id, { x: item.x, y: item.y, width: size.width, height: size.height }];
     }));
 }
 
 /** Pre-mount placement first chooses a semantic posture, then resolves collisions.
  * Geometry is presentation only: existing canonical coordinates are never rearranged here.
  * Real DOM geometry is still measured after mount and may receive one local correction pass. */
-export function placePossibility(project: ProjectState, session: SessionState, anchor: Point, ordinal = 0, scopeIds: string[] = [], visibleBounds?: Bounds, text = '', mode: ResultPlacementMode = 'default'): Point {
-    const resultSize = estimateItemSize({ text, kind: 'thought' });
-    const preferredDistance = RESULT_PREFERRED_DISTANCE;
+export function placePossibility(project: ProjectState, session: SessionState, anchor: Point, ordinal = 0, scopeIds: string[] = [], visibleBounds?: Bounds, text = '', mode: ResultPlacementMode = 'default', measured: Readonly<Record<string, Bounds>> = {}): Point {
+    const resultSize = previewSize({ text, kind: 'thought' });
+    // Keep the separate read control reachable without adding it to Thought geometry.
+    const bottomClearance = mode === 'continue' ? 64 : 0;
+    const preferredDistance = mode === 'continue' ? CONTINUATION_DISTANCE : RESULT_PREFERRED_DISTANCE;
     const index = new GridIndex();
-    const itemBounds = estimatedBounds(project, session);
+    const itemBounds = estimatedBounds(project, session, measured);
     for (const [id, bounds] of Object.entries(itemBounds)) index.set(id, inflate(bounds, RESULT_CLEARANCE));
 
     for (const relation of [...Object.values(project.relations), ...Object.values(session.phenomena)]) {
@@ -75,9 +85,11 @@ export function placePossibility(project: ProjectState, session: SessionState, a
     if (visibleBounds) {
         // Reserve the persistent top-right UI chrome. Generated material should prefer content space.
         index.set('__chrome', { x: visibleBounds.x + visibleBounds.width - 210, y: visibleBounds.y, width: 210, height: 100 });
+        // The Field identity is screen-space chrome, never part of the card geometry cache.
+        index.set('__identity', { x: visibleBounds.x, y: visibleBounds.y, width: visibleBounds.width * .66, height: visibleBounds.height * .14 });
     }
 
-    const fits = (point: Point) => !visibleBounds || point.x >= visibleBounds.x && point.y >= visibleBounds.y && point.x + resultSize.width <= visibleBounds.x + visibleBounds.width && point.y + resultSize.height <= visibleBounds.y + visibleBounds.height;
+    const fits = (point: Point) => !visibleBounds || point.x >= visibleBounds.x && point.y >= visibleBounds.y && point.x + resultSize.width <= visibleBounds.x + visibleBounds.width && point.y + resultSize.height + bottomClearance <= visibleBounds.y + visibleBounds.height;
     const collides = (point: Point) => index.query(inflate({ ...point, ...resultSize }, RESULT_CLEARANCE)).length > 0;
     let origin = anchor;
     const scope = scopeIds.map(key => itemBounds[key]).filter((bounds): bounds is Bounds => !!bounds);
@@ -93,6 +105,7 @@ export function placePossibility(project: ProjectState, session: SessionState, a
         const centerY = top + scopeBounds.height / 2;
         origin = { x: centerX - resultSize.width / 2, y: centerY - resultSize.height / 2 };
         const candidates: Point[] = [];
+        const trajectoryCandidates: Point[] = [];
         const gaps = [preferredDistance.target, preferredDistance.min, preferredDistance.max, 52, 292, 420, 560];
 
         for (const gap of gaps) {
@@ -101,9 +114,9 @@ export function placePossibility(project: ProjectState, session: SessionState, a
                 // Without one, the local reading axis remains the deterministic fallback.
                 if (trajectory) {
                     const lateral = Math.min(54, Math.max(24, scopeBounds.height * .18));
-                    candidates.push(along(scopeBounds, resultSize, trajectory, gap), along(scopeBounds, resultSize, trajectory, gap, lateral), along(scopeBounds, resultSize, trajectory, gap, -lateral));
+                    trajectoryCandidates.push(along(scopeBounds, resultSize, trajectory, gap), along(scopeBounds, resultSize, trajectory, gap, lateral), along(scopeBounds, resultSize, trajectory, gap, -lateral));
                 }
-                else if (horizontal) {
+                if (horizontal) {
                     candidates.push(
                         { x: right + gap, y: centerY - resultSize.height / 2 },
                         { x: centerX - resultSize.width / 2, y: bottom + gap },
@@ -196,6 +209,8 @@ export function placePossibility(project: ProjectState, session: SessionState, a
             return { point, score: bandPenalty * 100 + nearby * 18 + Math.abs(distance - preferredDistance.target) * .12 + priority / 1000 };
         }).filter((candidate): candidate is { point: Point; score: number } => !!candidate).sort((a, b) => a.score - b.score);
         // Semantic posture wins while a valid local slot exists. Only then do we escape into a ring.
+        const forward = score(trajectoryCandidates);
+        if (forward.length && (!visibleBounds || distanceBetween({ ...forward[0].point, ...resultSize }, scopeBounds) <= preferredDistance.max)) return forward[0].point;
         const semantic = score(candidates);
         if (semantic.length) return semantic[0].point;
 
@@ -208,6 +223,20 @@ export function placePossibility(project: ProjectState, session: SessionState, a
         }
         const escaped = score(escape);
         if (escaped.length) return escaped[0].point;
+
+        // A narrow viewport can have clear slots between the sparse radial samples.
+        // Exhaust its bounded grid before allowing an off-screen fallback.
+        if (visibleBounds) {
+            const slots: Point[] = [];
+            const maxX = visibleBounds.x + visibleBounds.width - resultSize.width;
+            const maxY = visibleBounds.y + visibleBounds.height - resultSize.height - bottomClearance;
+            const dx = Math.max(24, (maxX - visibleBounds.x) / 32);
+            const dy = Math.max(24, (maxY - visibleBounds.y) / 32);
+            for (let x = visibleBounds.x; x <= maxX; x += dx)
+                for (let y = visibleBounds.y; y <= maxY; y += dy) slots.push({ x, y });
+            const local = score(slots);
+            if (local.length) return local[0].point;
+        }
     }
 
     for (let step = 0; step < 72; step++) {

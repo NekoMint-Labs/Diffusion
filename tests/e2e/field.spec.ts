@@ -35,6 +35,7 @@ async function menu(page: Page, label: string) {
     await trigger.click();
     const scope = APP_LABELS.includes(label) ? 'global' : 'field';
     const root = page.getByTestId(`${scope}-menu`);
+    await expect(root).toBeVisible();
     const direct = root.getByRole('menuitem', { name: label, exact: true });
     if (await direct.count()) {
         await direct.click();

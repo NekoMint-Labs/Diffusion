@@ -61,6 +61,7 @@ export function useThinkingService({ controller, repository, settings, settingsR
         route: (...args) => hooks.current.route(...args),
         anchor: () => hooks.current.anchor(),
         bounds: () => hooks.current.bounds?.() ?? FALLBACK_BOUNDS,
+        measurements: () => hooks.current.measurements?.() ?? {},
     }), [controller, credentials]);
     selection.current = {
         provider: settings.provider, model: settings.model, thinkingDepth: settings.thinkingDepth,

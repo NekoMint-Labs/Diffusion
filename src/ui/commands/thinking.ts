@@ -14,6 +14,7 @@ export interface ThinkingDeps extends SurfaceDeps {
     /** The one relation-specific action: it exists only for a scope of exactly two Thoughts. */
     findRelation(ids: string[]): void;
     ask(ids: string[]): void;
+    respond(ids: string[]): void;
     openThread(ids: string[], deep?: boolean): void;
     previewCrystal(ids: string[]): void;
     continueCrystal(key: string): void;
@@ -42,6 +43,7 @@ export function thinkingCommands(deps: ThinkingDeps): DiffusionCommand[] {
     return [
         { id: 'find-relation', group: 'think', label: 'Find a relation', keywords: ['probe', 'relation', 'explore', '探索', '关联'], available: exactlyTwo, run: context => deps.findRelation(selectedIds(context)) },
         { id: 'ask', group: 'think', label: 'Ask your own question', keywords: ['question', 'write', '追问', '提问'], available: anySelected, run: context => deps.ask(selectedIds(context)) },
+        { id: 'respond', group: 'think', label: 'Add my thoughts', keywords: ['respond', 'answer', '回应', '回答', '补充'], available: anySelected, run: context => deps.respond(selectedIds(context)) },
         { id: 'continue-thinking', group: 'think', label: 'Continue thinking', keywords: ['continue', '继续想一想'], available: anySelected, run: context => deps.continueThinking(selectedIds(context)) },
         { id: 'thread', group: 'think', label: 'Open a Thought Thread', keywords: ['thread', 'conversation', '思路'], available: anySelected, run: context => deps.openThread(selectedIds(context)) },
         { id: 'questions', group: 'think', label: 'Generate a question', keywords: ['question', 'ask', 'generate', '提问', '生成'], available: anySelected, run: context => deps.questions(selectedIds(context)) },

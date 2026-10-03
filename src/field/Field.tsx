@@ -6,6 +6,7 @@ import { type AIProposalKind, type Camera, type Point, type Ghost, type Thought 
 import type { ProjectController } from '../core/controller.ts';
 import { useProject } from '../ui/hooks.ts';
 import { useUI } from '../ui/store.ts';
+import { selectionUIBounds, useThoughtMeasurements } from './useThoughtMeasurements.ts';
 import { ThoughtView } from '../ui/thought/ThoughtView.tsx';
 import { ScopeHub } from '../ui/scope/ScopeHub.tsx';
 import { StructureOverlay } from './phenomena/StructureOverlay.tsx';
@@ -28,7 +29,7 @@ import { FieldBackgroundLayer } from '../ui/fieldBackgrounds/FieldBackgroundLaye
 import { SpatialActivityLayer } from '../ui/motion/SpatialActivityLayer.tsx';
 import { claimWithSettle, dismissGhostWithDissolve, presentMaterialSettle } from '../ui/motion/spatialGrammar.ts';
 import type { FieldStyleId } from '../ui/appearance.ts';
-import { commitDraggedItems, correctMeasuredGhost, correctSingleDraggedThought, deleteFieldSelection, ignoreRelationCandidate, keepRelationCandidate, relationPlacementObstacles } from './interactionHygiene.ts';
+import { commitDraggedItems, correctSingleDraggedThought, deleteFieldSelection, ignoreRelationCandidate, keepRelationCandidate, relationPlacementObstacles } from './interactionHygiene.ts';
 export interface FieldHandle {
     focus: () => void;
     camera: () => Camera;
@@ -40,6 +41,7 @@ export interface FieldHandle {
     visibleIds: () => string[];
     screenPoint: (point: Point) => Point;
     viewBounds: () => Bounds;
+    itemBounds: () => Record<string, Bounds>;
 }
 export interface FieldFind {
     matches: Set<string>;
@@ -58,6 +60,8 @@ interface Props {
     onRelation: (id: string, point: Point) => void;
     onDropText: (text: string, point: Point) => void;
     onSource: (sourceId: string) => void;
+    onReadThought: (id: string) => void;
+    onRespondThought: (id: string) => void;
     onDropFiles: (files: File[], point: Point) => void;
     onObserve: (ids: string[]) => void;
     onCreateThought: (point: Point) => void;
@@ -66,7 +70,7 @@ interface Props {
     find: FieldFind | null;
     fieldStyle: FieldStyleId;
 }
-export const Field = forwardRef<FieldHandle, Props>(function Field({ controller, fieldStyle, onProbeRelation, scopeActions, onScopeAction, onKeepAllProposals, onKeepOriginalProposal, onAIProposalAction, onMore, onRegion, onRelation, onDropText, onSource, onDropFiles, onObserve, onCreateThought, onContextMenu, onRevealMatch, find }, forwardedRef) {
+export const Field = forwardRef<FieldHandle, Props>(function Field({ controller, fieldStyle, onProbeRelation, scopeActions, onScopeAction, onKeepAllProposals, onKeepOriginalProposal, onAIProposalAction, onMore, onRegion, onRelation, onDropText, onSource, onReadThought, onRespondThought, onDropFiles, onObserve, onCreateThought, onContextMenu, onRevealMatch, find }, forwardedRef) {
     const { project, session } = useProject(controller);
     const ui = useUI();
     const viewport = useRef<HTMLDivElement>(null);
@@ -100,7 +104,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const liveItems = useRef(items);
     liveItems.current = items;
     const focus = useMemo(() => focusFor(project, session, ui.selection), [project, session, ui.selection]);
-    const correctedGhosts = useRef(new Set<string>());
+    const { onMeasure: handleGhostMeasured, onActionsMeasure, actionBounds } = useThoughtMeasurements({ controller, geometry, items, camera, viewport: rect });
     useLayoutEffect(() => {
         const state = useUI.getState();
         const selection = state.selection.filter(key => !!items[key]);
@@ -150,7 +154,6 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
                 geometry.remove(key);
         for (const item of Object.values(items))
             geometry.setPosition(item.id, item.x, item.y);
-        correctedGhosts.current = new Set([...correctedGhosts.current].filter(key => newKeys.has(key)));
         known.current = newKeys;
         refreshVisible(camera.current?.get() ?? project.camera, true);
     }, [items, session.recalls, project.camera, geometry, refreshVisible]);
@@ -217,6 +220,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         camera: () => camera.current?.get() ?? project.camera,
         screenPoint: (point) => { const p = worldToScreen(point, camera.current?.get() ?? project.camera); return { x: p.x + rect.current.left, y: p.y + rect.current.top }; },
         viewBounds: () => viewportBounds(camera.current?.get() ?? project.camera, rect.current.width, rect.current.height, 0),
+        itemBounds: () => Object.fromEntries([...Object.keys(controller.getSnapshot().project.thoughts), ...Object.keys(controller.getSnapshot().session.ghosts)].flatMap(key => { const box = geometry.getMeasured(key); return box ? [[key, { ...box }]] : []; })),
         restore: (c) => { camera.current?.set(c, true); },
         centerPoint: () => camera.current?.worldPoint({ x: rect.current.width / 2 - 125, y: rect.current.height / 2 - 50 }) ?? { x: 300, y: 250 },
         centerOn: (ids) => { const boxes = ids.map(k => geometry.get(k)).filter((b): b is Bounds => !!b); if (!boxes.length)
@@ -514,11 +518,10 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const handleThoughtEdit = useCallback((key: string, text: string) => { const snapshot = controller.getSnapshot(); if (snapshot.session.ghosts[key]) presentMaterialSettle([key]); const thought = snapshot.session.ghosts[key] ? controller.claim(key) : snapshot.project.thoughts[key]; if (thought && thought.text !== text) controller.dispatch({ type: 'thought.edit', id: key, text }); useUI.getState().patch({ editing: null }); }, [controller]);
     const handleThoughtCancel = useCallback(() => { const key = useUI.getState().editing; const t = key ? controller.getSnapshot().project.thoughts[key] : null; if (t && !t.text.trim())
         controller.dispatch({ type: 'thought.delete', ids: [t.id] }); useUI.getState().patch({ editing: null, selection: useUI.getState().selection.filter(k => !!controller.getSnapshot().project.thoughts[k] || !!controller.getSnapshot().session.ghosts[k]) }); }, [controller]);
-    const handleGhostMeasured = useCallback((key: string) => correctMeasuredGhost(key, correctedGhosts.current, controller, geometry, Object.keys(liveItems.current), camera.current?.get() ?? controller.getSnapshot().project.camera, rect.current), [controller, geometry]);
     const keepCandidate = useCallback((relationId: string) => keepRelationCandidate(controller, relationId), [controller]);
     const ignoreCandidate = useCallback((relationId: string) => ignoreRelationCandidate(controller, relationId), [controller]);
     const renameCandidate = useCallback((relationId: string, label: string) => controller.updatePhenomenon(relationId, { label }), [controller]);
-    const selectedBoxes = ui.selection.map(k => geometry.get(k)).filter((b): b is Bounds => !!b);
+    const selectedBoxes = selectionUIBounds(ui.selection, geometry, actionBounds);
     const scopeBounds = unionScopeBounds(selectedBoxes.map(bounds => {
         const point = worldToScreen(bounds, stableCamera);
         return { x: point.x + rect.current.left, y: point.y + rect.current.top, width: bounds.width * stableCamera.zoom, height: bounds.height * stableCamera.zoom };
@@ -632,7 +635,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             {ui.surface !== 'relation' && <RelationLabels relations={relationHits} thoughtBounds={relationObstacles} zoom={stableCamera.zoom} onRelation={onRelation} onKeep={keepCandidate} onIgnore={ignoreCandidate} onRename={renameCandidate}/>}
    {visible.map(key => { if (ui.carry.includes(key))
         return null; const item = items[key]; if (!item)
-        return null; return <ThoughtView key={key} item={item} ghost={key in session.ghosts} recalled={session.recalls.includes(key)} selected={ui.selection.includes(key)} settling={ui.spatialTransition?.material === true && ui.spatialTransition.scopeIds.includes(key)} find={findEmphasis(key)} emphasis={!focus.selected.size ? 'normal' : focus.selected.has(key) ? 'selected' : focus.direct.has(key) ? 'direct' : focus.nearby.has(key) ? 'nearby' : focus.peripheral.has(key) ? 'peripheral' : 'receded'} editing={ui.editing === key} level={level} geometry={geometry} onEdit={handleThoughtEdit} onCancel={handleThoughtCancel} onMeasure={handleGhostMeasured} onHover={setHoveredThought} onReject={key => dismissGhostWithDissolve(controller, key, () => { const state = useUI.getState(); state.patch({ selection: state.selection.filter(id => id !== key) }); })}/>; })}
+        return null; return <ThoughtView key={key} item={item} ghost={key in session.ghosts} recalled={session.recalls.includes(key)} selected={ui.selection.includes(key)} settling={ui.spatialTransition?.material === true && ui.spatialTransition.scopeIds.includes(key)} find={findEmphasis(key)} emphasis={!focus.selected.size ? 'normal' : focus.selected.has(key) ? 'selected' : focus.direct.has(key) ? 'direct' : focus.nearby.has(key) ? 'nearby' : focus.peripheral.has(key) ? 'peripheral' : 'receded'} editing={ui.editing === key} level={level} geometry={geometry} onEdit={handleThoughtEdit} onCancel={handleThoughtCancel} onMeasure={handleGhostMeasured} onActionsMeasure={onActionsMeasure} onHover={setHoveredThought} onRead={onReadThought} onRespond={onRespondThought} onReject={key => dismissGhostWithDissolve(controller, key, () => { const state = useUI.getState(); state.patch({ selection: state.selection.filter(id => id !== key) }); })}/>; })}
     {offscreenMatches.map((key, index) => { const edge = recallEdge(project.thoughts[key], stableCamera, rect.current.width, rect.current.height, index); const hit = find?.current === key; return <button className="find-edge" data-current={hit || undefined} key={'find-' + key} style={{ left: edge.x, top: edge.y }} onClick={() => onRevealMatch(key)} title={project.thoughts[key].text}><span aria-hidden="true" style={{ display: 'inline-block', transform: `rotate(${edge.angle}deg)` }}>&#8594;</span> {t(hit ? 'Next match' : 'Match elsewhere')}</button>; })}
    {Object.values(project.regions).filter(region => level !== 'local' ? disclosedLandmarks.has('region:' + region.id) : ui.regionId === region.id).map(region => <button className="region-label" data-active={ui.regionId === region.id || undefined} onClick={() => onRegion(region.id, { x: region.x, y: region.y })} key={region.id} style={{ transform: `translate(${region.x}px,${region.y}px) scale(var(--inverse-zoom))` }}><span>{t(region.name)}</span><small>{t('{count} thoughts', { count: region.members.length })}</small></button>)}
    {level === 'atlas' && frontiers.filter(key => disclosedLandmarks.has('frontier:' + key)).map(key => { const t = project.thoughts[key]; return <button className="frontier-label" key={'frontier-' + key} onClick={() => { controller.wake(key); ui.patch({ selection: [key] }); camera.current?.set({ x: rect.current.width / 2 - t.x - 128, y: rect.current.height / 2 - t.y - 30, zoom: 1 }); camera.current?.commit(); }} style={{ transform: `translate(${t.x}px,${t.y}px) scale(var(--inverse-zoom))` }}><span aria-hidden="true">&#9671;</span> {semanticExcerpt(t.text, 'atlas', 'thought')}</button>; })}

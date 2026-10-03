@@ -9,6 +9,7 @@ const thinking = thinkingCommands({
     openSurface: noop,
     findRelation: noop,
     ask: noop,
+    respond: noop,
     openThread: noop,
     previewCrystal: noop,
     continueCrystal: noop,

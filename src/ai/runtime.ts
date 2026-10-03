@@ -270,13 +270,35 @@ export class AIRuntime {
                 }));
             };
             if (!validScope() || !validContinuation()) throw new Error(t('The scope changed while thinking. Ask again with its new wording.'));
+            const surfacedWording: string[] = [];
+            const currentState = this.controller.getSnapshot();
+            // Avoid echoes only against context actually supplied to this request, plus pending
+            // proposals attached to this scope. Unrelated canvas content is not duplicate evidence.
+            const scopeIds = new Set(packet.scope.map(item => item.id));
+            const existingWording = [
+                ...packet.scope.map(item => item.text),
+                ...packet.local.map(item => item.text),
+                ...packet.retrieved.thoughts.map(item => item.text),
+                ...Object.values(currentState.session.ghosts)
+                    .filter(ghost => ghost.scopeIds.some(scopeId => scopeIds.has(scopeId)))
+                    .map(ghost => ghost.text),
+            ];
             const accepted = response.intents.slice(0, packet.maxCandidates)
                 .filter(candidate => intentAllowedForAction(kind, candidate.type))
                 .filter(candidate => permissionFor(candidate, packet, this.controller.getSnapshot().project).allowed)
                 .filter(candidate => semanticQualityAllowed(kind, candidate))
                 .filter(candidate => angleScope === null || candidate.type === 'surface_possibility' && !repeatedWording(candidate.text, [...packet.scope.map(item => item.text), ...this.recentAngles]))
                 .filter(candidate => !options.excludeTexts || candidate.type === 'surface_possibility' && !repeatedWording(candidate.text, [...packet.scope.map(item => item.text), ...options.excludeTexts]))
-                .filter(candidate => !options.runId || ['surface_possibility', 'surface_question', 'surface_relation', 'surface_structure', 'respond_in_field', 'surface_evidence', 'request_recall'].includes(candidate.type));
+                .filter(candidate => !options.runId || ['surface_possibility', 'surface_question', 'surface_relation', 'surface_structure', 'respond_in_field', 'surface_evidence', 'request_recall'].includes(candidate.type))
+                .filter(candidate => {
+                    const wordingIsProposal = (kind === 'continue' || kind === 'angle') && candidate.type === 'surface_possibility'
+                        || kind === 'question' && candidate.type === 'surface_question';
+                    if (!wordingIsProposal) return true;
+                    const previous = [...existingWording, ...surfacedWording];
+                    if (repeatedWording(candidate.text, previous)) return false;
+                    surfacedWording.push(candidate.text);
+                    return true;
+                });
             if (options.threadId) {
                 const body = accepted.map(candidate => 'text' in candidate ? candidate.text : candidate.type === 'surface_relation' ? `${candidate.kind}: ${candidate.label}` : '').filter(Boolean).join('\n\n');
                 if (body) {

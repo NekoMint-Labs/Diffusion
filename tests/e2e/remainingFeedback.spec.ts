@@ -102,6 +102,29 @@ for (const position of [{ name: 'center', x: 650, y: 420 }, { name: 'bottom', x:
     });
 }
 
+test('hover-only More still closes outside while a click pins it', async ({ page }) => {
+    await prepare(page);
+    const thought = await write(page, 650, 420, '悬停和固定点击的边界');
+    await thought.click({ button: 'right' });
+    const menu = page.getByTestId('thought-menu');
+    const more = menu.locator('[data-command="more"]');
+    const panel = page.getByTestId('thought-more-menu');
+    await more.hover(); await expect(panel).toBeVisible();
+    await page.mouse.move(80, 650);
+    await expect(panel).toHaveCount(0);
+    await more.click(); await expect(panel).toBeVisible();
+    await page.mouse.move(80, 650);
+    // Wait past the hover-close interval and observe its actual outcome.
+    await page.waitForTimeout(500);
+    await expect(panel).toBeVisible();
+    // Focus is still in the primary menu after a pointer click; enter the child explicitly.
+    await more.focus(); await more.press('ArrowRight');
+    await expect(panel.locator('[role="menuitem"]').first()).toBeFocused();
+    await page.keyboard.press('Escape'); await expect(panel).toHaveCount(0);
+    await expect(more).toBeFocused();
+    await page.keyboard.press('Escape'); await expect(menu).toHaveCount(0);
+});
+
 for (const initialZoom of [1, .4, .08]) {
     test(`new Continue suggestions stay bounded and clear before and after Keep (zoom ${initialZoom})`, async ({ page }, info) => {
         await prepare(page);

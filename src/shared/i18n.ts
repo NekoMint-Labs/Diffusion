@@ -1,3 +1,4 @@
+import { en } from '../locales/en.ts';
 import { zh } from '../locales/zh.ts';
 export type Locale = 'en' | 'zh';
 export type LocalePreference = Locale | 'system';
@@ -14,6 +15,6 @@ export function setLocale(value: LocalePreference): void {
 }
 export function subscribeLocale(listener: () => void): () => void { listeners.add(listener); return () => { listeners.delete(listener); }; }
 export function t(message: string, values: Record<string, string | number> = {}): string {
-    const template = getLocale() === 'zh' ? (zh[message] ?? message) : message;
+    const template = getLocale() === 'zh' ? (zh[message] ?? en[message] ?? message) : (en[message] ?? message);
     return template.replace(/\{(\w+)\}/g, (match, key: string) => values[key] === undefined ? match : String(values[key]));
 }

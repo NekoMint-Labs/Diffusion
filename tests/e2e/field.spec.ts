@@ -262,6 +262,10 @@ test('continue-thinking proposal does not inherit drag ownership from its source
     const ghost = page.locator(`[data-thought-id="${ghostId}"]`);
     expect((await project(page)).thoughts[ghostId]).toBeUndefined();
 
+    // Pending arrivals get one coalesced collision correction after text/source measurement.
+    // Compare ownership only after that arrival geometry has settled; drag assertions remain exact.
+    let lastBounds = '', stableSince = Date.now();
+    await expect.poll(async () => { const bounds = JSON.stringify(await ghost.boundingBox()); if (bounds !== lastBounds) { lastBounds = bounds; stableSince = Date.now(); } return Date.now() - stableSince; }).toBeGreaterThan(150);
     const anchorStart = await anchorThought.boundingBox();
     const ghostStart = await ghost.boundingBox();
     if (!anchorStart || !ghostStart) throw new Error('proposal bounds unavailable');
@@ -413,7 +417,10 @@ test('large projects are culled and zoom changes representation', async ({ page 
         await page.waitForTimeout(160);
     }
     await expect(page.getByTestId('field')).toHaveAttribute('data-level', 'atlas');
-    await expect(page.locator('[data-kind="thought"]')).toHaveCount(0);
+    // Issue 11 retains roots through capped summaries and exact anchors, rather than hiding all.
+    expect(await page.locator('[data-kind="thought"]').count()).toBeLessThanOrEqual(64);
+    await expect(page.getByTestId('root-anchors')).toBeVisible();
+    await expect(page.getByTestId('root-review-toggle')).toBeVisible();
 });
 
 test('Scope Hub follows selection geometry and transfers exact scope to Speak', async ({ page }) => {
@@ -487,9 +494,14 @@ test('Scope Hub follows selection geometry and transfers exact scope to Speak', 
     await expect(page.locator('.thought.ghost').first()).toBeVisible();
     const demoNotice = page.locator('.notice[data-secondary="demo"]');
     await expect(demoNotice).toBeVisible();
-    expect((await demoNotice.boundingBox())!.y).toBeLessThan(100);
+    const noticeBox = (await demoNotice.boundingBox())!, titleBox = (await page.locator('.identity').boundingBox())!;
+    expect(noticeBox.y).toBeGreaterThan(titleBox.y + titleBox.height);
+    expect(noticeBox.y + noticeBox.height).toBeLessThanOrEqual(page.viewportSize()!.height);
     expect((await project(page)).thoughts.attention).toMatchObject({ x: before.thoughts.attention.x, y: before.thoughts.attention.y });
-    await page.getByTestId('field').click({ position: { x: 80, y: 880 } });
+    // The feedback/coaching lane may reserve the bottom of the window. Clear scope in
+    // the actual Field, rather than clicking a fixed window coordinate outside it.
+    const fieldBounds = (await page.getByTestId('field').boundingBox())!;
+    await page.getByTestId('field').click({ position: { x: 80, y: fieldBounds.height - 20 } });
     await expect(page.getByTestId('scope-hub')).toHaveCount(0);
     await expect(page.getByTestId('speak')).toBeVisible();
     await expect.poll(async () => (await page.getByTestId('speak').boundingBox())!.width).toBeCloseTo(250, 0);
@@ -878,7 +890,10 @@ test('generic generated Ghost menu actions do not hide Field More actions', asyn
     await expect(scopeHub).toBeVisible();
     await expect(scopeHub.getByRole('button', { name: 'Keep this' })).toBeVisible();
     await expect(scopeHub.getByRole('button', { name: 'Continue thinking' })).toBeVisible();
-    await expect(scopeHub.getByRole('button', { name: 'Another angle' })).toBeVisible();
+    await expect(scopeHub.getByRole('button', { name: 'Ignore', exact: true })).toBeVisible();
+    await scopeHub.getByTestId('thought-more').click();
+    await expect(page.getByTestId('thought-menu').getByRole('menuitem', { name: 'Another angle' })).toBeVisible();
+    await page.keyboard.press('Escape');
     await ghost.click({ button: 'right' });
     const thoughtMenu = page.getByTestId('thought-menu');
     await expect(thoughtMenu.getByRole('menuitem', { name: 'Keep this' })).toBeVisible();

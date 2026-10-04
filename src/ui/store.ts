@@ -8,6 +8,7 @@ export interface ReturnPoint {
     selection: string[];
 }
 interface UIState extends TransientState {
+    fieldVisibleIds: string[] | null;
     selection: string[];
     editing: string | null;
     threadId: string | null;
@@ -44,8 +45,15 @@ interface UIState extends TransientState {
     select: (id: string, extend?: boolean) => void;
 }
 export const useUI = create<UIState>((set) => ({
-    selection: [], editing: null, surface: 'none', menu: null, transientEpoch: 0, threadId: null, sourceId: null, regionId: null, handoffId: null, relationId: null, returnPoint: null,
+    fieldVisibleIds: null, selection: [], editing: null, surface: 'none', menu: null, transientEpoch: 0, threadId: null, sourceId: null, regionId: null, handoffId: null, relationId: null, returnPoint: null,
     theme: 'system', dragging: false, speakFocused: false, carry: [], anchor: null, notice: '', noticeTone: 'info', noticeAction: null, busy: false, operation: null, structuring: null, spatialTransition: null,
     patch: (p) => set(state => transientPatch(state, p)), select: (key, extend = false) => set(s => ({ selection: extend ? (s.selection.includes(key) ? s.selection.filter(k => k !== key) : [...s.selection, key]) : [key] })),
 }));
 
+
+/** New canvas actions only consume objects offered by the current display projection. */
+export function visibleSelection(state: { selection: string[]; fieldVisibleIds: string[] | null }): string[] {
+    if (state.fieldVisibleIds === null) return state.selection;
+    const visible = new Set(state.fieldVisibleIds);
+    return state.selection.filter(id => visible.has(id));
+}

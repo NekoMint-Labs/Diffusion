@@ -56,6 +56,7 @@ export function contextualActionModel(commands: DiffusionCommand[], context: Com
     const primaryIds = new Set(primary.map(action => action.id));
 
     const secondaryCandidates: ContextualAction[] = [
+        descriptor('thought-lineage', 'Sources and parent...', 'Inspect original sources or change the organizing parent.'),
         descriptor('open-reference', 'View source', 'Open the reference behind this Source.'),
         descriptor('verify', 'Check evidence', 'Look for material that supports or challenges the thought.'),
         descriptor('crystallize', 'Crystallize', 'Turn the current thinking into an editable, explicit commitment.'),
@@ -69,7 +70,8 @@ export function contextualActionModel(commands: DiffusionCommand[], context: Com
     const secondary = secondaryCandidates
         .filter(action => !primaryIds.has(action.id) && supported(commands, context, action))
         .filter((action, index, all) => all.findIndex(candidate => candidate.id === action.id) === index)
-        .slice(0, 6);
+        // One new inspector must not displace an existing edit action (notably Delete).
+        .slice(0, supported(commands, context, secondaryCandidates[0]) ? 7 : 6);
 
     return { primary, secondary };
 }

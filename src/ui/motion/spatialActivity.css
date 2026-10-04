@@ -35,12 +35,12 @@
 
 /* Stage E — the acknowledgement is local to the scope. The mark appears immediately; copy waits
    long enough that a fast request does not flash a status label. */
-.spatial-operation-feedback { position: absolute; z-index: 6; display: flex; align-items: center; gap: 7px; min-height: 28px; max-width: 320px; padding: 4px 7px; border: 1px solid color-mix(in srgb, var(--boundary) 52%, transparent); border-radius: var(--radius-control); background: color-mix(in srgb, var(--surface-1) 91%, transparent); box-shadow: 0 8px 22px -20px color-mix(in srgb, var(--ink-primary) 35%, transparent); color: var(--ink-secondary); font: var(--type-helper-size)/1.35 var(--ui-font); transform: translate(22px, -42px) scale(var(--inverse-zoom)); transform-origin: left bottom; pointer-events: auto; }
+.spatial-operation-feedback { position: fixed; z-index: var(--layer-scope); width: max-content; display: flex; align-items: center; gap: 7px; min-height: 28px; max-width: 320px; padding: 4px 7px; border: 1px solid color-mix(in srgb, var(--boundary) 52%, transparent); border-radius: var(--radius-control); background: color-mix(in srgb, var(--surface-1) 91%, transparent); box-shadow: 0 8px 22px -20px color-mix(in srgb, var(--ink-primary) 35%, transparent); color: var(--ink-secondary); font: var(--type-helper-size)/1.35 var(--ui-font); pointer-events: auto; }
 .operation-feedback-mark { width: 7px; height: 7px; flex: 0 0 auto; border: 1px solid color-mix(in srgb, var(--attention) 76%, var(--ink-tertiary)); border-radius: 50%; background: var(--surface-1); opacity: .92; }
 .spatial-operation-feedback[data-phase="pending"] .operation-feedback-mark { animation: operation-pulse 1100ms var(--ease-out-ui) infinite; }
 .spatial-operation-feedback[data-phase="failed"] { border-color: color-mix(in srgb, var(--danger) 34%, var(--boundary)); }
 .spatial-operation-feedback[data-phase="completed"] .operation-feedback-mark { border-radius: 2px; transform: rotate(45deg) scale(.72); }
-.operation-feedback-copy { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.operation-stop { margin-left: 2px; }
+.operation-feedback-copy { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+.operation-stop { margin-left: 2px; flex: none; }
 @keyframes operation-pulse { 0%, 100% { opacity: .38; transform: scale(.82); } 50% { opacity: 1; transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .spatial-operation-feedback[data-phase="pending"] .operation-feedback-mark { animation: none !important; } }

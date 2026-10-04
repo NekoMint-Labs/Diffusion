@@ -33,8 +33,10 @@ test('Phase 3E 1 / 3 / 5 preview wiring reaches action-specific execution withou
 
 test('Phase 3E proposal surfaces expose only contextual next actions', () => {
   const hub = src('ui/scope/ScopeHub.tsx');
-  for (const id of ['ai-proposal-keep', 'ai-proposal-continue', 'ai-proposal-angle', 'ai-question-answer', 'ai-proposal-ignore']) assert.match(hub, new RegExp(id));
-  assert.match(hub, /!aiProposalKind && <Button[\s\S]*thought-more/);
+  for (const id of ['ai-proposal-keep', 'ai-proposal-continue', 'ai-question-answer', 'ai-proposal-ignore']) assert.match(hub, new RegExp(id));
+  // Overflow actions stay reachable for proposals; Keep / Ignore occupy the primary rail.
+  assert.match(hub, /data-testid="thought-more"/);
+  assert.match(src('ui/Workspace.tsx'), /row.id === 'angle'/);
   assert.match(src('ui/surfaces/OrganizeSurface.tsx'), /Apply/);
   assert.match(src('ui/surfaces/OrganizeSurface.tsx'), /Try another/);
   assert.match(src('ui/surfaces/OrganizeSurface.tsx'), /Cancel/);

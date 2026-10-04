@@ -1,6 +1,7 @@
 import type { Gesture } from '../spatial/gesture.ts';
 import type { GeometryLookup } from './describe.ts';
 import { causalDragGeometry, describeCausalEdge, type CausalTrace } from './causalTrace.ts';
+import { intersects } from '../spatial/geometry.ts';
 
 /** Keep causal traces glued to the same transient drag preview as Thoughts. This is paint-only: the
  * project still receives a single thought.move at pointer-up, and lineage stores no coordinates. */
@@ -10,13 +11,16 @@ export function paintCausalDragTraces(layer: SVGGElement | null, traces: readonl
     const lookup = causalDragGeometry(geometry, gesture?.positions ?? {}, delta);
     const moved = gesture ? new Set(Object.keys(gesture.positions)) : null;
     for (const edge of traces) {
-        // Pointer-move work stays local to the dragged selection. A reset may repaint all visible
-        // traces once, but steady-state dragging does not scan or recalculate the whole Field.
-        if (moved && !moved.has(edge.parentId) && !moved.has(edge.childId)) continue;
-        const trace = describeCausalEdge(edge, lookup);
-        if (!trace) continue;
         const group = layer.querySelector<SVGGElement>(`[data-causal-id="${CSS.escape(edge.id)}"]`);
         if (!group) continue;
+        // A third card can obstruct a stationary edge. Re-route only incident or touched mounted
+        // paths, remembering touched ones until pointer-up so they also recover as the card leaves.
+        if (moved && !moved.has(edge.parentId) && !moved.has(edge.childId) && !group.hasAttribute('data-drag-rerouted') && ![...moved].some(id => { const box = lookup.get(id); return box && edge.routeBounds && intersects(box, edge.routeBounds); })) continue;
+        if (gesture) group.setAttribute('data-drag-rerouted', 'true');
+        else group.removeAttribute('data-drag-rerouted');
+        const trace = describeCausalEdge(edge, lookup);
+        group.style.visibility = trace ? '' : 'hidden';
+        if (!trace) continue;
         for (const path of group.querySelectorAll<SVGPathElement>('path')) path.setAttribute('d', trace.path);
         const terminal = group.querySelector<SVGCircleElement>('.causal-trace-terminal');
         if (terminal) {

@@ -67,3 +67,13 @@ export function computeScopeHubPlacement({ selectionBounds, viewportBounds, occu
     if (outsideSelection.length) return outsideSelection.reduce((best, candidate) => scopeHubDistance(candidate, selectionBounds) < scopeHubDistance(best, selectionBounds) ? candidate : best);
     return candidates.reduce((best, candidate) => scopeHubDistance(candidate, selectionBounds) < scopeHubDistance(best, selectionBounds) ? candidate : best);
 }
+
+/** A local overlay may only occupy genuinely empty, visible space. Dense or offscreen scopes
+ * return null so the caller can reserve the feedback lane without moving canonical content. */
+export function clearScopePlacement(options: Parameters<typeof computeScopeHubPlacement>[0]): ScopePlacement | null {
+    const { selectionBounds: scope, viewportBounds: viewport, occupiedRects = [], hubSize, padding = 16 } = options;
+    if (hubSize.width > viewport.width - padding * 2 || hubSize.height > viewport.height - padding * 2 || outside(scope, viewport)) return null;
+    const candidate = computeScopeHubPlacement(options);
+    if (!outside(candidate, scope) || occupiedRects.some(rect => !outside(candidate, inflate(rect, SCOPE_HUB_CONTENT_CLEARANCE)))) return null;
+    return candidate;
+}

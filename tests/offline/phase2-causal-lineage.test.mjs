@@ -106,8 +106,9 @@ test('Phase 2 keeps CausalTraceLayer separate from RelationLayer and visual/hit 
   assert.match(layer, /causal-trace-hit/);
   assert.match(layer, /causal-trace-visual/);
   assert.match(css, /\.causal-trace-hit[^}]*stroke-width:\s*12/s);
-  assert.match(css, /\.causal-trace-visual[^}]*stroke-width:\s*1\.1/s);
-  assert.match(css, /data-causal-action="question"/);
+  assert.match(css, /\.causal-trace-visual[^}]*stroke-width:\s*1\.8/s);
+  assert.match(css, /data-depth-style="2"/);
+  assert.doesNotMatch(css, /data-causal-action[^}]*stroke-(?:width|dasharray)/s);
   assert.doesNotMatch(layer, /from ['"]\.\/RelationLayer|relation\.confirm|dispatch\(/);
 });
 

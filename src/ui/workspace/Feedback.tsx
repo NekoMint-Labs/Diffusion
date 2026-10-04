@@ -14,8 +14,6 @@ export function FeedbackLine({ text, tone, action, secondary, onBottomHeight }: 
     useLayoutEffect(() => {
         const element = line.current;
         if (!element || !onBottomHeight) return;
-        // Demo disclosure lives at the top; it must not leave an empty bottom lane.
-        if (secondary === 'demo') { onBottomHeight(0); return; }
         const measure = () => onBottomHeight(Math.ceil(element.getBoundingClientRect().height));
         measure();
         const observer = new ResizeObserver(measure);

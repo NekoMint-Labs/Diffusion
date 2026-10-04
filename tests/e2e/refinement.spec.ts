@@ -140,8 +140,8 @@ test('Settings is a dedicated centred surface with sections and one close langua
     await expect(dialog.locator('#setting-ai')).toContainText('Off / manual Field only');
      // Search & Evidence is reachable as its own place rather than buried in AI.
     await dialog.locator('.settings-nav button[data-section="search"]').click();
-    await expect(dialog.locator('#setting-search')).toContainText('Search & Evidence');
-    await expect(dialog.locator('#setting-search')).toContainText('External exploration');
+    await expect(dialog.locator('#setting-search')).toContainText('Web search');
+    await expect(dialog.locator('#setting-search')).toContainText('Web search');
     // The About facts are Help content now, in the same window-level place Settings uses.
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);

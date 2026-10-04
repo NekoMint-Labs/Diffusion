@@ -3,7 +3,7 @@ import { createProject, emptySession, makeThought } from '../../src/core/model.t
 import { RESULT_PREFERRED_DISTANCE, placePossibility } from '../../src/field/spatial/placement.ts';
 import { estimateItemSize, estimateThoughtSize } from '../../src/field/spatial/collision.ts';
 import { distanceBetween } from '../../src/field/spatial/geometry.ts';
-import { computeScopeHubPlacement, scopeHubDistance, unionScopeBounds } from '../../src/ui/scope/scopePlacement.ts';
+import { clearScopePlacement, computeScopeHubPlacement, scopeHubDistance, unionScopeBounds } from '../../src/ui/scope/scopePlacement.ts';
 
 const viewport = { x: 0, y: 0, width: 1000, height: 800 };
 const hubSize = { width: 260, height: 42 };
@@ -170,5 +170,24 @@ describe('scope result placement', () => {
 
     it('keeps the existing anchor behavior when no source scope is available', () => {
         expect(placePossibility(createProject('empty'), emptySession(), { x: 20, y: 30 })).toEqual({ x: 320, y: 30 });
+    });
+});
+
+
+describe('clear placement for measured screen controls', () => {
+    it('uses the measured wrapped size instead of assuming a single line', () => {
+        const scope = { x: 300, y: 200, width: 260, height: 100 };
+        const placement = clearScopePlacement({ selectionBounds: scope, viewportBounds: { x: 0, y: 0, width: 1280, height: 720 }, hubSize: { width: 410, height: 88 } });
+        expect(placement).not.toBeNull();
+        expect(placement!.height).toBe(88);
+        expect(overlaps(placement!, scope)).toBe(false);
+    });
+    it('reserves a lane rather than covering a scope that fills the viewport', () => {
+        expect(clearScopePlacement({ selectionBounds: { x: 0, y: 0, width: 1280, height: 720 }, viewportBounds: { x: 0, y: 0, width: 1280, height: 720 }, hubSize: { width: 330, height: 44 } })).toBeNull();
+    });
+    it('does not anchor a status to an offscreen scope or an oversized control', () => {
+        const options = { viewportBounds: { x: 0, y: 0, width: 1280, height: 720 }, hubSize: { width: 330, height: 44 } };
+        expect(clearScopePlacement({ ...options, selectionBounds: { x: -400, y: 300, width: 100, height: 70 } })).toBeNull();
+        expect(clearScopePlacement({ ...options, selectionBounds: { x: 400, y: 300, width: 100, height: 70 }, hubSize: { width: 1400, height: 44 } })).toBeNull();
     });
 });

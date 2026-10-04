@@ -39,8 +39,8 @@ test('v0.2.4 Focus is expressed through existing legibility state only', () => {
     assert.match(block(css, '.thought-preview'), /opacity:\s*var\(--thought-ink-presence\)/);
     assert.match(block(css, '.thought[data-emphasis="direct"]'), /--thought-ink-presence:\s*\.96/);
     assert.match(block(css, '.thought[data-emphasis="nearby"]'), /--thought-ink-presence:\s*\.84/);
-    assert.match(block(css, '.thought[data-emphasis="receded"]'), /color:\s*var\(--ink-secondary\)/);
-    assert.match(block(css, '.thought[data-emphasis="peripheral"]'), /--thought-ink-presence:\s*\.46/);
+    assert.match(block(css, '.thought[data-emphasis="receded"]'), /color:\s*var\(--ink-primary\)/);
+    assert.match(block(css, '.thought[data-emphasis="peripheral"]'), /--thought-ink-presence:\s*\.68/);
     assert.doesNotMatch(css, /filter:\s*blur/i);
     assert.match(field, /focus\.selected\.has\(key\).*focus\.direct\.has\(key\).*focus\.nearby\.has\(key\).*focus\.peripheral\.has\(key\)/s);
     assert.doesNotMatch(field, /confidence|engagement|recommendation/i);

@@ -238,6 +238,7 @@ test('the editorial hierarchy orders as the design documents it, and the role si
     const sectionTitle = await readRole(page.locator('#setting-appearance > h3'));
     const label = await readRole(page.locator('#setting-appearance .ui-setting-label').first());
     await openSection(page, 'ai');
+    await choose(page, 'provider-select', 'compatible');
     const helper = await readRole(page.locator('#setting-ai .settings-note').first());
     const status = await readRole(page.locator('#setting-ai .status-line').first());
     // The shortcut reference moved out of Settings into its own surface. Its two typographic roles
@@ -346,7 +347,9 @@ test('attention does not hide the rest of the Field: a distant Thought keeps its
         await page.mouse.wheel(0, 120);
     }
     await expect(page.getByTestId('field')).toHaveAttribute('data-level', 'neighborhood');
-    await page.getByTestId('field').dblclick({ position: { x: 1400, y: 900 } });
+    // The dense-root reading entry reserves a dock lane; choose inside the current Field bounds.
+    const usableField = (await page.getByTestId('field').boundingBox())!;
+    await page.getByTestId('field').dblclick({ position: { x: usableField.width - 40, y: usableField.height - 60 } });
     const editor = page.getByRole('textbox', { name: 'Edit thought' });
     await editor.fill('A far reference point');
     await editor.press('Enter');
@@ -358,13 +361,19 @@ test('attention does not hide the rest of the Field: a distant Thought keeps its
     await expect.poll(() => anchors.count()).toBeGreaterThanOrEqual(2);
     await anchors.nth(0).click();
     await anchors.nth(1).click({ modifiers: ['Shift'] });
+    // First-use coaching intentionally reserves viewport space. Finish that separate lesson
+    // before measuring a far-edge object's attention, rather than sampling a culled object.
+    const coaching = page.getByTestId('progressive-tutorial-coach');
+    await coaching.getByRole('button', { name: 'Got it' }).click();
+    await expect(coaching).toHaveCount(0);
+    await expect(far).toBeVisible();
     await page.getByTestId('scope-question').click();
     await expect(page.getByTestId('field')).toHaveAttribute('data-scope', 'true');
     await expect.poll(async () => far.getAttribute('data-emphasis'), 'the far Thought is peripheral').toBe('peripheral');
     // The emphasis attribute flips before the 200 ms ink transition finishes. The Thought body stays
     // fully present; only its content recedes.
     const farInk = far.locator('.thought-preview');
-    await expect.poll(async () => farInk.evaluate(element => Number(getComputedStyle(element).opacity)), 'the far Thought settles to its peripheral ink presence').toBeLessThanOrEqual(0.46);
+    await expect.poll(async () => farInk.evaluate(element => Number(getComputedStyle(element).opacity)), 'the far Thought settles to its readable peripheral ink presence').toBeLessThanOrEqual(0.72);
     await expect.poll(async () => far.evaluate(element => Number(getComputedStyle(element).opacity)), 'the far Thought body remains present').toBe(1);
 
     const presence = await page.locator('[data-thought-id]').evaluateAll(elements => elements.map(element => ({
@@ -381,9 +390,9 @@ test('attention does not hide the rest of the Field: a distant Thought keeps its
     // Attention changes clarity, not physical existence: every body remains present while the
     // peripheral ink reaches the documented scoped step.
     expect(nonSelected.every(entry => entry.objectOpacity === 1)).toBe(true);
-    expect(inkFloor, 'the least-present non-selected Thought ink').toBeGreaterThanOrEqual(0.4);
-    expect(farEntry?.inkOpacity ?? 0).toBeGreaterThanOrEqual(0.4);
-    expect(farEntry?.inkOpacity ?? 0).toBeLessThanOrEqual(0.46);
+    expect(inkFloor, 'peripheral words retain readable ink').toBeGreaterThanOrEqual(0.65);
+    expect(farEntry?.inkOpacity ?? 0).toBeGreaterThanOrEqual(0.65);
+    expect(farEntry?.inkOpacity ?? 0).toBeLessThanOrEqual(0.72);
     expect(nonSelected.length, 'other Thoughts are still present').toBeGreaterThanOrEqual(3);
 });
 

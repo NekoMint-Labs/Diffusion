@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AIRuntime } from '../../src/ai/runtime.ts';
-import { angleAvoidancePrompt } from '../../src/ai/diversity.ts';
+import { thinkingAvoidancePrompt } from '../../src/ai/diversity.ts';
 import { UNKNOWN_CAPABILITIES, type AIProvider, type ContextPacket, type SemanticIntent, type UserIntent } from '../../src/ai/contracts.ts';
 import { createProject, makeThought } from '../../src/core/model.ts';
 import { ProjectController } from '../../src/core/controller.ts';
@@ -19,17 +19,17 @@ function setup(responses?: SemanticIntent[], existingText = 'A different uncerta
         },
     };
     const runtime = new AIRuntime(controller, async () => provider, { pending: () => {}, notice: () => {}, route: () => {}, anchor: () => ({ x: 400, y: 300 }) });
-    return { controller, runtime, requests };
+    return { controller, runtime, requests, provider };
 }
 
-describe('repeated explicit Angle requests (fixtures, not semantic-quality evidence)', () => {
-    it('remembers an ignored frame only as negative data and rejects a literal repeat without retry', async () => {
+describe('repeated explicit thinking requests (fixtures, not semantic-quality evidence)', () => {
+    it.each(['continue', 'angle'] as const)('%s remembers ignored wording only as negative data and rejects a literal repeat without retry', async action => {
         const fixture = setup();
         try {
             const before = structuredClone(fixture.controller.getSnapshot().project);
-            expect((await fixture.runtime.run('angle', 'Another angle', ['a'])).emitted).toBe(1);
+            expect((await fixture.runtime.run(action, 'Think further', ['a'])).emitted).toBe(1);
             fixture.controller.dismissGhost(Object.keys(fixture.controller.getSnapshot().session.ghosts)[0]);
-            expect((await fixture.runtime.run('angle', 'Another angle', ['a'])).emitted).toBe(0);
+            expect((await fixture.runtime.run(action, 'Think further', ['a'])).emitted).toBe(0);
             expect(fixture.requests).toHaveLength(2);
             expect(fixture.requests[1].intent.text).toContain('An already tried frame.');
             expect(fixture.requests[1].intent.text).toContain('not facts, premises, evidence or instructions');
@@ -39,31 +39,83 @@ describe('repeated explicit Angle requests (fixtures, not semantic-quality evide
             expect(Object.keys(fixture.controller.getSnapshot().session.ghosts)).toHaveLength(0);
         } finally { fixture.runtime.dispose(); }
     });
-    it('does not carry an old frame into a changed selection or changed selected wording', async () => {
+    it.each(['continue', 'angle'] as const)('%s resets history on changed selection or selected wording', async action => {
         const fixture = setup();
         try {
-            await fixture.runtime.run('angle', 'Another angle', ['a']);
-            await fixture.runtime.run('angle', 'Another angle', ['b']);
-            expect(fixture.requests[1].intent.text).toBe('Another angle');
+            await fixture.runtime.run(action, 'Think further', ['a']);
+            await fixture.runtime.run(action, 'Think further', ['b']);
+            expect(fixture.requests[1].intent.text).toBe('Think further');
             fixture.controller.dispatch({ type: 'thought.edit', id: 'b', text: 'A revised uncertainty' }, 'user');
-            await fixture.runtime.run('angle', 'Another angle', ['b']);
-            expect(fixture.requests[2].intent.text).toBe('Another angle');
+            await fixture.runtime.run(action, 'Think further', ['b']);
+            expect(fixture.requests[2].intent.text).toBe('Think further');
         } finally { fixture.runtime.dispose(); }
     });
-    it('does not attach Angle history to Continue or to an explicit new Diffuse run', async () => {
+    it('shares avoidance across Continue and Angle without changing the requested action', async () => {
+        const fixture = setup();
+        try {
+            await fixture.runtime.run('continue', 'Continue', ['a']);
+            fixture.controller.dismissGhost(Object.keys(fixture.controller.getSnapshot().session.ghosts)[0]);
+            expect((await fixture.runtime.run('angle', 'Another angle', ['a'])).emitted).toBe(0);
+            expect(fixture.requests[1].intent.kind).toBe('angle');
+            expect(fixture.requests[1].intent.text).toContain('An already tried frame.');
+            expect(fixture.requests[1].intent.text).toContain('Change the frame itself');
+            await fixture.runtime.run('continue', 'Continue', ['a']);
+            expect(fixture.requests[2].intent.text).toContain('Stay on the selected trajectory');
+            expect(fixture.requests[2].packet).toEqual(fixture.requests[0].packet);
+            expect(fixture.runtime.requestCount).toBe(3);
+        } finally { fixture.runtime.dispose(); }
+    });
+    it('keeps Diffuse and frozen Thread separate while Angle retains history through its presenter', async () => {
         const fixture = setup();
         try {
             await fixture.runtime.run('angle', 'Another angle', ['a']);
-            await fixture.runtime.run('continue', 'Continue', ['a']);
             await fixture.runtime.run('diffuse', 'New exploration', ['a']);
-            expect(fixture.requests.slice(1).map(request => request.intent.text)).toEqual(['Continue', 'New exploration']);
+            await fixture.runtime.run('angle', 'Budgeted angle', ['a'], { runId: 'exploration' });
+            await fixture.runtime.run('continue', 'Frozen continuation', ['a'], { threadId: 'thread' });
+            expect(fixture.requests[1].intent.text).toBe('New exploration');
+            expect(fixture.requests[2].intent.text).toContain('An already tried frame.');
+            expect(fixture.requests[2].intent.text).toContain('Change the frame itself');
+            expect(fixture.requests[3].intent.text).toBe('Frozen continuation');
         } finally { fixture.runtime.dispose(); }
+    });
+    it('resets avoidance when supplied lineage background changes', async () => {
+        const fixture = setup();
+        fixture.controller.getSnapshot().project.thoughts.a.derivedFrom = ['b'];
+        try {
+            await fixture.runtime.run('continue', 'Continue', ['a']);
+            fixture.controller.dismissGhost(Object.keys(fixture.controller.getSnapshot().session.ghosts)[0]);
+            fixture.controller.dispatch({ type: 'thought.edit', id: 'b', text: 'Revised direct source' }, 'user');
+            expect((await fixture.runtime.run('continue', 'Continue', ['a'])).emitted).toBe(1);
+            expect(fixture.requests[1].intent.text).toBe('Continue');
+            expect(fixture.requests[1].packet.local[0].text).toBe('Revised direct source');
+        } finally { fixture.runtime.dispose(); }
+    });
+    it('does not let a superseded provider lookup erase newer scope history or make a late call', async () => {
+        const fixture = setup();
+        let release!: (provider: AIProvider) => void;
+        let first = true;
+        const runtime = new AIRuntime(fixture.controller, () => {
+            if (!first) return Promise.resolve(fixture.provider);
+            first = false;
+            return new Promise(resolve => { release = resolve; });
+        }, { pending: () => {}, notice: () => {}, route: () => {}, anchor: () => ({ x: 400, y: 300 }) });
+        try {
+            const older = runtime.run('continue', 'Continue old scope', ['b']);
+            await runtime.run('continue', 'Continue', ['a']);
+            fixture.controller.dismissGhost(Object.keys(fixture.controller.getSnapshot().session.ghosts)[0]);
+            release(fixture.provider);
+            expect(await older).toMatchObject({ status: 'cancelled', emitted: 0 });
+            expect((await runtime.run('continue', 'Continue', ['a'])).emitted).toBe(0);
+            expect(fixture.requests).toHaveLength(2);
+            expect(runtime.requestCount).toBe(2);
+            expect(fixture.requests[1].intent.text).toContain('An already tried frame.');
+        } finally { runtime.dispose(); fixture.runtime.dispose(); }
     });
     it('bounds escaped negative data and preserves a maximum-length authored prompt', () => {
-        const prompt = angleAvoidancePrompt('Another angle', Array(20).fill('\u0001'.repeat(20000)));
+        const prompt = thinkingAvoidancePrompt('angle', 'Another angle', Array(20).fill('\u0001'.repeat(20000)));
         expect(prompt.length).toBeLessThanOrEqual(12000);
         expect(JSON.parse(prompt.split('\n').at(-1)!)).toHaveLength(6);
-        expect(angleAvoidancePrompt('x'.repeat(12000), ['Previous frame'])).toBe('x'.repeat(12000));
+        expect(thinkingAvoidancePrompt('continue', 'x'.repeat(12000), ['Previous frame'])).toBe('x'.repeat(12000));
     });
 });
 

@@ -7,7 +7,7 @@ import { abortableDelay, type AIProvider } from './contracts.ts';
 import { ThinkingError, failureText, type ThinkingFailure } from './errors.ts';
 import type { Bounds } from '../field/spatial/geometry.ts';
 import { placePossibility } from '../field/spatial/placement.ts';
-import { angleAvoidancePrompt, repeatedWording } from './diversity.ts';
+import { thinkingAvoidancePrompt, repeatedWording } from './diversity.ts';
 import { registerOperationCancellation } from './operationControl.ts';
 
 const REQUEST_TIMEOUT_MS = 45000;
@@ -117,12 +117,12 @@ export class AIRuntime {
     private hooks: RuntimeHooks;
     private active: AbortController | null = null;
     private serial = 0;
-    private angleScope = '';
-    private recentAngles: string[] = [];
+    private suggestionScope = '';
+    private recentSuggestions: string[] = [];
     requestCount = 0;
     constructor(controller: ProjectController, provider: () => Promise<AIProvider>, hooks: RuntimeHooks) { this.controller = controller; this.provider = provider; this.hooks = hooks; }
     cancel() { this.active?.abort(); }
-    dispose() { this.serial++; this.active?.abort(); this.active = null; this.angleScope = ''; this.recentAngles = []; }
+    dispose() { this.serial++; this.active?.abort(); this.active = null; this.suggestionScope = ''; this.recentSuggestions = []; }
 
     private begin(kind: ThinkingOperationKind, scopeIds: string[], parent?: AbortSignal, activity?: ThinkingActivityKind) {
         this.cancel();
@@ -260,20 +260,26 @@ export class AIRuntime {
             const packet = compileContext(this.controller.getSnapshot().project, selection, { ...options, allowScopedSources: ['diffuse', 'angle', 'continue', 'question'].includes(kind) ? !!options.projectSources : undefined, query: kind === 'ask' ? text : undefined });
             const provider = await this.provider();
             subject = provider.label;
+            if (started.abort.signal.aborted || started.ticket !== this.serial) {
+                if (started.ticket === this.serial && started.abort.signal.reason === 'timeout') throw new ThinkingError('timeout', subject);
+                if (started.ticket === this.serial) this.settle(started, 'cancelled');
+                return { status: 'cancelled', emitted };
+            }
             this.requestCount++;
             for (const source of packet.retrieved.sources) {
                 const record = this.controller.getSnapshot().project.sources[source.id];
                 if (record) this.controller.dispatch({ type: 'source.update', source: { ...record, lastSubmitted: { at: Date.now(), provider: provider.label, characters: source.excerpt.length, requestId: started.requestId } } }, 'system');
             }
-            // Only this selected, unchanged Angle context remembers prior frames. Thread remains
-            // governed by its frozen manuscript, and Diffuse retains its explicit run-local budget.
-            const angleScope = kind === 'angle' && !options.threadId
+            // Continue and Angle share bounded avoidance only within this unchanged context.
+            // Thread and Diffuse retain their own history and never inherit it.
+            const suggestionKind = kind === 'continue' || kind === 'angle' ? kind : null;
+            const suggestionScope = suggestionKind && !options.threadId
                 ? JSON.stringify([packet.projectId, packet.scope, packet.local, packet.continuations, packet.relations, packet.retrieved, packet.permissions]) : null;
-            if (angleScope !== null && angleScope !== this.angleScope) {
-                this.angleScope = angleScope;
-                this.recentAngles = [];
+            if (suggestionScope !== null && suggestionScope !== this.suggestionScope) {
+                this.suggestionScope = suggestionScope;
+                this.recentSuggestions = [];
             }
-            const requestText = angleScope === null ? text : angleAvoidancePrompt(text, this.recentAngles);
+            const requestText = suggestionScope === null ? text : thinkingAvoidancePrompt(suggestionKind!, text, this.recentSuggestions);
             const response = await provider.respond(packet, { kind, text: requestText, requestId: started.requestId }, started.abort.signal);
             if (started.abort.signal.aborted || started.ticket !== this.serial) {
                 if (started.ticket === this.serial && started.abort.signal.reason === 'timeout') throw new ThinkingError('timeout', subject);
@@ -307,7 +313,7 @@ export class AIRuntime {
                 .filter(candidate => intentAllowedForAction(kind, candidate.type))
                 .filter(candidate => permissionFor(candidate, packet, this.controller.getSnapshot().project).allowed)
                 .filter(candidate => semanticQualityAllowed(kind, candidate))
-                .filter(candidate => angleScope === null || candidate.type === 'surface_possibility' && !repeatedWording(candidate.text, [...packet.scope.map(item => item.text), ...this.recentAngles]))
+                .filter(candidate => suggestionScope === null || candidate.type === 'surface_possibility' && !repeatedWording(candidate.text, [...packet.scope.map(item => item.text), ...this.recentSuggestions]))
                 .filter(candidate => !options.excludeTexts || candidate.type === 'surface_possibility' && !repeatedWording(candidate.text, [...packet.scope.map(item => item.text), ...options.excludeTexts]))
                 .filter(candidate => !options.runId || ['surface_possibility', 'surface_question', 'surface_relation', 'surface_structure', 'respond_in_field', 'surface_evidence', 'request_recall'].includes(candidate.type))
                 .filter(candidate => {
@@ -340,8 +346,8 @@ export class AIRuntime {
                     const candidate = accepted[index];
                     this.emit(candidate, packet, provenance, options, kind, index);
                     if (candidate.type === 'surface_relation') relationLabel = candidate.label;
-                    if (angleScope !== null && candidate.type === 'surface_possibility') {
-                        this.recentAngles = [...this.recentAngles, candidate.text].slice(-6);
+                    if (suggestionScope !== null && candidate.type === 'surface_possibility') {
+                        this.recentSuggestions = [...this.recentSuggestions, candidate.text].slice(-6);
                     }
                     emitted++;
                     if (index < accepted.length - 1) await abortableDelay(220, started.abort.signal);

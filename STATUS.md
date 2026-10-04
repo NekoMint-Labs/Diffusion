@@ -261,3 +261,27 @@ stable-ID reload assertions. Original Thoughts and camera remain outside AI muta
 action comparison, unchanged-scope repeats, agency checks and honest output-state recording.
 A1/A2/A3/A5 remain open. No new native installer or semantic-quality pass is claimed. Uploaded-head
 remote checks still need separate confirmation. PR #18 stays Draft and Issue #10 stays open.
+
+
+## Issue #10 repeated-thinking candidate — October 4, 2026
+
+This candidate follows uploaded fa1169a; its exact revision is the commit containing this entry.
+Continue and Angle now share up to six bounded negative avoidance excerpts for unchanged compiled
+context. Ignore retains them; changed scope/background/permissions reset them. Thread and Diffuse
+remain separate, and Angle retains history for all existing count settings. A superseded provider
+lookup cannot erase newer history or emit a late request. The wire packet and durable state are unchanged.
+
+Final local build/typecheck, 54 Vitest files / 421 tests, 266 offline contracts, 960 locale keys,
+source-size review and whitespace checks passed. Relevant mounted E2E: 22 passed / 0 failed,
+one worker, zero retries. An intermediate product passed the full suite (302 passed / 12 existing
+dev-only skips / 0 failed); that preceded final prompt/history corrections and is not a final-head
+full-suite claim. Uploaded-head CI must be checked separately.
+
+Real DeepSeek repeats after prompt strengthening surfaced four visible suggestions (Continue twice,
+Angle twice), all ignored; seven original mounted cards retained IDs, text and DOM positions. One
+Continue gave a concrete tentative consequence; other outputs mixed strategies, assumed a usable
+feedback measure, or combined ignored suggestions. The last Angle remains a semantic avoidance and
+grounding failure. No secret or full private input/output is tracked. Details and remaining trials
+are in docs/ISSUE10_CLOSEOUT.md. A1/A2/A3/A5 remain open; keep #18 Draft and #10 open. No native
+acceptance or merge is claimed. #19 still carries an older input; coordinate the final revision
+before integration rather than applying overlapping products twice.

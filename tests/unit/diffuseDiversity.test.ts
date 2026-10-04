@@ -39,6 +39,23 @@ describe('bounded exploration diversity (authored fixtures, not model-quality ev
             await new Promise(resolve => setTimeout(resolve, 20)); expect(fixture.requests).toHaveLength(5);
         } finally { fixture.dispose(); }
     });
+    it('does not force a single Angle to reverse a premise already qualified by the selection', async () => {
+        const fixture = setup(() => [candidate('A distinct fixture frame')]);
+        try {
+            fixture.controller.dispatch({ type: 'thought.edit', id: 'a', text: 'The local interaction feels useful, but repeated real-case quality is still unverified.' });
+            fixture.session.start({ ...config, mode: 'angle', steps: 1 });
+            await completed(fixture.session);
+            expect(fixture.requests).toHaveLength(1);
+            const request = fixture.requests[0];
+            expect(request.intent.kind).toBe('angle');
+            expect(request.intent.text).not.toContain('Reverse one assumption');
+            expect(request.intent.text).toContain('supported by this scope');
+            expect(request.intent.text).toContain('Do not invent a premise to reverse');
+            expect(request.intent.text).toContain('An already stated caveat');
+            expect(request.packet.scope.map(thought => thought.text)).toEqual(['The local interaction feels useful, but repeated real-case quality is still unverified.']);
+            expect(request.packet.local).toEqual([]);
+        } finally { fixture.dispose(); }
+    });
     it('stops on repeated wording, keeps prior Ghost temporary, and excludes it from scope/background/evidence', async () => {
         const fixture = setup(call => [candidate(call === 1 ? '采集的时间成本也许难以被误差分数表达。' : '  采集的时间成本也许难以被误差分数表达！')]);
         try {

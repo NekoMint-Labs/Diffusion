@@ -27,7 +27,9 @@ export interface DiffuseState {
     evidence: EvidenceCandidate[];
 }
 const angles = ['Name a missing question.', 'Try a counterexample.', 'Expose a hidden assumption.', 'Look for a boundary where the thought stops applying.', 'Offer an unexpected but grounded bridge.', 'Propose a small observation, without turning it into a task list.'];
-const reframingAxes = ['Reverse one assumption behind the current framing.', 'Reframe this through opportunity cost rather than immediate benefit.', 'Change the time horizon used to see the problem.', 'Ask what alternative path could satisfy the same need.', 'Reframe around what the user is actually optimizing for.'];
+// One-direction requests always begin here; forcing a reversal invents premises when the
+// selection already states its caveats. Let the first frame follow supported context instead.
+const reframingAxes = ['Choose one overlooked but relevant frame: an assumption, opportunity cost, time horizon, alternative path or optimization goal supported by this scope. Do not invent a premise to reverse.', 'Reframe this through opportunity cost rather than immediate benefit.', 'Change the time horizon used to see the problem.', 'Ask what alternative path could satisfy the same need.', 'Reframe around what the user is actually optimizing for.'];
 export class DiffuseSession {
     private state: DiffuseState = { phase: 'idle', runId: '', config: null, used: 0, surfaced: 0, remainingSeconds: 0, reason: '', evidence: [] };
     private controller: ProjectController;

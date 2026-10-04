@@ -71,8 +71,13 @@ export function placePossibility(project: ProjectState, session: SessionState, a
     const bottomClearance = mode === 'continue' ? 64 : 0;
     const preferredDistance = mode === 'continue' ? CONTINUATION_DISTANCE : RESULT_PREFERRED_DISTANCE;
     const index = new GridIndex();
+    const tightIndex = new GridIndex();
+    const reserve = (id: string, bounds: Bounds, clearance = 0) => {
+        index.set(id, inflate(bounds, clearance));
+        tightIndex.set(id, bounds);
+    };
     const itemBounds = estimatedBounds(project, session, measured);
-    for (const [id, bounds] of Object.entries(itemBounds)) index.set(id, inflate(bounds, RESULT_CLEARANCE));
+    for (const [id, bounds] of Object.entries(itemBounds)) reserve(id, bounds, RESULT_CLEARANCE);
 
     for (const relation of [...Object.values(project.relations), ...Object.values(session.phenomena)]) {
         const a = itemBounds[relation.a], b = itemBounds[relation.b];
@@ -80,13 +85,13 @@ export function placePossibility(project: ProjectState, session: SessionState, a
         const size = estimateRelationLabelSize(relation.label, !('status' in relation));
         const ax = a.x + a.width / 2, ay = a.y + a.height / 2;
         const bx = b.x + b.width / 2, by = b.y + b.height / 2;
-        index.set(`relation:${relation.id}`, inflate({ x: (ax + bx) / 2 - size.width / 2, y: (ay + by) / 2 - size.height / 2, ...size }, 8));
+        reserve(`relation:${relation.id}`, { x: (ax + bx) / 2 - size.width / 2, y: (ay + by) / 2 - size.height / 2, ...size }, 8);
     }
     if (visibleBounds) {
         // Reserve the persistent top-right UI chrome. Generated material should prefer content space.
-        index.set('__chrome', { x: visibleBounds.x + visibleBounds.width - 210, y: visibleBounds.y, width: 210, height: 100 });
+        reserve('__chrome', { x: visibleBounds.x + visibleBounds.width - 210, y: visibleBounds.y, width: 210, height: 100 });
         // The Field identity is screen-space chrome, never part of the card geometry cache.
-        index.set('__identity', { x: visibleBounds.x, y: visibleBounds.y, width: visibleBounds.width * .66, height: visibleBounds.height * .14 });
+        reserve('__identity', { x: visibleBounds.x, y: visibleBounds.y, width: visibleBounds.width * .66, height: visibleBounds.height * .14 });
     }
 
     const fits = (point: Point) => !visibleBounds || point.x >= visibleBounds.x && point.y >= visibleBounds.y && point.x + resultSize.width <= visibleBounds.x + visibleBounds.width && point.y + resultSize.height + bottomClearance <= visibleBounds.y + visibleBounds.height;
@@ -200,9 +205,10 @@ export function placePossibility(project: ProjectState, session: SessionState, a
             }
         }
 
-        const score = (pool: Point[]) => pool.map((point, priority) => {
+        const score = (pool: Point[], tight = false) => pool.map((point, priority) => {
             const bounds = { ...point, ...resultSize };
-            if (!fits(point) || collides(point) || intersects(bounds, scopeBounds)) return null;
+            const occupied = tight ? tightIndex.query(bounds).length > 0 : collides(point);
+            if (!fits(point) || occupied || intersects(bounds, scopeBounds)) return null;
             const distance = distanceBetween(bounds, scopeBounds);
             const bandPenalty = distance < preferredDistance.min ? preferredDistance.min - distance : distance > preferredDistance.max ? distance - preferredDistance.max : 0;
             const nearby = index.query({ x: point.x - RESULT_LOCAL_DENSITY_MARGIN, y: point.y - RESULT_LOCAL_DENSITY_MARGIN, width: resultSize.width + RESULT_LOCAL_DENSITY_MARGIN * 2, height: resultSize.height + RESULT_LOCAL_DENSITY_MARGIN * 2 }).length;
@@ -236,6 +242,11 @@ export function placePossibility(project: ProjectState, session: SessionState, a
                 for (let y = visibleBounds.y; y <= maxY; y += dy) slots.push({ x, y });
             const local = score(slots);
             if (local.length) return local[0].point;
+            // Preferred breathing room can exhaust a crowded view even when a non-overlapping
+            // slot exists. Use the real footprints before placing a proposal beyond culling,
+            // where it cannot mount or receive the measured visibility correction.
+            const tight = score(slots, true);
+            if (tight.length) return tight[0].point;
         }
     }
 

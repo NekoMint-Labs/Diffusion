@@ -116,3 +116,50 @@ for (const [count, theme, zoom] of [[1, 'light', 1], [3, 'light', 1], [1, 'dark'
         expect(errors).toEqual([]);
     });
 }
+
+test('a crowded field uses a tighter visible slot before sending a continuation offscreen', async ({ page }) => {
+    await page.addInitScript(() => {
+        localStorage.setItem('diffusion-first-field-tutorial-v1', JSON.stringify({ status: 'skipped' }));
+        localStorage.setItem('diffusion-settings', JSON.stringify({ locale: 'zh', provider: 'gateway' }));
+    });
+    await page.route('**/api/respond', route => route.fulfill({ json: { providerLabel: 'Crowded placement fixture / not live', mock: true, intents: [{ type: 'surface_possibility', text: '拥挤位置验证：边界不确定时，下一次观察的价值可能取决于它是否改变已有判断，而不只是增加输入量。'.repeat(2) }] } }));
+    await page.goto('/?locale=zh');
+    await expect.poll(async () => (await projectRecord(page))?.id).toBe('main');
+    const now = Date.now();
+    const project = createProject('main', '拥挤场位置回归', now);
+    project.camera = { x: 274.243, y: 38.8764, zoom: .772874 };
+    for (const [id, x, y] of [
+        ['a', -165.116, 94.2344], ['b', -293.12, 395.308], ['c', 314.823, 306.809],
+        ['d', 191.31, 107.329], ['e', -224.539, 823.776],
+    ] as const) project.thoughts[id] = makeThought('已有想法：这个边界和输入之间还有一个尚未确认的依赖关系，需要保留当前的不确定性。'.repeat(3), { x, y }, now, id);
+    project.thoughts.source = makeThought('如何区分选择质量和输入量', { x: 347.344, y: 535.776 }, now, 'source');
+    project.thoughts.short = makeThought('观察', { x: -94.1409, y: 720.556 }, now, 'short');
+    project.thoughts.crystal = { ...makeThought('已有结晶：同样数量的输入是否代表同样的信息，需要进一步区分。'.repeat(3), { x: 152.727, y: 737 }, now, 'crystal'), kind: 'crystal' };
+    await projectRecord(page, validateProject(project));
+    await page.reload();
+    const source = page.locator('[data-thought-id="source"]');
+    await source.click();
+    const originalBoxes = await page.locator('.thought').evaluateAll(elements => Object.fromEntries(elements.map(e => [e.getAttribute('data-thought-id'), e.getAttribute('style')])));
+    const camera = await page.locator('.world').evaluate(e => (e as HTMLElement).style.transform);
+    await page.getByTestId('scope-continue').click();
+    await page.getByRole('dialog', { name: '继续想', exact: true }).getByRole('button', { name: '1', exact: true }).click();
+    await page.getByTestId('action-preview-run').click();
+    const ghost = page.locator('.thought.ghost');
+    await expect(ghost).toHaveCount(1);
+    await expect.poll(async () => {
+        const box = await ghost.boundingBox();
+        return !!box && box.x >= 0 && box.y >= 0 && box.x + box.width <= 898 && box.y + box.height + 32 <= 804;
+    }).toBe(true);
+    const box = (await ghost.boundingBox())!;
+    for (const item of await page.locator('.thought:not(.ghost), .identity').all()) {
+        const other = (await item.boundingBox())!;
+        expect(box.x < other.x + other.width && box.x + box.width > other.x && box.y < other.y + other.height && box.y + box.height > other.y).toBe(false);
+    }
+    expect(await page.locator('.world').evaluate(e => (e as HTMLElement).style.transform)).toBe(camera);
+    expect(await page.locator('.thought:not(.ghost)').evaluateAll(elements => Object.fromEntries(elements.map(e => [e.getAttribute('data-thought-id'), e.getAttribute('style')])))).toEqual(originalBoxes);
+    expect((await projectRecord(page)).thoughts).toEqual(project.thoughts);
+    await ghost.click({ button: 'right' });
+    await page.getByTestId('thought-menu').getByRole('menuitem', { name: '忽略', exact: true }).click();
+    await expect(ghost).toHaveCount(0);
+    expect((await projectRecord(page)).thoughts).toEqual(project.thoughts);
+});

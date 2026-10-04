@@ -80,17 +80,73 @@ the repeated live results support them.
 
 One bounded Angle run on the contributor's technical-research scenario completed and displayed a single temporary proposal; the browser reported no console errors. DeepSeek had been configured in the app previously, but its model identifier was not rechecked during this run. The proposal offered a potentially useful distinction between two task framings: relevant, concise, and appropriately tentative, but still high-level rather than operational. This is one promising observation only: it does not establish repeated novelty or A2/A3/A5 acceptance. Ignore/Keep was not exercised, and the proposal was left temporary; no canonical state was changed. The prompt, full output, and screenshots remain private and are not recorded here.
 
-### 2026-10-03 — DeepSeek live acceptance pass
+### 2026-10-04 — live trial evidence correction and visibility defect
 
-The session-held DeepSeek credential was verified through the app's real connection probe. Model discovery returned two provider-supplied IDs; the trial used the configured `deepseek-v4-pro` model after rechecking the discovered list. No credential value, private screenshot, or full provider transcript is recorded here.
+The session-held DeepSeek credential was verified through the app's connection probe; the
+configured, discovered model was `deepseek-v4-pro`. This is limited DeepSeek evidence, not
+qualification of all providers. Credentials, full private transcripts and screenshots stay local.
 
-- **Technical / unfamiliar judgment — Ask:** on the sparse-view reconstruction and agent-view-selection problem, two live question proposals were surfaced. Both named a concrete uncertainty rather than using a generic opener. One question was ignored and disappeared without changing the selected source; the other was kept and became an ordinary Thought in place, with its question wording retained. This exercises both A4 paths.
-- **Technical / unfamiliar judgment — Continue:** a completed run surfaced bounded continuation material near the selected scope. The run did not mutate canonical authored thoughts; repeated-output review remains open because one pass is not enough to establish A2.
-- **Technical / unfamiliar judgment — Another Angle:** a repeated run completed with no new proposal after the scoped avoidance checks. This is recorded as an honest empty result, not counted as novelty; the UI still needs a human-visible capture of the empty-result notice during a live run.
+- **Research / Ask:** two live questions named concrete uncertainties. One was ignored; the
+  other was kept as an ordinary Thought with its question wording retained. These observations
+  exercise both agency decisions, but do not complete the six-action comparison.
+- **Repeated same-scope Continue:** the app explicitly displayed its non-empty success notice,
+  yet no new Ghost mounted. A crowded-field fixture reproduced this defect: the pre-mount search
+  exhausted its preferred clearance and placed the result beyond viewport culling, even though
+  a tighter non-overlapping visible slot existed. The fixture failed before the repair. Lack of a
+  visible card is therefore **not evidence of an empty model response or successful repeat filtering**.
+- **Earlier Continue/Angle and product-direction notes:** prior entries labelled these runs as
+  honest empty results without capturing a zero-result notice. Those classifications are withdrawn.
+  The product-direction input was also composed with an unrelated research selection; it does
+  not establish a separate properly scoped scenario. The previous three-category completion
+  claim is withdrawn. The previous Continue-quality claim lacks sufficient output evidence.
+- **Technical trade-off / Ask:** one observed question addressed attribution between selection
+  quality and reconstruction-method contribution. This limited observation does not establish
+  consistently useful results across repeated trials.
 
-This pass supports provider connectivity, concrete Ask semantics, agency, and empty-result handling. Product-direction and separate technical-trade-off scenarios, plus repeated Continue/Angle review, remain before A2/A3/A5 can be marked complete.
-- **Product / project direction:** I tried the real current decision about whether to keep iterating locally or upload the Draft before all Issue #10 scenarios are complete. This run returned no new field proposal, so it is recorded as an honest empty result rather than a quality success.
-- **Technical trade-off:** on the actual “same number of views vs same information amount” trade-off, one live question surfaced the confound between the agent's selection quality and the reconstruction method's contribution. It was specific to the decision and preserved the unresolved comparison.
+A1/A2/A3/A5 remain open. Finish correctly scoped, visible action comparisons and repeated output
+review across all three real categories before proposing closeout. Draft #18 and Issue #10 stay
+open; the current observation supersedes the earlier unsupported empty-result classifications.
 
-The three scenario categories are now exercised at least once, but the product-direction run did not produce a useful possibility and the repeated Continue/Angle matrix is still incomplete. A2/A3 therefore remain open.
-- **Repeated same-scope Continue after agency decisions:** with the same selected research thought and after one proposal had been ignored and another kept, a one-result Continue completed without surfacing a new card. No console error or canonical mutation appeared. This is useful negative evidence for A2, but the transient empty-result notice was not captured in the page after the run.
+
+### 2026-10-04 — repaired visible trials and bounded Angle calibration
+
+Product revisions are `6bf3c55` (crowded placement) and `78d01ae` (Angle calibration).
+The same live session used DeepSeek's discovered `deepseek-v4-pro` model. Full prompts,
+outputs and captures remain local. These observations are qualitative samples, not a pass-rate
+estimate, semantic-deduplication proof or scientific validation.
+
+| Actual starting scope / revision | Actions and repeat evidence | Assessment and limit |
+|---|---|---|
+| Contributor's broad unfamiliar research question / `6bf3c55` | Continue twice and Angle twice on unchanged owned scope, explicitly ignoring the first result of each; Ask; Relation on two suitable owned Thoughts; Organize on three suitable owned Thoughts, cancelled; Diffuse with three directions and no sources/web | Visible Continue added a prediction constraint and then a different uncertainty consequence. Angle changed the interaction frame and then the goal. Ask exposed a concrete distinction, Relation identified a missing criterion, and Organize surfaced that criterion without applying its structure. Two of the three Diffuse directions overlapped semantically. One output was more assertive than desirable. The contributor reported the two presented research directions offered new inspiration worth continuing; this positive feedback supports only those directions, not every action or category. |
+| Actual Draft-versus-acceptance collaboration decision / `6bf3c55`, then `78d01ae` | A separate Field with one manually authored committed Thought; Continue and Angle before calibration; two Angle trials after calibration with the first ignored; Ask | The initial Angle largely repeated a caveat already present in the selection. Single Angle no longer always requests premise reversal, and the bounded direction review asks the model to discard already-stated distinctions. Retests named integration-boundary stability and a review-trigger question, but one result overstated when new features need no acceptance rerun. Quality is mixed; repeated Continue and the applicable multi-thought comparison remain incomplete. |
+| Contributor's narrower technical comparison / `78d01ae` | Continue, Angle and Ask on the same committed scope; two further Angle requests, explicitly ignoring the second Angle before the third | Continue exposed an independent-measurement constraint; the first Angle named selection overhead; Ask probed whether a usable measurement already exists. The second Angle reframed the comparison around reaching a quality threshold. After Ignore, the third moved to comparing full workflows, which may evade the original attribution question. It is not counted as a successful scope-sensitive result. Repeated Continue and multi-thought action review remain incomplete. |
+
+Generation did not move the observed original cards or world camera. Cancelled Organize did not
+apply its structure. Earlier live Keep/Ignore paths remain limited positive agency evidence;
+fixture-backed persisted-wording/provenance and crowded-visibility assertions cover those
+boundaries separately. A5 now has correctly scoped observations for project direction and two
+research starting scopes, but the repeated category/action review is still incomplete.
+A1/A2/A3/A5 remain open. Improving a prompt does not retroactively qualify earlier outputs.
+
+Placement first retains preferred clearance, then checks bounded visible slots against raw
+footprints before permitting an offscreen fallback. The new crowded 898×804 mounted regression
+failed with zero visible results before this repair and passes afterwards, including non-overlap,
+unchanged original state/camera and Ignore. A genuinely full viewport can still need the explicit
+suggestion review/reveal path owned by the shared #11 integration; do not move the camera or
+canonical cards automatically to manufacture space.
+
+Final product `78d01ae` passed the production build/typecheck, 366 unit tests in 48 files,
+265 offline contracts, 867 locale entries/source-size checks and 10 targeted mounted tests.
+The full local E2E run (196 passed / 12 existing skips / 0 failed, one worker, zero retries)
+belongs to the preceding placement product `6bf3c55`. Complete remote checks must qualify the
+uploaded head separately. An offline-check attempt raced Playwright's deletion of a result file;
+its diagnostic is preserved, and the sequential rerun passed after the browser tests finished.
+
+Collaboration was rechecked after #17's October 4 squash merge to `main` at `4191bb0`.
+The owner reported review and installed Windows acceptance of #17; that does not qualify this
+#10 candidate. A read-only merge-tree preflight found 16 text-conflict files against the new main.
+Against #19's existing `b5b1938` integration, the new text conflicts are only
+`src/field/spatial/placement.ts` and `tests/e2e/response.spec.ts`. Synchronization must preserve
+#19's visibleIds, measured geometry/resize, safe areas, suggestion summary and camera invariants,
+plus this branch's raw-footprint fallback and kept-response persistence assertions. No integration
+or PR merge is claimed by this preflight. #18 stays Draft and #10 stays open.

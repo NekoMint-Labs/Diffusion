@@ -69,3 +69,27 @@ The five previously recorded deterministic Playwright failures were resolved wit
 ## Continuation
 
 Read [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) before changing a shared seam. Current documentation is indexed in [`docs/README.md`](docs/README.md); [`docs/history/`](docs/history/README.md) is historical provenance only.
+
+
+## Issue #10 branch candidate — October 4, 2026
+
+This section describes `feat/issue-10-thinking-experience`; it does not replace the historical
+main stabilization record above or qualify the integrated/native product. Latest product
+`78d01ae` includes crowded visible placement `6bf3c55` and bounded Angle calibration.
+
+- Final product: production build/typecheck passed; 48 unit files / 366 tests passed;
+  265 offline contracts, 867 locale keys and source-size checks passed; 10 targeted mounted
+  continuation/diversity cases passed. The existing bundle warning is retained.
+- Full local E2E on preceding placement product `6bf3c55`: 196 passed / 12 existing skips /
+  0 failed, one worker, zero retries. This is not a final-head full-suite claim.
+- The first offline attempt overlapped Playwright's result-file deletion and failed with ENOENT;
+  diagnostic preserved, sequential final rerun passed. No assertions were weakened or skips added.
+- Real DeepSeek samples were exercised locally. Missing-card classifications and earlier
+  three-category completion claims are corrected in [the acceptance map](docs/ACCEPTANCE_MAP.md).
+  The contributor found two research directions worth continuing; other results were mixed,
+  including overlapping Diffuse frames and one Angle that may evade the attribution question.
+  A1/A2/A3/A5 remain open; fixtures do not prove semantic quality.
+- #17 was reviewed and squash-merged to main `4191bb0` on October 4; its owner reported installed
+  Windows acceptance. #10 and the newer #18 fixes still require synchronization with the existing
+  #19 integration and revision-specific checks. No #10 PR merge or native acceptance is claimed.
+- Complete uploaded-head remote CI remains to be checked. Keep #18 Draft and Issue #10 open.

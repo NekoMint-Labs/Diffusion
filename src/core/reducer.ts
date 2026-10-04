@@ -3,12 +3,14 @@ export { DomainError } from './errors.ts';
 import { validateSourceRecord } from './validation.ts';
 import { attentionDebt as initialAttentionDebt, attentionLife } from './attention.ts';
 import { captureThreadScope } from './thread.ts';
+import { requireOrganizingParent } from './hierarchy.ts';
 import type { DomainEvent } from './events.ts';
 import { type ProjectState, type Thought, type Life, id } from './model.ts';
 const systemAllowed = new Set(['source.update', 'lifecycle.tick', 'region.observe', 'thread.message', 'thread.capsule', 'camera.commit']);
 const textLimit = 20000;
 function finite(n: number): boolean { return Number.isFinite(n) && Math.abs(n) <= 1e7; }
 function validateThought(t: Thought): void {
+    if (t.organizingParentId !== undefined && t.organizingParentId !== null && (typeof t.organizingParentId !== 'string' || !t.organizingParentId || t.organizingParentId.length > 200 || t.organizingParentId === t.id || ['__proto__', 'constructor', 'prototype'].includes(t.organizingParentId))) throw new DomainError('Invalid organizing parent');
     const lineage = t.derivedFrom;
     const lineageValid = lineage === undefined || Array.isArray(lineage) && lineage.length > 0 && lineage.length <= 32 && lineage.every(parentId => typeof parentId === 'string' && !!parentId && parentId.length <= 200 && parentId !== t.id) && new Set(lineage).size === lineage.length;
     const actionValid = lineage === undefined
@@ -83,6 +85,14 @@ export function reduceProject(state: ProjectState, event: DomainEvent): ProjectS
             affected = [event.id];
             break;
         }
+        case 'thought.reparent': {
+            get(event.id);
+            requireOrganizingParent(s.thoughts, event.id, event.parentId);
+            update(event.id, { organizingParentId: event.parentId });
+            summary = event.parentId === null ? 'Made a thought independent' : event.parentId === undefined ? 'Restored organization from sources' : 'Changed a thought parent';
+            affected = [event.id];
+            break;
+        }
         case 'thought.move': {
             for (const [key, point] of Object.entries(event.positions)) {
                 if (!finite(point.x) || !finite(point.y))
@@ -99,6 +109,7 @@ export function reduceProject(state: ProjectState, event: DomainEvent): ProjectS
             // Deleting an ancestor cannot leave a durable dangling lineage edge. Descendants keep
             // their words/positions; only the no-longer-reconstructable causal reference is pruned.
             s.thoughts = Object.fromEntries(Object.entries(s.thoughts).map(([key, thought]) => {
+                if (thought.organizingParentId && removed.has(thought.organizingParentId)) thought = { ...thought, organizingParentId: null };
                 if (!thought.derivedFrom?.some(parentId => removed.has(parentId))) return [key, thought];
                 const derivedFrom = thought.derivedFrom.filter(parentId => !removed.has(parentId));
                 const next = { ...thought };

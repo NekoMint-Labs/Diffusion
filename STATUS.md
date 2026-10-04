@@ -1,6 +1,56 @@
 # Diffusion — current status
 
-Diffusion is a quiet thinking medium for ideas before commitment. This file describes the current `main` branch: what works, which subsystem owns it, what was freshly verified, and what remains incomplete. It is not a changelog. Historical phase reports and prior verification records remain under [`docs/history/`](docs/history/README.md).
+Diffusion is a quiet thinking medium for ideas before commitment. This file describes the current checkout: what works, which subsystem owns it, what was freshly verified, and what remains incomplete. It is not a changelog. Historical phase reports and prior verification records remain under [`docs/history/`](docs/history/README.md).
+
+## Issue #10 / #11 synchronized candidate (2026-10-03)
+
+The independent integration draft [#19](https://github.com/NekoMint-Labs/Diffusion/pull/19) now includes #17 head `639818ad6c2a9123c9f92989f6f2bcba81936b98` (product `9377a95`) and #18 head `c9a3cc6dfe5091af158e6837a9544b2441e3309c`. Product integration is `fc3fd199d782c71fb5e9216d62d8cd53cc5d11c7`. Both complete input revisions are ancestors; #13–#16 are already included through #17.
+
+Custom discovery readiness and Source-derived Atlas anchors now include #17's final review repairs. Scoped literal duplicate filtering, controlled connection verification and context-free Ask opener filtering now include #18's latest repairs. The sole new textual conflict merged the controlled connection route while retaining model/key/authentication and Configuration changed assertions. Existing visible-ID/measurement forwarding and camera/provenance/organization boundaries are preserved.
+
+Local application/core TypeScript, production build, 54 files / 411 unit tests, 266 offline tests, 960 locale entries, source-size and diff checks passed. Exact-product-head [CI](https://github.com/NekoMint-Labs/Diffusion/actions/runs/37134333211) and [complete E2E](https://github.com/NekoMint-Labs/Diffusion/actions/runs/37134333208) passed: 297 passed, 12 existing dev-only skips, zero failures; all six jobs passed, one worker per runner and zero retries. The duplicate local full E2E was stopped after remote full-suite success; its partial log is retained and is not claimed as a completed pass.
+
+Fixed-size visual follow-up is recorded in [the integration record](docs/ISSUE10_11_INTEGRATION_PREFLIGHT.md). No new native installer was produced. #12 owns final Windows acceptance and #10 retains real-model A2/A3/A5 closeout; #10/#11 remain open and no PR is merged.
+
+## Earlier Issue #10 / #11 integration candidate (33bd1a7 + 38eab8a)
+
+The independent `codex/integration-issue10-11` branch combines #17 `33bd1a7` and draft #18 `38eab8a`; #17 includes #13–#16. Fifteen textual conflicts were resolved while preserving selected-content priority, separate provenance/organization, user decisions over tentative AI results, original Thought coordinates and camera stability. The [integration record](docs/ISSUE10_11_INTEGRATION_PREFLIGHT.md) documents the seams, exact inputs and earlier failed evidence.
+
+TypeScript/production build, 266 offline tests and 54 files / 400 unit tests passed. Initial full E2E: 273 passed, 18 failed, 12 existing dev-only skips. After repairs, all 93 affected and related focus/geometry cases passed, one worker and zero retries. Title-by-title evidence audit: 295 distinct final passing cases, 12 existing skips, no unresolved failures across 307 cases; this is full-run plus affected-suite evidence, not a claim of a final single all-green full run. Fresh 1280×720 light/dark render checks qualified AI settings copy, full-row suggestion review and Atlas aggregation. Read/respond controls retain 32 screen-pixel height and clear the Hub.
+
+The independent #17 menu repair was separately built and checked (344 unit, 266 offline, 11 mounted-browser cases) before publication. This integration has no new native package or live-model qualification. The Windows and installer results in the next section belong to the earlier #17 repair pass at `19bbd42`, not this integration. #12 retains native acceptance; #10/#11 remain open and no PR is merged.
+
+## Earlier PR #17 Windows feedback repair pass (19bbd42, 2026-10-03)
+
+This pass implements the maintainer's twelve-item Windows review on top of `943fd8e`. The [repair and acceptance record](docs/NATIVE_UX_ACCEPTANCE.md) maps each report to its implementation, regressions, reference/reuse boundary and remaining native checks. Source identity, installer SHA-256, screenshots and complete command logs are bundled with the local acceptance delivery; PR #17 remains unmerged and Issue #11 remains open.
+
+Visibility now has one projection shared by rendering, selection/action scope, collision and fitting. Local shows full content, Neighborhood shows excerpts, and Atlas aggregates pending suggestions without duplicate cards. Explicit session folds preserve nested choices and use the existing undo order. Camera positioning respects measured UI space without moving authored Thoughts. More uses Base UI's native submenu relationship and collision handling. Settings use a short provider/key/model/test path, and Source history is separate from searchable organization controls. Chinese runtime provider copy uses semantic keys and fixed terminology.
+
+| Gate | Current result |
+|---|---|
+| TypeScript, core, static imports, locale, source size | Passed; 935 locale entries, no missing/dynamic-copy findings |
+| Unit / offline / native Rust | 344 / 266 / 25 passed |
+| Complete E2E with repaired-case reruns | 274 cases have final passing evidence; 0 unresolved failures, 0 skips; raw complete-run and rerun logs retained |
+| Browser size/DPR/theme/motion matrix | 24 passed; browser emulation, separate from Windows system settings |
+| Native WebView2 | 8 combinations passed at actual 150% system scale, 1440×880 and 1280×720, light/dark; reduced motion uses media emulation |
+| Production / Windows NSIS / licenses | Passed; existing >500 kB main-chunk warning; 1000 license files, 5 MPL source records, 0 unresolved |
+| Pending operator acceptance | Windows 100%/125%, real IME, system reduced-motion preference, installed-client dialogs/credentials/live providers and final user experience |
+
+The published [2026-10-02 preview](https://github.com/NekoMint-Labs/Diffusion/releases/tag/issue11-preview-20261002) and its `05c4144` product source are an earlier baseline, not this candidate. Earlier evidence below is revision-specific. A compiled package or browser emulation does not certify native system scaling, real IME, live providers or the requester's final experience acceptance.
+
+## Issue #11 candidate — acceptance still open
+
+The dependent draft stack is [#13](https://github.com/NekoMint-Labs/Diffusion/pull/13) → [#14](https://github.com/NekoMint-Labs/Diffusion/pull/14) → [#15](https://github.com/NekoMint-Labs/Diffusion/pull/15) → [#16](https://github.com/NekoMint-Labs/Diffusion/pull/16) → [feedback repairs #17](https://github.com/NekoMint-Labs/Diffusion/pull/17). This follow-up starts at `b447da9` and implements the requester's collected items 4–10. The requester explicitly authorized one optional organization field while preserving original sources and older projects. Database names/versions, the portable envelope and public AI APIs are unchanged. Issue #10 model quality and #12 release qualification remain outside this work.
+
+- At Atlas/neighborhood zoom, pending suggestions have a bounded screen-space reading and Keep/Ignore entry. Editing and Find stay discoverable; ordinary wheel steps collapse selected deeper content while excluding hidden selections from newly issued actions; completion feedback belongs to the request's frozen scope. Empty, failed, cancelled and late responses remain distinct.
+- Scope overflow retains its trigger and last valid rectangle through exit into another surface. Click, hover, keyboard, Escape and existing edit actions remain available.
+- Ghosts use the approved soft paper body, one fine pencil rail, explicit unaccepted wording and reserved dismiss/selection space. Accepted Thought material and in-place commitment remain intact.
+- `thought.reparent` is an explicit user-only, undoable command. Optional `organizingParentId` is separate from `derivedFrom` / `generationAction`; wording, coordinates and child branches do not move. The source inspector and organization control share the existing overflow entry.
+- Ordinary wheel notches zoom in/out and disclose/close exactly one current hierarchy level. Every imported depth has a reachable stable zoom band within normal 100% reading size; repeated upward notches cannot enlarge the hierarchy further. Explicit pinch/manual zoom remains continuous and camera snapshots restore the disclosed level. Secondary level/parent labels are removed in distant views; branch summaries and child counts retain navigation. Dense original roots retain world-coordinate anchors and a searchable reading entry. Cached rendered bounds feed disclosure; there is still one imperative camera and no per-frame React tree update.
+- Parent arrows come only from the current effective hierarchy. Color and line pattern identify the child depth, including descendants of a reparented branch; original source IDs remain in the inspector and semantic relations retain their own layer. Device-local curve/elbow styling cannot edit project data. Boundary routing avoids visible cards, including a third card dragged across an existing trace; impossible routes are omitted while provenance stays available in the inspector.
+- Slate, forest and graphite have distinct blue, green and neutral palettes across surfaces and all five backgrounds; warm paper and custom accent preferences are retained.
+
+The earlier Windows fixes for zoomed Chinese editing, sparse Atlas visibility, Find return and Settings title alignment remain covered. A new Windows installer now contains this follow-up. Automated and rendered checks below do not substitute for the requester's final native input/focus/scale journey or human B1–B8 acceptance. No issue is closed or PR merged by this record.
 
 ## What works now
 
@@ -29,9 +79,84 @@ Diffusion is a quiet thinking medium for ideas before commitment. This file desc
 | Gateway | `server/` | Origin/token guard, provider wire adapters, bounded requests, and normalized evidence HTTP seam. |
 | Desktop | `src/platform/`, `src-tauri/` | One frontend, narrow native capabilities, OS credential access, native provider transport, and discovery launcher. |
 
-## Fresh stabilization verification
+## Issue #11 deep hierarchy reading ceiling (Windows, 2026-10-02)
 
-The following results were captured while stabilizing current `main` from baseline `d4870b5`:
+The requester accepted gradual early magnification with a normal reading ceiling after reporting that deeper disclosure enlarged text until little remained on screen. This follow-up starts at `0a2b350`. Ordinary hierarchy wheel input still reveals/closes exactly one level, but deeper bands share .80–.98 and all ordinary hierarchical wheel zoom stops at 1. This limits text, card footprints and viewport spacing together; repeated upward input after full disclosure does not magnify further. Explicit Ctrl-wheel/pinch can still zoom above normal size for deliberate detail inspection. Flat Fields retain their existing range. Camera persistence restores disclosure with no new canonical field, and authored wording, coordinates, sources and parent relationships remain unchanged. Older high-zoom views return to the reading range on the next ordinary hierarchy step.
+
+Fresh validation: dependency-backed typecheck and Vite build passed with the existing large-chunk warning; full Vitest 44 files/336 passed; offline/Core/locale/source-size 266 passed; 78 affected mounted browser cases passed (two 12-level profile cases plus 76 related regressions), one worker and zero retries. This turn does not claim a fresh run of the entire browser suite. Coverage includes strict selected-child collapse, current parent arrows, obstacle avoidance/history, Find return, editing, overlays, spatial interaction and persistence. Warm/graphite 4/8/12-level screenshots were reviewed; normal-screen fonts stay at or below the configured Thought size, repeated full-disclosure input preserves card size, an intermediate depth survives reload, deliberate detail zoom still works, and full downward collapse preserves exact canonical Thoughts. Unit checks exercise all levels and reverse input in chains up to 10,000 within the normal reading ceiling.
+
+The initial full unit run had one unrelated real-socket failure: the existing dev-port fixture assumed the neighbor of an OS-assigned port was free. No port implementation, test assertion or timeout was changed; a subsequent complete unit run passed. Both logs are retained. The local 12-level fixture was spaced after visual review so normal-sized cards do not touch; the final mounted verification uses that same example layout.
+
+A fresh Windows x64 NSIS package was built from the frozen verified frontend with the existing `../dist` configuration. No Rust code or native permissions changed; the earlier 25 native tests were not rerun. The pre-existing Cargo.toml change remains unstaged. User native mouse/scale acceptance is pending, and no remote write/push/merge was performed. Existing reading caps, viewport bounds and authored-layout density limitations remain.
+
+Evidence: `verification/reading-cap-build.log`, `reading-cap-unit-full.log`, `reading-cap-unit-recheck.log`, `reading-cap-offline.log`, `reading-cap-focused-final.log`, `reading-cap-regression.log`, `reading-cap-package.log`, and `reading-cap-focused-final-results/` / `reading-cap-regression-results/`.
+
+## Issue #11 strict wheel collapse after native P1/P2 feedback (Windows, 2026-10-02)
+
+The requester's native screenshots rejected `b828426`: changing the caption from level three to level two removed shallow cards, retained a selected deep card and enlarged the reading footprint. The requester explicitly chose strict collapse of selected content. Ordinary wheel disclosure now owns the existing selection's depth budget without deleting its scope; reopening that level restores the selection. A new deliberate selection/Claim may open reading context, and editing/Find/pending proposals retain their existing exceptions. Hierarchy views keep all depth-eligible compact candidates within the existing 64/240 caps and viewport bounds; flat dense Fields retain collision summaries. Ordinary hierarchy cards shrink with camera zoom until a small reading floor, without the former tier-boundary enlargement. The scope toolbar anchors to visible selected items and disappears if none remain visible. Canonical wording, coordinates, sources and parent relationships are unchanged.
+
+Fresh checks: dependency-backed typecheck/Vite build passed, with the existing chunk-size warning; full Vitest 44 files/335 passed; offline/Core/locale/source-size 266 passed; discovery source-hash check passed. Mounted warm/graphite cases verify compact multi-branch retention, collapse of all selected level-three cards, smaller survivor widths, root-only collapse, restoration of selection, exact canonical preservation and Find return. Rendered P1/P2 screenshots were reviewed. Retaining authored nearby cards does not guarantee that arbitrary dense arrangements become overlap-free; no automatic repositioning was added.
+
+Complete browser coverage is 244 scheduled cases: 232 passed and 12 existing dev-service skips, one worker, zero configured retries. The initial run was interrupted after 150 results (136 passed, 12 skips, two failures); the exact remaining 94 cases passed on the same frozen build. The two failures were independently investigated and both passed final verification. The Settings-return case passed twice in isolation without a runtime change. The trace fixture's old equal-height midpoint assumption became invalid after parent captions gained a second row; it now checks the actual measured card-to-card boundary with the same 1px tolerance. Drag obstacle avoidance and undo assertions remain unchanged. Original failed logs, error contexts, inventory and continuation selection are retained locally; this was not an uninterrupted all-green run.
+
+A fresh Windows x64 NSIS installer was built from the exact verified frontend with the existing `../dist` path and package overlay. Native Rust code and permissions were unchanged; the earlier 25 native tests were not rerun. The pre-existing Cargo.toml local change remains separate from this commit. The requester still owns native mouse/input/scale acceptance; the earlier candidate is not marked accepted. No push, remote issue/PR write or merge was performed.
+
+Evidence: `verification/strict-wheel-build-final.log`, `strict-wheel-unit-full.log`, `strict-wheel-offline.log`, `strict-wheel-full.log`, `strict-wheel-resume-record.json`, `strict-wheel-remaining.log`, `strict-wheel-failure-repro.log`, `strict-wheel-failure-resolved.log`, `strict-wheel-package.log`, and `strict-wheel-full-results/` / `strict-wheel-remaining-results/`.
+
+## Issue #11 wheel disclosure follow-up (Windows, 2026-10-02)
+
+This follow-up starts at `d67b5cb` and implements the requester's ordinary wheel contract: from A→B, one upward notch zooms in and reveals C; one downward notch from A→B zooms out and hides B. Each notch changes exactly one current level. The existing camera snapshot restores the level without a new canonical field. Imported chains receive individually reachable bands rather than an all-depth jump. Pinch stays continuous, full notches count separately during rapid bursts, and small high-resolution packets accumulate. Protected reading exceptions and current-parent arrows remain intact.
+
+Final validation: dependency-backed typecheck / Vite build passed; offline/Core/locale/source-size gate 266 passed; full Vitest 44 files / 334 tests passed; full Playwright 229 passed, 12 existing dev-service skips, zero failures, one worker and zero retries. Mounted cases verify single-notch disclosure, current reparented depths, temporary expansion closure, exact wording/coordinate preservation and camera-based reopening. Rendered A/B, A/B/C and root-only screenshots were reviewed. The existing four-profile / two-routing presentation cases also pass.
+
+An initial mounted run caught compact-label collision immediately after a boundary crossing and expansion framing that opened an extra layer. Wheel targets now enter readable band interiors, and branch framing stays below the next global depth boundary. The original failed log is retained; assertions, timeouts, skips and retries were not weakened. The long-chain unit case also exposed repeated initial traversal; direct band estimation keeps 10,000-depth restoration practical.
+
+A fresh x64 NSIS installer was built from this exact frontend using the existing `../dist` configuration and prepared dependency-license material; the discovery source-hash check passed. Native Rust code and permissions were unchanged, and the earlier 25 native tests were not rerun for this frontend-only follow-up. Native wheel/hardware experience is still pending the requester. No push, issue/PR write or merge was performed.
+
+## Issue #11 second acceptance repairs (Windows, 2026-10-02)
+
+The second acceptance checklist's items 4 and 5 refer to original feedback 8 and 9. This repair starts at `2e34c92`: the ordinary Field no longer overlays old source arrows on the current organizing parent. One cycle-safe hierarchy supplies arrows, depth styles and zoom disclosure. Adjacent depths use distinct theme-adapted colors and solid/dashed/dotted patterns; every connected Thought shows its current level and parent, with screen-readable branch controls. Explicit expansion frames the branch without moving Thoughts. Selected/edited/pending/Find content remains readable; Find discloses current ancestry where it fits and the parent label supplies context where it cannot.
+
+Final validation used the fresh production build, installed Chrome, one worker and zero retries:
+
+- Dependency-backed typecheck and Vite production build passed; the existing large-chunk warning remains.
+- Offline/Core/locale/source-size gate: 266 passed. Full Vitest: 44 files / 331 tests passed; the final complete run used two workers.
+- Complete Playwright: 227 passed, 12 existing dev-service skips, zero failures. The 12 new mounted cases cover branch history/persistence, four profiles with both curve/elbow routing, ordered zoom/expansion/Find, readable controls, reparented collapse order and full long wording.
+- Fixed-size rendered screenshots were reviewed at normal and reduced zoom in all four profiles. Public A→B→C→D plus independent X fixtures preserve text, coordinates and frozen provenance. Current-parent edges and descendant depth styles restore together on Undo/Redo and reload; making C independent keeps C→D at its new depth.
+- Windows native tests: eight unit plus 17 integration tests passed. The bundled discovery source-hash check passed and license collection has zero unresolved entries.
+- A fresh x64 NSIS installer was built from the final frontend. Packaging keeps the configured `../dist` path. The local overlay skips only the redundant beforeBuild command because the exact frontend, license material and sidecar were already prepared and checked; no production config or native permission was widened.
+
+Earlier iteration failures remain in local logs: an initial zoom fixture did not cross the hysteresis boundary; it now measures actual wheel-driven zoom. Static palette tests were matching an added selector rather than the existing palette block; palette roles now remain in their owning blocks. Transient expansion ownership moved out of Field to satisfy its existing size boundary. Rendered review also exposed small level text at 65% zoom; screen-readable metadata and buttons are now measured in the mounted tests. No retry, skip, or weakened behavioral assertion was introduced.
+
+Implementation and packaging are complete; the requester's native experience acceptance of these two items is pending. No remote issue/PR write or merge was made for this repair. Generated logs/screenshots/installers remain local evidence.
+
+## Initial Issue #11 follow-up verification (Windows, 2026-10-02)
+
+The local browser harness serves the fresh Vite build at an isolated preview origin, selects installed Chrome, and retains the repository's interaction/production-background split, one worker, zero retries and assertions. Production background checks use the actual renderers. Public fixtures contain no private user material and make no live model request.
+
+| Gate | Current follow-up evidence |
+|---|---|
+| Typecheck / production build | Passed; existing large-chunk warning remains visible |
+| Offline, locale and source-size contracts | 266 passed; Windows Node uses `NODE_OPTIONS=--no-experimental-global-navigator` so existing English-message fixtures retain their locale |
+| Unit suite | 44 files / 327 tests passed, including nine hierarchy/compatibility cases |
+| Complete local browser suite | 215 passed / 12 existing skips / 0 failed; one worker, zero retries |
+| Rendered review | Four palettes × five production backgrounds; 1280×720, 1440×960, 1920×1080; low/normal/near Field zoom, EN/ZH, normal/reduced motion, source/organization inspector, dense roots and result controls |
+| Actual Chrome browser zoom | Nine cases passed: 100% / 125% / 150%, Chinese Han/punctuation endings and long English, enlarged text/interface; OS/device scale fixed at 1 and no pinch zoom. Rendered captures inspected. This is browser zoom, not Windows OS scaling. |
+| Windows native tests | 25 passed: eight unit and 17 integration tests |
+| Discovery / distribution inputs | Fresh Windows sidecar build and source-hash check passed; third-party license collection has no unresolved entries |
+| New Windows installer | NSIS x64 0.3.0 built successfully from `46215fd`; subsequent commits change tests/documentation only. SHA-256: `65ab2db85d71bd4cdf48d55a3da0c03c738e516bffd91a70a4b5bc619d63014b` |
+
+Earlier follow-up full runs recorded 208 passed / 12 skipped / 5 failed and 211 passed / 12 skipped / 4 failed. Their logs remain local evidence. Repairs distinguish obsolete approved-design expectations from measurement defects: the actual Ghost rail is measured instead of its paper shadow; original edit actions remain available beside the inspector; Field clicks use its measured viewport; dense Atlas uses the same detail cap plus explicit root access. Proposal checks retain a fixed identity when priority reorders siblings, routes wait for actual card geometry, and the reload fixture no longer overwrites saved preferences. Exit measurements account for an already-retired menu without permitting a painted menu at the origin.
+
+A later CI run at `ad0c711` passed the main gates and three browser jobs but failed one scope-menu distance check (43.16px against a 30px limit). That check compared the trigger before hover with the menu after hover; committing the fixture can resize the Thought from 176px to 256px and recenter the trigger by 40px. The check now samples both live rectangles in the same browser evaluation, retaining the original horizontal/vertical thresholds, visibility and focus assertions. It also attaches pre-hover and live geometry for diagnosis. Twelve fresh normal/throttled Chrome diagnostic runs kept the live gap near 3.2px; the exact CI timing was not reproduced locally. The repaired click/hover/keyboard case passed locally.
+
+The atmosphere-motion check keeps its strict `>1px` within three seconds. Removing premature two-decimal rounding fixes the old false failure without changing the threshold. No retry or skip was added. The 12 existing skips concern dev-only Motion Lab / Material Gallery services, which are not started by the production suite. Fresh CI results and portable workflow captures are linked from PR #17.
+
+The new installer is built evidence, not proof of installation, real IME candidate selection, native dialogs, OS keychain persistence, packaged-sidecar execution or live providers. These remain a single native/operator acceptance batch. Older clients round-tripping the new optional field are not qualified; see [migration boundaries](docs/MIGRATIONS.md#optional-organization-issue-11-acceptance-follow-up).
+
+## Previous main stabilization verification
+
+The following earlier results were captured in Linux/WSL2 while stabilizing `main` from baseline `d4870b5`; they are not the Issue #11 candidate results:
 
 | Gate | Result |
 |---|---|
@@ -51,8 +176,8 @@ The five previously recorded deterministic Playwright failures were resolved wit
 
 ## Important limitations
 
-- **Windows/native acceptance is UNVERIFIED.** This WSL2 environment cannot validate Windows display scaling, Chinese IME in WebView2, native dialog/filesystem scope, OS credential persistence, installer behavior, or a Windows-packaged sidecar.
-- **Native Linux compilation is UNVERIFIED.** Rust/Cargo are present, but required GLib/GObject development packages are not installed; no Tauri window or native package was produced.
+- **Windows/native acceptance remains incomplete.** The requester tested the earlier client; this follow-up has a newly built installer and passing Windows native tests. Its real Chinese IME, focus, OS display scaling, dialogs, credential persistence, packaged-sidecar runtime and complete native journey still require operator acceptance.
+- **Native Linux compilation is UNVERIFIED.** Rust/Cargo are present, but required GLib/GObject development packages are not installed; no Linux Tauri window or Linux native package was produced in that earlier run.
 - **Live AI and discovery are UNVERIFIED.** No provider or search credentials are present. Fixture/contract suites passed, but no external service was contacted.
 - **Unsupported rich formats remain metadata-only.** PDF, image, Office, audio, and video extraction/understanding is not implemented.
 - **Multi-tab project write coordination is not implemented.** Use one editing tab per project. Actual IndexedDB disk latency remains unmeasured.
@@ -93,3 +218,36 @@ main stabilization record above or qualify the integrated/native product. Latest
   Windows acceptance. #10 and the newer #18 fixes still require synchronization with the existing
   #19 integration and revision-specific checks. No #10 PR merge or native acceptance is claimed.
 - Complete uploaded-head remote CI remains to be checked. Keep #18 Draft and Issue #10 open.
+
+
+## Issue #10 synchronized main candidate — October 4, 2026
+
+This later entry supersedes the synchronization-pending status of the preceding branch entry.
+The candidate merges real main `4191bb0` into `2bd2de3`. Main's tree equals #17
+`639818a`; the reviewed #19 `b5b1938` seam resolutions were reused and checked, then
+combined with the newer #10 placement, Angle and persisted-response changes. The local
+`backup/issue10-pre-main-20261004` branch preserves the pre-merge head. #19 was not modified.
+
+| Gate on the merged product | Local result |
+|---|---|
+| `pnpm run build` | Typecheck and production build passed; existing chunk warning retained |
+| `pnpm test` | 54 files / 412 tests passed |
+| `pnpm run check:offline` | 266 passed / 0 failed; core typecheck, 960 locale keys and source-size passed |
+| `VITE_E2E_LIGHTWEIGHT_BACKGROUND=1 pnpm run build`, then `pnpm run test:e2e` | Full suite: 298 passed / 12 existing dev-only skips / 0 failed (11.9 minutes), one worker, zero retries; production-background project uses real renderers |
+| Conflict markers / cached whitespace | No unresolved paths or markers; `git diff --cached --check` passed |
+
+Windows offline fixtures retain the existing English-message environment with
+`NODE_OPTIONS=--no-experimental-global-navigator`. The offline gate completed before the full browser run,
+with no assertion weakening, new skip or retry. Light and dark mounted controlled-fixture
+continuation captures were reviewed and saved under ignored `verification/`; these are
+visibility/interaction evidence, not live-model quality proof. Full local logs remain there.
+
+The merged placement's preferred and raw-footprint indices both reserve only currently visible
+objects, while retaining measured geometry, safe areas, low-zoom read-control space and crowded
+visible-slot fallback. Keep regression retains original wording, exact `derivedFrom` and
+stable-ID reload assertions. Original Thoughts and camera remain outside AI mutation authority.
+
+[The closeout trial checklist](docs/ISSUE10_CLOSEOUT.md) now gives the three real categories,
+action comparison, unchanged-scope repeats, agency checks and honest output-state recording.
+A1/A2/A3/A5 remain open. No new native installer or semantic-quality pass is claimed. Uploaded-head
+remote checks still need separate confirmation. PR #18 stays Draft and Issue #10 stays open.

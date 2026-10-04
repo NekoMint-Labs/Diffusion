@@ -50,7 +50,7 @@ test('a typed model id survives a failed model fetch, and the failure is stated'
     await ai.getByTestId('model-input').fill('a-model-nobody-listed');
     await ai.getByTestId('refresh-models').click();
     // What failed, in the product's own words — not the raw status, not the endpoint's body.
-    await expect(ai.getByTestId('model-summary')).toHaveText('No model list could be read from this endpoint. You can still type the model id your provider gave you.');
+    await expect(ai.getByTestId('model-summary')).toHaveText('OpenAI compatible could not be reached. Check the base URL and your connection.');
     // What the person can still do, and it is what they were already doing.
     await expect(ai.getByTestId('model-input')).toHaveValue('a-model-nobody-listed');
     await expect(ai.getByTestId('model-input')).toBeEnabled();
@@ -62,7 +62,7 @@ test('fetched models are suggestions: an unlisted id is still the model that is 
     await choose(page, 'provider-select', 'compatible');
     await ai.getByTestId('base-url').fill('http://127.0.0.1:11434/v1');
     await ai.getByTestId('refresh-models').click();
-    await expect(ai.getByTestId('model-summary')).toContainText('This provider offers 2 models');
+    await expect(ai.getByTestId('model-summary')).toContainText('2 models available');
     // The list is offered by the field itself, so the field never has to be replaced by a menu.
     await ai.getByTestId('model-input').click();
     await expect(page.locator('.ui-select-popup .ui-select-item[data-value="llama3.1"]:visible')).toBeVisible();
@@ -79,10 +79,10 @@ test('one endpoint\'s model list is never offered for another provider', async (
     await choose(page, 'provider-select', 'compatible');
     await ai.getByTestId('base-url').fill('http://127.0.0.1:11434/v1');
     await ai.getByTestId('refresh-models').click();
-    await expect(ai.getByTestId('model-summary')).toContainText('This provider offers 2 models');
+    await expect(ai.getByTestId('model-summary')).toContainText('2 models available');
     // A different provider has said nothing about its models, so nothing may be claimed for it.
     await choose(page, 'provider-select', 'openai');
-    await expect(ai.getByTestId('model-summary')).toContainText('No model list has been fetched');
+    await expect(ai.getByTestId('model-summary')).toContainText('No model list fetched');
     await ai.getByTestId('model-input').click();
     await expect(page.locator('.ui-select-popup .ui-select-item[data-value="llama3.1"]')).toHaveCount(0);
     await page.keyboard.press('Escape');
@@ -116,6 +116,9 @@ test('Test connection commits the key that is on screen, and reports on it', asy
     expect(requests).toEqual([{ model: 'gpt-4o-mini', authorization: 'Bearer sk-a-realistic-length-key' }]);
     // The secret itself is nowhere in the settings record.
     expect(JSON.stringify(await page.evaluate(() => localStorage.getItem('diffusion-settings')))).not.toContain('sk-a-realistic-length-key');
+    await ai.getByTestId('provider-key').fill('sk-another-unsaved-fixture');
+    await expect(ai.getByTestId('ai-status')).toContainText('Configuration changed');
+    await expect(ai.getByTestId('ai-status')).not.toContainText('Failed');
 });
 
 test('the protocol override and the output cap are advanced, not the normal path', async ({ page }) => {
@@ -141,14 +144,14 @@ test('a provider that really reasons keeps its control; one that does not keeps 
     // Anthropic exposes a reasoning control, so the depth control belongs where it means something.
     await choose(page, 'provider-select', 'anthropic');
     await expect(ai.getByTestId('depth-select')).toHaveCount(1);
-    await expect(ai.getByTestId('depth-note')).toContainText('exposes a reasoning control');
+    await expect(ai.getByTestId('depth-select')).toHaveAttribute('aria-label', 'Thinking depth');
     await expect(ai.getByTestId('ai-advanced')).toHaveCount(0);
     // OpenAI has none, so the same control is an output cap and lives behind Advanced.
     await choose(page, 'provider-select', 'openai');
     await expect(ai.getByTestId('depth-select')).toHaveCount(0);
     await ai.getByTestId('ai-advanced').click();
     await expect(ai.getByTestId('depth-select')).toHaveCount(1);
-    await expect(ai.getByTestId('depth-note')).toContainText('no reasoning control');
+    await expect(ai.getByTestId('depth-select')).toHaveAttribute('aria-label', 'Output length limit');
 });
 
 test('the first thought of a Field with no provider says what did not happen', async ({ page }) => {
@@ -170,8 +173,11 @@ test('the first thought of a Field with no provider says what did not happen', a
 test('an unsent question with AI off is kept, and answered with the control that turns it on', async ({ page }) => {
     await page.goto('/demo?locale=en');
     await expect(page.getByTestId('field')).toBeVisible();
-    await page.getByTestId('speak').click({ position: { x: 5, y: 5 } });
-    await page.keyboard.type('A question that needs a provider.');
+    // This contract concerns a scoped question; unscoped writing is deliberately saved locally.
+    await page.locator('[data-thought-id="attention"]').click();
+    await page.getByTestId('thought-more').click();
+    await page.getByTestId('thought-menu').locator('[data-command="ask"]').click();
+    await page.getByTestId('speak').locator('textarea').fill('A question that needs a provider.');
     await page.keyboard.press('Enter');
     const action = page.getByTestId('notice-action');
     await expect(action).toHaveText('Open AI settings');
@@ -224,6 +230,7 @@ test('Escape still dismisses the place while the model field has focus', async (
     // The typed model survived, and the Field is back in front of the person.
     await expect(page.getByTestId('field')).toBeVisible();
     await page.keyboard.press('Control+Comma');
+    await openSection(page, 'ai');
     await expect(page.locator('#setting-ai')).toBeVisible();
     await expect(page.getByTestId('model-input')).toHaveValue('a-model');
 });
@@ -234,7 +241,7 @@ test('Escape closes the suggestion list first, and the place only on a second pr
     await choose(page, 'provider-select', 'compatible');
     await ai.getByTestId('base-url').fill('http://127.0.0.1:11434/v1');
     await ai.getByTestId('refresh-models').click();
-    await expect(ai.getByTestId('model-summary')).toContainText('This provider offers 2 models');
+    await expect(ai.getByTestId('model-summary')).toContainText('2 models available');
     await ai.getByTestId('model-input').click();
     await expect(page.locator('.ui-select-popup .ui-select-item[data-value="llama3.1"]:visible')).toBeVisible();
     await page.keyboard.press('Escape');
@@ -292,13 +299,11 @@ test('an unusable custom discovery address is never reported as available', asyn
     await expect(search.getByTestId('discovery-status')).toContainText('The discovery address is not usable');
     await search.getByTestId('discovery-url').fill('https://search.example.org/normalized');
     await search.getByTestId('discovery-url').blur();
-    // A usable address with a source that holds no key still cannot search, and says so.
-    await expect(search.getByTestId('discovery-status')).toContainText('A key is still needed');
-    await expect(search.getByTestId('discovery-status')).not.toContainText('Available');
-    // The whole path: address, source, key, and only then "Available".
-    await search.getByTestId('source-key-exa').fill('exa-key-0123456789');
-    await search.getByTestId('source-key-save-exa').click();
-    await expect(search.getByTestId('discovery-status')).toContainText('Available');
+    // The custom endpoint owns its credentials; local built-in keys do not gate it.
+    await expect(search.getByTestId('source-key-exa')).toHaveCount(0);
+    await expect(search.getByTestId('discovery-missing-key')).toHaveCount(0);
+    await expect(search.getByTestId('discovery-status')).toContainText('Not tested');
+    await expect(search.getByTestId('search-test')).toBeEnabled();
 });
 
 test('Settings contains no native select at all', async ({ page }) => {

@@ -118,42 +118,25 @@
 }
 
 /* --- Ghost: provisional material, not a canonical shell --------------------
-   A Ghost keeps a lighter body and a dashed pencil boundary. The stable action rail and question
-   mark remain in `resultSemantics.css`, so provisional status is visible without transparent text. */
+   One pencil rail and a quiet paper body identify an uncommitted suggestion. Keep restores the
+   existing closed Thought boundary; text does not need to fade to explain ownership. */
 .thought.ghost:not(.editing) {
-  --thought-material: calc(var(--thought-rest-material) * .68);
-  --thought-edge: calc(var(--thought-rest-boundary) * .68);
-  background: color-mix(in srgb, var(--surface-1) var(--thought-material), transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pencil-trace) var(--thought-edge), transparent);
-}
-.ghost-boundary {
-  position: absolute;
-  inset: 0;
-  border: 1px dashed color-mix(in srgb, var(--pencil-trace) 42%, transparent);
-  border-radius: inherit;
-  pointer-events: none;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-1) 74%, transparent);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--ink-primary) 4%, transparent);
+  color: var(--ink-primary);
 }
 .thought.ghost:hover:not(.editing),
 .thought.ghost[data-selected="true"]:not(.editing) {
-  --thought-material: calc(var(--thought-rest-material) * .82);
-  --thought-edge: calc(var(--thought-rest-boundary) * .84);
-  background: color-mix(in srgb, var(--surface-1) var(--thought-material), transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pencil-trace) var(--thought-edge), transparent);
+  background: color-mix(in srgb, var(--surface-1) 88%, transparent);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--ink-primary) 7%, transparent);
 }
 
 /* Causal arrival marks where a Ghost landed without fading its physical body. The words and the
    pencil rail settle independently, while the provisional surface remains readable throughout. */
-.thought.ghost[data-causal="true"] .thought-preview { animation: ghost-text-settle var(--motion-spatial) var(--ease-settle) both; }
-.thought.ghost[data-causal="true"]::after {
-  content: ""; position: absolute; left: 3px; top: 8px; width: 1px; height: calc(100% - 16px);
-  background: color-mix(in srgb, var(--ghost-ink) 34%, transparent); transform-origin: center top;
-  animation: ghost-mark-arrive var(--motion-control) var(--ease-out-ui) both; pointer-events: none;
-}
-@keyframes ghost-mark-arrive { from { opacity: 0; transform: scaleY(.18); } to { opacity: .72; transform: scaleY(1); } }
-@keyframes ghost-text-settle { from { opacity: .18; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+/* TransientTextPresence alone owns the arriving words; the causal mark has its own property. */
 @media (prefers-reduced-motion: reduce) {
   .thought { transition: none; }
-  .thought.ghost[data-causal="true"] .thought-preview, .thought.ghost[data-causal="true"]::after { animation: none; }
 }
 
 /* --- Crystal: a landmark, not an achievement ------------------------------ */
@@ -312,3 +295,8 @@
 @media (prefers-reduced-motion: reduce) {
   .thought[data-material-settling="true"]::before { animation: none; opacity: 0; }
 }
+
+/* A judgment has a stable baseline; proposals stay open at their edges. These marks sit inside
+   the measured body and do not change world coordinates on hover, Keep or selection. */
+.thought.crystal:not(.editing)::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 4px; height: 2px; background: color-mix(in srgb, var(--crystal-mark) 58%, transparent); pointer-events: none; }
+.thought:not(.ghost):not(.crystal):not(.source):not(.editing):not([data-selected="true"]) { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--boundary) var(--thought-edge), transparent); }

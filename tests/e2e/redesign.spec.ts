@@ -9,6 +9,21 @@ test('first open is empty, compact and free of permanent diagnostic copy', async
     const input=page.getByRole('textbox',{name:'Speak',exact:true});expect((await input.boundingBox())!.height).toBeLessThanOrEqual(30);
     expect(await page.locator('.speak').evaluate(e=>getComputedStyle(e).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
     await input.fill('Something is still unclear');await input.press('Enter');await expect(page.locator('.thought p')).toHaveText('Something is still unclear');
+    // Rendering is immediate; the existing save queue is asynchronous. Establish a durable write
+    // before checking restoration, rather than navigating away during that write on fast runners.
+    await expect.poll(() => page.evaluate(() => new Promise<boolean>((resolve, reject) => {
+        const opening = indexedDB.open('diffusion-explorer-v1');
+        opening.onerror = () => reject(opening.error);
+        opening.onsuccess = () => {
+            const db = opening.result;
+            const read = db.transaction('projects').objectStore('projects').getAll();
+            read.onerror = () => { db.close(); reject(read.error); };
+            read.onsuccess = () => {
+                db.close();
+                resolve(read.result.some(project => Object.values(project.thoughts as Record<string, { text: string }>).some(thought => thought.text === 'Something is still unclear')));
+            };
+        };
+    }))).toBe(true);
     await page.reload();await expect(page.locator('.thought p')).toHaveText('Something is still unclear');
 });
 test('global More has five global operations, not the internal capability inventory', async ({ page }) => {

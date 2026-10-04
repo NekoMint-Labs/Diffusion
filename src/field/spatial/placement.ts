@@ -64,11 +64,11 @@ function estimatedBounds(project: ProjectState, session: SessionState, measured:
 
 /** Pre-mount placement first chooses a semantic posture, then resolves collisions.
  * Geometry is presentation only: existing canonical coordinates are never rearranged here.
- * Real DOM geometry is still measured after mount and may receive one local correction pass. */
-export function placePossibility(project: ProjectState, session: SessionState, anchor: Point, ordinal = 0, scopeIds: string[] = [], visibleBounds?: Bounds, text = '', mode: ResultPlacementMode = 'default', measured: Readonly<Record<string, Bounds>> = {}): Point {
+ * Real DOM geometry is still measured after mount and may receive repeated local correction when reading boxes change. */
+export function placePossibility(project: ProjectState, session: SessionState, anchor: Point, ordinal = 0, scopeIds: string[] = [], visibleBounds?: Bounds, text = '', mode: ResultPlacementMode = 'default', visibleIds?: ReadonlySet<string>, measured: Readonly<Record<string, Bounds>> = {}): Point {
     const resultSize = previewSize({ text, kind: 'thought' });
     // Keep the separate read control reachable without adding it to Thought geometry.
-    const bottomClearance = mode === 'continue' ? 64 : 0;
+    const bottomClearance = mode === 'continue' ? 64 / project.camera.zoom : 0;
     const preferredDistance = mode === 'continue' ? CONTINUATION_DISTANCE : RESULT_PREFERRED_DISTANCE;
     const index = new GridIndex();
     const tightIndex = new GridIndex();
@@ -77,17 +77,17 @@ export function placePossibility(project: ProjectState, session: SessionState, a
         tightIndex.set(id, bounds);
     };
     const itemBounds = estimatedBounds(project, session, measured);
-    for (const [id, bounds] of Object.entries(itemBounds)) reserve(id, bounds, RESULT_CLEARANCE);
+    for (const [id, bounds] of Object.entries(itemBounds)) if (!visibleIds || visibleIds.has(id)) reserve(id, bounds, RESULT_CLEARANCE);
 
     for (const relation of [...Object.values(project.relations), ...Object.values(session.phenomena)]) {
         const a = itemBounds[relation.a], b = itemBounds[relation.b];
-        if (!a || !b) continue;
+        if (!a || !b || visibleIds && (!visibleIds.has(relation.a) || !visibleIds.has(relation.b))) continue;
         const size = estimateRelationLabelSize(relation.label, !('status' in relation));
         const ax = a.x + a.width / 2, ay = a.y + a.height / 2;
         const bx = b.x + b.width / 2, by = b.y + b.height / 2;
         reserve(`relation:${relation.id}`, { x: (ax + bx) / 2 - size.width / 2, y: (ay + by) / 2 - size.height / 2, ...size }, 8);
     }
-    if (visibleBounds) {
+    if (visibleBounds && !visibleIds) {
         // Reserve the persistent top-right UI chrome. Generated material should prefer content space.
         reserve('__chrome', { x: visibleBounds.x + visibleBounds.width - 210, y: visibleBounds.y, width: 210, height: 100 });
         // The Field identity is screen-space chrome, never part of the card geometry cache.
@@ -95,6 +95,7 @@ export function placePossibility(project: ProjectState, session: SessionState, a
     }
 
     const fits = (point: Point) => !visibleBounds || point.x >= visibleBounds.x && point.y >= visibleBounds.y && point.x + resultSize.width <= visibleBounds.x + visibleBounds.width && point.y + resultSize.height + bottomClearance <= visibleBounds.y + visibleBounds.height;
+    const intoView = (point: Point): Point => !visibleBounds ? point : ({ x: Math.max(visibleBounds.x, Math.min(visibleBounds.x + visibleBounds.width - resultSize.width, point.x)), y: Math.max(visibleBounds.y, Math.min(visibleBounds.y + visibleBounds.height - resultSize.height - bottomClearance, point.y)) });
     const collides = (point: Point) => index.query(inflate({ ...point, ...resultSize }, RESULT_CLEARANCE)).length > 0;
     let origin = anchor;
     const scope = scopeIds.map(key => itemBounds[key]).filter((bounds): bounds is Bounds => !!bounds);
@@ -219,6 +220,10 @@ export function placePossibility(project: ProjectState, session: SessionState, a
         if (forward.length && (!visibleBounds || distanceBetween({ ...forward[0].point, ...resultSize }, scopeBounds) <= preferredDistance.max)) return forward[0].point;
         const semantic = score(candidates);
         if (semantic.length) return semantic[0].point;
+        // Fixed semantic gaps can miss an edge slot by a few pixels on small windows.
+        // Try the same postures inside the safe area before sending arrivals offscreen.
+        const bounded = score(candidates.map(intoView));
+        if (bounded.length) return bounded[0].point;
 
         const escape: Point[] = [];
         for (let step = 0; step < 64; step++) {
@@ -255,6 +260,11 @@ export function placePossibility(project: ProjectState, session: SessionState, a
         const ring = 1 + Math.floor(n / 12);
         const angle = (n % 12) * Math.PI / 6;
         const point = { x: origin.x + Math.cos(angle) * ring * 300, y: origin.y + Math.sin(angle) * ring * 210 };
+        if (fits(point) && !collides(point)) return point;
+    }
+    if (visibleBounds) for (let step = 0; step < 24; step++) {
+        const angle = step * Math.PI / 12;
+        const point = intoView({ x: origin.x + Math.cos(angle) * visibleBounds.width, y: origin.y + Math.sin(angle) * visibleBounds.height });
         if (fits(point) && !collides(point)) return point;
     }
     for (let step = 72; step < 180; step++) {

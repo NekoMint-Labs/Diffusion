@@ -89,13 +89,23 @@ The normal first-class object of the Field. The UI does not need to expose the i
 An AI-created possibility, not a purple version of a normal Thought.
 
 - hover is not acceptance;
-- click = Claim + Select;
+- click = Select and inspect; selection alone is not Claim;
 - drag = Claim + Move;
 - ignoring is valid;
-- no generic Accept / Reject chrome for ordinary AI possibilities;
+- explicit Keep / Ignore actions and a quiet dismiss button make the pending state actionable;
 - a structured-ingestion proposal is a narrow exception: because it is an AI interpretation of the user's own compound input, the Field may offer a quiet remove affordance plus Keep all / Keep original review actions;
 - lasso does not Claim;
 - an unclaimed Ghost must not become the basis for further autonomous Normal Mode generation.
+
+Issue #11 feedback approved a soft paper surface, one fine side rail and explicit unaccepted wording. Keep retains the established closed Thought boundary. Pending proposals remain discoverable at every zoom: when the Field cannot fit readable text, a bounded screen-space review entry exposes the full wording and frozen request sources without requiring camera travel.
+
+### Sources and user organization
+
+`derivedFrom` and `generationAction` record original generation provenance. The optional `organizingParentId` records a separate, explicit user choice: absent uses the first surviving source in frozen source order, `null` means independent, and a string names the chosen parent. Multi-source provenance remains intact. Reparent is a user-only, undoable Core event; it preserves words, positions and the child's entire branch. AI and presentation cannot reparent Thoughts.
+
+Missing imported parents become display roots; malformed cycles lose a deterministic display edge without rewriting imported provenance. Deleting an explicit parent makes its organized children independent. Existing source-deletion cleanup remains unchanged. The source inspector distinguishes these semantics, and restores source-based organization only through explicit Apply. This optional-field extension is the requester's approved exception to the earlier no-new-model-fields scope; database and export envelope versions remain unchanged. Older applications round-tripping the new field are not qualified.
+
+Source arrows describe actual provenance; dashed organization lines show a different user-selected parent. These are separate from semantic relations. The device-local curve/elbow preference never changes any relation or Thought. Routing uses cached boundaries, avoids visible card interiors and omits an obstructed or hidden-endpoint route; exact sources remain readable in the inspector and proposal review.
 
 ### Recall
 
@@ -158,7 +168,7 @@ Relation layers:
 
 v0.1 has no Connect Tool, no hypergraph and no edge soup.
 
-Relations should **not use arrows by default**. Arrows over-imply causality, direction and process.
+Semantic relations should **not use arrows by default**. Arrows over-imply causality, direction and process. The separate source-provenance layer above uses direction only for an actual generation source.
 
 Prefer:
 
@@ -181,10 +191,12 @@ A Region is not a folder, box, frame, or container. It is a neighborhood that em
 - no hard border;
 - Local scale is Thought-first;
 - Neighborhood zoom gradually reveals Region identity;
-- Atlas is dominated by Regions and Crystals;
+- Atlas retains original roots and stable landmarks; descendants disclose progressively by organizing depth;
 - Atlas must not become node-edge soup.
 
 Atlas is continuous semantic zoom, not a separate page.
+
+One ordinary wheel notch upward zooms in and reveals the next current hierarchy level; downward zooms out and closes the deepest ordinary level. All levels, including deep imports, have reachable zoom bands with hysteresis. Pinch remains continuous. Edited, found and pending content retain reading exceptions. Ordinary wheel steps also collapse selected deeper content; the selected scope remains stored. A new explicit selection or Claim may reopen reading context until the next wheel step. Compact hierarchy disclosure keeps eligible shallow nodes instead of suppressing them through label collisions, while retaining the existing reading cap and authored coordinates. Original roots keep their spatial presence even after reparenting. Selection, editing, Find and pending proposals receive disclosure priority. When collision-free summaries cannot fit, canonical Thoughts retain compact world anchors plus a bounded searchable reading entry; pending proposals use their own review entry. A collapsed branch has a child-count expansion action. Neither culling nor these entries moves authored coordinates or accepts AI proposals.
 
 ## 8. Conversation / Thread / Deep Dive
 
@@ -291,3 +303,8 @@ Avoid:
 If a new capability appears to need a permanent toolbar button, first try:
 
 > direct manipulation → contextual action → language → system phenomenon
+
+
+### Deep hierarchy reading ceiling
+
+Ordinary wheel steps continue to reveal/close exactly one current level. Early levels increase reading size; deeper bands share the remaining normal-scale range and ordinary hierarchical wheel zoom never exceeds 1. This bounds text, card footprints and camera spacing together rather than compensating text alone. Repeated upward input at the deepest level stays at the ceiling. The existing camera persists disclosure without a new canonical field; direct estimation and reversible bands keep large imported chains reachable. Explicit Ctrl-wheel/pinch remains available for deliberate detail zoom above normal size, while the next ordinary hierarchy step returns to the reading bands. Flat Fields retain their existing wheel range. Canonical text, coordinates, sources and parent relationships do not change.

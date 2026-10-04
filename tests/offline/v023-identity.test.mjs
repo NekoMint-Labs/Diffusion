@@ -24,8 +24,8 @@ test('v0.2.3 identity uses legibility rather than card or glow selection', () =>
     assert.doesNotMatch(selected, /background|box-shadow|text-shadow|transform|font-size|padding/);
     assert.doesNotMatch(block(css, '.thought'), /box-shadow|text-shadow/);
     assert.match(block(css, '.thought[data-emphasis="nearby"]'), /--thought-ink-presence:\s*\.84/);
-    assert.match(block(css, '.thought[data-emphasis="receded"]'), /--thought-ink-presence:\s*\.6/);
-    assert.match(block(css, '.thought[data-emphasis="peripheral"]'), /--thought-ink-presence:\s*\.46/);
+    assert.match(block(css, '.thought[data-emphasis="receded"]'), /--thought-ink-presence:\s*\.76/);
+    assert.match(block(css, '.thought[data-emphasis="peripheral"]'), /--thought-ink-presence:\s*\.68/);
 });
 
 test('Speak makes temporary writing room without becoming a chat-composer box', () => {

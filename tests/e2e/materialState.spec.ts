@@ -143,8 +143,9 @@ async function ghostAndCanonical(browser: Browser, image: boolean) {
     const canonical = await readMaterial(page, '[data-thought-id="structure"]');
     const ghost = await readMaterial(page, '.thought.ghost');
     const pencil = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--pencil-trace').trim());
+    const rail = await page.locator('.thought.ghost').first().evaluate(el => ({ color: getComputedStyle(el, '::before').backgroundColor, width: getComputedStyle(el, '::before').width, duplicate: getComputedStyle(el, '::after').content }));
     await context.close();
-    return { canonical, ghost, pencil };
+    return { canonical, ghost, pencil, rail };
 }
 
 test('Ghost is a different kind of material, and Image Atmosphere fills canonical Thoughts but not Ghosts', async ({ browser }) => {
@@ -155,17 +156,24 @@ test('Ghost is a different kind of material, and Image Atmosphere fills canonica
     console.log(`[measured] image canonical fill ${image.canonical.bgAlpha.toFixed(3)} raw=[${image.canonical.bgRaw}]; image ghost fill ${image.ghost.bgAlpha.toFixed(3)} raw=[${image.ghost.bgRaw}]`);
     console.log(`[measured] canonical fill paper=${paper.canonical.bgAlpha.toFixed(3)} image=${image.canonical.bgAlpha.toFixed(3)}; ghost fill paper=${paper.ghost.bgAlpha.toFixed(3)} image=${image.ghost.bgAlpha.toFixed(3)}`);
 
-    // (5) A Ghost differs by kind, not a few percent of opacity: its edge is drawn from the pencil
-    // trace, not from a canonical Thought's surface-boundary ring.
-    expect(maxChannelDelta(paper.ghost.ringRGB, hexRgb(paper.pencil)), 'the Ghost edge is the pencil trace colour').toBeLessThanOrEqual(2);
-    expect(maxChannelDelta(paper.ghost.ringRGB, paper.canonical.ringRGB), 'the Ghost edge is not the canonical boundary ring').toBeGreaterThan(20);
-    // …in addition to being fainter than a canonical Thought.
-    expect(paper.ghost.bgAlpha).toBeLessThan(paper.canonical.bgAlpha);
+    // (5) The approved Ghost has one pencil rail and no closed inset ring. Read the rail itself;
+    // its paper shadow is no longer the old boundary's measurement owner.
+    const railSrgb = paper.rail.color.match(/color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\/\s*([\d.]+)\)/);
+    expect(railSrgb, 'the resolved pencil rail keeps its translucent paper treatment').not.toBeNull();
+    expect(maxChannelDelta(railSrgb!.slice(1, 4).map(value => Number(value) * 255), hexRgb(paper.pencil))).toBeLessThan(1);
+    expect(Number(railSrgb![4])).toBeCloseTo(.74, 2);
+    expect(paper.rail.width).toBe('2px');
+    expect(paper.rail.duplicate).toBe('none');
+    expect(paper.ghost.boxShadow).not.toContain('inset');
+    expect(paper.canonical.boxShadow).toContain('inset');
+    // Issue 11 approved readable paper plus one fine rail, not opacity as a proxy for temporariness.
+    // This selected proposal has the explicit paper treatment; canonical material tests stay intact.
+    expect(paper.ghost.bgAlpha).toBeCloseTo(.88, 2);
 
     // (7) Image Atmosphere gives a canonical Thought a fuller fill; a Ghost keeps its own treatment.
     expect(image.canonical.bgAlpha).toBeGreaterThan(paper.canonical.bgAlpha);
     expect(image.ghost.bgAlpha).toBeCloseTo(paper.ghost.bgAlpha, 3);
-    expect(image.ghost.bgAlpha).toBeLessThan(image.canonical.bgAlpha);
+    expect(image.ghost.bgAlpha).toBeCloseTo(.88, 2);
 });
 
 async function settleOpacity(page: Page, state: string): Promise<number> {
@@ -198,7 +206,8 @@ test('a causal trace is a distinct presence sleeping, as a parent, and awake', a
     // wake: the continued Thought's ancestry is selected.
     const wake = await settleOpacity(page, 'wake');
     // sleep: nothing selected and nothing hovered.
-    await page.getByTestId('field').click({ position: { x: 80, y: 880 } });
+    const fieldBounds = (await page.getByTestId('field').boundingBox())!;
+    await page.getByTestId('field').click({ position: { x: 80, y: fieldBounds.height - 20 } });
     await page.mouse.move(1300, 900);
     const sleep = await settleOpacity(page, 'sleep');
     // parent: hover the edge's child with no selection.
@@ -230,28 +239,45 @@ test('Keep stabilizes a Ghost material in place without generic circular feedbac
         const ghost = page.locator('.thought.ghost').first();
         await expect(ghost).toBeVisible();
         const id = await ghost.getAttribute('data-thought-id');
-        const before = await ghost.boundingBox();
-        if (!id || !before) throw new Error('Ghost has no stable identity or bounds');
-        await ghost.click();
-        await page.getByTestId('proposal-keep-all').click();
+        if (!id) throw new Error('Ghost has no stable identity');
+        // Selecting a proposal changes disclosure priority and can reorder mounted siblings.
+        // Keep measuring this identity; `.ghost.first()` may now be a different proposal.
         const thought = page.locator(`[data-thought-id="${id}"]`);
+        await thought.click();
+        const before = await thought.boundingBox();
+        if (!before) throw new Error('Ghost has no stable bounds');
+        // Observe the commitment frame itself. A series of protocol round trips can outlive the
+        // 340 ms transition under renderer load, which is not evidence of missing animation.
+        await page.evaluate(id => {
+            const element = document.querySelector(`[data-thought-id="${id}"]`)!;
+            const observer = new MutationObserver(() => {
+                if (element.classList.contains('ghost')) return;
+                const style = getComputedStyle(element, '::before');
+                (window as unknown as { settleProof: unknown }).settleProof = {
+                    animation: style.animationName, content: style.content,
+                    settling: element.getAttribute('data-material-settling'),
+                };
+                observer.disconnect();
+            });
+            observer.observe(element, { attributes: true });
+        }, id);
+        await page.getByTestId('proposal-keep-all').click();
         await expect(thought).toBeVisible();
         await expect(thought).not.toHaveClass(/ghost/);
-        await expect(thought).toHaveAttribute('data-material-settling', 'true');
+
         const after = await thought.boundingBox();
         if (!after) throw new Error('Kept Thought has no bounds');
         expect(after.x).toBeCloseTo(before.x, 0);
         expect(after.y).toBeCloseTo(before.y, 0);
         await expect(page.getByTestId('settle-activity')).toHaveCount(0);
-        const pencil = await thought.evaluate(element => {
-            const style = getComputedStyle(element, '::before');
-            return { animation: style.animationName, opacity: Number(style.opacity) };
-        });
+        const pencil = await page.evaluate(() => (window as unknown as { settleProof: { animation: string; content: string; settling: string | null } }).settleProof);
         if (reduced) {
             expect(pencil.animation).toBe('none');
-            expect(pencil.opacity).toBe(0);
+            expect(pencil.settling).not.toBe('true');
+            expect(pencil.content).toBe('none');
         } else {
             expect(pencil.animation).toBe('ghost-pencil-settle');
+            expect(pencil.settling).toBe('true');
         }
         await expect(thought).not.toHaveAttribute('data-material-settling', 'true');
         await context.close();

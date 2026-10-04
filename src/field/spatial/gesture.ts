@@ -23,6 +23,7 @@ import type { Camera, Point } from '../../core/model.ts';
 export interface WheelZoomGesture {
     anchor: Point;
     at: number;
+    remainder?: number;
 }
 
 /** A wheel/pinch burst keeps one attended screen point. Browser pinch packets can report a slightly
@@ -34,13 +35,19 @@ export function resolveWheelZoom(previous: WheelZoomGesture | null, input: {
     viewportHeight: number;
     ctrlKey: boolean;
     timeStamp: number;
-}): { gesture: WheelZoomGesture; delta: number } {
+}): { gesture: WheelZoomGesture; delta: number; step: number; pinch: boolean } {
     const anchor = previous && input.timeStamp - previous.at < 180 ? previous.anchor : input.point;
     const modeScale = input.deltaMode === 1 ? 16 : input.deltaMode === 2 ? input.viewportHeight : 1;
     // Chromium exposes trackpad pinch as ctrl+wheel with much smaller deltas than a wheel notch.
     const sensitivity = input.ctrlKey ? 4 : 1;
     const delta = Math.max(-240, Math.min(240, input.deltaY * modeScale * sensitivity));
-    return { gesture: { anchor, at: input.timeStamp }, delta };
+    // Full mouse notches each count once, even in a fast burst. High-resolution scroll
+    // packets accumulate, preventing a touchpad movement from skipping many levels.
+    const sameDirection = previous && input.timeStamp - previous.at < 180 && Math.sign(previous.remainder ?? 0) === Math.sign(delta);
+    const accumulated = delta + (sameDirection ? previous.remainder ?? 0 : 0);
+    const step = !input.ctrlKey && Math.abs(accumulated) >= 32 ? -Math.sign(delta) : 0;
+    const remainder = input.ctrlKey || step ? 0 : accumulated;
+    return { gesture: { anchor, at: input.timeStamp, remainder }, delta, step, pinch: input.ctrlKey };
 }
 
 export type GestureKind = 'pan' | 'selection' | 'marquee';

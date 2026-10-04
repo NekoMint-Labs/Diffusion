@@ -46,13 +46,14 @@ for (const [count, theme, zoom] of [[1, 'light', 1], [3, 'light', 1], [1, 'dark'
         const source = page.locator('[data-thought-id="source"]');
         await source.click();
         const before = await source.boundingBox();
+        const previewBefore = await source.locator('.thought-preview').boundingBox();
         const transform = await page.locator('.world').evaluate(element => (element as HTMLElement).style.transform);
         await page.getByTestId('scope-continue').click();
         const preview = page.getByRole('dialog', { name: '继续想', exact: true });
         await preview.getByRole('button', { name: String(count), exact: true }).click();
         await page.getByTestId('action-preview-run').click();
         await expect.poll(() => requests).toBe(1);
-        await expect(page.getByRole('status')).toContainText('继续');
+        await expect(page.getByTestId('operation-feedback')).toContainText('继续');
         await expect(page.locator('.thought.ghost')).toHaveCount(0);
         release();
         const ghosts = page.locator('.thought.ghost');
@@ -76,7 +77,16 @@ for (const [count, theme, zoom] of [[1, 'light', 1], [3, 'light', 1], [1, 'dark'
         const dx = Math.max(0, before!.x - first.x - first.width, first.x - before!.x - before!.width);
         const dy = Math.max(0, before!.y - first.y - first.height, first.y - before!.y - before!.height);
         expect(Math.hypot(dx, dy)).toBeLessThanOrEqual(140);
-        expect(await source.boundingBox()).toEqual(before);
+        // A transient child adds #11's explicit branch disclosure below the unchanged text.
+        // Preserve the exact content bounds and card anchor; qualify the added height separately.
+        const after = (await source.boundingBox())!;
+        expect({ x: after.x, y: after.y, width: after.width }).toEqual({ x: before!.x, y: before!.y, width: before!.width });
+        expect(await source.locator('.thought-preview').boundingBox()).toEqual(previewBefore);
+        const disclosureHeight = await source.getByTestId('branch-expand').evaluate(element => {
+            const scale = new DOMMatrixReadOnly(getComputedStyle(document.querySelector('.world')!).transform).a;
+            return element.getBoundingClientRect().height + parseFloat(getComputedStyle(element).marginTop) * scale;
+        });
+        expect(after.height - before!.height).toBeCloseTo(disclosureHeight, 1);
         expect(await page.locator('.world').evaluate(element => (element as HTMLElement).style.transform)).toBe(transform);
         expect((await projectRecord(page)).thoughts).toEqual(project.thoughts);
         // Reading controls are a separate UI footprint and must also remain reachable.

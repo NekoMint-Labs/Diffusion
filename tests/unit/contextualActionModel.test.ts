@@ -43,7 +43,8 @@ function context(kinds: Array<'thought' | 'source' | 'crystal'>): CommandContext
 
 function assertBounded(model: ReturnType<typeof contextualActionModel>) {
     expect(model.primary.length).toBeLessThanOrEqual(3);
-    expect(model.secondary.length).toBeLessThanOrEqual(6);
+    // The optional lineage inspector adds one row without displacing existing edit actions.
+    expect(model.secondary.length).toBeLessThanOrEqual(model.secondary.some(action => action.id === 'thought-lineage') ? 7 : 6);
     const primaryIds = new Set(model.primary.map(action => action.id));
     expect(model.secondary.some(action => primaryIds.has(action.id))).toBe(false);
 }

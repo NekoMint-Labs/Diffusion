@@ -21,7 +21,8 @@ async function reachGeneration(page: Page) {
     return thought;
 }
 
-test('First Field Tutorial follows real interaction and uses no provider for its proposal', async ({ page }) => {
+for (const reduced of [false, true]) test(`First Field Tutorial follows real interaction and uses no provider for its proposal (reduced=${reduced})`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: reduced ? 'reduce' : 'no-preference' });
     await reachGeneration(page);
     await page.getByTestId('scope-continue').click();
     await expect(page.getByTestId('first-field-tutorial')).toHaveAttribute('data-phase', 'ghost');
@@ -35,6 +36,7 @@ test('First Field Tutorial follows real interaction and uses no provider for its
     await page.getByTestId('ai-proposal-keep').click();
     await expect(page.getByTestId('first-field-tutorial')).toHaveAttribute('data-phase', 'done');
     await expect(page.locator('.thought.ghost')).toHaveCount(0);
+    if (reduced) await expect(page.locator('.tutorial-settled-fragment')).toHaveCount(0);
     await page.getByTestId('tutorial-finish').click();
     await expect(page.getByTestId('first-field-tutorial')).toHaveCount(0);
 });

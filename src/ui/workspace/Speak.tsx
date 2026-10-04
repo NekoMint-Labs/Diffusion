@@ -104,7 +104,7 @@ export function Speak({ textareaRef, words, onWords, onSubmit, onStop, onCompose
      * Thought of an empty Field gets the authored two-part sequence — the composer yields the
      * space and the written idea separates from it — while later submissions only release. */
     function commit() {
-        if (empty) {
+        if (empty && !reduced) {
             setReleasing(true);
             play(firstThoughtComposerSequence);
         }

@@ -20,6 +20,10 @@ type Payload = {
     type: 'thought.keep';
     ids: string[];
 } | {
+    type: 'thought.reparent';
+    id: string;
+    parentId?: string | null;
+} | {
     type: 'thought.release';
     ids: string[];
 } | {

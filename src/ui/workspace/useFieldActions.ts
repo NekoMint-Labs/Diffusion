@@ -30,7 +30,7 @@ export function useFieldActions({ controller, field, surfaces, importer }: {
     const anchor = () => field.current?.centerPoint() ?? { x: 300, y: 250 };
     const freePoint = (scopeIds: string[] = [], text = '', mode: ResultPlacementMode = 'default') => {
         const snapshot = controller.getSnapshot();
-        return placePossibility(snapshot.project, snapshot.session, anchor(), 0, scopeIds, field.current?.viewBounds(), text, mode);
+        return placePossibility(snapshot.project, snapshot.session, anchor(), 0, scopeIds, field.current?.viewBounds(), text, mode, field.current ? new Set(field.current.visibleIds()) : undefined, field.current?.itemBounds());
     };
     /** Regions are remembered structure, not history: an observation only dispatches when the
      * grouping actually changed. */

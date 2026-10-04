@@ -178,7 +178,8 @@ describe('one command, many presentations', () => {
         const selected = context(['a']);
         const selectionRows = contextualRows(commands, selected, contextualActionModel(commands, selected).secondary, 'other');
         expect(selectionRows.every(item => !item.separator)).toBe(true);
-        expect(selectionRows.length).toBeLessThanOrEqual(6);
+        expect(selectionRows.length).toBeLessThanOrEqual(7);
+        expect(selectionRows.map(item => item.id)).toEqual(expect.arrayContaining(['thought-lineage', 'copy-text', 'delete']));
     });
 
 
@@ -188,14 +189,15 @@ describe('one command, many presentations', () => {
         expect(menuRows(commands, context(), FIELD_MORE_MENU, 'other').length).toBeLessThanOrEqual(6);
     });
 
-    it('keeps every selection More page at six actions or fewer', () => {
+    it('allows one lineage inspector without displacing the six existing selection actions', () => {
         const crystal = { ...thought('crystal-id', 'Committed'), kind: 'crystal' as const };
         const source = { ...thought('source-id', 'Reference'), kind: 'source' as const, sourceId: 'source-record' };
         const { commands, context } = harness(project([thought('a'), thought('b'), crystal, source]));
         for (const selection of [['a'], ['a', 'b'], ['crystal-id'], ['source-id']]) {
             const state = context(selection);
             const model = contextualActionModel(commands, state);
-            expect(contextualRows(commands, state, model.secondary, 'other').length).toBeLessThanOrEqual(6);
+            const hasLineage = model.secondary.some(action => action.id === 'thought-lineage');
+            expect(contextualRows(commands, state, model.secondary, 'other').length).toBeLessThanOrEqual(hasLineage ? 7 : 6);
             expect(model.secondary.map(action => action.id).some(id => model.primary.some(action => action.id === id))).toBe(false);
         }
     });

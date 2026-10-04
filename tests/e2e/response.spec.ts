@@ -1,4 +1,18 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import type { ProjectState } from '../../src/core/model.ts';
+
+async function persistedThoughts(page: Page): Promise<ProjectState['thoughts']> {
+    return page.evaluate(() => new Promise<ProjectState['thoughts']>((resolve, reject) => {
+        const opening = indexedDB.open('diffusion-explorer-v1');
+        opening.onerror = () => reject(opening.error);
+        opening.onsuccess = () => {
+            const db = opening.result;
+            const read = db.transaction('projects').objectStore('projects').get('demo');
+            read.onerror = () => { db.close(); reject(read.error); };
+            read.onsuccess = () => { db.close(); resolve(read.result.thoughts); };
+        };
+    }));
+}
 
 const question = 'If the background fades, do we lose the context that made this matter?';
 test.beforeEach(async ({ page }) => {
@@ -34,6 +48,7 @@ test('a selected question accepts a local response and keeps its connection afte
 });
 
 test('leaving and reopening a response retains its draft and original reference', async ({ page }) => {
+    const initialThoughts = await persistedThoughts(page);
     await page.locator('[data-thought-id="unfinished"]').click();
     await page.getByRole('button', { name: 'Respond to this question', exact: true }).click();
     const input = page.getByRole('textbox', { name: 'Speak', exact: true });
@@ -44,7 +59,8 @@ test('leaving and reopening a response retains its draft and original reference'
     await expect(input).toHaveValue('Still deciding how much context to retain.');
     await expect(page.locator('.speak-references')).toContainText(question);
     await expect(page.getByRole('button', { name: 'Save response', exact: true })).toBeVisible();
-    await expect(page.locator('[data-thought-id]')).toHaveCount(6);
+    await expect(page.locator('[data-thought-id]')).toHaveCount(Object.keys(initialThoughts).length);
+    expect(await persistedThoughts(page)).toEqual(initialThoughts);
 });
 
 test('long wording opens in a read-only place, including its final lines', async ({ page }) => {
@@ -179,6 +195,7 @@ test('a failed device write retains the response and reports its actual save sta
 });
 
 test('a restored response keeps a missing reference and refuses to save against a different scope', async ({ page }) => {
+    const initialThoughts = await persistedThoughts(page);
     await page.evaluate(() => localStorage.setItem('diffusion-response-draft:demo', JSON.stringify({
         text: 'My response to the original two thoughts.', scope: ['unfinished', 'removed-thought'], updatedAt: Date.now(),
     })));
@@ -188,7 +205,8 @@ test('a restored response keeps a missing reference and refuses to save against 
     await expect(page.locator('.speak-references')).toContainText('A referenced thought is no longer available.');
     await page.getByRole('button', { name: 'Save response', exact: true }).click();
     await expect(input).toHaveValue('My response to the original two thoughts.');
-    await expect(page.locator('[data-thought-id]')).toHaveCount(6);
+    await expect(page.locator('[data-thought-id]')).toHaveCount(Object.keys(initialThoughts).length);
+    expect(await persistedThoughts(page)).toEqual(initialThoughts);
 });
 
 test('response controls remain readable in dark mode', async ({ page }, testInfo) => {
@@ -317,10 +335,11 @@ for (const decision of ['ignore', 'claim'] as const) {
                     };
                 };
             }), { thoughtId: keptId!, sourceId: responseId! })).toBe(true);
+            await expect.poll(async () => (await persistedThoughts(page))[keptId!]?.derivedFrom).toEqual([responseId]);
             await page.reload();
             await expect(page.locator(`[data-thought-id="${keptId}"]`)).toHaveAttribute('data-origin-scope', responseId!);
         }
         await expect(page.locator('[data-thought-id="unfinished"] p')).toHaveText(question);
-        await expect(response).toContainText(reply);
+        await expect(page.locator(`[data-thought-id="${responseId}"] .thought-preview p`)).toHaveText(reply);
     });
 }

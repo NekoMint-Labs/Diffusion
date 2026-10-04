@@ -50,7 +50,7 @@ describe('discoveryInvocation hands the native layer identifiers, never secrets'
         // reappears here, so does the opportunity to read a secret in JavaScript.
         for (const id of DISCOVERY_SOURCE_IDS) {
             const descriptor = DISCOVERY_SOURCES[id];
-            expect(Object.keys(descriptor).sort()).toEqual(['id', 'keyHint', 'label']);
+            expect(Object.keys(descriptor).sort()).toEqual(['id', 'keyUrl', 'label']);
             expect(JSON.stringify(descriptor)).not.toMatch(/_API_KEY|_ENABLED/);
         }
     });
@@ -317,5 +317,37 @@ describe('readiness follows URL usability, not mere non-emptiness', () => {
         expect(describeDiscovery(settings(), keys, { builtInEngine: true }).reader).toBe(true);
         expect(custom('https://example.org/normalized').reader).toBe(false);
         expect(describeDiscovery(settings({ backend: 'custom', customUrl: 'not a url' }), keys, { builtInEngine: true }).reader).toBe(false);
+    });
+});
+
+
+describe('custom discovery has independent readiness without changing built-in configuration', () => {
+    const keys = { exa: true };
+    it('uses a valid endpoint with no enabled sources or local keys', () => {
+        const config = settings({ backend: 'custom', customUrl: 'https://search.example/normalized', sources: { exa: false, tavily: false, brave: false } });
+        const before = JSON.stringify(config);
+        for (const builtInEngine of [false, true]) {
+            const status = describeDiscovery(config, {}, { builtInEngine });
+            expect(discoveryAvailable(status)).toBe(true);
+            expect(status.ready).toEqual([]);
+            expect(status.missingKey).toEqual([]);
+        }
+        expect(JSON.stringify(config)).toBe(before);
+    });
+    it('preserves enabled sources and key presence across backend switches', () => {
+        const config = settings({ sources: { exa: true, tavily: true, brave: false }, customUrl: 'https://search.example/normalized' });
+        const before = JSON.stringify(config);
+        const custom = describeDiscovery({ ...config, backend: 'custom' }, keys, { builtInEngine: true });
+        expect(discoveryAvailable(custom)).toBe(true);
+        expect(custom.missingKey).toEqual([]);
+        const builtIn = describeDiscovery(config, keys, { builtInEngine: true });
+        expect(builtIn.ready).toEqual(['exa']);
+        expect(builtIn.missingKey).toEqual(['tavily']);
+        expect(discoveryAvailable(describeDiscovery(config, {}, { builtInEngine: true }))).toBe(false);
+        expect(JSON.stringify(config)).toBe(before);
+    });
+    it('still rejects invalid custom addresses even with built-in credentials', () => {
+        for (const customUrl of ['', 'http://remote.example', 'https://user:pass@example.org', 'not a URL'])
+            expect(discoveryAvailable(describeDiscovery(settings({ backend: 'custom', customUrl }), keys, { builtInEngine: true }))).toBe(false);
     });
 });

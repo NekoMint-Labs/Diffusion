@@ -20,7 +20,9 @@ test('current visual system layers quiet Material states without changing Field 
   assert.match(block(css, '.field[data-drag-kind="selection"] .thought[data-selected="true"]:not(.editing)'), /cursor: grabbing/);
   assert.match(css, /\.thought-selected-dot\s*\{[^}]*background:\s*var\(--selection-accent\)/s);
   assert.match(thoughtView, /selected && <span className="thought-selected-dot"/);
-  assert.match(css, /\.ghost-boundary\s*\{[^}]*border:\s*1px dashed/s);
+  // Issue 11 replaces the open dashed edges with one paper rail; accepted material is unchanged.
+  assert.doesNotMatch(css + thoughtView, /ghost-boundary/);
+  assert.match(read('src/ui/resultSemantics.css'), /\.thought\.ghost:not\(\.editing\)::before/);
   assert.match(css, /\.thought\.source:not\(\.editing\)\s*\{[^}]*background:\s*color-mix/s);
   // A material state changes the two rung tokens, never layout: hover, selection and drag never reflow.
   for (const selector of [

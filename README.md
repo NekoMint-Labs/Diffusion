@@ -47,6 +47,8 @@ Open the repository's **Actions** tab, choose **Windows Package**, click **Run w
 
 The **Windows Package** workflow is **MANUAL ONLY**. It does not run on normal pushes or pull requests.
 
+The current Issue #11 candidate is also available as a [Windows x64 preview release](https://github.com/NekoMint-Labs/Diffusion/releases/tag/issue11-preview-20261002). See the [Chinese experience guide](docs/ISSUE11_PREVIEW.md) for the complete changes, screenshots, installation steps and validation boundaries. The candidate remains under review in [PR #17](https://github.com/NekoMint-Labs/Diffusion/pull/17).
+
 ## Basic Field interaction
 
 - Double-click blank Field space to create a Thought, or write through Speak.

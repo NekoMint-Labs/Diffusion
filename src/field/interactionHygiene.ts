@@ -1,10 +1,17 @@
 import type { Camera, Point } from '../core/model.ts';
 import type { ProjectController } from '../core/controller.ts';
-import type { ScopePlacement } from '../ui/scope/scopePlacement.ts';
+import type { ScopeRect } from '../ui/scope/scopePlacement.ts';
 import { dismissGhostWithDissolve, presentSpatialTransition } from '../ui/motion/spatialGrammar.ts';
 import { correctSevereOverlap } from './spatial/collision.ts';
 import { screenToWorld, viewportBounds, type Bounds } from './spatial/geometry.ts';
 import type { GeometryCache } from './spatial/index.ts';
+
+/** Inputs, surfaces and a long Find result own their scrolling instead of zooming the canvas. */
+export function ownsWheelInput(target: HTMLElement): boolean {
+    if (target.closest('textarea,input,[data-surface]')) return true;
+    const reading = target.closest<HTMLElement>('[data-find="current"] .thought-preview');
+    return !!reading && reading.scrollHeight > reading.clientHeight;
+}
 
 interface ViewportRect { left: number; top: number; width: number; height: number; }
 
@@ -37,16 +44,23 @@ export function commitDraggedItems(controller: ProjectController, positions: Rec
     for (const [key, point] of ghostMoves) controller.moveGhost(key, point, { detach: true });
     return { canonical, ghosts: ghostMoves.map(([key]) => key) };
 }
-export function correctMeasuredGhost(key: string, corrected: Set<string>, controller: ProjectController, geometry: GeometryCache, itemIds: string[], camera: Camera, viewport: ViewportRect): void {
+export function correctMeasuredGhost(key: string, controller: ProjectController, geometry: GeometryCache, itemIds: string[], camera: Camera, viewport: ViewportRect, screenObstacles: readonly Bounds[] = []): void {
     const ghost = controller.getSnapshot().session.ghosts[key];
-    if (corrected.has(key) || !ghost || ghost.spatialDetached) return;
+    if (!ghost || ghost.spatialDetached) return;
     const bounds = geometry.get(key);
     if (!bounds) return;
-    corrected.add(key);
     const occupied = itemIds.filter(id => id !== key).map(id => geometry.get(id)).filter((candidate): candidate is Bounds => !!candidate);
+    const reserved = screenObstacles.map(rect => {
+        const point = screenToWorld({ x: rect.x - viewport.left - 12, y: rect.y - viewport.top - 12 }, camera);
+        return { ...point, width: (rect.width + 24) / camera.zoom, height: (rect.height + 24) / camera.zoom };
+    });
+    // A pending arrival must clear even a small obstruction. Intentional canonical overlaps
+    // still use the separate severe-overlap policy in the drag path.
+    const gap = 6 / camera.zoom;
+    const exclusions = occupied.map(box => ({ x: box.x - gap, y: box.y - gap, width: box.width + gap * 2, height: box.height + gap * 2 }));
     const view = viewportBounds(camera, viewport.width, viewport.height, 0);
-    if (ghost.proposalAction === 'continue') view.height = Math.max(0, view.height - 64);
-    const point = correctSevereOverlap(bounds, occupied, view, true);
+    if (ghost.proposalAction === 'continue') view.height = Math.max(0, view.height - 64 / camera.zoom);
+    const point = correctSevereOverlap(bounds, [], view, [...exclusions, ...reserved], true);
     if (Math.abs(point.x - bounds.x) > .5 || Math.abs(point.y - bounds.y) > .5) {
         controller.moveGhost(key, point);
         geometry.setPosition(key, point.x, point.y);
@@ -78,7 +92,7 @@ export function deleteFieldSelection(controller: ProjectController, selection: s
     return canonical.length + ghosts.length > 0;
 }
 
-export function relationPlacementObstacles(visible: string[], geometry: GeometryCache, camera: Camera, viewport: ViewportRect, scopePlacement: ScopePlacement | null): Bounds[] {
+export function relationPlacementObstacles(visible: string[], geometry: GeometryCache, camera: Camera, viewport: ViewportRect, scopePlacement: ScopeRect | null): Bounds[] {
     const screenRectToWorld = (bounds: Bounds): Bounds => {
         const point = screenToWorld({ x: bounds.x - viewport.left, y: bounds.y - viewport.top }, camera);
         return { x: point.x, y: point.y, width: bounds.width / camera.zoom, height: bounds.height / camera.zoom };
@@ -87,4 +101,21 @@ export function relationPlacementObstacles(visible: string[], geometry: Geometry
     obstacles.push(screenRectToWorld({ x: viewport.left + viewport.width - 190, y: viewport.top, width: 190, height: 90 }));
     if (scopePlacement) obstacles.push(screenRectToWorld(scopePlacement));
     return obstacles;
+}
+
+/** Run after coalesced layout, using all mounted reading boxes and current UI exclusions. */
+export function correctVisibleGhosts(controller: ProjectController, geometry: GeometryCache, camera: Camera, viewport: ViewportRect, field: HTMLElement | null, world: HTMLElement | null, measure = false): void {
+    // Initial layout runs before paint. Read every mounted box so child order cannot leave
+    // the source at its earlier flat-card size when the first proposal is placed.
+    if (measure) for (const element of world?.querySelectorAll<HTMLElement>('[data-thought-id]') ?? []) {
+        geometry.measure(element.dataset.thoughtId!, element.offsetWidth, element.offsetHeight);
+    }
+    const reserved = [...field?.closest('.app')?.querySelectorAll<HTMLElement>('.identity, .global-actions, [data-testid="speak"], .notice') ?? []]
+        .filter(element => element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden')
+        .map(element => element.getBoundingClientRect());
+    const snapshot = controller.getSnapshot(), ids = [...world?.querySelectorAll<HTMLElement>('[data-thought-id]') ?? []].map(element => element.dataset.thoughtId!);
+    for (const ghost of Object.values(snapshot.session.ghosts)) {
+        if (world?.querySelector(`[data-thought-id="${CSS.escape(ghost.id)}"]`))
+            correctMeasuredGhost(ghost.id, controller, geometry, ids, camera, viewport, reserved);
+    }
 }

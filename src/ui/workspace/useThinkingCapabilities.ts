@@ -6,23 +6,13 @@ import { classifyFailure, type ThinkingFailure } from '../../ai/errors.ts';
 import type { CredentialStore } from '../../credentials/contracts.ts';
 import { aiCredential } from '../../credentials/contracts.ts';
 
-/** What is known about the selected provider, and the two deliberate actions that change it.
- *
- * The audit found capability probing tied to configuration changes, which put a network round trip
- * on every keystroke typed into a URL or key field. That is gone. There are now exactly two
- * moments when Diffusion talks to a provider about the provider:
- *
- *   - once at startup, for a configuration that was already stored (the status of what you had);
- *   - when the person presses Test connection or Refresh models.
- *
- * Everything else reads the inspected provider table, which needs no network. Editing anything
- * makes the state "configuration changed" rather than silently re-probing, so the control never
- * claims more than the last deliberate check established.
- */
-export function useThinkingCapabilities({ selection, credentials, keyPresent }: {
+/** Local metadata is passive. Only Test connection and Refresh models contact a provider.
+ * Every answer belongs to the configuration and credential revision that started its request. */
+export function useThinkingCapabilities({ selection, credentials, keyPresent, credentialRevision = 0 }: {
     selection: ThinkingSelection;
     credentials: CredentialStore;
     keyPresent: boolean;
+    credentialRevision?: number;
 }) {
     const [capabilities, setCapabilities] = useState<ThinkingCapabilities | null>(null);
     const [check, setCheck] = useState<ConnectionCheck | null>(null);
@@ -33,17 +23,22 @@ export function useThinkingCapabilities({ selection, credentials, keyPresent }: 
     const [busy, setBusy] = useState<'models' | 'connection' | null>(null);
     /** The configuration a successful verification belongs to. Anything else is unverified. */
     const [verified, setVerified] = useState<string | null>(null);
-    const signature = `${selection.provider}\u0000${selection.gateway}\u0000${selection.token}\u0000${selection.baseUrl}\u0000${selection.protocol}\u0000${selection.model}\u0000${keyPresent ? 'key' : 'none'}`;
+    const signature = `${selection.provider}\u0000${selection.gateway}\u0000${selection.token}\u0000${selection.baseUrl}\u0000${selection.protocol}\u0000${selection.model}\u0000${keyPresent ? 'key' : 'none'}\u0000${credentialRevision}`;
+    const requestEpoch = useRef(0);
     const current = useRef(signature);
     current.current = signature;
-    /** What a model listing belongs to: the provider and the address it was read from — deliberately
-     * not the chosen model and deliberately not the credential. Typing a model id must not discard
-     * the list it was chosen from, and committing a key must not discard a list that was read from
-     * the same endpoint microseconds earlier. */
-    const endpoint = `${selection.provider}\u0000${selection.gateway}\u0000${selection.baseUrl}`;
+    // Editing the chosen model retains its list; endpoint, protocol or credential changes do not.
+    const endpoint = `${selection.provider}\u0000${selection.gateway}\u0000${selection.baseUrl}\u0000${selection.protocol}\u0000${credentialRevision}`;
 
+    useEffect(() => {
+        requestEpoch.current++; setBusy(null); setCheck(null);
+        if (!isDirectProvider(selection.provider)) setCapabilities(null);
+        return () => { requestEpoch.current++; };
+    }, [signature]);
     const probe = useCallback(async (action: 'models' | 'connection') => {
         if (selection.provider === 'off') return;
+        const epoch = ++requestEpoch.current, requested = signature;
+        const isCurrent = () => epoch === requestEpoch.current && requested === current.current;
         setBusy(action);
         try {
             // The gateway reports itself through its own capability answer; a direct provider is
@@ -52,49 +47,41 @@ export function useThinkingCapabilities({ selection, credentials, keyPresent }: 
             if (selection.provider === 'gateway') {
                 const provider = await createThinkingProvider(selection, credentials);
                 const answer = await provider.capabilities(AbortSignal.timeout(20000));
+                if (!isCurrent()) return;
                 setCapabilities(answer);
-                setCheck(answer === UNKNOWN_CAPABILITIES ? { ok: false, effectiveModel: null, failure: 'provider-unreachable' } : { ok: answer.configured, effectiveModel: answer.defaultModel });
-                setVerified(current.current);
+                // A capability response proves reachability, not a successful model request.
+                setCheck(answer === UNKNOWN_CAPABILITIES ? { ok: false, effectiveModel: null, failure: 'provider-unreachable' } : null);
+                setVerified(requested);
                 return;
             }
             if (action === 'models') {
                 const { models: listed } = await probeProvider(selection, credentials, 'models');
+                if (!isCurrent()) return;
                 setListing({ endpoint, models: listed ?? null, failure: null });
                 return;
             }
             const provider = await createThinkingProvider(selection, credentials);
-            setCapabilities(await provider.capabilities());
+            const answer = await provider.capabilities();
+            if (!isCurrent()) return;
+            setCapabilities(answer);
             const result = await probeProvider(selection, credentials, 'connection');
+            if (!isCurrent()) return;
             setCheck(result.check ?? { ok: false, effectiveModel: null, failure: 'unsupported-capability' });
-            setVerified(current.current);
+            setVerified(requested);
         }
         catch (error) {
             // A deliberate action that failed has to say so. These two were unhandled rejections:
             // pressing Refresh models against an endpoint that is not answering produced a browser
             // error, an unchanged status and no sentence at all — visible effort with no answer.
+            if (!isCurrent()) return;
             const failure = classifyFailure(error);
             if (action === 'models') setListing({ endpoint, models: null, failure });
             else setCheck({ ok: false, effectiveModel: null, failure });
         }
         finally {
-            setBusy(null);
+            if (isCurrent()) setBusy(null);
         }
-    }, [selection, credentials, endpoint]);
-
-    /** The one automatic check: the configuration that was already stored when the app started.
-     * A stored configuration is stable, so this is not the per-keystroke behaviour the audit
-     * rejected — but it runs exactly once, and only for a provider that needs a network to answer. */
-    useEffect(() => {
-        void (async () => {
-            if (selection.provider === 'gateway' && selection.gateway.trim()) await probe('connection');
-            else if (isDirectProvider(selection.provider)) {
-                // Local only: reports what the provider table knows. No request is sent.
-                const provider = await createThinkingProvider(selection, credentials);
-                setCapabilities(await provider.capabilities());
-            }
-        })();
-        // Deliberately runs once per credential store: later changes are owned by the two actions.
-    }, [credentials]);
+    }, [selection, credentials, endpoint, signature]);
 
     /** Direct providers can report capabilities without any network, so the table stays current as
      * the model changes. Nothing here reaches the network. */
@@ -112,6 +99,7 @@ export function useThinkingCapabilities({ selection, credentials, keyPresent }: 
 
     return {
         capabilities, check, busy,
+        gatewayReachable: selection.provider === 'gateway' && verified === signature && capabilities !== null && capabilities !== UNKNOWN_CAPABILITIES,
         /** The list only while it belongs to the configuration on screen. */
         models: listing?.endpoint === endpoint ? listing.models : null,
         /** Why the last listing attempt failed, when it did. Manual entry is never blocked by it. */

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DISCOVERY_SOURCE_IDS, describeDiscovery, type DiscoverySourceId, type DiscoveryStatus } from '../../discovery/contracts.ts';
+import { checkSearchConnection } from '../../discovery/connection.ts';
 import { discoveryInvocation } from '../../discovery/config.ts';
 import type { EngineRunner } from '../../discovery/runtime.ts';
 import type { CredentialStore } from '../../credentials/contracts.ts';
@@ -29,6 +30,7 @@ export function useWorkspaceCapabilities({ settings, settingsRef, platform }: {
     const [storedAIKeys, setStoredAIKeys] = useState<Record<string, boolean>>({});
     const [storedSourceKeys, setStoredSourceKeys] = useState<Partial<Record<DiscoverySourceId, boolean>>>({});
     const [builtIn, setBuiltIn] = useState<EngineRunner | null>(null);
+    const [credentialRevision, setCredentialRevision] = useState(0);
     const [engineVersion, setEngineVersion] = useState<string | null>(null);
     /** The store the *current* build resolved. A ref, not state, because the engine runner is built
      * once and must read the real store at request time rather than the session placeholder that
@@ -45,6 +47,7 @@ export function useWorkspaceCapabilities({ settings, settingsRef, platform }: {
         ]);
         setStoredSourceKeys(Object.fromEntries(search) as Partial<Record<DiscoverySourceId, boolean>>);
         setStoredAIKeys(Object.fromEntries(ai));
+        setCredentialRevision(value => value + 1);
     }, []);
 
     useEffect(() => {
@@ -77,5 +80,17 @@ export function useWorkspaceCapabilities({ settings, settingsRef, platform }: {
     }, [platform.secureCredentials, platform.bundledDiscovery, refreshPresence, settingsRef]);
 
     const status = useMemo<DiscoveryStatus>(() => describeDiscovery(settings.discovery, storedSourceKeys, { builtInEngine: builtIn !== null }), [settings.discovery, storedSourceKeys, builtIn]);
-    return { credentials, status, builtIn, engineVersion, storedAIKeys, storedSourceKeys, refreshPresence };
+    const testSearch = useCallback(async (source: DiscoverySourceId, signal: AbortSignal) => {
+        const config = settingsRef.current.discovery;
+        const run: EngineRunner | undefined = builtIn ? async (args, activeSignal) => {
+            activeSignal.throwIfAborted();
+            const { invoke } = await import('@tauri-apps/api/core');
+            const sources = { ...config.sources, exa: false, tavily: false, brave: false, [source]: true };
+            const result = await invoke<string>('discovery_run', discoveryInvocation({ ...config, external: true, sources }, args));
+            activeSignal.throwIfAborted();
+            return result;
+        } : undefined;
+        return checkSearchConnection(config, source, signal, run);
+    }, [builtIn, settingsRef]);
+    return { credentials, status, builtIn, engineVersion, storedAIKeys, storedSourceKeys, refreshPresence, testSearch, credentialRevision };
 }

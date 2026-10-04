@@ -41,6 +41,7 @@ export function thinkingCommands(deps: ThinkingDeps): DiffusionCommand[] {
         return thoughts.length === 1 ? thoughts[0] : null;
     };
     return [
+        { id: 'thought-lineage', group: 'edit', label: 'Sources and parent...', keywords: ['parent', 'lineage', '来源', '上级'], available: context => !!sole(context) && sole(context)!.kind !== 'source', run: (_context, origin) => deps.openSurface('lineage', origin) },
         { id: 'find-relation', group: 'think', label: 'Find a relation', keywords: ['probe', 'relation', 'explore', '探索', '关联'], available: exactlyTwo, run: context => deps.findRelation(selectedIds(context)) },
         { id: 'ask', group: 'think', label: 'Ask your own question', keywords: ['question', 'write', '追问', '提问'], available: anySelected, run: context => deps.ask(selectedIds(context)) },
         { id: 'respond', group: 'think', label: 'Add my thoughts', keywords: ['respond', 'answer', '回应', '回答', '补充'], available: anySelected, run: context => deps.respond(selectedIds(context)) },

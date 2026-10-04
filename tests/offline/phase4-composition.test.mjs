@@ -23,16 +23,19 @@ test('Phase 4 Region semantics remain labels and disclosure without ambient cont
 
 test('Phase 4 Atlas preserves explicit orientation anchors without turning back into a card field', () => {
     const field = src('field/Field.tsx');
-    assert.match(field, /item\.kind === 'thought' && \(selected \|\| item\.kept\)/);
-    assert.match(field, /item\.kind !== 'crystal'/);
+    const disclosure = src('field/spatial/hierarchyDisclosure.ts');
+    assert.match(field, /discloseHierarchy/);
+    assert.match(disclosure, /hierarchy\.originalRoots\.has\(id\)/);
+    assert.match(disclosure, /tier === 'local' \? 240 : 64/);
+    assert.match(field, /data-testid="root-anchors"/);
     assert.match(field, /semanticExcerpt\(t\.text, 'atlas', 'thought'\)/);
-    assert.match(field, /priority\.has\(key\) \? 4 : landmark \? 3 : unresolved \? 2 : 1/);
+    assert.match(disclosure, /protectedIds\.has\(id\)/);
 });
 
 test('Phase 4 completion receipts carry only transient result counts', () => {
     const model = src('core/model.ts');
     const runtime = src('ai/runtime.ts');
-    const layer = src('ui/motion/SpatialActivityLayer.tsx');
+    const layer = src('ui/motion/operationPresentation.ts');
     assert.match(model, /resultCount\?: number/);
     assert.match(runtime, /settle\(started, 'completed', emitted\)/);
     assert.match(layer, /\{count\} results · \{action\}/);
@@ -43,7 +46,9 @@ test('Phase 4 motion remains state-clarifying and reduced-motion aware', () => {
     const semantics = src('ui/resultSemantics.css');
     const material = src('ui/materials.css');
     assert.match(semantics, /causal-trace-wake/);
-    assert.match(material, /ghost-text-settle/);
+    // Arrival text has one animation owner, using the shared duration roles.
+    assert.doesNotMatch(material, /ghost-text-settle/);
+    assert.match(src('ui/motion/TransientTextPresence.tsx'), /MOTION_DURATION.spatial/);
     assert.match(material, /box-shadow var\(--motion-control\)/);
     assert.match(`${semantics}\n${material}`, /prefers-reduced-motion: reduce/);
     assert.doesNotMatch(material, /particle/i);

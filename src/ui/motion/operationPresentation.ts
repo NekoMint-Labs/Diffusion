@@ -55,7 +55,11 @@ export function useOperationPresentation(operation: ThinkingOperation | null) {
         const elapsed = beganAt.current?.id === operation.id ? performance.now() - beganAt.current.at : 1000;
         const wasLongEnough = reduced || elapsed >= 180;
         setShowCopy(wasLongEnough);
-        const timer = setTimeout(() => { setDisplayOperation(null); setShowCopy(false); }, wasLongEnough ? (operation.phase === 'completed' ? 520 : 1000) : 180);
+        // A terminal result is the only explanation for a request that no longer shows a Stop
+        // control. Keep it readable long enough to connect the feedback with the new card (or with
+        // the explicit empty-result notice), especially for keyboard and reduced-motion users.
+        const terminalDuration = operation.phase === 'completed' ? 1800 : 4000;
+        const timer = setTimeout(() => { setDisplayOperation(null); setShowCopy(false); }, wasLongEnough ? terminalDuration : 180);
         return () => clearTimeout(timer);
     }, [operation?.id, operation?.phase, reduced]);
 

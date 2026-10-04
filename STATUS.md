@@ -2,6 +2,16 @@
 
 Diffusion is a quiet thinking medium for ideas before commitment. This file describes the current checkout: what works, which subsystem owns it, what was freshly verified, and what remains incomplete. It is not a changelog. Historical phase reports and prior verification records remain under [`docs/history/`](docs/history/README.md).
 
+## Issue #10 follow-up: timeout and readable outcomes (2026-10-04)
+
+Current #18 work is based on `350dcc8`, with real main `4191bb0` already integrated through `406e23b`; #17 was merged into main. #19 remains an older overlapping integration input and was not changed. The earlier records below describe their own candidates, not the current merge state.
+
+AI requests now distinguish the 45-second deadline (`failed` / timeout) from explicit Stop (`cancelled`), including structured ingestion and late responses. Visible terminal feedback lasts about 1.8 seconds on completion or 4 seconds on failure/Stop. Windows E2E startup now passes the lightweight-background flag through `webServer.env` instead of POSIX-only inline assignment.
+
+Fresh local verification: application/core typecheck and normal production build passed (existing chunk warning); 54 unit files / 416 tests passed; 266 offline tests, 960 locale keys and source-size checks passed. Both complete E2E projects ran serially: interaction 269 passed / 12 existing skips and production backgrounds 31 passed, zero failures and retries. After closing the old test server, the corrected Windows startup rebuilt/served and all 9 field-overlay cases passed. The earlier interrupted run's lasso failure is retained as an intermittent observation; it passed during the complete interaction run and was not weakened.
+
+Normal localhost preview was restored after stale lazy assets caused credential-save failure. Session-only save and the real DeepSeek connection check then passed; the probe reported `deepseek-flash` for requested `deepseek-chat`. Five live calls on the same research selection produced visible proposals (Continue twice, Angle twice, Ask once), with four Ignore paths and unchanged original mounted card wording/positions. Mixed quality includes paraphrase, an unsupported independence/conclusion claim, verbosity and an invented device premise. [Closeout notes](docs/ISSUE10_CLOSEOUT.md) retain these limits without private transcripts. A1/A2/A3/A5 remain incomplete; no ready-for-review, merge or Issue closure is claimed. Final-candidate Windows native acceptance remains with #12.
+
 ## Issue #10 / #11 synchronized candidate (2026-10-03)
 
 The independent integration draft [#19](https://github.com/NekoMint-Labs/Diffusion/pull/19) now includes #17 head `639818ad6c2a9123c9f92989f6f2bcba81936b98` (product `9377a95`) and #18 head `c9a3cc6dfe5091af158e6837a9544b2441e3309c`. Product integration is `fc3fd199d782c71fb5e9216d62d8cd53cc5d11c7`. Both complete input revisions are ancestors; #13–#16 are already included through #17.

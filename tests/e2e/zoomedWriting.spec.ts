@@ -4,7 +4,7 @@ async function zoomOut(page: Page, level: 'atlas' | 'neighborhood') {
     await page.goto('/?locale=zh');
     await expect(page.getByTestId('field')).toBeVisible();
     await page.mouse.move(700, 400);
-    for (let step = 0; step < (level === 'atlas' ? 8 : 2); step++) {
+    for (let step = 0; step < (level === 'atlas' ? 8 : 3); step++) {
         await page.mouse.wheel(0, 240);
         await page.waitForTimeout(40);
     }

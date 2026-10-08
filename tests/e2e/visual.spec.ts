@@ -340,11 +340,13 @@ test('the composer expansion is real geometry, not a painted state', async ({ pa
 test('attention does not hide the rest of the Field: a distant Thought keeps its presence', async ({ page }) => {
     await page.goto('/demo?locale=en');
     await fieldReady(page);
-    // Zoom one step out (still the readable 'neighborhood' tier) so a genuinely distant place can
+    // Zoom to the readable neighborhood tier with the smaller ordinary wheel steps, so a distant place can
     // exist inside the viewport, then place one there — a real user gesture, not a fixture.
-    for (let step = 0; step < 3; step++) {
+    for (let step = 0; step < 6; step++) {
+        const before = await page.locator('.world').getAttribute('style');
         await page.mouse.move(700, 480);
         await page.mouse.wheel(0, 120);
+        await expect(page.locator('.world')).not.toHaveAttribute('style', before!);
     }
     await expect(page.getByTestId('field')).toHaveAttribute('data-level', 'neighborhood');
     // The dense-root reading entry reserves a dock lane; choose inside the current Field bounds.

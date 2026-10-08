@@ -192,6 +192,32 @@ describe('clear placement for measured screen controls', () => {
     });
 });
 
+describe('continuation detours around the next card without reversing its lineage', () => {
+    it.each([
+        { name: 'right', parent: { x: 100, y: 300 }, current: { x: 440, y: 300 }, next: { x: 780, y: 300 }, direction: { x: 1, y: 0 } },
+        { name: 'left', parent: { x: 780, y: 300 }, current: { x: 440, y: 300 }, next: { x: 100, y: 300 }, direction: { x: -1, y: 0 } },
+        { name: 'down', parent: { x: 440, y: 100 }, current: { x: 440, y: 440 }, next: { x: 440, y: 580 }, direction: { x: 0, y: 1 } },
+    ])('keeps a nearby forward slot when the $name trajectory is blocked', ({ parent, current, next, direction }) => {
+        const project = createProject('lineage-detour');
+        project.thoughts.a = makeThought('A', parent, 1, 'a');
+        project.thoughts.b = { ...makeThought('B', current, 2, 'b'), derivedFrom: ['a'], generationAction: 'continue' as const };
+        project.thoughts.c = { ...makeThought('C', next, 3, 'c'), derivedFrom: ['b'], generationAction: 'continue' as const };
+        const before = JSON.stringify(project);
+        const area = { x: 0, y: 0, width: 1400, height: 1000 };
+        const point = placePossibility(project, emptySession(), current, 0, ['b'], area, 'next', 'continue');
+        const box = { ...point, ...estimateThoughtSize('next') };
+        const source = { ...current, ...estimateItemSize(project.thoughts.b) };
+        expect((point.x - current.x) * direction.x + (point.y - current.y) * direction.y).toBeGreaterThan(0);
+        expect(distanceBetween(box, source)).toBeLessThanOrEqual(128);
+        expect(Object.values(project.thoughts).some(item => overlaps(box, { x: item.x, y: item.y, ...estimateItemSize(item) }))).toBe(false);
+        expect(box.x).toBeGreaterThanOrEqual(area.x);
+        expect(box.y).toBeGreaterThanOrEqual(area.y);
+        expect(box.x + box.width).toBeLessThanOrEqual(area.width);
+        expect(box.y + box.height + 64).toBeLessThanOrEqual(area.height);
+        expect(JSON.stringify(project)).toBe(before);
+    });
+});
+
 describe('continuation in a narrow reading viewport', () => {
     const wording = '如果智能体决定下一张图从哪里拍，就必须用当前已经能算出来的不确定性作为依据，不能等待最后的重建分数。'.repeat(3);
     it('uses measured source height and puts a long continuation nearby without moving authored cards', () => {

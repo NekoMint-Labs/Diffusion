@@ -112,6 +112,7 @@ export function placePossibility(project: ProjectState, session: SessionState, a
         origin = { x: centerX - resultSize.width / 2, y: centerY - resultSize.height / 2 };
         const candidates: Point[] = [];
         const trajectoryCandidates: Point[] = [];
+        const trajectoryDetours: Point[] = [];
         const gaps = [preferredDistance.target, preferredDistance.min, preferredDistance.max, 52, 292, 420, 560];
 
         for (const gap of gaps) {
@@ -121,6 +122,9 @@ export function placePossibility(project: ProjectState, session: SessionState, a
                 if (trajectory) {
                     const lateral = Math.min(54, Math.max(24, scopeBounds.height * .18));
                     trajectoryCandidates.push(along(scopeBounds, resultSize, trajectory, gap), along(scopeBounds, resultSize, trajectory, gap, lateral), along(scopeBounds, resultSize, trajectory, gap, -lateral));
+                    // Inflated collision bounds include touching edges, so leave one extra unit.
+                    const bypass = (Math.abs(trajectory.y) * (scopeBounds.width + resultSize.width) + Math.abs(trajectory.x) * (scopeBounds.height + resultSize.height)) / 2 + RESULT_CLEARANCE * 2 + 1;
+                    trajectoryDetours.push(along(scopeBounds, resultSize, trajectory, gap, bypass), along(scopeBounds, resultSize, trajectory, gap, -bypass));
                 }
                 if (horizontal) {
                     candidates.push(
@@ -218,6 +222,10 @@ export function placePossibility(project: ProjectState, session: SessionState, a
         // Semantic posture wins while a valid local slot exists. Only then do we escape into a ring.
         const forward = score(trajectoryCandidates);
         if (forward.length && distanceBetween({ ...forward[0].point, ...resultSize }, scopeBounds) <= preferredDistance.max) return forward[0].point;
+        // A card ahead can block the narrow trajectory lane while nearby forward diagonals
+        // remain clear. Try those after the original lane and before losing Continue direction.
+        const detours = score(trajectoryDetours);
+        if (detours.length && distanceBetween({ ...detours[0].point, ...resultSize }, scopeBounds) <= preferredDistance.max) return detours[0].point;
         const semantic = score(candidates);
         if (semantic.length && distanceBetween({ ...semantic[0].point, ...resultSize }, scopeBounds) <= preferredDistance.max) return semantic[0].point;
         // Fixed semantic gaps can miss an edge slot by a few pixels on small windows.

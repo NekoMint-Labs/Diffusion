@@ -115,7 +115,7 @@ test('an old model response cannot overwrite a new endpoint and empty lists stay
     await expect(page.locator('[data-value="stale-model"]')).toHaveCount(0);
 });
 
-test('folded selected descendants cannot move with a newly issued keyboard action', async ({ page }) => {
+test('keyboard moves a selected parent and its folded subtree exactly once', async ({ page }) => {
     await boot(page);
     const root = page.locator('[data-thought-id="root"]'), leaf = page.locator('[data-thought-id="leaf"]');
     await leaf.click(); await root.click({ modifiers: ['Shift'] });
@@ -129,7 +129,7 @@ test('folded selected descendants cannot move with a newly issued keyboard actio
         const request = indexedDB.open('diffusion-explorer-v1');
         request.onsuccess = () => { const db = request.result; const get = db.transaction('projects').objectStore('projects').get('main'); get.onsuccess = () => { db.close(); resolve(get.result.thoughts.leaf.x); }; };
     }));
-    expect(hiddenX).toBe(820);
+    expect(hiddenX).toBe(830);
     await page.keyboard.press('Control+z'); // Undo the move, then restore the explicit fold.
     await page.keyboard.press('Control+z'); await expect(leaf).toBeVisible();
     // Mounted undo does not mean the asynchronous project write has committed yet.

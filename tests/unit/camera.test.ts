@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { screenToWorld } from '../../src/field/spatial/geometry.ts';
 import { CameraController } from '../../src/field/camera/controller.ts';
 
 // The frame owner is a browser boundary; this test only needs it to exist.
@@ -39,4 +40,16 @@ describe('camera commit boundary', () => {
         controller.set({ x: Number.NaN, y: 0, zoom: 1 });
         expect(controller.get()).toMatchObject({ x: 0, y: 0, zoom: 2.5 });
     });
+});
+
+it('uses small reversible zoom increments and preserves the attended world point', () => {
+    const { controller } = harness();
+    const point = { x: 640, y: 360 }, before = screenToWorld(point, controller.get());
+    controller.zoom(point, -100);
+    expect(controller.get().zoom).toBeCloseTo(1.08, 10);
+    expect(screenToWorld(point, controller.get()).x).toBeCloseTo(before.x, 10);
+    expect(screenToWorld(point, controller.get()).y).toBeCloseTo(before.y, 10);
+    controller.zoom(point, 100);
+    expect(controller.get().zoom).toBeCloseTo(1, 10);
+    controller.destroy();
 });

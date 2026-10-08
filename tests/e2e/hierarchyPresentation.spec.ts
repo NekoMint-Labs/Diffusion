@@ -115,9 +115,12 @@ for (const profile of ['editorial-warm', 'studio-slate', 'quiet-forest', 'graphi
                 expect((await lineStyle(page, pair[0], pair[1])).marker).toContain('hierarchy-direction-');
             }
             await page.screenshot({ path: info.outputPath(`${profile}-${style}-all.png`) });
-            // Continuous pinch input crosses the deepest-level boundary while preserving canonical geometry.
+            // Presentation becomes smaller without folding the branch or changing coordinates.
             await page.mouse.move(80, 100);
             await pinchTo(page, .65);
+            await expect(node(page, 'd')).toBeVisible();
+            await node(page, 'c').click();
+            await node(page, 'c').getByTestId('branch-expand').click();
             await expect(node(page, 'd')).toHaveCount(0);
             await expect(node(page, 'c')).toBeVisible();
             await expect(node(page, 'c').getByTestId('branch-expand')).toBeVisible();
@@ -128,49 +131,38 @@ for (const profile of ['editorial-warm', 'studio-slate', 'quiet-forest', 'graphi
     }
 }
 
-test('zoom stages, explicit expansion and Find preserve readable current context and coordinates', async ({ page }, info) => {
+test('zoom detail and Find preserve explicit folds, current context and coordinates', async ({ page }, info) => {
     await boot(page);
+    await node(page, 'c').click(); await node(page, 'c').getByTestId('branch-expand').click();
+    await expect(node(page, 'd')).toHaveCount(0);
     const before = await readThoughts(page);
-    await page.mouse.move(80, 100);
-    await pinchTo(page, .65);
-    await expect(node(page, 'd')).toHaveCount(0);
-    await expect(node(page, 'c')).toBeVisible();
-    await pinchTo(page, .38);
-    await expect(node(page, 'c')).toHaveCount(0);
-    await expect(node(page, 'b')).toBeVisible();
-    await expect(node(page, 'b').getByTestId('branch-expand')).toContainText('1 个下级');
-    await pinchTo(page, .16);
-    await expect(node(page, 'b')).toHaveCount(0);
-    await expect(node(page, 'a')).toBeVisible();
-    await expect(page.getByTestId('hierarchy-disclosure')).toContainText('顶层');
+    for (const zoom of [.65, .38]) {
+        await pinchTo(page, zoom); await expect(node(page, 'c')).toBeVisible();
+        await expect(node(page, 'd')).toHaveCount(0);
+    }
+    await pinchTo(page, .16); await expect(node(page, 'a')).toBeVisible();
+    await expect(page.getByTestId('root-anchors')).toHaveAttribute('data-count', '2');
     const camera = await page.locator('.world').getAttribute('style');
-    await page.screenshot({ path: info.outputPath('roots-with-branch-cues.png') });
-    await page.keyboard.press('Control+f');
-    await page.locator('.find-bar input').fill('D 层级想法');
-    await expect(node(page, 'd')).toBeVisible();
-    await expect(node(page, 'd').getByTestId('hierarchy-context')).toContainText('第 4 层');
-    await expect(node(page, 'd').getByTestId('hierarchy-context')).toContainText('归属：C 层级想法');
+    await page.keyboard.press('Control+f'); await page.locator('.find-bar input').fill('D 层级想法');
     await expect(node(page, 'd').locator('.thought-preview')).toHaveText('D 层级想法');
+    await expect(node(page, 'd').getByTestId('hierarchy-context')).toContainText('归属：C 层级想法');
     await page.screenshot({ path: info.outputPath('find-deep-current-context.png') });
-    await page.keyboard.press('Escape');
-    await expect(node(page, 'd')).toHaveCount(0);
+    await page.keyboard.press('Escape'); await expect(node(page, 'd')).toHaveCount(0);
     await expect(page.locator('.world')).toHaveAttribute('style', camera!);
-    await node(page, 'a').getByTestId('branch-expand').click();
-    await expect(node(page, 'b')).toBeVisible();
-    await expect(node(page, 'b').getByTestId('hierarchy-context')).toHaveCount(0);
-    expect(await readThoughts(page)).toBe(before);
+    await pinchTo(page, .65); await node(page, 'c').click(); await node(page, 'c').getByTestId('branch-expand').click();
+    await expect(node(page, 'd')).toBeVisible(); expect(await readThoughts(page)).toBe(before);
 });
 
-test('branch collapse follows the new depth on reparent, undo and redo', async ({ page }) => {
+test('branch presentation follows reparent depth without zoom-triggered folds', async ({ page }) => {
     await boot(page);
     await reparent(page, 'c', 'A 层级想法');
     await pinchTo(page, .65);
     await expect(node(page, 'd')).toBeVisible();
     await expect(edge(page, 'c', 'd')).toHaveAttribute('data-depth', '2');
     await page.keyboard.press('Control+z');
-    await expect(node(page, 'd')).toHaveCount(0);
+    await expect(node(page, 'd')).toBeVisible();
     await expect(node(page, 'c').getByTestId('hierarchy-context')).toContainText('第 3 层');
-    await expect(node(page, 'c').getByTestId('branch-expand')).toBeVisible();
+    await expect(edge(page, 'c', 'd')).toHaveAttribute('data-depth', '3');
     await page.keyboard.press('Control+Shift+z');
     await expect(node(page, 'd')).toBeVisible();
     await expect(edge(page, 'c', 'd')).toHaveAttribute('data-depth', '2');
@@ -208,60 +200,28 @@ async function notch(page: Page, direction: 'up' | 'down') {
     expect(direction === 'up' ? after > before : after < before).toBe(true);
 }
 
-test('one upward notch adds the next level and one downward notch removes the deepest level', async ({ page }, info) => {
-    await boot(page, 'editorial-warm', 'curve', .38);
-    const before = await readThoughts(page);
-    await expect(node(page, 'b')).toBeVisible();
-    await expect(node(page, 'c')).toHaveCount(0);
-    await page.screenshot({ path: info.outputPath('wheel-before-A-B.png') });
+test('ordinary wheel is small and reversible without changing branch disclosure', async ({ page }, info) => {
+    await boot(page); await pinchTo(page, .38);
+    const before = await readThoughts(page), original = await liveZoom(page);
     await notch(page, 'up');
-    await expect(node(page, 'c')).toBeVisible();
-    await expect(node(page, 'd')).toHaveCount(0);
-    await expect(page.getByTestId('hierarchy-disclosure')).toContainText('第 3 层');
-    await page.screenshot({ path: info.outputPath('wheel-up-A-B-C.png') });
-    await notch(page, 'down');
-    await expect(node(page, 'b')).toBeVisible();
-    await expect(node(page, 'c')).toHaveCount(0);
-    await notch(page, 'down');
-    await expect(node(page, 'b')).toHaveCount(0);
-    await expect(node(page, 'a')).toBeVisible();
-    await expect(node(page, 'a').getByTestId('branch-expand')).toContainText('1 个下级');
-    await page.screenshot({ path: info.outputPath('wheel-down-A.png') });
-    await page.reload();
-    await expect(node(page, 'b')).toHaveCount(0);
-    await notch(page, 'up');
-    await expect(node(page, 'b')).toBeVisible();
-    await expect(node(page, 'c')).toHaveCount(0);
-    await notch(page, 'up');
-    await expect(node(page, 'c')).toBeVisible();
-    await expect(node(page, 'd')).toHaveCount(0);
-    await page.reload();
-    await expect(node(page, 'c')).toBeVisible();
-    await expect(node(page, 'd')).toHaveCount(0);
-    expect(await readThoughts(page)).toBe(before);
+    expect((await liveZoom(page)) / original).toBeCloseTo(Math.pow(1.08, 1.2), 5);
+    for (const id of ['a', 'b', 'c', 'd']) await expect(node(page, id)).toBeVisible();
+    await notch(page, 'down'); expect(await liveZoom(page)).toBeCloseTo(original, 6);
+    for (const id of ['a', 'b', 'c', 'd']) await expect(node(page, id)).toBeVisible();
+    await expect.poll(() => savedZoom(page)).toBeCloseTo(original, 6);
+    await page.reload(); await expect(node(page, 'd')).toBeVisible();
+    expect(await liveZoom(page)).toBeCloseTo(original, 6); expect(await readThoughts(page)).toBe(before);
+    await page.screenshot({ path: info.outputPath('wheel-preserves-deep-branch.png') });
 });
 
-test('wheel steps use current reparented levels and close a manually opened child', async ({ page }) => {
-    await boot(page);
-    await reparent(page, 'c', 'A 层级想法');
-    await page.mouse.click(80, 100); // Release protected selection before normal disclosure.
-    await pinchTo(page, .38);
-    await expect(node(page, 'b')).toBeVisible();
-    await expect(node(page, 'c')).toBeVisible();
-    await expect(node(page, 'd')).toHaveCount(0);
-    await notch(page, 'up');
-    await expect(node(page, 'd')).toBeVisible();
-    await notch(page, 'down');
-    await expect(node(page, 'd')).toHaveCount(0);
-    await notch(page, 'down');
-    await expect(node(page, 'b')).toHaveCount(0);
-    await expect(node(page, 'c')).toHaveCount(0);
-    await node(page, 'a').getByTestId('branch-expand').click();
-    await expect(node(page, 'b')).toBeVisible();
-    await expect(node(page, 'c')).toBeVisible();
-    await notch(page, 'down');
-    await expect(node(page, 'b')).toHaveCount(0);
-    await expect(node(page, 'c')).toHaveCount(0);
+test('wheel preserves manually folded reparented branches', async ({ page }) => {
+    await boot(page); await reparent(page, 'c', 'A 层级想法');
+    await node(page, 'c').click(); await node(page, 'c').getByTestId('branch-expand').click();
+    await pinchTo(page, .38); await expect(node(page, 'd')).toHaveCount(0);
+    await notch(page, 'up'); await expect(node(page, 'd')).toHaveCount(0);
+    await notch(page, 'down'); await expect(node(page, 'd')).toHaveCount(0);
+    await node(page, 'c').click(); await node(page, 'c').getByTestId('branch-expand').click();
+    await expect(node(page, 'd')).toBeVisible(); await notch(page, 'down'); await expect(node(page, 'd')).toBeVisible();
 });
 
 
@@ -292,59 +252,35 @@ async function bootBranches(page: Page, profile = 'editorial-warm') {
 }
 
 for (const profile of ['editorial-warm', 'graphite-night']) {
-    test(`strict wheel retains compact parents and shrinks survivors with selection in ${profile}`, async ({ page }, info) => {
+    test(`wheel keeps compact branch context and selection in ${profile}`, async ({ page }, info) => {
         await bootBranches(page, profile);
-        await node(page, 'z-root').click();
-        await node(page, 'b-right').click({ modifiers: ['Shift'] });
-        await node(page, 'c-up').click({ modifiers: ['Shift'] });
-        for (const id of ['z-root', 'b-right', 'c-up']) await expect(node(page, id)).toHaveAttribute('data-selected', 'true');
+        for (const [index, id] of ['z-root', 'b-right', 'c-up'].entries()) await node(page, id).click({ modifiers: index ? ['Shift'] : [] });
         await expect.poll(async () => { const saved = JSON.parse(await readThoughts(page)); return ['z-root', 'b-right', 'c-up'].every(id => saved[id].touchedAt > 1); }).toBe(true);
         const before = await readThoughts(page);
-        const surviving = ['z-root', 'b-left', 'b-up', 'b-right', 'b-down', 'independent'];
-        const widths = await Promise.all(surviving.map(id => node(page, id).evaluate(el => el.getBoundingClientRect().width)));
-        await page.screenshot({ path: info.outputPath('compact-selected-P1.png') });
+        const widths = await Promise.all(['z-root', 'b-left', 'b-up', 'b-right'].map(id => node(page, id).evaluate(el => el.getBoundingClientRect().width)));
         await notch(page, 'down');
-        await expect(page.getByTestId('hierarchy-disclosure')).toContainText('第 2 层');
-        await expect(page.locator('article[data-depth="2"]')).toHaveCount(0);
-        for (const [i, id] of surviving.entries()) {
+        for (const [i, id] of ['z-root', 'b-left', 'b-up', 'b-right'].entries()) {
             await expect(node(page, id)).toBeVisible();
-            const after = await node(page, id).evaluate(el => el.getBoundingClientRect().width);
-            expect(after, `${id} must shrink rather than counter-scale to a larger card`).toBeLessThan(widths[i] - 1);
+            expect(await node(page, id).evaluate(el => el.getBoundingClientRect().width)).toBeLessThan(widths[i] - 1);
         }
-        await expect(node(page, 'b-up').getByTestId('branch-expand')).toContainText('2 个下级');
-        await page.screenshot({ path: info.outputPath('compact-selected-P2.png') });
-        await notch(page, 'down');
-        await expect(page.locator('article[data-depth="1"]')).toHaveCount(0);
-        await expect(page.locator('article[data-depth="2"]')).toHaveCount(0);
-        await expect(node(page, 'z-root')).toBeVisible();
-        await expect(node(page, 'independent')).toBeVisible();
-        await notch(page, 'up');
-        await expect(node(page, 'b-right')).toHaveAttribute('data-selected', 'true');
-        await expect(node(page, 'c-up')).toHaveCount(0);
-        await notch(page, 'up');
-        await expect(node(page, 'c-up')).toHaveAttribute('data-selected', 'true');
-        expect(await readThoughts(page)).toBe(before);
+        for (const id of ['z-root', 'b-right', 'c-up']) await expect(node(page, id)).toHaveAttribute('data-selected', 'true');
+        await expect(node(page, 'c-up')).toBeVisible();
+        await page.screenshot({ path: info.outputPath('compact-selected-after-wheel.png') });
+        await notch(page, 'up'); expect(await readThoughts(page)).toBe(before);
     });
 }
 
-test('a selected collapsed child leaves no floating scope controls and Find restores normal collapse', async ({ page }) => {
-    await bootBranches(page);
-    await node(page, 'c-up').click();
-    await expect(page.locator('[data-scope-hub]')).toBeVisible();
-    await notch(page, 'down');
+test('explicitly folded selected children leave no floating controls and Find restores the fold', async ({ page }) => {
+    await bootBranches(page); await node(page, 'c-up').click();
+    await node(page, 'b-up').click(); await node(page, 'b-up').getByTestId('branch-expand').click();
     await expect(node(page, 'c-up')).toHaveCount(0);
-    await expect(page.locator('[data-scope-hub]')).toHaveCount(0);
-    await expect(node(page, 'z-root')).toBeVisible();
+    await notch(page, 'down'); await expect(node(page, 'c-up')).toHaveCount(0);
     const camera = await page.locator('.world').getAttribute('style');
-    await page.keyboard.press('Control+f');
-    await page.locator('.find-bar input').fill('一门课整块收起来之后');
-    await expect(node(page, 'c-up')).toBeVisible();
+    await page.keyboard.press('Control+f'); await page.locator('.find-bar input').fill('一门课整块收起来之后');
     await expect(node(page, 'c-up').locator('.thought-preview')).toContainText('不用再拆开分一遍');
-    await page.keyboard.press('Escape');
-    await expect(node(page, 'c-up')).toHaveCount(0);
+    await page.keyboard.press('Escape'); await expect(node(page, 'c-up')).toHaveCount(0);
     await expect(page.locator('.world')).toHaveAttribute('style', camera!);
-    await notch(page, 'up');
-    await expect(node(page, 'c-up')).toHaveAttribute('data-selected', 'true');
+    await notch(page, 'up'); await expect(node(page, 'c-up')).toHaveCount(0);
 });
 
 
@@ -375,50 +311,20 @@ const savedZoom = (page: Page) => page.evaluate(() => new Promise<number>(resolv
 }));
 
 for (const profile of ['editorial-warm', 'graphite-night']) {
-    test(`twelve wheel levels stay within normal reading size and restore in ${profile}`, async ({ page }, info) => {
-        const p = await bootDeepReading(page, profile);
-        const before = await readThoughts(page);
+    test(`twelve levels remain reachable at moderate zoom in ${profile}`, async ({ page }, info) => {
+        const p = await bootDeepReading(page, profile), before = await readThoughts(page);
+        await pinchTo(page, .65);
+        await expect(page.locator('article[data-thought-id^="deep-"]')).toHaveCount(12);
         const normalFont = await node(page, 'deep-0').evaluate(el => parseFloat(getComputedStyle(el).getPropertyValue('--thought-size')));
-        expect(normalFont).toBeGreaterThan(0);
-        for (let count = 4; count <= 12; count++) {
-            await notch(page, 'up');
-            await expect(node(page, `deep-${count - 1}`)).toBeVisible();
-            await expect(page.locator('article[data-thought-id^="deep-"]')).toHaveCount(count);
-            if (count < 12) await expect(node(page, `deep-${count}`)).toHaveCount(0);
-            const zoom = await liveZoom(page);
-            expect(zoom).toBeLessThanOrEqual(1);
-            const fonts = await page.locator('article[data-thought-id^="deep-"]').evaluateAll((nodes, zoom) => nodes.map(el => parseFloat(getComputedStyle(el).fontSize) * zoom), zoom);
-            for (const font of fonts) expect(font).toBeLessThanOrEqual(normalFont + .01);
-            if ([4, 8, 12].includes(count)) await page.screenshot({ path: info.outputPath(`reading-${count}-levels.png`) });
-            if (count === 8) {
-                await expect.poll(() => savedZoom(page)).toBeCloseTo(zoom, 6);
-                await page.reload();
-                await expect(page.locator('article[data-thought-id^="deep-"]')).toHaveCount(8);
-                expect(await liveZoom(page)).toBeCloseTo(zoom, 6);
-            }
-        }
-        const fullWidth = (await node(page, 'deep-11').boundingBox())!.width;
-        expect(fullWidth).toBeLessThanOrEqual(328.01);
-        await page.mouse.wheel(0, -120);
-        await page.mouse.wheel(0, -120);
-        await expect.poll(() => page.getByTestId('field').getAttribute('data-camera-moving')).toBeNull();
-        expect(await liveZoom(page)).toBe(1);
-        expect((await node(page, 'deep-11').boundingBox())!.width).toBeCloseTo(fullWidth, 1);
-        await expect(node(page, 'deep-11').locator('.thought-preview')).toHaveText(p.thoughts['deep-11'].text);
-        // Explicit pinch remains available for deliberate detail inspection above the wheel ceiling.
-        await pinchTo(page, 1.4);
-        expect(await liveZoom(page)).toBeGreaterThan(1);
-        await notch(page, 'down');
-        await expect(node(page, 'deep-11')).toHaveCount(0);
-        expect(await liveZoom(page)).toBeLessThan(1);
-        await notch(page, 'up');
-        await expect(node(page, 'deep-11')).toBeVisible();
-        expect(await liveZoom(page)).toBe(1);
-        for (let count = 11; count >= 1; count--) {
-            await notch(page, 'down');
-            await expect(page.locator('article[data-thought-id^="deep-"]')).toHaveCount(count);
-        }
-        await expect(node(page, 'deep-0')).toBeVisible();
+        const fonts = await page.locator('article[data-thought-id^="deep-"]').evaluateAll(nodes => nodes.map(el => parseFloat(getComputedStyle(el).fontSize) * .65));
+        for (const font of fonts) expect(font).toBeLessThanOrEqual(normalFont + .01);
+        await page.screenshot({ path: info.outputPath('twelve-levels-moderate-zoom.png') });
+        await expect.poll(() => savedZoom(page)).toBeCloseTo(.65, 6);
+        await page.reload(); await expect(page.locator('article[data-thought-id^="deep-"]')).toHaveCount(12);
+        expect(await liveZoom(page)).toBeCloseTo(.65, 6);
+        await pinchTo(page, 1.4); await notch(page, 'down');
+        await expect(node(page, 'deep-11')).toBeVisible(); expect(await liveZoom(page)).toBeGreaterThan(1);
+        await pinchTo(page, 1); await expect(node(page, 'deep-11').locator('.thought-preview')).toHaveText(p.thoughts['deep-11'].text);
         expect(await readThoughts(page)).toBe(before);
     });
 }

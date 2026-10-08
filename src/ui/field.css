@@ -64,7 +64,7 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
    whose serif face does not provide lining digits. Display and textarea share it. */
 @font-face {
   font-family: "Diffusion Digits";
-  src: local("Segoe UI"), local("Arial"), local("Helvetica"), local("Liberation Sans"), local("DejaVu Sans"), local("Noto Sans");
+  src: local("Segoe UI"), local("Arial"), local("Liberation Mono"), local("DejaVu Sans Mono"), local("Helvetica"), local("Liberation Sans"), local("DejaVu Sans"), local("Noto Sans");
   unicode-range: U+0030-0039;
   font-display: swap;
 }

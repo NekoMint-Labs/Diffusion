@@ -89,7 +89,11 @@ test('replacement pointer and button menus use the new anchor, including viewpor
 
 test('numeric reading and editing preserve exact content and use stable lining tabular glyphs', async ({ page }, info) => {
     await boot(page); const thought = node(page, 'a'), text = '01234567890\n12341423652352\n版本 0.3.0';
-    await page.evaluate(async () => { await document.fonts.ready; });
+    const numericFaces = await page.evaluate(async () => {
+        await document.fonts.ready;
+        return (await document.fonts.load('18px "Diffusion Digits"', '0123456789')).length;
+    });
+    expect(numericFaces, 'local numeric face is available').toBeGreaterThan(0);
     await expect(thought.locator('.thought-preview')).toHaveText(text);
     const reading = await thought.locator('.thought-preview').evaluate(el => {
         const s = getComputedStyle(el);

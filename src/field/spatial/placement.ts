@@ -217,13 +217,13 @@ export function placePossibility(project: ProjectState, session: SessionState, a
         }).filter((candidate): candidate is { point: Point; score: number } => !!candidate).sort((a, b) => a.score - b.score);
         // Semantic posture wins while a valid local slot exists. Only then do we escape into a ring.
         const forward = score(trajectoryCandidates);
-        if (forward.length && (!visibleBounds || distanceBetween({ ...forward[0].point, ...resultSize }, scopeBounds) <= preferredDistance.max)) return forward[0].point;
+        if (forward.length && distanceBetween({ ...forward[0].point, ...resultSize }, scopeBounds) <= preferredDistance.max) return forward[0].point;
         const semantic = score(candidates);
-        if (semantic.length) return semantic[0].point;
+        if (semantic.length && distanceBetween({ ...semantic[0].point, ...resultSize }, scopeBounds) <= preferredDistance.max) return semantic[0].point;
         // Fixed semantic gaps can miss an edge slot by a few pixels on small windows.
         // Try the same postures inside the safe area before sending arrivals offscreen.
         const bounded = score(candidates.map(intoView));
-        if (bounded.length) return bounded[0].point;
+        if (bounded.length && distanceBetween({ ...bounded[0].point, ...resultSize }, scopeBounds) <= preferredDistance.max) return bounded[0].point;
 
         const escape: Point[] = [];
         for (let step = 0; step < 64; step++) {
@@ -233,20 +233,27 @@ export function placePossibility(project: ProjectState, session: SessionState, a
             escape.push({ x: origin.x + Math.cos(angle) * ring * 280, y: origin.y + Math.sin(angle) * ring * 196 });
         }
         const escaped = score(escape);
-        if (escaped.length) return escaped[0].point;
+        if (escaped.length && distanceBetween({ ...escaped[0].point, ...resultSize }, scopeBounds) <= preferredDistance.max) return escaped[0].point;
 
-        // A narrow viewport can have clear slots between the sparse radial samples.
-        // Exhaust its bounded grid before allowing an off-screen fallback.
+        // Centered directions and sparse rings can miss nearby corner slots. Search the
+        // available view (or the source neighborhood without a view) before accepting a
+        // distant direction. Keep existing local semantic slots and collision clearance.
+        const searchBounds = visibleBounds ?? {
+            x: left - resultSize.width - preferredDistance.max,
+            y: top - resultSize.height - preferredDistance.max,
+            width: scopeBounds.width + resultSize.width * 2 + preferredDistance.max * 2,
+            height: scopeBounds.height + resultSize.height * 2 + preferredDistance.max * 2 + bottomClearance,
+        };
+        const slots: Point[] = [];
+        const maxX = searchBounds.x + searchBounds.width - resultSize.width;
+        const maxY = searchBounds.y + searchBounds.height - resultSize.height - bottomClearance;
+        const dx = Math.max(24, (maxX - searchBounds.x) / 32);
+        const dy = Math.max(24, (maxY - searchBounds.y) / 32);
+        for (let x = searchBounds.x; x <= maxX; x += dx)
+            for (let y = searchBounds.y; y <= maxY; y += dy) slots.push({ x, y });
+        const local = score([...trajectoryCandidates, ...candidates, ...candidates.map(intoView), ...escape, ...slots]);
+        if (local.length) return local[0].point;
         if (visibleBounds) {
-            const slots: Point[] = [];
-            const maxX = visibleBounds.x + visibleBounds.width - resultSize.width;
-            const maxY = visibleBounds.y + visibleBounds.height - resultSize.height - bottomClearance;
-            const dx = Math.max(24, (maxX - visibleBounds.x) / 32);
-            const dy = Math.max(24, (maxY - visibleBounds.y) / 32);
-            for (let x = visibleBounds.x; x <= maxX; x += dx)
-                for (let y = visibleBounds.y; y <= maxY; y += dy) slots.push({ x, y });
-            const local = score(slots);
-            if (local.length) return local[0].point;
             // Preferred breathing room can exhaust a crowded view even when a non-overlapping
             // slot exists. Use the real footprints before placing a proposal beyond culling,
             // where it cannot mount or receive the measured visibility correction.

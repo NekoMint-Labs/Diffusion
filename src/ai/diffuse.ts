@@ -27,9 +27,9 @@ export interface DiffuseState {
     evidence: EvidenceCandidate[];
 }
 const angles = ['Name a missing question.', 'Try a counterexample.', 'Expose a hidden assumption.', 'Look for a boundary where the thought stops applying.', 'Offer an unexpected but grounded bridge.', 'Propose a small observation, without turning it into a task list.'];
-// One-direction requests always begin here; forcing a reversal invents premises when the
-// selection already states its caveats. Let the first frame follow supported context instead.
-const reframingAxes = ['Choose one overlooked but relevant frame: an assumption, opportunity cost, time horizon, alternative path or optimization goal supported by this scope. Do not invent a premise to reverse.', 'Reframe this through opportunity cost rather than immediate benefit.', 'Change the time horizon used to see the problem.', 'Ask what alternative path could satisfy the same need.', 'Reframe around what the user is actually optimizing for.'];
+// A lens changes how the same problem is judged; it must not merely add another next step.
+// A scope can reject an inapplicable lens rather than invent the people or facts it would need.
+const reframingAxes = ['Choose a different lens supported by this scope, rather than another condition or consequence along its current path. Name the lens plainly and give a concrete observation it reveals. Do not invent a premise to reverse.', 'View the same problem through the cost of an alternative, if this scope supports one.', 'Change the time horizon, if it reveals a different judgment grounded in this scope.', 'View the same problem from the affected person or role, only if supplied context supports it.', 'Change what counts as success, without claiming the original goal has been solved.'];
 export class DiffuseSession {
     private state: DiffuseState = { phase: 'idle', runId: '', config: null, used: 0, surfaced: 0, remainingSeconds: 0, reason: '', evidence: [] };
     private controller: ProjectController;

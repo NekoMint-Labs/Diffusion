@@ -229,3 +229,28 @@ describe('continuation in a narrow reading viewport', () => {
         }
     });
 });
+
+describe.each([true, false])('nearby arrivals before distant directional slots (viewport: %s)', withViewport => {
+    it.each(['default', 'continue', 'branch', 'question', 'evidence', 'landmark'] as const)('keeps %s close when centered directional slots are blocked', mode => {
+        const project = createProject('nearby-arrival');
+        const measured = {
+            source: { x: 450, y: 400, width: 176, height: 52 },
+            below: { x: 450, y: 540, width: 176, height: 140 },
+            above: { x: 450, y: 100, width: 176, height: 250 },
+            right: { x: 662, y: 400, width: 250, height: 52 },
+            left: { x: 100, y: 400, width: 300, height: 52 },
+        };
+        for (const [id, box] of Object.entries(measured)) project.thoughts[id] = makeThought(id, box, 1, id);
+        const before = JSON.stringify(project);
+        const area = { x: 0, y: 0, width: 1400, height: 1000 };
+        const point = placePossibility(project, emptySession(), { x: 1200, y: 900 }, 0, ['source'], withViewport ? area : undefined, 'New idea', mode, new Set(Object.keys(measured)), measured);
+        const box = { ...point, ...estimateThoughtSize('New idea') };
+        expect(distanceBetween(box, measured.source)).toBeLessThanOrEqual(mode === 'continue' ? 128 : RESULT_PREFERRED_DISTANCE.max);
+        expect(Object.values(measured).some(item => overlaps(box, item))).toBe(false);
+        expect(box.x).toBeGreaterThanOrEqual(0);
+        expect(box.y).toBeGreaterThanOrEqual(0);
+        expect(box.x + box.width).toBeLessThanOrEqual(area.width);
+        expect(box.y + box.height + (mode === 'continue' ? 64 : 0)).toBeLessThanOrEqual(area.height);
+        expect(JSON.stringify(project)).toBe(before);
+    });
+});

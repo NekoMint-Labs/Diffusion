@@ -173,3 +173,66 @@ test('a crowded field uses a tighter visible slot before sending a continuation 
     await expect(ghost).toHaveCount(0);
     expect((await projectRecord(page)).thoughts).toEqual(project.thoughts);
 });
+
+test('a continuation uses a nearby corner when all centered directions are blocked', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1400, height: 1000 });
+    await page.addInitScript(() => {
+        localStorage.setItem('diffusion-first-field-tutorial-v1', JSON.stringify({ status: 'skipped' }));
+        localStorage.setItem('diffusion-settings', JSON.stringify({ locale: 'zh', provider: 'gateway' }));
+    });
+    await page.route('**/api/respond', route => route.fulfill({ json: { providerLabel: 'Nearby placement fixture / not live', mock: true, intents: [{ type: 'surface_possibility', text: '下一步的观察价值' }] } }));
+    await page.goto('/?locale=zh');
+    await expect.poll(async () => (await projectRecord(page))?.id).toBe('main');
+    const now = Date.now();
+    const project = createProject('main', '周围落点回归', now);
+    project.camera = { x: 0, y: 0, zoom: 1 };
+    for (const [id, text, x, y] of [
+        ['source', '当前的观察依据', 550, 480], ['above', '已有上方想法', 550, 340],
+        ['below', '已有下方想法', 550, 620], ['left', '已有左侧想法', 310, 480],
+        ['right', '已有右侧想法', 790, 480],
+    ] as const) project.thoughts[id] = makeThought(text, { x, y }, now, id);
+    await projectRecord(page, validateProject(project));
+    await page.reload();
+    const source = page.locator('[data-thought-id="source"]');
+    await expect(source).toBeVisible();
+    const measured = await page.locator('.thought').evaluateAll(elements => Object.fromEntries(elements.map(e => {
+        const b = e.getBoundingClientRect();
+        return [e.getAttribute('data-thought-id'), { x: b.x, y: b.y, width: b.width, height: b.height }];
+    })));
+    // Use mounted card sizes to leave a 60px gap in every centered direction. Those gaps
+    // cannot fit a new card, while the nearby corners and distant directions remain open.
+    const origin = measured.source;
+    project.thoughts.above.y = origin.y - measured.above.height - 60;
+    project.thoughts.below.y = origin.y + origin.height + 60;
+    project.thoughts.left.x = origin.x - measured.left.width - 60;
+    project.thoughts.right.x = origin.x + origin.width + 60;
+    await projectRecord(page, validateProject(project));
+    await page.reload();
+    await source.click();
+    const before = (await source.boundingBox())!;
+    const camera = await page.locator('.world').evaluate(e => (e as HTMLElement).style.transform);
+    await page.getByTestId('scope-continue').click();
+    await page.getByRole('dialog', { name: '继续想', exact: true }).getByRole('button', { name: '1', exact: true }).click();
+    await page.getByTestId('action-preview-run').click();
+    const ghost = page.locator('.thought.ghost');
+    await expect(ghost).toHaveCount(1);
+    await expect.poll(async () => {
+        const box = await ghost.boundingBox();
+        if (!box) return Infinity;
+        const dx = Math.max(0, before.x - box.x - box.width, box.x - before.x - before.width);
+        const dy = Math.max(0, before.y - box.y - box.height, box.y - before.y - before.height);
+        return Math.hypot(dx, dy);
+    }).toBeLessThanOrEqual(128);
+    const box = (await ghost.boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(1400);
+    expect(box.y + box.height + 64).toBeLessThanOrEqual(1000);
+    for (const item of await page.locator('.thought:not(.ghost), .identity').all()) {
+        const other = (await item.boundingBox())!;
+        expect(box.x < other.x + other.width && box.x + box.width > other.x && box.y < other.y + other.height && box.y + box.height > other.y).toBe(false);
+    }
+    expect(await page.locator('.world').evaluate(e => (e as HTMLElement).style.transform)).toBe(camera);
+    expect((await projectRecord(page)).thoughts).toEqual(project.thoughts);
+    await page.screenshot({ path: testInfo.outputPath('nearby-corner-arrival.png') });
+});

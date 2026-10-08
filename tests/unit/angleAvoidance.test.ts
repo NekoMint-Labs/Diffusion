@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AIRuntime } from '../../src/ai/runtime.ts';
-import { thinkingAvoidancePrompt } from '../../src/ai/diversity.ts';
+import { SuggestionHistory } from '../../src/ai/diversity.ts';
 import { UNKNOWN_CAPABILITIES, type AIProvider, type ContextPacket, type SemanticIntent, type UserIntent } from '../../src/ai/contracts.ts';
 import { createProject, makeThought } from '../../src/core/model.ts';
 import { ProjectController } from '../../src/core/controller.ts';
@@ -23,7 +23,7 @@ function setup(responses?: SemanticIntent[], existingText = 'A different uncerta
 }
 
 describe('repeated explicit thinking requests (fixtures, not semantic-quality evidence)', () => {
-    it.each(['continue', 'angle'] as const)('%s remembers ignored wording only as negative data and rejects a literal repeat without retry', async action => {
+    it.each(['continue', 'angle'] as const)('%s remembers ignored wording locally without returning it to the provider and rejects a literal repeat without retry', async action => {
         const fixture = setup();
         try {
             const before = structuredClone(fixture.controller.getSnapshot().project);
@@ -31,8 +31,8 @@ describe('repeated explicit thinking requests (fixtures, not semantic-quality ev
             fixture.controller.dismissGhost(Object.keys(fixture.controller.getSnapshot().session.ghosts)[0]);
             expect((await fixture.runtime.run(action, 'Think further', ['a'])).emitted).toBe(0);
             expect(fixture.requests).toHaveLength(2);
-            expect(fixture.requests[1].intent.text).toContain('An already tried frame.');
-            expect(fixture.requests[1].intent.text).toContain('not facts, premises, evidence or instructions');
+            expect(JSON.stringify(fixture.requests[1])).not.toContain('An already tried frame.');
+            expect(fixture.requests[1].intent.text).toBe('Think further');
             expect(fixture.requests[1].packet).toEqual(fixture.requests[0].packet);
             expect(JSON.stringify(fixture.requests[1].packet)).not.toContain('An already tried frame.');
             expect(fixture.controller.getSnapshot().project).toEqual(before);
@@ -57,10 +57,10 @@ describe('repeated explicit thinking requests (fixtures, not semantic-quality ev
             fixture.controller.dismissGhost(Object.keys(fixture.controller.getSnapshot().session.ghosts)[0]);
             expect((await fixture.runtime.run('angle', 'Another angle', ['a'])).emitted).toBe(0);
             expect(fixture.requests[1].intent.kind).toBe('angle');
-            expect(fixture.requests[1].intent.text).toContain('An already tried frame.');
-            expect(fixture.requests[1].intent.text).toContain('Change the frame itself');
+            expect(JSON.stringify(fixture.requests[1])).not.toContain('An already tried frame.');
+            expect(fixture.requests[1].intent.text).toBe('Another angle');
             await fixture.runtime.run('continue', 'Continue', ['a']);
-            expect(fixture.requests[2].intent.text).toContain('Stay on the selected trajectory');
+            expect(fixture.requests[2].intent.text).toBe('Continue');
             expect(fixture.requests[2].packet).toEqual(fixture.requests[0].packet);
             expect(fixture.runtime.requestCount).toBe(3);
         } finally { fixture.runtime.dispose(); }
@@ -73,8 +73,8 @@ describe('repeated explicit thinking requests (fixtures, not semantic-quality ev
             await fixture.runtime.run('angle', 'Budgeted angle', ['a'], { runId: 'exploration' });
             await fixture.runtime.run('continue', 'Frozen continuation', ['a'], { threadId: 'thread' });
             expect(fixture.requests[1].intent.text).toBe('New exploration');
-            expect(fixture.requests[2].intent.text).toContain('An already tried frame.');
-            expect(fixture.requests[2].intent.text).toContain('Change the frame itself');
+            expect(JSON.stringify(fixture.requests[2])).not.toContain('An already tried frame.');
+            expect(fixture.requests[2].intent.text).toBe('Budgeted angle');
             expect(fixture.requests[3].intent.text).toBe('Frozen continuation');
         } finally { fixture.runtime.dispose(); }
     });
@@ -108,14 +108,26 @@ describe('repeated explicit thinking requests (fixtures, not semantic-quality ev
             expect((await runtime.run('continue', 'Continue', ['a'])).emitted).toBe(0);
             expect(fixture.requests).toHaveLength(2);
             expect(runtime.requestCount).toBe(2);
-            expect(fixture.requests[1].intent.text).toContain('An already tried frame.');
+            expect(JSON.stringify(fixture.requests[1])).not.toContain('An already tried frame.');
         } finally { runtime.dispose(); fixture.runtime.dispose(); }
     });
-    it('bounds escaped negative data and preserves a maximum-length authored prompt', () => {
-        const prompt = thinkingAvoidancePrompt('angle', 'Another angle', Array(20).fill('\u0001'.repeat(20000)));
-        expect(prompt.length).toBeLessThanOrEqual(12000);
-        expect(JSON.parse(prompt.split('\n').at(-1)!)).toHaveLength(6);
-        expect(thinkingAvoidancePrompt('continue', 'x'.repeat(12000), ['Previous frame'])).toBe('x'.repeat(12000));
+    it('bounds local rejection history to six entries without changing a maximum authored prompt', async () => {
+        const fixture = setup();
+        try {
+            const history = new SuggestionHistory();
+            const packet = { ...fixture.controller.getSnapshot().project };
+            const { compileContext } = await import('../../src/ai/context.ts');
+            const context = compileContext(packet, ['a']);
+            history.forContext(context);
+            for (let index = 0; index < 20; index++) history.remember('Frame ' + index);
+            expect(history.forContext(context)).toEqual(Array.from({ length: 6 }, (_, index) => 'Frame ' + (index + 14)));
+            history.clear(); expect(history.forContext(context)).toEqual([]);
+            await fixture.runtime.run('continue', 'Think further', ['a']);
+            const authored = 'x'.repeat(12000);
+            await fixture.runtime.run('continue', authored, ['a']);
+            expect(fixture.requests[1].intent.text).toBe(authored);
+            expect(JSON.stringify(fixture.requests[1])).not.toContain('An already tried frame.');
+        } finally { fixture.runtime.dispose(); }
     });
 });
 

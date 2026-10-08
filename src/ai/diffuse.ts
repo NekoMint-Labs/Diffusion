@@ -138,7 +138,7 @@ export class DiffuseSession {
                 this.update({ used: step + 1 });
                 const angleMode = config.mode === 'angle';
                 const stepContract = angleMode ? reframingAxes[step % reframingAxes.length] : angles[step % angles.length];
-                const result = await this.runtime.run(angleMode ? 'angle' : 'diffuse', explorationPrompt(config.prompt, step, stepContract, this.attemptedTexts), config.scopeIds, {
+                const result = await this.runtime.run(angleMode ? 'angle' : 'diffuse', explorationPrompt(config.prompt, step, stepContract), config.scopeIds, {
                     runId: this.state.runId, signal: abort.signal, projectSources: config.projectSources, web: config.web, evidence: [], maxCandidates: 1,
                     excludeTexts: [...this.attemptedTexts], activity: 'radiate', onEmission: key => {
                         this.claimedCandidates.add(key);

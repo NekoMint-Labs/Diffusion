@@ -64,8 +64,8 @@ describe('bounded exploration diversity (authored fixtures, not model-quality ev
             expect(fixture.session.getSnapshot()).toMatchObject({ used: 2, surfaced: 1 });
             expect(fixture.session.getSnapshot().reason).toMatch(/No new direction|没有出现新的方向/);
             const second = fixture.requests[1];
-            expect(second.intent.text).toContain('avoiding repetition only');
-            expect(second.intent.text).toContain('采集的时间成本也许难以被误差分数表达');
+            expect(second.intent.text).not.toContain('avoiding repetition only');
+            expect(JSON.stringify(second)).not.toContain('采集的时间成本也许难以被误差分数表达');
             expect(second.packet.scope.map(item => item.id)).toEqual(['a']);
             expect(second.packet.local).toEqual([]); expect(second.packet.retrieved.sources).toEqual([]);
             expect(Object.keys(fixture.controller.getSnapshot().project.thoughts)).toEqual(['a']);
@@ -111,10 +111,11 @@ describe('bounded exploration diversity (authored fixtures, not model-quality ev
             expect(Object.keys(fixture.controller.getSnapshot().session.ghosts)).toHaveLength(0); expect(fixture.requests).toHaveLength(1);
         } finally { fixture.dispose(); }
     });
-    it('bounds escaped negative data within the existing request schema even with a maximum user prompt', () => {
-        const text = explorationPrompt('x'.repeat(9000), 5, 'A boundary', Array(20).fill('\u0001'.repeat(20000)));
+    it('preserves the authored prompt and existing request schema without adding prior model output', () => {
+        const text = explorationPrompt('x'.repeat(9000), 5, 'A boundary');
         expect(text.length).toBeLessThanOrEqual(12000);
-        expect(JSON.parse(text.split('\n').at(-1)!)).toHaveLength(6);
+        expect(text).toContain('x'.repeat(9000));
+        expect(text).not.toContain('avoidance excerpts');
         const fixture = setup(() => []);
         try {
             const packet = compileContext(fixture.controller.getSnapshot().project, ['a']);

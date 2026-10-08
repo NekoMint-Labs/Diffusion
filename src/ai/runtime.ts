@@ -7,7 +7,9 @@ import { abortableDelay, type AIProvider } from './contracts.ts';
 import { ThinkingError, failureText, type ThinkingFailure } from './errors.ts';
 import type { Bounds } from '../field/spatial/geometry.ts';
 import { placePossibility } from '../field/spatial/placement.ts';
-import { thinkingAvoidancePrompt, repeatedWording } from './diversity.ts';
+import { SuggestionHistory, repeatedWording } from './diversity.ts';
+import { intentAllowedForAction, semanticQualityAllowed } from './prompt.ts';
+export { intentAllowedForAction, semanticQualityAllowed } from './prompt.ts';
 import { registerOperationCancellation } from './operationControl.ts';
 
 const REQUEST_TIMEOUT_MS = 45000;
@@ -68,43 +70,6 @@ export interface IngestionRunResult extends RunResult {
     single: boolean;
 }
 
-const ACTION_OUTPUTS: Record<UserIntent['kind'], ReadonlySet<SemanticIntent['type']>> = {
-    probe: new Set(['surface_relation']),
-    ask: new Set(['respond_in_field', 'surface_possibility', 'surface_evidence', 'request_recall']),
-    thread: new Set(['respond_in_field', 'surface_possibility', 'surface_evidence', 'request_recall', 'request_thread']),
-    deep: new Set(['respond_in_field', 'surface_possibility', 'surface_evidence', 'request_recall', 'request_deep_dive']),
-    crystal: new Set(['request_crystal_preview']),
-    diffuse: new Set(['respond_in_field', 'surface_possibility', 'surface_relation', 'surface_evidence', 'request_recall']),
-    continue: new Set(['surface_possibility']),
-    angle: new Set(['surface_possibility']),
-    question: new Set(['surface_question']),
-    organize: new Set(['surface_structure']),
-};
-/** Runtime permission, separate from semantic validity. A globally legal intent is still illegal
- * when it changes interaction mode the user did not choose. */
-export function intentAllowedForAction(kind: UserIntent['kind'], type: SemanticIntent['type']): boolean {
-    return ACTION_OUTPUTS[kind].has(type);
-}
-
-/** Provider output can be structurally valid while still failing the product's thinking contract.
- * Keep this gate deliberately small: it rejects only labels and questions that explicitly say almost
- * nothing, leaving the model's substantive judgment intact. */
-export function semanticQualityAllowed(kind: UserIntent['kind'], candidate: SemanticIntent): boolean {
-    if (kind === 'probe' && candidate.type === 'surface_relation') {
-        const label = candidate.label.trim();
-        if (/^(?:可能|也许).*(?:方向|关联|关系|联系|相关)$/u.test(label)) return false;
-        if (/^(?:possible|potential)?\s*(?:missing\s+)?(?:link|relation|connection|direction)$/iu.test(label)) return false;
-    }
-    if (kind === 'question' && candidate.type === 'surface_question') {
-        const value = candidate.text.normalize('NFKC').toLocaleLowerCase().trim()
-            .replace(/[?？!！。．.]+$/u, '').replace(/\s+/gu, ' ');
-        // These are context-free conversation openers, not questions about the selected thought.
-        // Keep the list exact and small: semantic paraphrase quality still needs live review.
-        if (/^(?:你有什么想法|还有什么想法|你还有什么想法呢|要不要继续(?:想|探索)|你想(?:继续)?了解(?:一下)?吗|你想聊些什么|你想从哪里开始|你想探索什么|你想了解什么|还有什么想了解的吗|你还想了解些什么|what do you think|what would you like to (?:explore|talk about|think about)|is there anything else (?:you(?:'|’)d like to|you want to) (?:explore|know))$/u.test(value)) return false;
-        if (/^你现在是想.*(?:做点什么|做什么|了解看看)[？?]?$/u.test(value)) return false;
-    }
-    return true;
-}
 function operationKind(kind: UserIntent['kind']): ThinkingOperationKind {
     if (kind === 'probe' || kind === 'diffuse' || kind === 'continue' || kind === 'angle' || kind === 'question' || kind === 'organize') return kind;
     return 'ask';
@@ -117,12 +82,11 @@ export class AIRuntime {
     private hooks: RuntimeHooks;
     private active: AbortController | null = null;
     private serial = 0;
-    private suggestionScope = '';
-    private recentSuggestions: string[] = [];
+    private suggestions = new SuggestionHistory();
     requestCount = 0;
     constructor(controller: ProjectController, provider: () => Promise<AIProvider>, hooks: RuntimeHooks) { this.controller = controller; this.provider = provider; this.hooks = hooks; }
     cancel() { this.active?.abort(); }
-    dispose() { this.serial++; this.active?.abort(); this.active = null; this.suggestionScope = ''; this.recentSuggestions = []; }
+    dispose() { this.serial++; this.active?.abort(); this.active = null; this.suggestions.clear(); }
 
     private begin(kind: ThinkingOperationKind, scopeIds: string[], parent?: AbortSignal, activity?: ThinkingActivityKind) {
         this.cancel();
@@ -270,17 +234,9 @@ export class AIRuntime {
                 const record = this.controller.getSnapshot().project.sources[source.id];
                 if (record) this.controller.dispatch({ type: 'source.update', source: { ...record, lastSubmitted: { at: Date.now(), provider: provider.label, characters: source.excerpt.length, requestId: started.requestId } } }, 'system');
             }
-            // Continue and Angle share bounded avoidance only within this unchanged context.
-            // Thread and Diffuse retain their own history and never inherit it.
-            const suggestionKind = kind === 'continue' || kind === 'angle' ? kind : null;
-            const suggestionScope = suggestionKind && !options.threadId
-                ? JSON.stringify([packet.projectId, packet.scope, packet.local, packet.continuations, packet.relations, packet.retrieved, packet.permissions]) : null;
-            if (suggestionScope !== null && suggestionScope !== this.suggestionScope) {
-                this.suggestionScope = suggestionScope;
-                this.recentSuggestions = [];
-            }
-            const requestText = suggestionScope === null ? text : thinkingAvoidancePrompt(suggestionKind!, text, this.recentSuggestions);
-            const response = await provider.respond(packet, { kind, text: requestText, requestId: started.requestId }, started.abort.signal);
+            const trackSuggestions = (kind === 'continue' || kind === 'angle') && !options.threadId;
+            const previousSuggestions = trackSuggestions ? this.suggestions.forContext(packet) : [];
+            const response = await provider.respond(packet, { kind, text, requestId: started.requestId }, started.abort.signal);
             if (started.abort.signal.aborted || started.ticket !== this.serial) {
                 if (started.ticket === this.serial && started.abort.signal.reason === 'timeout') throw new ThinkingError('timeout', subject);
                 if (started.ticket === this.serial) this.settle(started, 'cancelled');
@@ -302,6 +258,8 @@ export class AIRuntime {
             // proposals attached to this scope. Unrelated canvas content is not duplicate evidence.
             const scopeIds = new Set(packet.scope.map(item => item.id));
             const existingWording = [
+                ...previousSuggestions,
+                ...(options.excludeTexts ?? []),
                 ...packet.scope.map(item => item.text),
                 ...packet.local.map(item => item.text),
                 ...packet.retrieved.thoughts.map(item => item.text),
@@ -313,11 +271,9 @@ export class AIRuntime {
                 .filter(candidate => intentAllowedForAction(kind, candidate.type))
                 .filter(candidate => permissionFor(candidate, packet, this.controller.getSnapshot().project).allowed)
                 .filter(candidate => semanticQualityAllowed(kind, candidate))
-                .filter(candidate => suggestionScope === null || candidate.type === 'surface_possibility' && !repeatedWording(candidate.text, [...packet.scope.map(item => item.text), ...this.recentSuggestions]))
-                .filter(candidate => !options.excludeTexts || candidate.type === 'surface_possibility' && !repeatedWording(candidate.text, [...packet.scope.map(item => item.text), ...options.excludeTexts]))
                 .filter(candidate => !options.runId || ['surface_possibility', 'surface_question', 'surface_relation', 'surface_structure', 'respond_in_field', 'surface_evidence', 'request_recall'].includes(candidate.type))
                 .filter(candidate => {
-                    const wordingIsProposal = (kind === 'continue' || kind === 'angle') && candidate.type === 'surface_possibility'
+                    const wordingIsProposal = (kind === 'continue' || kind === 'angle' || kind === 'diffuse') && candidate.type === 'surface_possibility'
                         || kind === 'question' && candidate.type === 'surface_question';
                     if (!wordingIsProposal) return true;
                     const previous = [...existingWording, ...surfacedWording];
@@ -346,9 +302,7 @@ export class AIRuntime {
                     const candidate = accepted[index];
                     this.emit(candidate, packet, provenance, options, kind, index);
                     if (candidate.type === 'surface_relation') relationLabel = candidate.label;
-                    if (suggestionScope !== null && candidate.type === 'surface_possibility') {
-                        this.recentSuggestions = [...this.recentSuggestions, candidate.text].slice(-6);
-                    }
+                    if (trackSuggestions && candidate.type === 'surface_possibility') this.suggestions.remember(candidate.text);
                     emitted++;
                     if (index < accepted.length - 1) await abortableDelay(220, started.abort.signal);
                 }

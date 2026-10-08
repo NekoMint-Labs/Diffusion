@@ -146,7 +146,7 @@ export class DirectAIProvider implements AIProvider {
         if (this.descriptor.requiresKey && !this.hasCredential()) throw new ThinkingError('authentication-failed', this.label);
         const request = buildRequest(this.descriptor, {
             baseUrl: this.baseUrl(), model,
-            instructions: CORE_CONTRACT + '\n' + semanticInstructions(intent),
+            instructions: CORE_CONTRACT + '\n' + semanticInstructions(intent, packet.maxCandidates),
             input: JSON.stringify({ intent, context: { ...packet, contract: CORE_CONTRACT } }),
             budget: outputBudget(this.config.depth, this.descriptor),
             effort: reasoningEffort(this.config.depth, this.descriptor),
@@ -164,7 +164,7 @@ export class DirectAIProvider implements AIProvider {
             if (error instanceof WireOutputError && error.kind === 'refusal') throw new ThinkingError('semantic-validation-failure', this.label);
             throw new ThinkingError('malformed-provider-response', this.label);
         }
-        const intents = parseSemanticText(text);
+        const intents = parseSemanticText(text, intent.kind);
         return { intents, providerLabel: this.label, mock: false, model: { requested: model, effective: effectiveModel } };
     }
     /** The address actually used. A provider that does not permit a custom base ignores one, so a

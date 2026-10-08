@@ -77,7 +77,7 @@ describe('selected responses retain their direct question as background', () => 
         expect(compileContext(project, [response.id]).continuations).toBeUndefined();
     });
 
-    it('prioritizes at most four direct background thoughts within the twelve-thought local budget', () => {
+    it('prioritizes at most four direct background thoughts within the six-thought / 6400-character local budget', () => {
         const { controller, response } = setup();
         const project = controller.getSnapshot().project;
         const ids = Array.from({ length: 20 }, (_, index) => 'source-' + index);
@@ -89,7 +89,10 @@ describe('selected responses retain their direct question as background', () => 
         const packet = packetSchema.parse(compileContext(project, [response.id]));
         expect(packet.continuations![0].sourceIds).toEqual(ids.slice(0, 4));
         expect(packet.local.slice(0, 4).map(item => item.id)).toEqual(ids.slice(0, 4));
-        expect(packet.local).toHaveLength(12);
+        expect(packet.local).toHaveLength(4);
+        expect(packet.local.reduce((length, item) => length + item.text.length, 0)).toBeLessThanOrEqual(6400);
+        const available = new Set([...packet.scope, ...packet.local].map(item => item.id));
+        expect(packet.relations.every(relation => available.has(relation.a) && available.has(relation.b))).toBe(true);
         expect(packet.local.every(item => item.text.length <= 1600)).toBe(true);
     });
 

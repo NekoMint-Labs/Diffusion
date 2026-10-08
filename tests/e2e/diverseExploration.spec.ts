@@ -34,7 +34,7 @@ for (const end of ['repeated', 'empty'] as const) {
         expect(requests.every(request => request.packet.maxCandidates === 1)).toBe(true);
         expect(requests[1].packet.scope.map(item => item.id)).toEqual(['attention']);
         expect(JSON.stringify(requests[1].packet)).not.toContain(text);
-        expect(requests[1].intent.text).toContain(text);
+        expect(requests[1].intent.text).not.toContain(text);
         await ghost.click({ button: 'right' });
         await page.getByTestId('thought-menu').getByRole('menuitem', { name: 'Ignore', exact: true }).click();
         await expect(ghost).toHaveCount(0);
@@ -71,8 +71,8 @@ test('three directions produce at most three temporary cards from the same owned
     await expect(page.locator('.thought.ghost')).toHaveCount(3);
     expect(requests).toHaveLength(3);
     expect(requests.every(request => request.packet.scope.map(item => item.id).join() === 'attention' && request.packet.maxCandidates === 1)).toBe(true);
-    expect(requests[2].intent.text).toContain('Distinct authored direction fixture 1');
-    expect(requests[2].intent.text).toContain('Distinct authored direction fixture 2');
+    expect(requests[2].intent.text).not.toContain('Distinct authored direction fixture 1');
+    expect(requests[2].intent.text).not.toContain('Distinct authored direction fixture 2');
     await expect(page.locator('[data-kind="thought"]').filter({ hasText: 'Distinct authored direction fixture' })).toHaveCount(0);
     await page.screenshot({ path: testInfo.outputPath('three-bounded-directions.png') });
 });
@@ -123,7 +123,7 @@ for (const action of ['continue', 'angle'] as const) {
         expect(requests).toHaveLength(2);
         expect(requests[1].packet).toEqual(requests[0].packet);
         expect(JSON.stringify(requests[1].packet)).not.toContain(text);
-        expect(requests[1].intent.text).toContain(text);
+        expect(requests[1].intent.text).not.toContain(text);
         await expect(ghost).toHaveCount(0);
     });
 }
@@ -156,7 +156,7 @@ test('Continue and Angle share avoidance while preserving the selected text and 
     await expect(ghost).toHaveCount(0);
     expect(requests).toHaveLength(2);
     expect(requests.map(request => request.intent.kind)).toEqual(['continue', 'angle']);
-    expect(requests[1].intent.text).toContain(text);
+    expect(requests[1].intent.text).not.toContain(text);
     expect(requests[1].packet).toEqual(requests[0].packet);
     expect(JSON.stringify(requests[1].packet)).not.toContain(text);
     expect(await source.boundingBox()).toEqual(before);
@@ -190,7 +190,7 @@ test('default three-direction Angle remembers an ignored prior run without repla
     await expect(activity.getByRole('button', { name: 'Stop', exact: true })).toHaveCount(0);
     await expect(page.locator('.notice[role="status"]')).toContainText('No new suggestion was surfaced this time.');
     await expect(ghost).toHaveCount(0);
-    expect(requests[2].intent.text).toContain(text);
+    expect(requests[2].intent.text).not.toContain(text);
     expect(requests[2].packet).toEqual(requests[0].packet);
     expect(JSON.stringify(requests[2].packet)).not.toContain(text);
     expect(requests).toHaveLength(3);

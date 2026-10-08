@@ -56,7 +56,18 @@ export function compileContext(project: ProjectState, selection: string[], optio
         }
     }
     const localIds = new Set([...continuationBackground, ...all.filter(t => !scopeSet.has(t.id) && related.has(t.id)).map(t => t.id)]);
-    const local = [...localIds].slice(0, 12).map(key => brief(project.thoughts[key]));
+    // Direct sources come first and keep their exact bounded wording. Only explicit Field actions
+    // use the smaller local budget; frozen Thread and unselected Field contracts remain intact.
+    const local: ScopeThought[] = [];
+    let remaining = explicit && !thread ? 6400 : 19200;
+    for (const key of [...localIds].slice(0, explicit && !thread ? 6 : 12)) {
+        if (!remaining) break;
+        const item = brief(project.thoughts[key]);
+        item.text = item.text.slice(0, remaining);
+        local.push(item);
+        remaining -= item.text.length;
+    }
+    const suppliedIds = new Set([...scopeSet, ...local.map(item => item.id)]);
     // Recall retrieval is literal query matching, not a learned preference or hidden recommendation.
     const query = options.query?.toLocaleLowerCase().trim() ?? '';
     const retrievedThoughts = query.length >= 2 ? all.filter(t => !scopeSet.has(t.id) && t.text.toLocaleLowerCase().includes(query)).slice(0, 4).map(brief) : [];
@@ -77,7 +88,7 @@ export function compileContext(project: ProjectState, selection: string[], optio
         sources.splice(Math.max(0, 4 - external.length));
         sources.push(...external);
     }
-    return { contract: CORE_CONTRACT, projectId: project.id, scopeMode: explicit ? 'selection' : 'field', scope, local, relations,
+    return { contract: CORE_CONTRACT, projectId: project.id, scopeMode: explicit ? 'selection' : 'field', scope, local, relations: relations.filter(relation => suppliedIds.has(relation.a) && suppliedIds.has(relation.b)),
         ...(continuations.length ? { continuations } : {}),
         ...(thread ? { thread: { id: thread.id, capsule: rebuildCapsule(thread, project), recent: thread.messages.slice(-6).map(m => ({ role: m.role, text: m.text.slice(0, 1600) })) } } : {}),
         retrieved: { thoughts: retrievedThoughts, sources }, permissions: { web: !!options.web, projectSources: !!options.projectSources }, tools: ['surface_possibility', 'surface_question', 'surface_relation', 'surface_structure', 'request_thread', 'request_deep_dive', 'request_crystal_preview'], maxCandidates: Math.max(1, Math.min(5, options.maxCandidates ?? 3)) };

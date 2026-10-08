@@ -149,7 +149,16 @@ for (const theme of ['light', 'dark']) for (const reduced of [false, true]) {
         await page.mouse.move(1230, 650);
         await page.screenshot({ path: info.outputPath('compact-unselected-proposal.png') });
         const id = await ghost.getAttribute('data-thought-id'), thought = node(page, id!);
-        await thought.click(); const before = await thought.getAttribute('style');
+        await thought.click();
+        // Selection can resize the proposal rail; wait for the existing 100ms
+        // measured-box correction before taking the Keep boundary snapshot.
+        let lastStyle: string | null = null, stableSince = Date.now();
+        await expect.poll(async () => {
+            const style = await thought.getAttribute('style');
+            if (style !== lastStyle) { lastStyle = style; stableSince = Date.now(); }
+            return Date.now() - stableSince >= 200;
+        }).toBe(true);
+        const before = await thought.getAttribute('style');
         await page.getByTestId('ai-proposal-keep').click();
         await expect(thought).not.toHaveClass(/ghost/); await expect(thought).toHaveAttribute('style', before!);
         expect(await thought.evaluate(el => getComputedStyle(el).outlineStyle)).not.toBe('dashed');

@@ -92,9 +92,21 @@ test('numeric reading and editing preserve exact content and use stable lining t
     await page.evaluate(async () => { await document.fonts.ready; });
     await expect(thought.locator('.thought-preview')).toHaveText(text);
     const reading = await thought.locator('.thought-preview').evaluate(el => {
-        const s = getComputedStyle(el), canvas = document.createElement('canvas'), ctx = canvas.getContext('2d')!;
-        ctx.font = `${s.fontSize} ${s.fontFamily}`;
-        return { family: s.fontFamily, variant: s.fontVariantNumeric, widths: ['111111', '888888', '000000'].map(text => ctx.measureText(text).width) };
+        const s = getComputedStyle(el);
+        const widths = ['111111', '888888', '000000'].map(text => {
+            const sample = document.createElement('span');
+            sample.textContent = text;
+            sample.style.cssText = 'position:absolute;visibility:hidden;white-space:pre';
+            sample.style.fontFamily = s.fontFamily;
+            sample.style.fontSize = s.fontSize;
+            sample.style.fontWeight = s.fontWeight;
+            sample.style.fontVariantNumeric = s.fontVariantNumeric;
+            document.body.append(sample);
+            const width = sample.getBoundingClientRect().width;
+            sample.remove();
+            return width;
+        });
+        return { family: s.fontFamily, variant: s.fontVariantNumeric, widths };
     });
     expect(Math.max(...reading.widths) - Math.min(...reading.widths)).toBeLessThan(.1);
     await thought.dblclick(); const editor = thought.locator('textarea'); await expect(editor).toHaveValue(text);

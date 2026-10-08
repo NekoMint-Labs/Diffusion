@@ -36,3 +36,7 @@ Run the standard type, unit, offline and E2E commands in [TESTING](TESTING.md). 
 ## Native acceptance boundary
 
 No new Windows installer was operated in this pass. Keep Issue 11 and the related feedback issues open and the PR in draft until the matching Windows/Tauri build is checked by an operator. That check must cover actual OS wheel input/pinch, parent and child movement with folded/offscreen descendants, cancellation and undo/redo/reopen, pointer/button menu replacement and focus return, Chinese IME and 留下, numeric reading/editing, and Ghost distinction before/after Keep at normal working zoom and OS scaling. Native compilation, CI and browser-scale fixtures each need their own evidence; none substitutes for that operator check.
+
+## Remote CI numeric fallback follow-up
+
+The first PR run passed the type/contracts/unit/build gate, interaction shards 2/3 and 3/3, and production backgrounds. Shard 1/3 passed 86 cases and failed the repeated-digit width assertion on Ubuntu: its local font inventory lacks Segoe UI/Arial/Helvetica, so the numeric face fell back to the editorial family. Linux local Liberation Sans, DejaVu Sans and Noto Sans fallbacks were added without a network font dependency. The width assertion now measures rendered DOM glyphs with the authored numeric features rather than a canvas font shorthand that omits those features. The corrected convergence file was rerun locally (10 passed, zero retries); the updated PR runs the complete CI gates again.

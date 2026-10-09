@@ -1,5 +1,6 @@
 import type { Point, ThoughtKind } from '../../core/model.ts';
-import type { Bounds } from './geometry.ts';
+import { distanceBetween, type Bounds } from './geometry.ts';
+import { nearbyVisiblePlacement, RESULT_PREFERRED_DISTANCE } from './proposalPlacement.ts';
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
@@ -112,18 +113,22 @@ function free(bounds: Bounds, occupied: readonly Bounds[]): boolean {
  * it is left alone; otherwise only this rectangle searches outward for the nearest clear slot.
  * New Ghost arrivals may also request viewport containment; intentional drag positions do not.
  */
-export function correctSevereOverlap(desired: Bounds, occupied: readonly Bounds[], viewport?: Bounds, reserved: readonly Bounds[] = [], keepInView = false): Point {
+export function correctSevereOverlap(desired: Bounds, occupied: readonly Bounds[], viewport?: Bounds, reserved: readonly Bounds[] = [], keepInView = false, scope?: Bounds, distancePolicy: { min: number; target: number; max: number } = RESULT_PREFERRED_DISTANCE): Point {
     // UI regions are strict exclusions for newly arriving material; user-authored overlaps
     // retain the ordinary severe-overlap threshold when no reserved regions are supplied.
-    if ((!keepInView || inside(desired, viewport)) && !occupied.some(other => severeOverlap(desired, other)) && free(desired, reserved)) return { x: desired.x, y: desired.y };
+    if ((!keepInView || inside(desired, viewport)) && (!scope || distanceBetween(desired, scope) <= distancePolicy.max) && !occupied.some(other => severeOverlap(desired, other)) && free(desired, reserved)) return { x: desired.x, y: desired.y };
     occupied = [...occupied, ...reserved];
-
+    if (scope && viewport) {
+        const local = nearbyVisiblePlacement(desired, scope, viewport, box => free(box, occupied), [], distancePolicy);
+        if (local) return local;
+    }
     const origin = keepInView && viewport ? {
         ...desired,
         x: clamp(desired.x, viewport.x, Math.max(viewport.x, viewport.x + viewport.width - desired.width)),
         y: clamp(desired.y, viewport.y, Math.max(viewport.y, viewport.y + viewport.height - desired.height)),
     } : desired;
-    if (inside(origin, viewport) && free(origin, occupied)) return { x: origin.x, y: origin.y };
+    if (keepInView && inside(origin, viewport) && free(origin, occupied)) return { x: origin.x, y: origin.y };
+
     const candidates: Bounds[] = [];
     const step = 28;
     for (let ring = 1; ring <= 18; ring++) {

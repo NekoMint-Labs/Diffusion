@@ -4,6 +4,7 @@ import { measureSafeArea, fitInSafeArea } from './spatial/safeArea.ts';
 import { useDisclosureMeasurements } from './spatial/useDisclosureMeasurements.ts';
 import { worldAnchorPath } from './spatial/worldAnchors.ts';
 import { subtreeIds } from './spatial/subtree.ts';
+import { ProposalArrivals } from './spatial/proposalArrivals.ts';
 import { thoughtHierarchy } from '../core/hierarchy.ts';
 import { t } from '../shared/i18n.ts';
 import { activeFrontiers } from './spatial/regions.ts';
@@ -61,6 +62,17 @@ interface Props {
 }
 export const Field = forwardRef<FieldHandle, Props>(function Field({ controller, fieldStyle, connectionStyle, onProbeRelation, scopeActions, onScopeAction, onKeepAllProposals, onKeepOriginalProposal, onAIProposalAction, onMore, onRegion, onRelation, onDropText, onSource, onDropFiles, onObserve, onCreateThought, onContextMenu, onRevealMatch, find }, forwardedRef) {
     const { project, session } = useProject(controller);
+    const arrivals = useMemo(() => new ProposalArrivals(controller.getSnapshot().session.ghosts), [controller]);
+    useLayoutEffect(() => {
+        const capture = () => {
+            const state = useUI.getState();
+            arrivals.observe(controller.getSnapshot().session.ghosts, state.operation);
+            arrivals.protect(state.selection);
+        };
+        capture();
+        const stopController = controller.subscribe(capture), stopUI = useUI.subscribe(capture);
+        return () => { stopController(); stopUI(); };
+    }, [controller, arrivals]);
     const ui = useUI();
     const viewport = useRef<HTMLDivElement>(null);
     const overlays = useRef<FieldOverlaysHandle>(null);
@@ -501,14 +513,14 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         controller.dispatch({ type: 'thought.delete', ids: [t.id] }); useUI.getState().patch({ editing: null, selection: useUI.getState().selection.filter(k => !!controller.getSnapshot().project.thoughts[k] || !!controller.getSnapshot().session.ghosts[k]) }); }, [controller]);
     const handleGhostMeasured = useCallback((key: string, initial = false) => {
         const cam = camera.current?.get() ?? controller.getSnapshot().project.camera;
-        if (initial && liveItems.current[key] && 'scopeIds' in liveItems.current[key] && !gesture.current) correctVisibleGhosts(controller, geometry, cam, rect.current, viewport.current, world.current, true);
+        if (initial && liveItems.current[key] && 'scopeIds' in liveItems.current[key] && !gesture.current) correctVisibleGhosts(controller, geometry, cam, rect.current, viewport.current, world.current, arrivals, true);
         // Coalesce settled measurements, including sources resized by a new suggestion.
         recordMeasurement(key, geometry.get(key), liveItems.current[key], cam, !!viewport.current?.hasAttribute('data-camera-moving'), () => {
             const activeCamera = camera.current?.get() ?? cam;
-            if (!gesture.current) correctVisibleGhosts(controller, geometry, activeCamera, rect.current, viewport.current, world.current);
+            if (!gesture.current) correctVisibleGhosts(controller, geometry, activeCamera, rect.current, viewport.current, world.current, arrivals);
             refreshVisible(activeCamera, true);
         });
-    }, [controller, geometry, refreshVisible, recordMeasurement]);
+    }, [controller, geometry, refreshVisible, recordMeasurement, arrivals]);
     const keepCandidate = useCallback((relationId: string) => keepRelationCandidate(controller, relationId), [controller]);
     const ignoreCandidate = useCallback((relationId: string) => ignoreRelationCandidate(controller, relationId), [controller]);
     const renameCandidate = useCallback((relationId: string, label: string) => controller.updatePhenomenon(relationId, { label }), [controller]);

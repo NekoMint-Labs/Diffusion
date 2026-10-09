@@ -6,6 +6,7 @@ import { correctSevereOverlap } from './spatial/collision.ts';
 import { CONTINUATION_DISTANCE, packVisibleProposals, RESULT_PREFERRED_DISTANCE } from './spatial/proposalPlacement.ts';
 import { intersects, screenToWorld, unionBounds, viewportBounds, type Bounds } from './spatial/geometry.ts';
 import type { GeometryCache } from './spatial/index.ts';
+import type { ProposalArrivals } from './spatial/proposalArrivals.ts';
 
 /** Inputs, surfaces and a long Find result own their scrolling instead of zooming the canvas. */
 export function ownsWheelInput(target: HTMLElement): boolean {
@@ -45,9 +46,9 @@ export function commitDraggedItems(controller: ProjectController, positions: Rec
     for (const [key, point] of ghostMoves) controller.moveGhost(key, point, { detach: true });
     return { canonical, ghosts: ghostMoves.map(([key]) => key) };
 }
-export function correctMeasuredGhost(key: string, controller: ProjectController, geometry: GeometryCache, itemIds: string[], camera: Camera, viewport: ViewportRect, screenObstacles: readonly Bounds[] = []): void {
+export function correctMeasuredGhost(key: string, controller: ProjectController, geometry: GeometryCache, itemIds: string[], camera: Camera, viewport: ViewportRect, screenObstacles: readonly Bounds[] = [], arrivals?: ProposalArrivals): void {
     const ghost = controller.getSnapshot().session.ghosts[key];
-    if (!ghost || ghost.spatialDetached) return;
+    if (!ghost || ghost.spatialDetached || arrivals && !arrivals.batch(key)) return;
     const bounds = geometry.get(key);
     if (!bounds) return;
     const occupied = itemIds.filter(id => id !== key).map(id => geometry.get(id)).filter((candidate): candidate is Bounds => !!candidate);
@@ -64,7 +65,9 @@ export function correctMeasuredGhost(key: string, controller: ProjectController,
     const sources = ghost.scopeIds.filter(id => itemIds.includes(id)).map(id => geometry.get(id)).filter((box): box is Bounds => !!box && intersects(box, view));
     // Follow only currently visible sources; a later layout pass must not pull old suggestions
     // into an unrelated camera view. Detached proposals are protected above.
-    const point = correctSevereOverlap(bounds, [], view, [...exclusions, ...reserved], true, unionBounds(sources) ?? undefined, ghost.proposalAction === 'continue' ? CONTINUATION_DISTANCE : RESULT_PREFERRED_DISTANCE);
+    const scope = unionBounds(sources);
+    if (!scope && ghost.scopeIds.length) return;
+    const point = correctSevereOverlap(bounds, [], view, [...exclusions, ...reserved], !!scope, scope ?? undefined, ghost.proposalAction === 'continue' ? CONTINUATION_DISTANCE : RESULT_PREFERRED_DISTANCE);
     if (Math.abs(point.x - bounds.x) > .5 || Math.abs(point.y - bounds.y) > .5) {
         controller.moveGhost(key, point);
         geometry.setPosition(key, point.x, point.y);
@@ -72,7 +75,7 @@ export function correctMeasuredGhost(key: string, controller: ProjectController,
 }
 
 /** Recover an overflowing Continue batch using only its automatic, uncommitted cards. */
-export function correctMeasuredProposalBatch(controller: ProjectController, geometry: GeometryCache, itemIds: string[], camera: Camera, viewport: ViewportRect, screenObstacles: readonly Bounds[]): void {
+export function correctMeasuredProposalBatch(controller: ProjectController, geometry: GeometryCache, itemIds: string[], camera: Camera, viewport: ViewportRect, screenObstacles: readonly Bounds[], arrivals: ProposalArrivals): void {
     const ghosts = Object.values(controller.getSnapshot().session.ghosts);
     const view = viewportBounds(camera, viewport.width, viewport.height, 0);
     view.height = Math.max(0, view.height - 64 / camera.zoom);
@@ -80,7 +83,9 @@ export function correctMeasuredProposalBatch(controller: ProjectController, geom
     const groups = new Map<string, typeof ghosts>();
     for (const ghost of ghosts) {
         if (ghost.spatialDetached || ghost.proposalAction !== 'continue' || !itemIds.includes(ghost.id)) continue;
-        const key = JSON.stringify([...ghost.scopeIds].sort());
+        const batch = arrivals.batch(ghost.id);
+        if (!batch) continue;
+        const key = JSON.stringify([batch, [...ghost.scopeIds].sort()]);
         groups.set(key, [...groups.get(key) ?? [], ghost]);
     }
     for (const group of groups.values()) {
@@ -138,7 +143,7 @@ export function relationPlacementObstacles(visible: string[], geometry: Geometry
 }
 
 /** Run after coalesced layout, using all mounted reading boxes and current UI exclusions. */
-export function correctVisibleGhosts(controller: ProjectController, geometry: GeometryCache, camera: Camera, viewport: ViewportRect, field: HTMLElement | null, world: HTMLElement | null, measure = false): void {
+export function correctVisibleGhosts(controller: ProjectController, geometry: GeometryCache, camera: Camera, viewport: ViewportRect, field: HTMLElement | null, world: HTMLElement | null, arrivals: ProposalArrivals, measure = false): void {
     // Initial layout runs before paint. Read every mounted box so child order cannot leave
     // the source at its earlier flat-card size when the first proposal is placed.
     if (measure) for (const element of world?.querySelectorAll<HTMLElement>('[data-thought-id]') ?? []) {
@@ -150,7 +155,7 @@ export function correctVisibleGhosts(controller: ProjectController, geometry: Ge
     const snapshot = controller.getSnapshot(), ids = [...world?.querySelectorAll<HTMLElement>('[data-thought-id]') ?? []].map(element => element.dataset.thoughtId!);
     for (const ghost of Object.values(snapshot.session.ghosts)) {
         if (world?.querySelector(`[data-thought-id="${CSS.escape(ghost.id)}"]`))
-            correctMeasuredGhost(ghost.id, controller, geometry, ids, camera, viewport, reserved);
+            correctMeasuredGhost(ghost.id, controller, geometry, ids, camera, viewport, reserved, arrivals);
     }
-    correctMeasuredProposalBatch(controller, geometry, ids, camera, viewport, reserved);
+    correctMeasuredProposalBatch(controller, geometry, ids, camera, viewport, reserved, arrivals);
 }

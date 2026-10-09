@@ -413,7 +413,7 @@ test('large projects are culled and zoom changes representation', async ({ page 
     await expect(page.locator('[data-thought-id]').first()).toBeVisible();
     expect(await page.locator('[data-thought-id]').count()).toBeLessThan(240);
     await page.mouse.move(700, 450);
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 10; i++) {
         await page.mouse.wheel(0, 300);
         await page.waitForTimeout(160);
     }

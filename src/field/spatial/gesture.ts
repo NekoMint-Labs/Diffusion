@@ -23,7 +23,6 @@ import type { Camera, Point } from '../../core/model.ts';
 export interface WheelZoomGesture {
     anchor: Point;
     at: number;
-    remainder?: number;
 }
 
 /** A wheel/pinch burst keeps one attended screen point. Browser pinch packets can report a slightly
@@ -35,19 +34,13 @@ export function resolveWheelZoom(previous: WheelZoomGesture | null, input: {
     viewportHeight: number;
     ctrlKey: boolean;
     timeStamp: number;
-}): { gesture: WheelZoomGesture; delta: number; step: number; pinch: boolean } {
-    const anchor = previous && input.timeStamp - previous.at < 180 ? previous.anchor : input.point;
+}): { gesture: WheelZoomGesture; delta: number; pinch: boolean } {
+    const anchor = previous && input.timeStamp - previous.at < 180 && Math.hypot(input.point.x - previous.anchor.x, input.point.y - previous.anchor.y) < (input.ctrlKey ? 24 : 12) ? previous.anchor : input.point;
     const modeScale = input.deltaMode === 1 ? 16 : input.deltaMode === 2 ? input.viewportHeight : 1;
     // Chromium exposes trackpad pinch as ctrl+wheel with much smaller deltas than a wheel notch.
     const sensitivity = input.ctrlKey ? 4 : 1;
     const delta = Math.max(-240, Math.min(240, input.deltaY * modeScale * sensitivity));
-    // Full mouse notches each count once, even in a fast burst. High-resolution scroll
-    // packets accumulate, preventing a touchpad movement from skipping many levels.
-    const sameDirection = previous && input.timeStamp - previous.at < 180 && Math.sign(previous.remainder ?? 0) === Math.sign(delta);
-    const accumulated = delta + (sameDirection ? previous.remainder ?? 0 : 0);
-    const step = !input.ctrlKey && Math.abs(accumulated) >= 32 ? -Math.sign(delta) : 0;
-    const remainder = input.ctrlKey || step ? 0 : accumulated;
-    return { gesture: { anchor, at: input.timeStamp, remainder }, delta, step, pinch: input.ctrlKey };
+    return { gesture: { anchor, at: input.timeStamp }, delta, pinch: input.ctrlKey };
 }
 
 export type GestureKind = 'pan' | 'selection' | 'marquee';
@@ -59,9 +52,11 @@ export interface Gesture {
     last: Point;
     worldStart: Point;
     camera: Camera;
-    /** The Thought the press landed on. Only the hold-to-explore probe uses it. */
+    /** The Thought the press landed on, for click ownership and recall wake-up. */
     target?: string;
-    /** The set this gesture deliberately moves. For a selection drag it is the selection at press. */
+    /** A single directly pressed selection may probe, independently of its moving descendants. */
+    probeSource?: string;
+    /** The complete movement set, including descendants of the selection at press. */
     ids: string[];
     positions: Record<string, Point>;
     moved: boolean;

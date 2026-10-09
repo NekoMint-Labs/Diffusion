@@ -15,7 +15,7 @@ export class CameraController {
         return; const next = { x: Math.max(-1e7, Math.min(1e7, c.x)), y: Math.max(-1e7, Math.min(1e7, c.y)), zoom: Math.max(.08, Math.min(2.5, c.zoom)) }; const unchanged = next.x === this.value.x && next.y === this.value.y && next.zoom === this.value.zoom; this.value = next; this.schedule(); if (commit && !unchanged)
         this.commitSoon(); }
     pan(dx: number, dy: number) { this.set({ ...this.value, x: this.value.x + dx, y: this.value.y + dy }); }
-    zoom(point: Point, delta: number) { this.zoomTo(point, this.value.zoom * Math.exp(-delta * .0015)); }
+    zoom(point: Point, delta: number) { this.zoomTo(point, this.value.zoom * Math.exp(-delta * Math.log(1.08) / 100)); }
     zoomTo(point: Point, zoom: number) { this.set(zoomCameraAt(this.value, point, zoom)); this.commitSoon(); }
     worldPoint(p: Point) { return screenToWorld(p, this.value); }
     screenPoint(p: Point) { return worldToScreen(p, this.value); }

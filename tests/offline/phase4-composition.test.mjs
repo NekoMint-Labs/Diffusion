@@ -25,11 +25,11 @@ test('Phase 4 Atlas preserves explicit orientation anchors without turning back 
     const field = src('field/Field.tsx');
     const disclosure = src('field/spatial/hierarchyDisclosure.ts');
     assert.match(field, /discloseHierarchy/);
-    assert.match(disclosure, /hierarchy\.originalRoots\.has\(id\)/);
+    assert.match(disclosure, /eligibleSet\.has\(id\)/);
     assert.match(disclosure, /tier === 'local' \? 240 : 64/);
     assert.match(field, /data-testid="root-anchors"/);
     assert.match(field, /semanticExcerpt\(t\.text, 'atlas', 'thought'\)/);
-    assert.match(disclosure, /protectedIds\.has\(id\)/);
+    assert.match(disclosure, /contextIds\.has\(id\)/);
 });
 
 test('Phase 4 completion receipts carry only transient result counts', () => {

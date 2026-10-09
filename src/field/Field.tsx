@@ -1,9 +1,9 @@
 import { readableLabels, recallEdge, revealCamera, semanticExcerpt } from './spatial/representation.ts';
-import { discloseHierarchy, hierarchyWheelZoom, type DisclosureProjection } from './spatial/hierarchyDisclosure.ts';
+import { discloseHierarchy, type DisclosureProjection } from './spatial/hierarchyDisclosure.ts';
 import { measureSafeArea, fitInSafeArea } from './spatial/safeArea.ts';
-import { HierarchyStatus } from '../ui/scope/HierarchyStatus.tsx';
-import { useHierarchyDisclosure } from './spatial/useHierarchyDisclosure.ts';
 import { useDisclosureMeasurements } from './spatial/useDisclosureMeasurements.ts';
+import { worldAnchorPath } from './spatial/worldAnchors.ts';
+import { subtreeIds } from './spatial/subtree.ts';
 import { thoughtHierarchy } from '../core/hierarchy.ts';
 import { t } from '../shared/i18n.ts';
 import { activeFrontiers } from './spatial/regions.ts';
@@ -94,8 +94,8 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const lastCull = useRef(0);
     const [visible, setVisible] = useState<string[]>([]);
     const projection = useRef<DisclosureProjection>({ visible: [], roots: [], eligible: [], hidden: [], suggestions: [] });
+    const anchorPath = useRef<SVGPathElement>(null);
     const [rootAnchors, setRootAnchors] = useState<string[]>([]);
-    const { state: disclosureState, update: updateDisclosure, wheel: wheelDisclosure } = useHierarchyDisclosure(project.camera.zoom);
     const [stableCamera, setStableCamera] = useState(project.camera);
     const [level, setLevel] = useState(scaleLevel(project.camera.zoom));
     const [hoveredThought, setHoveredThought] = useState<string | null>(null);
@@ -126,8 +126,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         const snap = controller.getSnapshot();
         const state = useUI.getState();
         if (revealed.current && !state.selection.includes(revealed.current)) revealed.current = null;
-        updateDisclosure(cam.zoom, liveHierarchy.current, state.selection);
-        const disclosure = discloseHierarchy({ items: liveItems.current, hierarchy: liveHierarchy.current, found, camera: cam, viewport: rect.current, depth: disclosureState.current.depth, selection: state.selection, selectionReveals: !disclosureState.current.strictSelection, editing: state.editing, currentMatch: liveFind.current?.current ?? revealed.current, matches: liveFind.current?.matches, recalls: snap.session.recalls, expanded: disclosureState.current.expanded, branches: snap.session.branchDisclosure, measured: key => measuredBox(key, liveItems.current[key], cam) });
+        const disclosure = discloseHierarchy({ items: liveItems.current, hierarchy: liveHierarchy.current, found, camera: cam, viewport: rect.current, selection: state.selection, editing: state.editing, currentMatch: liveFind.current?.current ?? revealed.current, matches: liveFind.current?.matches, recalls: snap.session.recalls, branches: snap.session.branchDisclosure, measured: key => measuredBox(key, liveItems.current[key], cam) });
         // Eligibility can change without mounted IDs changing (for example an offscreen fold).
         const eligibilityChanged = projection.current.eligible.join(' ') !== disclosure.eligible.join(' ');
         projection.current = disclosure;
@@ -135,7 +134,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         const ids = disclosure.visible;
         setRootAnchors(old => old.length === disclosure.roots.length && old.every((id, i) => id === disclosure.roots[i]) ? old : disclosure.roots);
         setVisible(old => !eligibilityChanged && old.length === ids.length && old.every((x, i) => x === ids[i]) ? old : ids);
-    }, [geometry, controller, measuredBox, updateDisclosure]);
+    }, [geometry, controller, measuredBox]);
     useEffect(() => {
         const newKeys = new Set(Object.keys(items));
         for (const key of known.current)
@@ -166,8 +165,8 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             viewport.current?.setAttribute('data-camera-moving', 'true');
             const resolved = resolveWheelZoom(wheelZoom.current, { point: { x: e.clientX - rect.current.left, y: e.clientY - rect.current.top }, deltaY: e.deltaY, deltaMode: e.deltaMode, viewportHeight: rect.current.height, ctrlKey: e.ctrlKey, timeStamp: e.timeStamp });
             wheelZoom.current = resolved.gesture;
-            if (resolved.step) revealed.current = null;
-            c.zoomTo(resolved.gesture.anchor, wheelDisclosure(c.get().zoom, resolved, liveHierarchy.current, useUI.getState().selection));
+            if (resolved.pinch) c.zoomTo(resolved.gesture.anchor, c.get().zoom * Math.exp(-resolved.delta * .0015));
+            else c.zoom(resolved.gesture.anchor, resolved.delta);
         };
         viewport.current.addEventListener('wheel', wheel, { passive: false });
         const element = viewport.current;
@@ -188,7 +187,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         return () => { c.destroy(); ro.disconnect(); element.removeEventListener('wheel', wheel); window.removeEventListener('resize', measure); window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); window.removeEventListener('blur', blur); if (frame.current !== null)
             cancelAnimationFrame(frame.current); if (probeTimer.current)
             clearTimeout(probeTimer.current); };
-    }, [controller, refreshVisible, syncPanningCursor, wheelDisclosure]);
+    }, [controller, refreshVisible, syncPanningCursor]);
     useEffect(() => {
         refreshVisible(camera.current?.get() ?? controller.getSnapshot().project.camera, true);
     }, [ui.selection, ui.editing, find?.current, find?.matches, controller, refreshVisible]);
@@ -218,7 +217,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         reveal: (ids, options) => { revealed.current = ids[0] ?? null; refreshVisible(camera.current?.get() ?? project.camera, true); const boxes = ids.map(k => geometry.get(k)).filter((b): b is Bounds => !!b); const c = camera.current; if (options?.preserveCamera || !boxes.length || !c)
             return; c.set(revealCamera(boxes[0], liveItems.current[ids[0]], c.get().zoom, measureSafeArea(viewport.current, rect.current)), true); },
         zoomOut: () => { const c = camera.current; if (c)
-            c.zoom({ x: rect.current.width / 2, y: rect.current.height / 2 }, 750); },
+            c.zoomTo({ x: rect.current.width / 2, y: rect.current.height / 2 }, c.get().zoom * Math.exp(-750 * .0015)); },
     }), [project.camera, geometry, visible]);
     const insideBounds = (b: { x: number; y: number; width: number; height: number }, p: Point) => p.x >= b.x && p.x <= b.x + b.width && p.y >= b.y && p.y <= b.y + b.height;
     const localPoint = (e: {
@@ -279,7 +278,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         const pan = space.current || e.button === 1 || blankField && !marquee;
         let ids: string[] = [];
         if (!pan && !marquee && (target || onScopeHandle)) {
-            // Freeze visible selection membership for the gesture.
+            // Selection stays unchanged; moving a visible root carries its whole committed subtree.
             if (target) {
                 if (e.shiftKey)
                     state.select(target, true);
@@ -290,8 +289,10 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             // A deselected target drags alone rather than moving the remaining selection.
             ids = target && !owning.includes(target) ? [target] : [...owning];
         }
+        const probeSource = target && ids.length === 1 ? target : undefined;
+        if (!pan && !marquee) ids = [...subtreeIds(ids, project.thoughts), ...ids.filter(id => !!session.ghosts[id])];
         e.currentTarget.setPointerCapture(e.pointerId);
-        gesture.current = { kind: pan ? 'pan' : marquee ? 'marquee' : 'selection', pointerId: e.pointerId, start: p, last: p, worldStart: w, camera: c.get(), target, ids: ids.filter(key => !!liveItems.current[key]), positions: {}, moved: false, extend: marquee, clearSelectionOnClick: blankField && e.button === 0 && !e.shiftKey && !space.current };
+        gesture.current = { kind: pan ? 'pan' : marquee ? 'marquee' : 'selection', pointerId: e.pointerId, start: p, last: p, worldStart: w, camera: c.get(), target, probeSource, ids: ids.filter(key => !!liveItems.current[key]), positions: {}, moved: false, extend: marquee, clearSelectionOnClick: blankField && e.button === 0 && !e.shiftKey && !space.current };
         syncPanningCursor();
     }
     function paintGesture() {
@@ -322,19 +323,20 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             if (element)
                 element.style.transform = `translate(${original.x + dx / c.get().zoom}px, ${original.y + dy / c.get().zoom}px)`;
         }
+        anchorPath.current?.setAttribute('d', worldAnchorPath(projection.current.roots, liveItems.current, c.get().zoom, g.positions, { x: dx / c.get().zoom, y: dy / c.get().zoom }));
         // The Thought transform above is only a preview until pointer-up. Keep confirmed topology
         // spatially honest against that preview without touching canonical coordinates.
         paintConfirmedDragRelations(relationLayer.current, activeRelations, geometry, g, c.get().zoom);
         paintCausalDragTraces(causalTraceLayer.current, causalTraces, geometry, g, c.get().zoom);
-        const key = g.target;
-        if (!key || g.ids.length !== 1 || controller.getSnapshot().session.ghosts[key])
+        const key = g.probeSource;
+        if (!key || controller.getSnapshot().session.ghosts[key])
             return;
         const original = geometry.get(key);
         if (!original)
             return;
         const moved = { ...original, x: original.x + dx / c.get().zoom, y: original.y + dy / c.get().zoom };
         const search = { x: moved.x - 80, y: moved.y - 80, width: moved.width + 160, height: moved.height + 160 };
-        const candidates = geometry.index.query(search).filter(k => k !== key && projection.current.visible.includes(k) && !!controller.getSnapshot().project.thoughts[k]);
+        const candidates = geometry.index.query(search).filter(k => !g.ids.includes(k) && projection.current.visible.includes(k) && !!controller.getSnapshot().project.thoughts[k]);
         let closest: string | undefined;
         let distance = 65;
         for (const k of candidates) {
@@ -424,8 +426,8 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             correctSingleDraggedThought(positions, e.altKey, geometry, Object.keys(liveItems.current), c.get(), rect.current);
             const committed = commitDraggedItems(controller, positions);
             if (committed.canonical.length) onObserve(committed.canonical);
-            if (g.target && g.probe && performance.now() - g.probe.since >= PROBE_HOLD)
-                onProbeRelation([g.target, g.probe.id]);
+            if (g.probeSource && g.probe && performance.now() - g.probe.since >= PROBE_HOLD)
+                onProbeRelation([g.probeSource, g.probe.id]);
         }
         else if (g.target) {
             // Selection never crosses the proposal boundary. Edit / Enter / Keep remain explicit ownership actions.
@@ -450,6 +452,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
                 if (item && el)
                     el.style.transform = `translate(${item.x}px, ${item.y}px)`;
             }
+            anchorPath.current?.setAttribute('d', worldAnchorPath(projection.current.roots, liveItems.current, camera.current?.get().zoom ?? 1));
             if (g.kind === 'pan')
                 camera.current?.set(g.camera);
             if (g.kind === 'selection') {
@@ -534,8 +537,6 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         const children = hierarchy.children.get(key) ?? [];
         const expand = children.some(id => !eligibleSet.has(id));
         controller.setBranchExpanded(key, expand);
-        const c = camera.current, state = disclosureState.current, targetDepth = (hierarchy.depth.get(key) ?? 0) + 1;
-        if (expand && c && targetDepth > state.depth) c.zoomTo(worldToScreen(items[key], c.get()), hierarchyWheelZoom(c.get().zoom, state.depth, state.maxDepth, -1, targetDepth - state.depth));
         refreshVisible(camera.current?.get() ?? project.camera, true);
     };
     const frontiers = activeFrontiers(project);
@@ -607,7 +608,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
                 e.preventDefault();
                 const delta = e.shiftKey ? 40 : 10;
                 const positions: Record<string, Point> = {};
-                for (const key of state.selection.filter(id => projection.current.visible.includes(id))) {
+                for (const key of subtreeIds(state.selection.filter(id => projection.current.visible.includes(id)), controller.getSnapshot().project.thoughts)) {
                     const t = controller.getSnapshot().project.thoughts[key];
                     if (t)
                         positions[key] = { x: t.x + (e.key === 'ArrowLeft' ? -delta : e.key === 'ArrowRight' ? delta : 0), y: t.y + (e.key === 'ArrowUp' ? -delta : e.key === 'ArrowDown' ? delta : 0) };
@@ -620,7 +621,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         }}>
     <FieldBackgroundLayer style={fieldStyle}/>
     <div ref={world} className="world">
-     {rootAnchors.length > 0 && <svg className="phenomena root-anchors" aria-hidden="true" data-testid="root-anchors" data-count={rootAnchors.length}><path d={rootAnchors.map(key => { const item = items[key]; const size = 7 / stableCamera.zoom; return item ? `M${item.x},${item.y}h${size}v${size}h-${size}z` : ''; }).join(' ')} /></svg>}
+     {rootAnchors.length > 0 && <svg className="phenomena root-anchors" aria-hidden="true" data-testid="root-anchors" data-count={rootAnchors.length}><path ref={anchorPath} d={worldAnchorPath(rootAnchors, items, stableCamera.zoom)} /></svg>}
      <CausalTraceLayer layerRef={causalTraceLayer} traces={causalTraces} zoom={stableCamera.zoom}/>
     <RelationLayer layerRef={relationLayer} probe={null} operationId={ui.operation?.id} relations={relationPhenomena} relevantIds={activeRelationIds}/>
     <StructureOverlay proposals={Object.values(session.structures)} geometry={geometry}/>
@@ -634,7 +635,6 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
    {Object.values(project.regions).filter(region => level === 'atlas' && disclosedLandmarks.has('region:' + region.id)).map(region => <button className="region-label" data-active={ui.regionId === region.id || undefined} onClick={() => onRegion(region.id, { x: region.x, y: region.y })} key={region.id} style={{ transform: `translate(${region.x}px,${region.y}px) scale(var(--inverse-zoom))` }}><span>{t(region.name)}</span><small>{t('{count} thoughts', { count: region.members.length })}</small></button>)}
    {level === 'atlas' && frontiers.filter(key => disclosedLandmarks.has('frontier:' + key)).map(key => { const t = project.thoughts[key]; return <button className="frontier-label" key={'frontier-' + key} onClick={() => { controller.wake(key); ui.patch({ selection: [key] }); revealThought(key); }} style={{ transform: `translate(${t.x}px,${t.y}px) scale(var(--inverse-zoom))` }}><span aria-hidden="true">&#9671;</span> {semanticExcerpt(t.text, 'atlas', 'thought')}</button>; })}
   </div>
-    {hierarchy.children.size > 0 && <HierarchyStatus depth={disclosureState.current.depth} maxDepth={disclosureState.current.maxDepth}/>}
    <FieldOverlays ref={overlays} viewport={viewport} camera={() => camera.current?.get() ?? project.camera} geometry={geometry} actionBounds={actionBounds} visibleIds={visible} selection={ui.selection} operation={ui.operation} enabled={ui.surface === 'none'} dragging={ui.dragging} onScopeBounds={onScopeBounds} suggestions={Object.values(session.ghosts).filter(ghost => !visibleSet.has(ghost.id))} thoughts={project.thoughts} roots={rootAnchors.map(key => project.thoughts[key]).filter(Boolean)} onRevealRoot={revealThought} reviewNeeded={true} onSuggestionAction={onAIProposalAction} scope={showScopeHub ? { count: activeSelection.length, actions: scopeActions, probing, proposalReview, aiProposalKind, onAction: onScopeAction, onKeepAll: () => onKeepAllProposals([...activeSelection]), onKeepOriginal: () => onKeepOriginalProposal([...activeSelection]), onAIProposalAction: action => onAIProposalAction([...activeSelection], action), onMore } : null} />
   {ui.carry.length > 0 && <div className="carry-preview">{project.thoughts[ui.carry[0]]?.text.slice(0, 180)}</div>}
   {ui.carry.length > 0 && <div className="carry-banner">{t('Carrying {count} thoughts. Click to place; Escape cancels.', { count: ui.carry.length })}</div>}

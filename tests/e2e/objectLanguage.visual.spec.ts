@@ -34,8 +34,9 @@ for (const profile of profiles) for (const [index, fieldStyle] of backgrounds.en
             }), { message: 'new suggestions clear measured Field chrome' }).toBe(false);
             await ghost.click();
             await expect(ghost.locator('.ghost-label')).toBeVisible();
-            // Approved paper-and-single-rail design replaces the former open dashed boundary.
+            // The single rail complements the dashed outline without a separate boundary element.
             await expect(ghost.locator('.ghost-boundary')).toHaveCount(0);
+            await expect(ghost).toHaveCSS('outline-style', 'dashed');
             expect(await ghost.evaluate(el => getComputedStyle(el, '::before').width)).toBe('2px');
             expect(await ghost.evaluate(el => getComputedStyle(el, '::after').content)).toBe('none');
             await expect(page.getByTestId('ai-proposal-keep')).toBeVisible();

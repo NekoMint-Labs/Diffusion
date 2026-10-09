@@ -145,15 +145,15 @@ test('dragging a third thought across a source trace reroutes the trace before c
     await expect(route).toHaveAttribute('d', original!);
 });
 
-test('zoom collapses deeper branches, Find reveals them and return restores disclosure', async ({ page }, info) => {
+test('overview simplifies branch detail, Find reveals it and return restores presentation', async ({ page }, info) => {
     await seed(page);
     await page.getByTestId('field').click({ position: { x: 80, y: 500 } });
     await page.mouse.move(400, 300);
-    for (let i = 0; i < 8; i++) { await page.mouse.wheel(0, 160); await page.waitForTimeout(100); }
+    for (let i = 0; i < 12; i++) { await page.mouse.wheel(0, 160); await page.waitForTimeout(100); }
     await expect(page.getByTestId('field')).toHaveAttribute('data-level', 'atlas');
     await expect(page.locator('[data-thought-id="c"]')).toHaveCount(0);
     await expect(page.locator('[data-thought-id="a"]')).toBeVisible();
-    await expect(page.locator('[data-thought-id="a"] [data-testid="branch-expand"]')).toBeVisible();
+    await expect(page.getByTestId('root-anchors')).toHaveAttribute('data-count', '3');
     await page.keyboard.press('Control+f');
     await page.locator('.find-bar input').fill('C 层级想法');
     await expect(page.locator('[data-thought-id="c"][data-find="current"]')).toBeVisible();
@@ -161,7 +161,7 @@ test('zoom collapses deeper branches, Find reveals them and return restores disc
     await page.keyboard.press('Escape');
     await expect(page.locator('[data-thought-id="c"]')).toHaveCount(0);
     await page.mouse.move(400, 300);
-    for (let i = 0; i < 8; i++) { await page.mouse.wheel(0, -160); await page.waitForTimeout(100); }
+    for (let i = 0; i < 12; i++) { await page.mouse.wheel(0, -160); await page.waitForTimeout(100); }
     await expect(page.locator('[data-thought-id="c"]')).toBeVisible();
     await expect(page.locator('[data-causal-id="causal:b:c"]')).toBeVisible();
 });

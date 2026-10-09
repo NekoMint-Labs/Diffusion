@@ -118,10 +118,12 @@
 }
 
 /* --- Ghost: provisional material, not a canonical shell --------------------
-   One pencil rail and a quiet paper body identify an uncommitted suggestion. Keep restores the
+   A dashed outline, pencil rail and a quiet paper body identify an uncommitted suggestion. Keep restores the
    existing closed Thought boundary; text does not need to fade to explain ownership. */
 .thought.ghost:not(.editing) {
-  border-radius: 8px;
+  outline: 1px dashed color-mix(in srgb, var(--ghost-ink) 70%, transparent);
+  outline-offset: -1px;
+  border-radius: var(--radius-control);
   background: color-mix(in srgb, var(--surface-1) 74%, transparent);
   box-shadow: 0 1px 3px color-mix(in srgb, var(--ink-primary) 4%, transparent);
   color: var(--ink-primary);

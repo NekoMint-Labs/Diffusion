@@ -1,9 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
 
-async function reachGeneration(page: Page) {
-    await page.goto('/?locale=en');
+async function reachGeneration(page: Page, locale = 'en') {
+    await page.goto(`/?locale=${locale}`);
     await expect(page.getByTestId('first-field-tutorial')).toHaveAttribute('data-phase', 'write');
-    const composer = page.getByRole('textbox', { name: 'Speak', exact: true });
+    const composer = page.getByTestId('speak').locator('textarea');
     await composer.fill('I am not sure what this assumption depends on');
     await composer.press('Enter');
     await expect(page.getByTestId('first-field-tutorial')).toHaveAttribute('data-phase', 'move');
@@ -80,4 +80,24 @@ test('Help can restart the First Field Tutorial after it was skipped', async ({ 
     await page.getByTestId('global-menu').locator('[data-command="help"]').click();
     await page.getByRole('button', { name: 'Restart First Field Tutorial' }).click();
     await expect(page.getByTestId('first-field-tutorial')).toHaveAttribute('data-phase', 'write');
+});
+
+test('Chinese tutorial and proposal use 留下 consistently through ownership change', async ({ page }, info) => {
+    await reachGeneration(page, 'zh');
+    await page.getByTestId('scope-continue').click();
+    const tutorial = page.getByTestId('first-field-tutorial');
+    await expect(tutorial).toHaveAttribute('data-phase', 'ghost');
+    const ghost = page.locator('.thought.ghost');
+    const box = (await ghost.boundingBox())!;
+    await page.mouse.move(box.x + 25, box.y + 18); await page.mouse.down();
+    await page.mouse.move(box.x + 80, box.y + 55, { steps: 6 }); await page.mouse.up();
+    await expect(tutorial).toHaveAttribute('data-phase', 'keep');
+    await expect(tutorial).toContainText('点击“留下”');
+    await expect(page.getByTestId('ai-proposal-keep')).toContainText('留下');
+    await page.screenshot({ path: info.outputPath('chinese-keep-tutorial.png') });
+    await page.getByTestId('ai-proposal-keep').click();
+    await expect(tutorial).toHaveAttribute('data-phase', 'done');
+    await expect(tutorial).toContainText('“留下”才改变归属');
+    await expect(tutorial).not.toContainText('Keep');
+    await expect(page.locator('.thought.ghost')).toHaveCount(0);
 });

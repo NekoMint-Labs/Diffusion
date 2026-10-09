@@ -89,8 +89,10 @@ export function useTransientFocus(fallback: () => void) {
             closeMenu(state.menu);
             return;
         }
+        cancelAnimationFrame(frame.current);
+        pressed.current = null;
         capture();
-        opener.current = anchor ?? opener.current;
+        opener.current = anchor ?? null;
         state.patch({ menu: { anchor, scope, ...target } });
     }
     return { capture, restore, closeMenu, openMenu };

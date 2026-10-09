@@ -26,7 +26,7 @@ it('decreases detail by tier and represents each pending suggestion exactly once
     const distant = discloseHierarchy({ ...base, camera: { x: 0, y: 0, zoom: .16 } });
     expect(local.visible).toContain('g'); expect(local.suggestions).toEqual([]);
     expect(distant.visible).toEqual(['a']); expect(distant.suggestions).toEqual(['g']);
-    expect(distant.eligible).not.toContain('c'); expect(distant.hidden).toContain('g');
+    expect(distant.eligible).toContain('c'); expect(distant.roots).toContain('c'); expect(distant.hidden).toContain('g');
     const folded = discloseHierarchy({ ...base, branches: { b: false }, camera: { x: 0, y: 0, zoom: 1 } });
     expect(folded.visible).toEqual(['a', 'b']); expect(folded.suggestions).toEqual(['g']);
     const matched = discloseHierarchy({ ...base, branches: { a: false }, matches: new Set(['c']), camera: { x: 0, y: 0, zoom: 1 } });

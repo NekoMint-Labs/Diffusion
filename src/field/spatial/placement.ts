@@ -215,15 +215,21 @@ export function placePossibility(project: ProjectState, session: SessionState, a
             const nearby = index.query({ x: point.x - RESULT_LOCAL_DENSITY_MARGIN, y: point.y - RESULT_LOCAL_DENSITY_MARGIN, width: resultSize.width + RESULT_LOCAL_DENSITY_MARGIN * 2, height: resultSize.height + RESULT_LOCAL_DENSITY_MARGIN * 2 }).length;
             return { point, score: bandPenalty * 100 + nearby * 18 + Math.abs(distance - preferredDistance.target) * .12 + priority / 1000 };
         }).filter((candidate): candidate is { point: Point; score: number } => !!candidate).sort((a, b) => a.score - b.score);
+        // Continue can bend around an obstacle, but search the nearby forward half-plane
+        // before settling beside or behind its source. Other modes keep their own posture.
+        const nearby = (pool: ReturnType<typeof score>) => pool.find(({ point }) => {
+            const advance = trajectory ? (point.x + resultSize.width / 2 - centerX) * trajectory.x + (point.y + resultSize.height / 2 - centerY) * trajectory.y : 0;
+            return distanceBetween({ ...point, ...resultSize }, scopeBounds) <= preferredDistance.max && (mode !== 'continue' || !trajectory || advance > 1e-6);
+        })?.point;
         // Semantic posture wins while a valid local slot exists. Only then do we escape into a ring.
-        const forward = score(trajectoryCandidates);
-        if (forward.length && distanceBetween({ ...forward[0].point, ...resultSize }, scopeBounds) <= preferredDistance.max) return forward[0].point;
-        const semantic = score(candidates);
-        if (semantic.length && distanceBetween({ ...semantic[0].point, ...resultSize }, scopeBounds) <= preferredDistance.max) return semantic[0].point;
+        const forward = nearby(score(trajectoryCandidates));
+        if (forward) return forward;
+        const semantic = nearby(score(candidates));
+        if (semantic) return semantic;
         // Fixed semantic gaps can miss an edge slot by a few pixels on small windows.
         // Try the same postures inside the safe area before sending arrivals offscreen.
-        const bounded = score(candidates.map(intoView));
-        if (bounded.length && distanceBetween({ ...bounded[0].point, ...resultSize }, scopeBounds) <= preferredDistance.max) return bounded[0].point;
+        const bounded = nearby(score(candidates.map(intoView)));
+        if (bounded) return bounded;
 
         const escape: Point[] = [];
         for (let step = 0; step < 64; step++) {
@@ -232,8 +238,8 @@ export function placePossibility(project: ProjectState, session: SessionState, a
             const angle = (n % 12) * Math.PI / 6;
             escape.push({ x: origin.x + Math.cos(angle) * ring * 280, y: origin.y + Math.sin(angle) * ring * 196 });
         }
-        const escaped = score(escape);
-        if (escaped.length && distanceBetween({ ...escaped[0].point, ...resultSize }, scopeBounds) <= preferredDistance.max) return escaped[0].point;
+        const escaped = nearby(score(escape));
+        if (escaped) return escaped;
 
         // Centered directions and sparse rings can miss nearby corner slots. Search the
         // available view (or the source neighborhood without a view) before accepting a
@@ -252,6 +258,8 @@ export function placePossibility(project: ProjectState, session: SessionState, a
         for (let x = searchBounds.x; x <= maxX; x += dx)
             for (let y = searchBounds.y; y <= maxY; y += dy) slots.push({ x, y });
         const local = score([...trajectoryCandidates, ...candidates, ...candidates.map(intoView), ...escape, ...slots]);
+        const localForward = nearby(local);
+        if (localForward) return localForward;
         if (local.length) return local[0].point;
         if (visibleBounds) {
             // Preferred breathing room can exhaust a crowded view even when a non-overlapping

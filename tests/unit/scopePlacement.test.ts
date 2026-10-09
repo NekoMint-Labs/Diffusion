@@ -254,3 +254,31 @@ describe.each([true, false])('nearby arrivals before distant directional slots (
         expect(JSON.stringify(project)).toBe(before);
     });
 });
+
+describe.each([true, false])('continuation around an occupied lineage (viewport: %s)', withViewport => {
+    it.each([
+        ['right', 1, 0], ['left', -1, 0], ['down', 0, 1], ['up', 0, -1],
+    ] as const)('keeps a nearby continuation forward along a %s incoming trajectory', (_label, dx, dy) => {
+        const project = createProject('occupied-lineage');
+        project.thoughts.parent = makeThought('A', { x: -340 * dx, y: -340 * dy }, 1, 'parent');
+        project.thoughts.source = { ...makeThought('B', { x: 0, y: 0 }, 2, 'source'), derivedFrom: ['parent'], generationAction: 'continue' };
+        project.thoughts.next = { ...makeThought('C', { x: 340 * dx, y: 340 * dy }, 3, 'next'), derivedFrom: ['source'], generationAction: 'continue' };
+        project.thoughts.branch = { ...makeThought('D', { x: 280 * dx - 260 * dy, y: 280 * dy + 260 * dx }, 4, 'branch'), derivedFrom: ['source'], generationAction: 'angle' };
+        const before = JSON.stringify(project);
+        const area = { x: -1200, y: -1200, width: 2400, height: 2400 };
+        const point = placePossibility(project, emptySession(), { x: 0, y: 0 }, 0, ['source'], withViewport ? area : undefined, 'next', 'continue', new Set(Object.keys(project.thoughts)));
+        const box = { ...point, ...estimateThoughtSize('next') };
+        const source = { ...project.thoughts.source, ...estimateThoughtSize('B') };
+        const advance = (box.x + box.width / 2 - source.x - source.width / 2) * dx + (box.y + box.height / 2 - source.y - source.height / 2) * dy;
+        expect(advance).toBeGreaterThan(0);
+        expect(distanceBetween(box, source)).toBeLessThanOrEqual(128);
+        for (const thought of Object.values(project.thoughts)) expect(overlaps(box, { ...thought, ...estimateThoughtSize(thought.text) })).toBe(false);
+        if (withViewport) {
+            expect(box.x).toBeGreaterThanOrEqual(area.x);
+            expect(box.y).toBeGreaterThanOrEqual(area.y);
+            expect(box.x + box.width).toBeLessThanOrEqual(area.x + area.width);
+            expect(box.y + box.height + 64).toBeLessThanOrEqual(area.y + area.height);
+        }
+        expect(JSON.stringify(project)).toBe(before);
+    });
+});

@@ -1,6 +1,6 @@
 # Overview navigation and connection feedback
 
-Follow-up to [the PR #29 review](https://github.com/NekoMint-Labs/Diffusion/pull/29#issuecomment-6071956768), under #11. Based on #29 `4429ccc`; this does not update #29 or the stacked #30 source branch.
+Follow-up to [the PR #29 review](https://github.com/NekoMint-Labs/Diffusion/pull/29#issuecomment-6071956768), under #11. Rebased onto main `2874e8f` after #29 was approved and squash-merged, including its single-parent relation-probe repair. This PR contains only its own navigation/line changes; #30 remains separate.
 
 ## Classification
 
@@ -14,7 +14,7 @@ An open overview review retains its candidate IDs until close or navigation, rea
 
 The compact connection key follows the Field heading, is reserved by existing safe-area/overlay calculations, and does not reduce the canvas through a permanent bottom lane. Parent arrows keep their depth styles. Confirmed semantic traces retain neutral ink, no arrow and the existing focus hierarchy, with a 1.4px screen-space stroke, .48 resting opacity and .85 under attention. Neighborhood/Atlas explicitly explain that semantic relations require zooming in. No relation, schema, provider, persistence or native contract changes.
 
-## Verification boundaries
+## Pre-rebase verification and boundaries
 
 Local Windows checks use the existing dependency-backed Node 22.22.2 toolchain. Direct TypeScript/Vite/Vitest/Playwright CLIs are equivalents of the package scripts; the Windows Playwright launcher changes the preview port to 4179 and keeps one worker and zero retries. Offline tests retain `NODE_OPTIONS=--no-experimental-global-navigator`.
 
@@ -28,4 +28,4 @@ Tracked `overviewNavigation.spec.ts` covers both themes, six edge candidates in 
 
 ## Integration recommendation
 
-No #29-specific blocker has been established by these controlled checks. #29 can proceed to independent maintainer review with Option 2 recorded; this focused follow-up should be reviewed under #11. Both #29 and #30 current-head CI and complete E2E were rechecked successfully. After #29 merges, align #30 and this follow-up to latest main, inspect the resulting narrow diffs, and rerun CI. No merge or issue closure is performed here; the repaired native-desktop workflow still needs operator acceptance.
+#29 was approved and merged into main `2874e8f`; this focused follow-up is now independently based on that revision. Its original product/test patch was replayed unchanged, while retaining the approved relation-probe gesture in main. Current-head CI/E2E and the separate combined Windows-preview evidence are recorded in the PR description. #30, Field Management and Settings remain separate. No issue closure or merge of this follow-up is performed here; the repaired native-desktop workflow still needs operator acceptance.

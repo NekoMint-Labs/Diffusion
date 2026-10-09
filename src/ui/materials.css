@@ -200,11 +200,11 @@
 }
 .relation.tentative { --relation-presence: .48; opacity: .72; }
 .relation.exiting { opacity: 0; animation: recede 180ms ease-out both; }
-.relation.confirmed path { stroke: color-mix(in srgb, var(--relation) 72%, transparent); stroke-dasharray: none; opacity: .24; }
+.relation.confirmed path { stroke: var(--relation); stroke-width: 1.4; stroke-dasharray: none; opacity: .48; }
 .relation.tentative path { stroke: color-mix(in srgb, var(--pencil-trace) 66%, transparent); stroke-dasharray: 7 7; opacity: .18; }
 .relation.probing path { stroke: color-mix(in srgb, var(--pencil-trace) 76%, transparent); stroke-dasharray: 1 7; stroke-linecap: round; opacity: .36; animation: probe-trace 900ms linear infinite; }
-.field[data-scope="true"] .relation:not(.relevant) path { opacity: .13; }
-.field[data-scope="true"] .relation.relevant.confirmed path { stroke: color-mix(in srgb, var(--relation) 88%, transparent); opacity: .6; }
+.field[data-scope="true"] .relation:not(.relevant) path { opacity: .2; }
+.field[data-scope="true"] .relation.relevant.confirmed path { stroke: var(--relation); opacity: .85; }
 .field[data-scope="true"] .relation.relevant.tentative path { opacity: .42; }
 /* A selection drag repaints confirmed topology against the transient positions, so the confirmed
    Relations stay visible while the tentative ones and their labels withdraw for the duration. */

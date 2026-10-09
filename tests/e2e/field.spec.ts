@@ -36,6 +36,7 @@ async function menu(page: Page, label: string) {
     const scope = APP_LABELS.includes(label) ? 'global' : 'field';
     const root = page.getByTestId(`${scope}-menu`);
     const direct = root.getByRole('menuitem', { name: label, exact: true });
+    await expect(direct.or(root.getByRole('menuitem', { name: 'More', exact: true })).first()).toBeVisible();
     if (await direct.count()) {
         await direct.click();
         return;
@@ -727,6 +728,8 @@ test('three-Thought lasso keeps one outside Hub independent of release direction
     const selected = (await page.locator('[data-selected="true"]').evaluateAll(elements => elements.map(element => element.getAttribute('data-thought-id')!))).sort();
     expect(selected).toEqual(['attention', 'quiet', 'structure']);
     const hub = page.getByTestId('scope-hub');
+    // Compare settled placement, after the Hub's two-pixel entry translation finishes.
+    await expect(hub).toHaveCSS('transform', 'none');
     const firstHub = await hub.boundingBox();
     const selectedBoxes = await Promise.all(selected.map(key => page.locator(`[data-thought-id="${key}"]`).boundingBox()));
     if (!firstHub || selectedBoxes.some(box => !box)) throw new Error('Multi-selection geometry is unavailable');
@@ -740,6 +743,7 @@ test('three-Thought lasso keeps one outside Hub independent of release direction
     await expect(hub).toHaveCount(0);
     await dragLasso({ x: 980, y: 680 }, { x: 550, y: 130 });
     await expect(page.locator('[data-selected="true"]')).toHaveCount(3);
+    await expect(hub).toHaveCSS('transform', 'none');
     const reverseHub = await hub.boundingBox();
     if (!reverseHub) throw new Error('Reverse-lasso Hub bounds are unavailable');
     expect(Math.abs(reverseHub.x - firstHub.x)).toBeLessThan(2);

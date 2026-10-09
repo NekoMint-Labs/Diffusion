@@ -96,8 +96,7 @@ test('Tab dismisses a non-modal menu without leaving a hidden interactive owner'
     await page.keyboard.press('Home'); await page.keyboard.press('Shift+Tab');
     await expect(page.getByTestId('global-more')).toHaveAttribute('aria-expanded', 'false');
     await expect(page.getByRole('menu')).toHaveCount(0);
-    const exiting = page.locator('.command-menu');
-    if (await exiting.count()) await expect(exiting).toHaveAttribute('inert', '');
+    await expect(page.locator('.command-menu:not([inert])')).toHaveCount(0);
     await expect(page.getByTestId('global-menu')).toHaveCount(0);
     await expect(page.getByTestId('global-more')).toBeFocused();
 });

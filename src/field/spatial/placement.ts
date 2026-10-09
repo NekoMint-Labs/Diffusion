@@ -112,6 +112,7 @@ export function placePossibility(project: ProjectState, session: SessionState, a
         origin = { x: centerX - resultSize.width / 2, y: centerY - resultSize.height / 2 };
         const candidates: Point[] = [];
         const trajectoryCandidates: Point[] = [];
+        const trajectoryDetours: Point[] = [];
         const gaps = [preferredDistance.target, preferredDistance.min, preferredDistance.max, 52, 292, 420, 560];
 
         for (const gap of gaps) {
@@ -121,6 +122,9 @@ export function placePossibility(project: ProjectState, session: SessionState, a
                 if (trajectory) {
                     const lateral = Math.min(54, Math.max(24, scopeBounds.height * .18));
                     trajectoryCandidates.push(along(scopeBounds, resultSize, trajectory, gap), along(scopeBounds, resultSize, trajectory, gap, lateral), along(scopeBounds, resultSize, trajectory, gap, -lateral));
+                    // Inflated collision bounds include touching edges, so leave one extra unit.
+                    const bypass = (Math.abs(trajectory.y) * (scopeBounds.width + resultSize.width) + Math.abs(trajectory.x) * (scopeBounds.height + resultSize.height)) / 2 + RESULT_CLEARANCE * 2 + 1;
+                    trajectoryDetours.push(along(scopeBounds, resultSize, trajectory, gap, bypass), along(scopeBounds, resultSize, trajectory, gap, -bypass));
                 }
                 if (horizontal) {
                     candidates.push(
@@ -224,6 +228,10 @@ export function placePossibility(project: ProjectState, session: SessionState, a
         // Semantic posture wins while a valid local slot exists. Only then do we escape into a ring.
         const forward = nearby(score(trajectoryCandidates));
         if (forward) return forward;
+        // A card ahead can block the narrow trajectory lane while nearby forward diagonals
+        // remain clear. Try those after the original lane and before losing Continue direction.
+        const detours = nearby(score(trajectoryDetours));
+        if (detours) return detours;
         const semantic = nearby(score(candidates));
         if (semantic) return semantic;
         // Fixed semantic gaps can miss an edge slot by a few pixels on small windows.
@@ -257,7 +265,7 @@ export function placePossibility(project: ProjectState, session: SessionState, a
         const dy = Math.max(24, (maxY - searchBounds.y) / 32);
         for (let x = searchBounds.x; x <= maxX; x += dx)
             for (let y = searchBounds.y; y <= maxY; y += dy) slots.push({ x, y });
-        const local = score([...trajectoryCandidates, ...candidates, ...candidates.map(intoView), ...escape, ...slots]);
+        const local = score([...trajectoryCandidates, ...trajectoryDetours, ...candidates, ...candidates.map(intoView), ...escape, ...slots]);
         const localForward = nearby(local);
         if (localForward) return localForward;
         if (local.length) return local[0].point;

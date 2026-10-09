@@ -52,9 +52,11 @@ export interface Gesture {
     last: Point;
     worldStart: Point;
     camera: Camera;
-    /** The Thought the press landed on. Only the hold-to-explore probe uses it. */
+    /** The Thought the press landed on, for click ownership and recall wake-up. */
     target?: string;
-    /** The set this gesture deliberately moves. For a selection drag it is the selection at press. */
+    /** A single directly pressed selection may probe, independently of its moving descendants. */
+    probeSource?: string;
+    /** The complete movement set, including descendants of the selection at press. */
     ids: string[];
     positions: Record<string, Point>;
     moved: boolean;

@@ -284,9 +284,10 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             // A deselected target drags alone rather than moving the remaining selection.
             ids = target && !owning.includes(target) ? [target] : [...owning];
         }
+        const probeSource = target && ids.length === 1 ? target : undefined;
         if (!pan && !marquee) ids = [...subtreeIds(ids, project.thoughts), ...ids.filter(id => !!session.ghosts[id])];
         e.currentTarget.setPointerCapture(e.pointerId);
-        gesture.current = { kind: pan ? 'pan' : marquee ? 'marquee' : 'selection', pointerId: e.pointerId, start: p, last: p, worldStart: w, camera: c.get(), target, ids: ids.filter(key => !!liveItems.current[key]), positions: {}, moved: false, extend: marquee, clearSelectionOnClick: blankField && e.button === 0 && !e.shiftKey && !space.current };
+        gesture.current = { kind: pan ? 'pan' : marquee ? 'marquee' : 'selection', pointerId: e.pointerId, start: p, last: p, worldStart: w, camera: c.get(), target, probeSource, ids: ids.filter(key => !!liveItems.current[key]), positions: {}, moved: false, extend: marquee, clearSelectionOnClick: blankField && e.button === 0 && !e.shiftKey && !space.current };
         syncPanningCursor();
     }
     function paintGesture() {
@@ -322,15 +323,15 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         // spatially honest against that preview without touching canonical coordinates.
         paintConfirmedDragRelations(relationLayer.current, activeRelations, geometry, g, c.get().zoom);
         paintCausalDragTraces(causalTraceLayer.current, causalTraces, geometry, g, c.get().zoom);
-        const key = g.target;
-        if (!key || g.ids.length !== 1 || controller.getSnapshot().session.ghosts[key])
+        const key = g.probeSource;
+        if (!key || controller.getSnapshot().session.ghosts[key])
             return;
         const original = geometry.get(key);
         if (!original)
             return;
         const moved = { ...original, x: original.x + dx / c.get().zoom, y: original.y + dy / c.get().zoom };
         const search = { x: moved.x - 80, y: moved.y - 80, width: moved.width + 160, height: moved.height + 160 };
-        const candidates = geometry.index.query(search).filter(k => k !== key && projection.current.visible.includes(k) && !!controller.getSnapshot().project.thoughts[k]);
+        const candidates = geometry.index.query(search).filter(k => !g.ids.includes(k) && projection.current.visible.includes(k) && !!controller.getSnapshot().project.thoughts[k]);
         let closest: string | undefined;
         let distance = 65;
         for (const k of candidates) {
@@ -420,8 +421,8 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             correctSingleDraggedThought(positions, e.altKey, geometry, Object.keys(liveItems.current), c.get(), rect.current);
             const committed = commitDraggedItems(controller, positions);
             if (committed.canonical.length) onObserve(committed.canonical);
-            if (g.target && g.probe && performance.now() - g.probe.since >= PROBE_HOLD)
-                onProbeRelation([g.target, g.probe.id]);
+            if (g.probeSource && g.probe && performance.now() - g.probe.since >= PROBE_HOLD)
+                onProbeRelation([g.probeSource, g.probe.id]);
         }
         else if (g.target) {
             // Selection never crosses the proposal boundary. Edit / Enter / Keep remain explicit ownership actions.

@@ -4,7 +4,7 @@ import { measureSafeArea, fitInSafeArea } from './spatial/safeArea.ts';
 import { useDisclosureMeasurements } from './spatial/useDisclosureMeasurements.ts';
 import { worldAnchorPath } from './spatial/worldAnchors.ts';
 import { subtreeIds } from './spatial/subtree.ts';
-import { ProposalArrivals } from './spatial/proposalArrivals.ts';
+import { useProposalArrivals } from './spatial/useProposalArrivals.ts';
 import { thoughtHierarchy } from '../core/hierarchy.ts';
 import { t } from '../shared/i18n.ts';
 import { activeFrontiers } from './spatial/regions.ts';
@@ -62,17 +62,7 @@ interface Props {
 }
 export const Field = forwardRef<FieldHandle, Props>(function Field({ controller, fieldStyle, connectionStyle, onProbeRelation, scopeActions, onScopeAction, onKeepAllProposals, onKeepOriginalProposal, onAIProposalAction, onMore, onRegion, onRelation, onDropText, onSource, onDropFiles, onObserve, onCreateThought, onContextMenu, onRevealMatch, find }, forwardedRef) {
     const { project, session } = useProject(controller);
-    const arrivals = useMemo(() => new ProposalArrivals(controller.getSnapshot().session.ghosts), [controller]);
-    useLayoutEffect(() => {
-        const capture = () => {
-            const state = useUI.getState();
-            arrivals.observe(controller.getSnapshot().session.ghosts, state.operation);
-            arrivals.protect(state.selection);
-        };
-        capture();
-        const stopController = controller.subscribe(capture), stopUI = useUI.subscribe(capture);
-        return () => { stopController(); stopUI(); };
-    }, [controller, arrivals]);
+    const arrivals = useProposalArrivals(controller);
     const ui = useUI();
     const viewport = useRef<HTMLDivElement>(null);
     const overlays = useRef<FieldOverlaysHandle>(null);

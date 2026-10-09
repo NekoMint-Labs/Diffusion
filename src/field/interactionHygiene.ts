@@ -3,7 +3,8 @@ import type { ProjectController } from '../core/controller.ts';
 import type { ScopeRect } from '../ui/scope/scopePlacement.ts';
 import { dismissGhostWithDissolve, presentSpatialTransition } from '../ui/motion/spatialGrammar.ts';
 import { correctSevereOverlap } from './spatial/collision.ts';
-import { screenToWorld, viewportBounds, type Bounds } from './spatial/geometry.ts';
+import { CONTINUATION_DISTANCE, packVisibleProposals, RESULT_PREFERRED_DISTANCE } from './spatial/proposalPlacement.ts';
+import { intersects, screenToWorld, unionBounds, viewportBounds, type Bounds } from './spatial/geometry.ts';
 import type { GeometryCache } from './spatial/index.ts';
 
 /** Inputs, surfaces and a long Find result own their scrolling instead of zooming the canvas. */
@@ -58,10 +59,45 @@ export function correctMeasuredGhost(key: string, controller: ProjectController,
     // still use the separate severe-overlap policy in the drag path.
     const gap = 6 / camera.zoom;
     const exclusions = occupied.map(box => ({ x: box.x - gap, y: box.y - gap, width: box.width + gap * 2, height: box.height + gap * 2 }));
-    const point = correctSevereOverlap(bounds, [], viewportBounds(camera, viewport.width, viewport.height, 0), [...exclusions, ...reserved]);
+    const view = viewportBounds(camera, viewport.width, viewport.height, 0);
+    if (ghost.proposalAction === 'continue') view.height = Math.max(0, view.height - 64 / camera.zoom);
+    const sources = ghost.scopeIds.filter(id => itemIds.includes(id)).map(id => geometry.get(id)).filter((box): box is Bounds => !!box && intersects(box, view));
+    // Follow only currently visible sources; a later layout pass must not pull old suggestions
+    // into an unrelated camera view. Detached proposals are protected above.
+    const point = correctSevereOverlap(bounds, [], view, [...exclusions, ...reserved], true, unionBounds(sources) ?? undefined, ghost.proposalAction === 'continue' ? CONTINUATION_DISTANCE : RESULT_PREFERRED_DISTANCE);
     if (Math.abs(point.x - bounds.x) > .5 || Math.abs(point.y - bounds.y) > .5) {
         controller.moveGhost(key, point);
         geometry.setPosition(key, point.x, point.y);
+    }
+}
+
+/** Recover an overflowing Continue batch using only its automatic, uncommitted cards. */
+export function correctMeasuredProposalBatch(controller: ProjectController, geometry: GeometryCache, itemIds: string[], camera: Camera, viewport: ViewportRect, screenObstacles: readonly Bounds[]): void {
+    const ghosts = Object.values(controller.getSnapshot().session.ghosts);
+    const view = viewportBounds(camera, viewport.width, viewport.height, 0);
+    view.height = Math.max(0, view.height - 64 / camera.zoom);
+    const contains = (box: Bounds) => box.x >= view.x && box.y >= view.y && box.x + box.width <= view.x + view.width && box.y + box.height <= view.y + view.height;
+    const groups = new Map<string, typeof ghosts>();
+    for (const ghost of ghosts) {
+        if (ghost.spatialDetached || ghost.proposalAction !== 'continue' || !itemIds.includes(ghost.id)) continue;
+        const key = JSON.stringify([...ghost.scopeIds].sort());
+        groups.set(key, [...groups.get(key) ?? [], ghost]);
+    }
+    for (const group of groups.values()) {
+        const boxes = group.map(ghost => geometry.get(ghost.id));
+        if (boxes.some(box => !box) || boxes.every(box => contains(box!))) continue;
+        const scope = unionBounds(group[0].scopeIds.filter(id => itemIds.includes(id)).map(id => geometry.get(id)).filter((box): box is Bounds => !!box && intersects(box, view)));
+        if (!scope) continue;
+        const groupIds = new Set(group.map(ghost => ghost.id)), gap = 6 / camera.zoom;
+        const fixed = itemIds.filter(id => !groupIds.has(id)).map(id => geometry.get(id)).filter((box): box is Bounds => !!box).map(box => ({ x: box.x - gap, y: box.y - gap, width: box.width + gap * 2, height: box.height + gap * 2 }));
+        for (const rect of screenObstacles) {
+            const point = screenToWorld({ x: rect.x - viewport.left - 12, y: rect.y - viewport.top - 12 }, camera);
+            fixed.push({ ...point, width: (rect.width + 24) / camera.zoom, height: (rect.height + 24) / camera.zoom });
+        }
+        const clear = (box: Bounds) => fixed.every(other => box.x >= other.x + other.width || box.x + box.width <= other.x || box.y >= other.y + other.height || box.y + box.height <= other.y);
+        const packed = packVisibleProposals(boxes as Bounds[], scope, view, clear, CONTINUATION_DISTANCE, gap);
+        if (!packed) continue;
+        group.forEach((ghost, index) => { controller.moveGhost(ghost.id, packed[index]); geometry.setPosition(ghost.id, packed[index].x, packed[index].y); });
     }
 }
 
@@ -116,4 +152,5 @@ export function correctVisibleGhosts(controller: ProjectController, geometry: Ge
         if (world?.querySelector(`[data-thought-id="${CSS.escape(ghost.id)}"]`))
             correctMeasuredGhost(ghost.id, controller, geometry, ids, camera, viewport, reserved);
     }
+    correctMeasuredProposalBatch(controller, geometry, ids, camera, viewport, reserved);
 }

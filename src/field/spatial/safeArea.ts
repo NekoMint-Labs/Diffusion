@@ -20,7 +20,7 @@ export function safeArea(viewport: Bounds, occupied: readonly Bounds[], gap = 16
 export function measureSafeArea(field: HTMLElement | null, fallback: { width: number; height: number }, committing = false): Bounds {
     if (!field) return { x: 16, y: 16, width: Math.max(1, fallback.width - 32), height: Math.max(1, fallback.height - 32) };
     const viewport = field.getBoundingClientRect();
-    const selectors = '.identity, .global-actions, [data-testid="speak"], .notice, .field-overlay-dock, .surface[data-level="split"], .surface[data-level="anchored"], .find-bar, .hierarchy-disclosure';
+    const selectors = '.identity, .global-actions, .field-line-key, [data-testid="speak"], .notice, .field-overlay-dock, .surface[data-level="split"], .surface[data-level="anchored"], .find-bar, .hierarchy-disclosure';
     const occupied = [...field.ownerDocument.querySelectorAll<HTMLElement>(selectors)]
         // A committing preview is about to close; persistent panels still reserve space.
         .filter(element => !(committing && ['crystal', 'action-preview'].includes(element.dataset.surfaceOwner ?? '')))

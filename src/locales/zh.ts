@@ -950,4 +950,12 @@ export const zh: Record<string, string> = {
   "For this run only.": "只影响这一次运行。",
   "Find anchored thoughts": "查找位置标记中的想法",
   "Arrows show the current parent. Color and line pattern identify the level; original sources stay listed here. Labeled connections describe meaning.": "箭头表示当前归属，颜色和线型区分层级；来源保留在此处，带文字的关联线表示内容之间的联系。",
+  "Locate {count} overview thoughts…": "定位 {count} 个概览想法…",
+  "Choose a thought to reveal its location. Zoom stays the same.": "选择一个想法，即可定位并显示；缩放倍率保持不变。",
+  "No overview thoughts match. Try a shorter phrase.": "没有匹配的概览想法，请尝试更短的词语。",
+  "Parent arrows connect visible thoughts. A blocked route may be hidden.": "归属箭头连接当前可见的想法；被其他卡片挡住时，连线可能隐藏。",
+  "Parent → child": "上级 → 下级",
+  "Semantic relation · no arrow": "内容关联 · 无箭头",
+  "Select a thought to inspect its relations.": "选中一个想法，查看它的内容关联。",
+  "Zoom in to inspect semantic relations.": "放大视图后可查看内容关联。",
 };

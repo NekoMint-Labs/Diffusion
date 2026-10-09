@@ -27,6 +27,13 @@ Thought width is deterministic and bounded (`compact`, `regular`, or `wide`) fro
 
 Appearance is device-local presentation state owned by `src/ui/appearance.ts`, `src/ui/workspace/useWorkspaceSettings.ts`, `src/ui/fieldBackgrounds/`, and the atmosphere layer. Theme/Profile, Field Style, Accent, and Image Atmosphere are independent; Field Presence and Ambient Motion are bounded controls. Reduced Motion sets effective ambient movement to zero without changing the stored preference. None of these settings enter canonical `ProjectState`, project Dexie records, collision, camera authority, or `GeometryCache`. Decorative Field layers stay full-bleed in viewport space, pointer-inert, and `aria-hidden`; the camera-owned world continues to contain DOM Thoughts and SVG phenomena only.
 
+The overview review snapshots candidate IDs when opened: its reserved dock changes viewport culling,
+which must not erase the active list. It reads current canonical wording and drops deleted IDs, closes
+on explicit dismissal or navigation, and never changes Thought coordinates or zoom. A compact connection
+key follows the existing Field heading without reserving a permanent bottom lane. Parent arrows retain their depth styles; confirmed semantic
+relations remain neutral and arrowless, with stronger attention contrast. Semantic routes still require
+Local scale and visible endpoints; distant views explain the existing omission instead of changing data.
+
 ## Commands and history
 
 One command model (`src/ui/commands`) defines every semantic action once: id, localized label, aliases, platform-neutral shortcuts, contextual availability and one `run`. Menus, the palette, the keyboard router and the shortcut reference are projections of that registry, so no presentation owns business logic. An action may be reachable from the Field title, right-click, the Scope Hub, the palette and a shortcut while remaining a single definition.

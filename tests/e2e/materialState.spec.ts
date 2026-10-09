@@ -244,6 +244,15 @@ test('Keep stabilizes a Ghost material in place without generic circular feedbac
         // Keep measuring this identity; `.ghost.first()` may now be a different proposal.
         const thought = page.locator(`[data-thought-id="${id}"]`);
         await thought.click();
+        // Selection can resize disclosure and queue the existing 100ms measured-box
+        // correction. Take the Keep snapshot only after that geometry has settled.
+        let lastBounds = '', stableSince = Date.now();
+        await expect.poll(async () => {
+            const box = await thought.boundingBox();
+            const bounds = box ? JSON.stringify(box) : '';
+            if (bounds !== lastBounds) { lastBounds = bounds; stableSince = Date.now(); }
+            return !!box && Date.now() - stableSince >= 200;
+        }).toBe(true);
         const before = await thought.boundingBox();
         if (!before) throw new Error('Ghost has no stable bounds');
         // Observe the commitment frame itself. A series of protocol round trips can outlive the

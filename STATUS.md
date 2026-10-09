@@ -2,7 +2,13 @@
 
 Diffusion is a quiet thinking medium for ideas before commitment. This file describes the current checkout: what works, which subsystem owns it, what was freshly verified, and what remains incomplete. It is not a changelog. Historical phase reports and prior verification records remain under [`docs/history/`](docs/history/README.md).
 
-## Nearby mounted proposals follow-up (2026-10-09)
+## PR #30 after the #29 merge (2026-10-09)
+
+This focused mounted-proposal correction is now based on main `2874e8f`, the squash merge of approved #29 including its single-parent relation-probe repair. Its four original follow-up commits were replayed without product or test changes; the old #29 history is no longer part of this PR's diff. Initial placement in #18, its #31 direction follow-up, and overview navigation/line feedback in #32 remain separate.
+
+The historical combined-preview evidence below belongs to its named revisions. Current-head CI/E2E and the new main + #30 + #32 Windows preview are reported in the PR description. A package build does not replace operator acceptance or live-provider qualification. This PR remains Draft pending that acceptance and independent review.
+
+## Pre-rebase mounted proposals verification (2026-10-09)
 
 This narrow follow-up starts at PR #29 `4429ccc`. It addresses the [nearby-card feedback](https://github.com/NekoMint-Labs/Diffusion/issues/11#issuecomment-6060254148) after the initial placement patch landed in PR #18 `f3ee399`. The initial placement file and AI action pipeline remain owned by #18; this patch changes only mounted Field correction and its regressions.
 

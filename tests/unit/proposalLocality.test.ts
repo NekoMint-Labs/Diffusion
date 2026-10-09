@@ -6,6 +6,7 @@ import { placePossibility } from '../../src/field/spatial/placement.ts';
 import { correctMeasuredGhost, correctMeasuredProposalBatch } from '../../src/field/interactionHygiene.ts';
 import { overlapArea } from '../../src/field/spatial/collision.ts';
 import { distanceBetween } from '../../src/field/spatial/geometry.ts';
+import { ProposalArrivals } from '../../src/field/spatial/proposalArrivals.ts';
 
 describe('visible proposals near the active source', () => {
     const view = { x: 0, y: 0, width: 1280, height: 720 };
@@ -66,22 +67,91 @@ describe('visible proposals near the active source', () => {
         expect(local.geometry.get('g')).toMatchObject({ x: 620, y: 300 });
     });
 
+    it('does not pull an existing proposal into a camera view without its source during remeasurement', () => {
+        const { controller, geometry } = mounted({ x: 620, y: 300 });
+        const before = controller.getSnapshot(), camera = { x: -1500, y: -500, zoom: .55 };
+        geometry.measure('g', 328, 210);
+        correctMeasuredGhost('g', controller, geometry, ['source', 'g'], camera, viewport);
+        expect(controller.getSnapshot()).toBe(before);
+        expect(geometry.get('g')).toMatchObject({ x: 620, y: 300 });
+        // An offscreen/cull-omitted source cannot trigger viewport or chrome correction either.
+        correctMeasuredGhost('g', controller, geometry, ['g'], camera, { ...viewport, width: 640 }, [{ x: 0, y: 0, width: 640, height: 720 }]);
+        expect(controller.getSnapshot()).toBe(before);
+    });
+
+    it('retains collision-only correction for an unscoped arrival', () => {
+        const { controller, geometry } = mounted({ x: 400, y: 300 });
+        const ghost = controller.getSnapshot().session.ghosts.g;
+        controller.setSession({ ...controller.getSnapshot().session, ghosts: { g: { ...ghost, scopeIds: [] } } });
+        correctMeasuredGhost('g', controller, geometry, ['source', 'g'], { x: 0, y: 0, zoom: 1 }, viewport);
+        expect(overlapArea(geometry.get('g')!, geometry.get('source')!)).toBe(0);
+        const before = controller.getSnapshot();
+        correctMeasuredGhost('g', controller, geometry, ['g'], { x: -3000, y: -1000, zoom: .55 }, viewport);
+        expect(controller.getSnapshot()).toBe(before);
+    });
+
+    it('keeps earlier same-scope requests fixed even without runId or distinct timestamps', () => {
+        const { controller, geometry } = mounted();
+        const arrivals = new ProposalArrivals();
+        const operation = { id: 'request-1', kind: 'continue' as const, phase: 'pending' as const, scopeIds: ['source'] };
+        arrivals.observe(controller.getSnapshot().session.ghosts, operation);
+        controller.addGhost({ id: 'old', text: '旧建议', x: 1100, y: 650, createdAt: 2, scopeIds: ['source'], proposalAction: 'continue' });
+        geometry.setPosition('old', 1100, 650); geometry.measure('old', 328, 210);
+        arrivals.observe(controller.getSnapshot().session.ghosts, operation);
+        const old = controller.getSnapshot().session.ghosts.old, first = controller.getSnapshot().session.ghosts.g;
+        const next = { ...operation, id: 'request-2' };
+        for (const [id, x, y] of [['new1', 1100, 650], ['new2', 1400, 650]] as const) {
+            controller.addGhost({ id, text: '新建议', x, y, createdAt: 2, scopeIds: ['source'], proposalAction: 'continue' });
+            geometry.setPosition(id, x, y); geometry.measure(id, 176, 80);
+            arrivals.observe(controller.getSnapshot().session.ghosts, next);
+        }
+        const ids = ['source', 'g', 'old', 'new1', 'new2'], camera = { x: 0, y: 0, zoom: 1 };
+        const canonical = controller.getSnapshot().project;
+        for (const id of ids.slice(1)) correctMeasuredGhost(id, controller, geometry, ids, camera, viewport, [], arrivals);
+        correctMeasuredProposalBatch(controller, geometry, ids, camera, viewport, [], arrivals);
+        expect(controller.getSnapshot().session.ghosts.old).toBe(old);
+        expect(controller.getSnapshot().session.ghosts.g).toBe(first);
+        for (const id of ['new1', 'new2']) {
+            const box = geometry.get(id)!;
+            expect(box.x + box.width).toBeLessThanOrEqual(1280);
+            expect(box.y + box.height + 64).toBeLessThanOrEqual(720);
+            expect(overlapArea(box, geometry.get('g')!)).toBe(0);
+        }
+        expect(controller.getSnapshot().project).toBe(canonical);
+        expect(controller.canUndo).toBe(false);
+    });
+
+    it('never automatically repositions selected, restored or unidentified proposals', () => {
+        const { controller, geometry } = mounted();
+        const arrivals = new ProposalArrivals();
+        arrivals.observe(controller.getSnapshot().session.ghosts, { id: 'request', kind: 'continue', phase: 'pending', scopeIds: ['source'] });
+        arrivals.protect(['g']);
+        const before = controller.getSnapshot();
+        geometry.measure('g', 328, 210);
+        correctMeasuredGhost('g', controller, geometry, ['source', 'g'], { x: 0, y: 0, zoom: 1 }, viewport, [], arrivals);
+        expect(controller.getSnapshot()).toBe(before);
+        const restored = new ProposalArrivals(controller.getSnapshot().session.ghosts);
+        restored.observe(controller.getSnapshot().session.ghosts, null);
+        expect(restored.batch('g')).toBeNull();
+    });
+
     it('fits three measured Continue cards after the review dock reduces the available viewport', () => {
         const project = createProject('crowded');
         project.thoughts.source = makeThought('来源', { x: 153, y: 415 }, 1, 'source');
         project.thoughts.parent = makeThought('上级', { x: 190, y: 310 }, 1, 'parent');
-        const controller = new ProjectController(project, async () => {}), geometry = new GeometryCache();
+        const controller = new ProjectController(project, async () => {}), geometry = new GeometryCache(), arrivals = new ProposalArrivals();
         for (const [id, x, y, width, height] of [['source', 153, 415, 328, 210], ['parent', 190, 310, 256, 74]] as const) {
             geometry.setPosition(id, x, y); geometry.measure(id, width, height);
         }
         for (const [id, x, y] of [['g1', 496.5625, 155.625], ['g2', 609, 451], ['g3', 1253, 663]] as const) {
             controller.addGhost({ id, text: '长建议' + id, x, y, scopeIds: ['source'], createdAt: 2, proposalAction: 'continue' });
             geometry.setPosition(id, x, y); geometry.measure(id, 328, 210);
+            arrivals.observe(controller.getSnapshot().session.ghosts, { id: 'request', kind: 'continue', phase: 'pending', scopeIds: ['source'] });
         }
         const ids = ['source', 'parent', 'g1', 'g2', 'g3'], camera = { x: 0, y: 0, zoom: .8 }, viewport = { left: 0, top: 0, width: 898, height: 702 };
         const chrome = [{ x: 24, y: 22, width: 130, height: 48 }, { x: 837, y: 18, width: 36, height: 34 }];
         const canonical = controller.getSnapshot().project;
-        correctMeasuredProposalBatch(controller, geometry, ids, camera, viewport, chrome);
+        correctMeasuredProposalBatch(controller, geometry, ids, camera, viewport, chrome, arrivals);
         const cards = ids.slice(2).map(id => geometry.get(id)!);
         for (const [index, card] of cards.entries()) {
             expect(card.x).toBeGreaterThanOrEqual(0); expect(card.y).toBeGreaterThanOrEqual(0);
@@ -94,7 +164,7 @@ describe('visible proposals near the active source', () => {
         expect(controller.getSnapshot().project).toBe(canonical);
         expect(controller.canUndo).toBe(false);
         const settled = controller.getSnapshot().session.ghosts;
-        correctMeasuredProposalBatch(controller, geometry, ids, camera, viewport, chrome);
+        correctMeasuredProposalBatch(controller, geometry, ids, camera, viewport, chrome, arrivals);
         expect(controller.getSnapshot().session.ghosts).toBe(settled);
     });
 });

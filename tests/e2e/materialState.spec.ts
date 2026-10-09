@@ -243,6 +243,7 @@ test('Keep stabilizes a Ghost material in place without generic circular feedbac
         // Selecting a proposal changes disclosure priority and can reorder mounted siblings.
         // Keep measuring this identity; `.ghost.first()` may now be a different proposal.
         const thought = page.locator(`[data-thought-id="${id}"]`);
+        const beforeSelection = await thought.getAttribute('style');
         await thought.click();
         // Selection can resize disclosure and queue the existing 100ms measured-box
         // correction. Take the Keep snapshot only after that geometry has settled.
@@ -253,6 +254,7 @@ test('Keep stabilizes a Ghost material in place without generic circular feedbac
             if (bounds !== lastBounds) { lastBounds = bounds; stableSince = Date.now(); }
             return !!box && Date.now() - stableSince >= 200;
         }).toBe(true);
+        await expect(thought).toHaveAttribute('style', beforeSelection!);
         const before = await thought.boundingBox();
         if (!before) throw new Error('Ghost has no stable bounds');
         // Observe the commitment frame itself. A series of protocol round trips can outlive the

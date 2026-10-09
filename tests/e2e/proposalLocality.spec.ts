@@ -5,7 +5,7 @@ test.use({ viewport: { width: 1280, height: 720 }, reducedMotion: 'reduce' });
 
 async function boot(page: Page, theme: 'light' | 'dark', zoom: number, provider = 'demo', crowded = false) {
     await page.addInitScript(({ theme, provider }) => {
-        localStorage.setItem('diffusion-settings', JSON.stringify({ locale: 'zh', provider, theme }));
+        localStorage.setItem('diffusion-settings', JSON.stringify({ locale: 'zh', provider, theme, appearance: { profile: theme === 'dark' ? 'graphite-night' : 'editorial-warm' } }));
         localStorage.setItem('diffusion-first-field-tutorial-v1', JSON.stringify({ status: 'complete' }));
     }, { theme, provider });
     await page.goto('/?locale=zh');
@@ -29,6 +29,7 @@ async function boot(page: Page, theme: 'light' | 'dark', zoom: number, provider 
         };
     }), project);
     await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-style-profile', theme === 'dark' ? 'graphite-night' : 'editorial-warm');
     await expect(page.locator('[data-thought-id="source"]')).toBeVisible();
     return project;
 }
@@ -58,6 +59,65 @@ test.describe('crowded measured arrivals', () => {
         await expect(page.locator('.world')).toHaveAttribute('style', camera!);
         await page.screenshot({ path: info.outputPath('crowded-' + theme + '.png') });
     });
+
+    test('a later Continue request preserves already displayed same-scope proposals', async ({ page }) => {
+        await page.setViewportSize({ width: 1280, height: 960 });
+        let requests = 0;
+        await page.route('**/api/respond', route => {
+            requests++;
+            const texts = requests === 1 ? ['先记录这一个观察，保持它的位置。'] : [
+                '下一轮先用标定板比较不同视角的误差分布，检查低纹理区域是否持续缺少约束；然后选择最容易复现的场景，观察新增视角对结构的影响。',
+                '设备可以保留每次拍摄的曝光、镜头参数和时间戳，处理前检查重复帧和模糊图像；如果原始记录不完整，就先补齐采集日志。',
+                '评价可以约定未参与训练的物体和人工测量的尺寸参考，把结构偏差与运行成本分别列出，再决定后续实验顺序。',
+            ];
+            return route.fulfill({ json: { providerLabel: 'Separate requests / not live', mock: true, intents: texts.map(text => ({ type: 'surface_possibility', text })) } });
+        });
+        await boot(page, 'light', .8, 'gateway', true);
+        const source = page.locator('[data-thought-id="source"]');
+        await source.click(); await page.getByTestId('scope-continue').click();
+        await page.getByTestId('action-preview-run').click();
+        const ghosts = page.locator('article.ghost');
+        await expect(ghosts).toHaveCount(1);
+        await expect(page.getByTestId('operation-feedback')).toHaveCount(0);
+        const oldId = (await ghosts.first().getAttribute('data-thought-id'))!;
+        const old = page.locator('[data-thought-id="' + oldId + '"]');
+        const before = await old.getAttribute('style');
+        await source.click(); await page.getByTestId('scope-continue').click();
+        await page.getByRole('dialog', { name: '继续想', exact: true }).getByRole('button', { name: '3', exact: true }).click();
+        await page.getByTestId('action-preview-run').click();
+        await expect(ghosts).toHaveCount(4);
+        await expect(page.getByTestId('operation-feedback')).toHaveCount(0);
+        // Force another measured reading layout after both independent requests complete.
+        await page.setViewportSize({ width: 860, height: 760 });
+        await expect(old).toHaveAttribute('style', before!);
+        await source.click();
+        await expect(old).toHaveAttribute('style', before!);
+        expect(requests).toBe(2);
+    });
+});
+
+test('camera travel and remeasurement keep the world position when the source is offscreen', async ({ page }) => {
+    await boot(page, 'light', 1);
+    await page.locator('[data-thought-id="source"]').click();
+    await page.getByTestId('scope-continue').click(); await page.getByTestId('action-preview-run').click();
+    const ghosts = page.locator('article.ghost');
+    await expect(ghosts.first()).toBeVisible(); await expect(page.getByTestId('operation-feedback')).toHaveCount(0);
+    // Camera/culling can reorder mounted siblings. Follow one stable identity at the left edge.
+    const id = await ghosts.evaluateAll(elements => elements.map(element => ({ id: (element as HTMLElement).dataset.thoughtId!, x: element.getBoundingClientRect().x })).sort((a, b) => a.x - b.x)[0].id);
+    const ghost = page.locator('[data-thought-id="' + id + '"]');
+    const before = await ghost.getAttribute('style');
+    const field = page.getByTestId('field');
+    await field.focus(); await page.keyboard.down('Space');
+    await page.mouse.move(640, 600); await page.mouse.down();
+    await page.mouse.move(1190, 600, { steps: 12 }); await page.mouse.up(); await page.keyboard.up('Space');
+    await expect.poll(async () => {
+        const source = await page.locator('[data-thought-id="source"]').boundingBox();
+        return !source || source.x >= 1280;
+    }).toBe(true);
+    await page.setViewportSize({ width: 1100, height: 680 });
+    await page.mouse.move(1000, 620); await page.mouse.wheel(0, 80);
+    await expect(field).not.toHaveAttribute('data-camera-moving', 'true');
+    await expect(ghost).toHaveAttribute('style', before!);
 });
 
 for (const theme of ['light', 'dark'] as const) for (const zoom of [1, .55]) {
@@ -86,6 +146,7 @@ for (const theme of ['light', 'dark'] as const) for (const zoom of [1, .55]) {
         await expect(source).toHaveAttribute('style', sourcePosition!);
         await expect(other).toHaveAttribute('style', otherPosition!);
         await expect(page.locator('.world')).toHaveAttribute('style', camera!);
+        const beforeSelection = await placed.getAttribute('style');
         await placed.click();
         await expect(placed).toHaveAttribute('data-selected', 'true');
         // Selection changes the measured reading box; record Keep only after correction settles.
@@ -95,6 +156,7 @@ for (const theme of ['light', 'dark'] as const) for (const zoom of [1, .55]) {
             if (style !== lastStyle) { lastStyle = style; stableSince = Date.now(); }
             return Date.now() - stableSince >= 200;
         }).toBe(true);
+        await expect(placed).toHaveAttribute('style', beforeSelection!);
         const beforeKeep = await placed.getAttribute('style');
         await page.screenshot({ path: info.outputPath('nearby-' + theme + '-' + zoom + '.png') });
         await page.getByTestId('ai-proposal-keep').click();

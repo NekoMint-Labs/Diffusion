@@ -1,6 +1,6 @@
 # Overview navigation and connection feedback
 
-Follow-up to [the PR #29 review](https://github.com/NekoMint-Labs/Diffusion/pull/29#issuecomment-6071956768), under #11. Rebased onto main `2874e8f` after #29 was approved and squash-merged, including its single-parent relation-probe repair. This PR contains only its own navigation/line changes; #30 remains separate.
+Follow-up to [the PR #29 review](https://github.com/NekoMint-Labs/Diffusion/pull/29#issuecomment-6071956768), under #11. Rebased onto main `d863552` after #30 and #33 were approved and squash-merged, retaining #29's single-parent relation-probe repair, #30's proposal-position guarantees and #33's menu animation fix. This PR retains its focused navigation/line changes.
 
 ## Classification
 
@@ -28,4 +28,6 @@ Tracked `overviewNavigation.spec.ts` covers both themes, six edge candidates in 
 
 ## Integration recommendation
 
-#29 was approved and merged into main `2874e8f`; this focused follow-up is now independently based on that revision. Its original product/test patch was replayed unchanged, while retaining the approved relation-probe gesture in main. Current-head CI/E2E and the separate combined Windows-preview evidence are recorded in the PR description. #30, Field Management and Settings remain separate. No issue closure or merge of this follow-up is performed here; the repaired native-desktop workflow still needs operator acceptance.
+#30 was approved and merged into main `5f96785`, followed by #33 at `d863552`; this focused follow-up is now independently based on the latter revision. Range-diff confirmed both original commits replayed unchanged. Their combination raises `Field.tsx` to 651 lines against the existing 650-line limit. The synchronous request/selection subscription is therefore extracted unchanged into `useProposalArrivals.ts`, using the exact existing hook from #18 at `fff70f0`. There is still one subscription lifecycle, with the same timing and cleanup; proposal correction and the merged relation-probe gesture retain their existing owners.
+
+The requester accepted combined Windows preview `bfc4065` on 2026-10-09. That feedback belongs to that installer; current-head CI/E2E and the post-merge source comparison are recorded separately in the PR description. The accepted preview's hook has the same function body at a different path. Field Management, Settings and unrelated Issue #10 work remain separate. This follow-up still needs independent maintainer review; no issue closure or merge is performed here.

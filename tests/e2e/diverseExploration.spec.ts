@@ -42,6 +42,56 @@ test('questions default to one and an ignored repeated question ends without rep
     expect(await source.boundingBox()).toEqual(before);
 });
 
+test('explicit three-question batches accept fewer or no questions without repeating focus guidance or retrying', async ({ page }, testInfo) => {
+    const requests: { packet: ContextPacket; intent: UserIntent }[] = [];
+    const batches = [
+        ['What counts as an attention decision?', 'Which observation changes the decision?', 'What assumption connects attention to this criterion?'],
+        ['Under what boundary would this criterion fail?'],
+        [],
+    ];
+    await page.route('**/api/respond', async route => {
+        requests.push(route.request().postDataJSON());
+        await route.fulfill({ json: { providerLabel: 'Batch fixture / not live', mock: true, intents: batches[requests.length - 1].map(text => ({ type: 'surface_question', text })) } });
+    });
+    const source = page.locator('[data-thought-id="attention"]');
+    const original = await source.locator('p').innerText();
+    const before = await source.boundingBox();
+    const transform = await page.locator('.world').evaluate(element => (element as HTMLElement).style.transform);
+    const durableThoughts = await page.locator('[data-kind="thought"]').count();
+    const ghosts = page.locator('.thought.ghost');
+    for (const batch of batches) {
+        await source.click();
+        await page.getByTestId('scope-question').click();
+        const preview = page.getByRole('dialog', { name: 'Generate a question', exact: true });
+        await preview.getByRole('button', { name: '3', exact: true }).click();
+        await preview.getByTestId('action-preview-run').click();
+        await expect(ghosts).toHaveCount(batch.length);
+        if (!batch.length) await expect(page.locator('.notice[role="status"]')).toContainText('No new suggestion was surfaced this time.');
+        for (const text of batch) await expect(ghosts.filter({ hasText: text })).toHaveCount(1);
+        for (let index = 0; index < batch.length; index++) {
+            await ghosts.first().click({ button: 'right' });
+            await page.getByTestId('thought-menu').getByRole('menuitem', { name: 'Ignore', exact: true }).click();
+        }
+        await expect(ghosts).toHaveCount(0);
+    }
+    expect(requests).toHaveLength(3);
+    expect(requests.every(request => request.intent.kind === 'question' && request.packet.maxCandidates === 3 && request.packet.scope.map(item => item.id).join() === 'attention')).toBe(true);
+    expect(requests[0].intent.text).toContain('Ask up to 3');
+    expect(requests[0].intent.text).toContain('missing definition or distinction');
+    expect(requests[1].intent.text).toContain('one boundary');
+    expect(requests[1].intent.text).toContain('criterion for choosing');
+    expect(requests[1].intent.text).not.toContain('missing definition or distinction');
+    expect(requests[1].intent.text).not.toContain('missing observation');
+    expect(requests[1].intent.text).not.toContain('unstated assumption');
+    expect(requests[2].intent.text).toContain('does not prove');
+    for (const text of batches.flat()) expect(JSON.stringify(requests.slice(1))).not.toContain(text);
+    await expect(source.locator('p')).toHaveText(original);
+    expect(await source.boundingBox()).toEqual(before);
+    expect(await page.locator('.world').evaluate(element => (element as HTMLElement).style.transform)).toBe(transform);
+    await expect(page.locator('[data-kind="thought"]')).toHaveCount(durableThoughts);
+    await page.screenshot({ path: testInfo.outputPath('three-questions-fewer-and-empty.png') });
+});
+
 test('explicit Another Angle previews rotate their lens even after dismissing each result', async ({ page }) => {
     const requests: { packet: ContextPacket; intent: UserIntent }[] = [];
     await page.route('**/api/respond', async route => {

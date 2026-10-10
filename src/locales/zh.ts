@@ -983,12 +983,10 @@ export const zh: Record<string, string> = {
   "Semantic relation · no arrow": "内容关联 · 无箭头",
   "Select a thought to inspect its relations.": "选中一个想法，查看它的内容关联。",
   "Zoom in to inspect semantic relations.": "放大视图后可查看内容关联。",
-<<<<<<< HEAD
   "The credential service could not load. Reload the app and try again.": "凭据服务加载失败，请刷新应用后重试。",
   "The key was saved, but its status could not refresh.": "密钥已保存，但状态刷新失败。",
   "The key was removed, but its status could not refresh.": "密钥已移除，但状态刷新失败。",
   "Refresh key status": "刷新密钥状态",
-=======
   "Read the proposed structure, then choose which relations to keep.": "看看建议的结构，再选择要保留的关系。",
   "Apply will keep {count} relations. Card text and positions stay as they are.": "应用将保留 {count} 条关系，卡片原文和位置保持不变。",
   "There are no new relations to keep in this reading.": "这次梳理没有需要新增保留的关系。",
@@ -1004,5 +1002,4 @@ export const zh: Record<string, string> = {
   "Relation explanation": "关系说明",
   "Explain how these two cards relate.": "说明这两张卡片怎样相关。",
   "Apply will keep 1 relation. Card text and positions stay as they are.": "应用将保留 1 条关系，卡片原文和位置保持不变。",
->>>>>>> 5faa7bd (feat(thinking): review grounded relations before commitment)
 };

@@ -127,6 +127,13 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .suggestion-review p { white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0; }
 .suggestion-review small { display: block; color: var(--ink-secondary); overflow-wrap: anywhere; }
 .root-review section button { text-align: start; white-space: normal; overflow-wrap: anywhere; }
+.root-review .root-review-hint { margin: 4px 10px 8px; color: var(--ink-secondary); font-size: var(--type-helper-size); }
+.field-line-key { position: fixed; z-index: var(--layer-scope); display: flex; flex-wrap: wrap; gap: 4px 16px; width: max-content; padding: 4px 8px; color: var(--ink-secondary); background: var(--surface-1); border-radius: var(--radius-control); font: var(--type-helper-size)/1.5 var(--ui-font); pointer-events: none; }
+.field-line-key span { display: inline-flex; align-items: center; gap: 7px; pointer-events: auto; }
+.field-line-key small { flex-basis: 100%; font: inherit; }
+.field-line-key i { position: relative; width: 24px; border-top: 1.5px solid var(--relation); }
+.field-line-key .line-key-parent { border-color: var(--hierarchy-level-1); }
+.line-key-parent::after { content: ''; position: absolute; right: 0; top: -4px; border-left: 5px solid var(--hierarchy-level-1); border-top: 3px solid transparent; border-bottom: 3px solid transparent; }
 .root-anchors path { fill: var(--surface-1); stroke: var(--ink-secondary); stroke-width: 1; vector-effect: non-scaling-stroke; opacity: .65; }
 .hierarchy-context { --hierarchy-unit: max(1, var(--inverse-zoom)); --hierarchy-ink: var(--ink-secondary); display: flex; flex-wrap: wrap; gap: calc(3px * var(--hierarchy-unit)) calc(8px * var(--hierarchy-unit)); margin-bottom: calc(7px * var(--hierarchy-unit)); color: var(--hierarchy-ink); font: 500 calc(11px * var(--hierarchy-unit))/1.45 var(--ui-font); }
 .thought[data-depth-style="1"] .hierarchy-context { --hierarchy-ink: var(--hierarchy-level-1); }

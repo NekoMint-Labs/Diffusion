@@ -2,6 +2,7 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffec
 import type { Camera, Ghost, Thought, ThinkingOperation } from '../../core/model.ts';
 import { SuggestionReview } from './SuggestionReview.tsx';
 import { RootReview } from './RootReview.tsx';
+import { ConnectionKey } from './ConnectionKey.tsx';
 import type { GeometryCache } from '../../field/spatial/index.ts';
 import { worldToScreen } from '../../field/spatial/geometry.ts';
 import { cancelThinkingOperation, canCancelThinkingOperation } from '../../ai/operationControl.ts';
@@ -29,6 +30,9 @@ interface Props {
     onSuggestionAction: (ids: string[], action: 'keep' | 'ignore') => void;
     roots: Thought[];
     onRevealRoot: (id: string) => void;
+    hasHierarchy: boolean;
+    hasRelations: boolean;
+    localRelations: boolean;
 }
 const screenRect = (rect: DOMRect): ScopeRect => ({ x: rect.x, y: rect.y, width: rect.width, height: rect.height });
 
@@ -40,6 +44,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
     const operationElement = useRef<HTMLDivElement>(null);
     const reviewElement = useRef<HTMLDivElement>(null);
     const rootsElement = useRef<HTMLDivElement>(null);
+    const linesElement = useRef<HTMLDivElement>(null);
     const dockElement = useRef<HTMLDivElement>(null);
     const current = useRef({ ...props, displayOperation });
     current.current = { ...props, displayOperation };
@@ -55,6 +60,15 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         const camera = frameCamera ?? state.camera();
         const viewport = screenRect(field.getBoundingClientRect());
         const appRect = app.getBoundingClientRect();
+        const key = linesElement.current, identity = app.querySelector<HTMLElement>('.identity');
+        if (key) {
+            const heading = identity?.getBoundingClientRect();
+            const right = app.querySelector<HTMLElement>('.global-actions')?.getBoundingClientRect().left ?? appRect.right - 16;
+            const beside = heading && right - heading.right > 420;
+            const left = beside ? heading.right + 24 : heading?.left ?? viewport.x + 16;
+            const top = heading ? beside ? heading.top + 20 : heading.bottom + 8 : viewport.y + 16;
+            Object.assign(key.style, { display: state.enabled ? '' : 'none', left: `${left}px`, top: `${top}px`, maxWidth: `${Math.max(0, right - left - 16)}px` });
+        }
         const controls = [
             { element: scopeElement.current, ids: state.selection.filter(id => state.visibleIds.includes(id)), key: `scope:${state.selection.join(' ')}`, forceDock: false },
             { element: operationElement.current, ids: state.displayOperation?.scopeIds ?? [], key: `operation:${state.displayOperation?.id}`, forceDock: state.dragging },
@@ -69,7 +83,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             const point = worldToScreen(bounds, camera);
             return [{ id, x: viewport.x + point.x, y: viewport.y + point.y, width: bounds.width * camera.zoom, height: bounds.height * camera.zoom }];
         });
-        const reserved = [...app.querySelectorAll<HTMLElement>('[data-testid="speak"], .notice, .identity, .global-actions')]
+        const reserved = [...app.querySelectorAll<HTMLElement>('[data-testid="speak"], .notice, .identity, .global-actions, .field-line-key')]
             .filter(element => element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden')
             .map(element => screenRect(element.getBoundingClientRect()));
         const placed: ScopeRect[] = [];
@@ -113,6 +127,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             if (operationElement.current) operationElement.current.style.display = 'none';
             if (reviewElement.current) reviewElement.current.style.display = 'none';
             if (rootsElement.current) rootsElement.current.style.display = 'none';
+            if (linesElement.current) linesElement.current.style.display = 'none';
         }
         // One-time coaching shares the reserved feedback lane instead of covering the Field.
         const coach = app.querySelector<HTMLElement>('.progressive-tutorial-coach');
@@ -161,7 +176,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         const resize = new ResizeObserver(update);
         const observed = new Set<Element>();
         const observe = () => {
-            const elements = new Set<Element>([field, ...app.querySelectorAll('.scope-hub, .spatial-operation-feedback, .suggestion-review, [data-testid="speak"], .notice, .progressive-tutorial-coach')]);
+            const elements = new Set<Element>([field, ...app.querySelectorAll('.scope-hub, .spatial-operation-feedback, .suggestion-review, .field-line-key, [data-testid="speak"], .notice, .progressive-tutorial-coach')]);
             for (const element of observed) if (!elements.has(element)) { resize.unobserve(element); observed.delete(element); }
             for (const element of elements) if (!observed.has(element)) { resize.observe(element); observed.add(element); }
         };
@@ -180,7 +195,8 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
     const cancelable = Boolean(displayOperation && displayOperation.phase === 'pending' && canCancelThinkingOperation(displayOperation.id));
     return <>
         <div ref={dockElement} className="field-overlay-dock" aria-hidden="true" />
-        {props.roots.length > 0 && <RootReview elementRef={rootsElement} roots={props.roots} onReveal={props.onRevealRoot} />}
+        <RootReview elementRef={rootsElement} roots={props.roots} thoughts={props.thoughts} onReveal={props.onRevealRoot} />
+        <ConnectionKey elementRef={linesElement} hasHierarchy={props.hasHierarchy} hasRelations={props.hasRelations} local={props.localRelations} />
         {props.reviewNeeded && props.suggestions.length > 0 && <SuggestionReview elementRef={reviewElement} suggestions={props.suggestions} thoughts={props.thoughts} onAction={props.onSuggestionAction} />}
         {props.scope && <ScopeHub {...props.scope} elementRef={scopeElement} />}
         {displayOperation && <div ref={operationElement} className="spatial-operation-feedback" data-testid="operation-feedback" data-phase={displayOperation.phase} data-operation-id={displayOperation.id} data-origin-scope={displayOperation.scopeIds.join(' ')} data-copy-visible={showCopy || undefined} role="status" aria-live="polite" aria-atomic="true" onPointerDown={event => event.stopPropagation()}>

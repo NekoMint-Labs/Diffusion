@@ -4,7 +4,7 @@ import { measureSafeArea, fitInSafeArea } from './spatial/safeArea.ts';
 import { useDisclosureMeasurements } from './spatial/useDisclosureMeasurements.ts';
 import { worldAnchorPath } from './spatial/worldAnchors.ts';
 import { subtreeIds } from './spatial/subtree.ts';
-import { ProposalArrivals } from './spatial/proposalArrivals.ts';
+import { useProposalArrivals } from './useProposalArrivals.ts';
 import { thoughtHierarchy } from '../core/hierarchy.ts';
 import { t } from '../shared/i18n.ts';
 import { activeFrontiers } from './spatial/regions.ts';
@@ -62,17 +62,7 @@ interface Props {
 }
 export const Field = forwardRef<FieldHandle, Props>(function Field({ controller, fieldStyle, connectionStyle, onProbeRelation, scopeActions, onScopeAction, onKeepAllProposals, onKeepOriginalProposal, onAIProposalAction, onMore, onRegion, onRelation, onDropText, onSource, onDropFiles, onObserve, onCreateThought, onContextMenu, onRevealMatch, find }, forwardedRef) {
     const { project, session } = useProject(controller);
-    const arrivals = useMemo(() => new ProposalArrivals(controller.getSnapshot().session.ghosts), [controller]);
-    useLayoutEffect(() => {
-        const capture = () => {
-            const state = useUI.getState();
-            arrivals.observe(controller.getSnapshot().session.ghosts, state.operation);
-            arrivals.protect(state.selection);
-        };
-        capture();
-        const stopController = controller.subscribe(capture), stopUI = useUI.subscribe(capture);
-        return () => { stopController(); stopUI(); };
-    }, [controller, arrivals]);
+    const arrivals = useProposalArrivals(controller);
     const ui = useUI();
     const viewport = useRef<HTMLDivElement>(null);
     const overlays = useRef<FieldOverlaysHandle>(null);
@@ -538,6 +528,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         useUI.getState().patch({ selection: [key] });
         const bounds = geometry.get(key), c = camera.current;
         if (bounds && c) c.set(revealCamera(bounds, items[key], c.get().zoom, measureSafeArea(viewport.current, rect.current)), true);
+        viewport.current?.focus({ preventScroll: true });
     };
     const expandBranch = (key: string) => {
         revealed.current = null;
@@ -642,7 +633,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
    {Object.values(project.regions).filter(region => level === 'atlas' && disclosedLandmarks.has('region:' + region.id)).map(region => <button className="region-label" data-active={ui.regionId === region.id || undefined} onClick={() => onRegion(region.id, { x: region.x, y: region.y })} key={region.id} style={{ transform: `translate(${region.x}px,${region.y}px) scale(var(--inverse-zoom))` }}><span>{t(region.name)}</span><small>{t('{count} thoughts', { count: region.members.length })}</small></button>)}
    {level === 'atlas' && frontiers.filter(key => disclosedLandmarks.has('frontier:' + key)).map(key => { const t = project.thoughts[key]; return <button className="frontier-label" key={'frontier-' + key} onClick={() => { controller.wake(key); ui.patch({ selection: [key] }); revealThought(key); }} style={{ transform: `translate(${t.x}px,${t.y}px) scale(var(--inverse-zoom))` }}><span aria-hidden="true">&#9671;</span> {semanticExcerpt(t.text, 'atlas', 'thought')}</button>; })}
   </div>
-   <FieldOverlays ref={overlays} viewport={viewport} camera={() => camera.current?.get() ?? project.camera} geometry={geometry} visibleIds={visible} selection={ui.selection} operation={ui.operation} enabled={ui.surface === 'none'} dragging={ui.dragging} onScopeBounds={onScopeBounds} suggestions={Object.values(session.ghosts).filter(ghost => !visibleSet.has(ghost.id))} thoughts={project.thoughts} roots={rootAnchors.map(key => project.thoughts[key]).filter(Boolean)} onRevealRoot={revealThought} reviewNeeded={true} onSuggestionAction={onAIProposalAction} scope={showScopeHub ? { count: activeSelection.length, actions: scopeActions, probing, proposalReview, aiProposalKind, onAction: onScopeAction, onKeepAll: () => onKeepAllProposals([...activeSelection]), onKeepOriginal: () => onKeepOriginalProposal([...activeSelection]), onAIProposalAction: action => onAIProposalAction([...activeSelection], action), onMore } : null} />
+   <FieldOverlays ref={overlays} viewport={viewport} camera={() => camera.current?.get() ?? project.camera} geometry={geometry} visibleIds={visible} selection={ui.selection} operation={ui.operation} enabled={ui.surface === 'none'} dragging={ui.dragging} onScopeBounds={onScopeBounds} suggestions={Object.values(session.ghosts).filter(ghost => !visibleSet.has(ghost.id))} thoughts={project.thoughts} roots={rootAnchors.map(key => project.thoughts[key]).filter(Boolean)} onRevealRoot={revealThought} hasHierarchy={hierarchy.children.size > 0} hasRelations={Object.keys(project.relations).length > 0 || Object.keys(session.phenomena).length > 0} localRelations={level === 'local'} reviewNeeded={true} onSuggestionAction={onAIProposalAction} scope={showScopeHub ? { count: activeSelection.length, actions: scopeActions, probing, proposalReview, aiProposalKind, onAction: onScopeAction, onKeepAll: () => onKeepAllProposals([...activeSelection]), onKeepOriginal: () => onKeepOriginalProposal([...activeSelection]), onAIProposalAction: action => onAIProposalAction([...activeSelection], action), onMore } : null} />
   {ui.carry.length > 0 && <div className="carry-preview">{project.thoughts[ui.carry[0]]?.text.slice(0, 180)}</div>}
   {ui.carry.length > 0 && <div className="carry-banner">{t('Carrying {count} thoughts. Click to place; Escape cancels.', { count: ui.carry.length })}</div>}
     {session.recalls.filter(k => !visibleSet.has(k) && !!project.thoughts[k]).map((k, index) => { const edge = recallEdge(project.thoughts[k], stableCamera, rect.current.width, rect.current.height, index); return <button className="recall-edge" key={k} style={{ left: edge.x, top: edge.y }} onClick={() => { controller.wake(k); ui.patch({ selection: [k], notice: t('Earlier thought awakened. Use Find / Take me there to travel.') }); }} title={project.thoughts[k].text}><span aria-hidden="true" style={{ display: 'inline-block', transform: `rotate(${edge.angle}deg)` }}>&#8594;</span> {t('Earlier thought')}</button>; })}

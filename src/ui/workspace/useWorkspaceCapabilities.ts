@@ -6,6 +6,7 @@ import type { EngineRunner } from '../../discovery/runtime.ts';
 import type { CredentialStore } from '../../credentials/contracts.ts';
 import { aiCredential, searchCredential } from '../../credentials/contracts.ts';
 import { sessionCredentialStore } from '../../credentials/session.ts';
+import { createCredentialStore } from '../../credentials/index.ts';
 import { DIRECT_PROVIDER_IDS } from '../../ai/providers.ts';
 import type { PlatformCapabilities } from '../../platform/contracts.ts';
 import type { Settings } from '../settings.ts';
@@ -32,33 +33,30 @@ export function useWorkspaceCapabilities({ settings, settingsRef, platform }: {
     const [builtIn, setBuiltIn] = useState<EngineRunner | null>(null);
     const [credentialRevision, setCredentialRevision] = useState(0);
     const [engineVersion, setEngineVersion] = useState<string | null>(null);
-    /** The store the *current* build resolved. A ref, not state, because the engine runner is built
-     * once and must read the real store at request time rather than the session placeholder that
-     * happened to exist on the first render. */
-    const store = useRef<CredentialStore>(credentials);
     const started = useRef(false);
 
     /** Presence only. A value is never read here, so no secret enters React state. */
     const refreshPresence = useCallback(async () => {
-        const active = store.current;
+        const active = await createCredentialStore(platform.secureCredentials);
         const [search, ai] = await Promise.all([
             Promise.all(DISCOVERY_SOURCE_IDS.map(async id => [id, await active.has(searchCredential(id))] as const)),
             Promise.all(DIRECT_PROVIDER_IDS.map(async id => [id, await active.has(aiCredential(id))] as const)),
         ]);
+        setCredentials(active);
         setStoredSourceKeys(Object.fromEntries(search) as Partial<Record<DiscoverySourceId, boolean>>);
         setStoredAIKeys(Object.fromEntries(ai));
         setCredentialRevision(value => value + 1);
-    }, []);
+    }, [platform.secureCredentials]);
 
     useEffect(() => {
         if (started.current) return;
         started.current = true;
         void (async () => {
-            const { createCredentialStore } = await import('../../credentials/index.ts');
-            const active = await createCredentialStore(platform.secureCredentials);
-            store.current = active;
-            setCredentials(active);
-            await refreshPresence();
+            try {
+                await refreshPresence();
+            } catch {
+                // Settings reports readiness/write failures and offers presence retry explicitly.
+            }
             if (!platform.bundledDiscovery) return;
             // The bundled engine is a resource of this application. Availability is asked of the
             // native layer rather than assumed from the build flag, so a development run without a

@@ -998,4 +998,8 @@ export const zh: Record<string, string> = {
   "Relation explanation": "关系说明",
   "Explain how these two cards relate.": "说明这两张卡片怎样相关。",
   "Apply will keep 1 relation. Card text and positions stay as they are.": "应用将保留 1 条关系，卡片原文和位置保持不变。",
+  "The credential service could not load. Reload the app and try again.": "凭据服务加载失败，请刷新应用后重试。",
+  "The key was saved, but its status could not refresh.": "密钥已保存，但状态刷新失败。",
+  "The key was removed, but its status could not refresh.": "密钥已移除，但状态刷新失败。",
+  "Refresh key status": "刷新密钥状态",
 };

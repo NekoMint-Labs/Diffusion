@@ -6,6 +6,7 @@ import type { SearchCheckResult } from '../../discovery/connection.ts';
 import { ApiKeyLink } from '../primitives/ApiKeyLink.tsx';
 import { customDiscoveryURL } from '../../discovery/config.ts';
 import { searchCredential } from '../../credentials/contracts.ts';
+import { createCredentialStore } from '../../credentials/index.ts';
 import { Select } from '../primitives/Select.tsx';
 import { StatusLine } from '../primitives/Status.tsx';
 import { Button } from '../primitives/Button.tsx';
@@ -34,10 +35,11 @@ export function SearchSettings({ settings, discovery, sourceKeys, secureStore, o
     secureStore: boolean;
     onChange: (settings: Settings) => void;
     /** Re-reads credential presence after a key is stored or removed. */
-    onCredentialChange: () => void;
+    onCredentialChange: () => void | Promise<void>;
 }) {
     const [keyDraft, setKeyDraft] = useState<Partial<Record<DiscoverySourceId, string>>>({});
     const [keyError, setKeyError] = useState('');
+    const [refreshFailure, setRefreshFailure] = useState<'saved' | 'removed' | null>(null);
     const [advanced, setAdvanced] = useState(false);
     const [source, setSource] = useState<DiscoverySourceId>(() => enabledSources(settings.discovery)[0] ?? 'exa');
     const [check, setCheck] = useState<'idle' | 'checking' | 'verified' | 'empty' | 'failed'>('idle');
@@ -68,25 +70,27 @@ export function SearchSettings({ settings, discovery, sourceKeys, secureStore, o
     async function saveKey(id: DiscoverySourceId): Promise<boolean> {
         const draft = (keyDraft[id] ?? '').trim();
         setKeyError('');
+        setRefreshFailure(null);
         if (!draft)
             return false;
+        if (draft.length < 8) {
+            setKeyError(msg('That key looks too short. Check it and try again.'));
+            return false;
+        }
+        let store;
+        try { store = await createCredentialStore(secureStore); }
+        catch { setKeyError(msg('The credential service could not load. Reload the app and try again.')); return false; }
         try {
-            const { createCredentialStore } = await import('../../credentials/index.ts');
-            const store = await createCredentialStore(secureStore);
-            if (draft.length < 8) {
-                setKeyError(msg('That key looks too short. Check it and try again.'));
-                return false;
-            }
             await store.store(searchCredential(id), draft);
-            setKeyDraft(current => ({ ...current, [id]: '' }));
-            invalidateCheck();
-            onCredentialChange();
-            return true;
         }
         catch {
             setKeyError(msg('The credential store refused the change.'));
             return false;
         }
+        setKeyDraft(current => ({ ...current, [id]: '' }));
+        invalidateCheck();
+        try { await onCredentialChange(); return true; }
+        catch { setRefreshFailure('saved'); setKeyError(msg('The key was saved, but its status could not refresh.')); return false; }
     }
     /** The one moment a source key is removed: its own control.
      *
@@ -94,17 +98,26 @@ export function SearchSettings({ settings, discovery, sourceKeys, secureStore, o
      * that key: merely tabbing through the panel silently removed the credential the person had
      * configured, and the next search failed with no cause anywhere on screen. */
     async function removeKey(id: DiscoverySourceId): Promise<void> {
+        setKeyError('');
+        setRefreshFailure(null);
+        let store;
+        try { store = await createCredentialStore(secureStore); }
+        catch { setKeyError(msg('The credential service could not load. Reload the app and try again.')); return; }
         try {
-            const { createCredentialStore } = await import('../../credentials/index.ts');
-            const store = await createCredentialStore(secureStore);
             await store.forget(searchCredential(id));
-            setKeyDraft(current => ({ ...current, [id]: '' }));
-            invalidateCheck();
-            onCredentialChange();
         }
         catch {
             setKeyError(msg('The credential store refused the change.'));
+            return;
         }
+        setKeyDraft(current => ({ ...current, [id]: '' }));
+        invalidateCheck();
+        try { await onCredentialChange(); }
+        catch { setRefreshFailure('removed'); setKeyError(msg('The key was removed, but its status could not refresh.')); }
+    }
+    async function refreshKeyStatus(): Promise<void> {
+        try { await onCredentialChange(); setRefreshFailure(null); setKeyError(''); }
+        catch { /* Keep the mutation receipt and retry available. */ }
     }
     const configured = enabledSources(discoverySettings);
     const descriptor = DISCOVERY_SOURCES[source];
@@ -149,6 +162,7 @@ export function SearchSettings({ settings, discovery, sourceKeys, secureStore, o
                     {configured.length === 0 && <p className="settings-note" data-testid="discovery-empty">{msg('settings.search.chooseSource')}</p>}
                     {discovery.missingKey.length > 0 && <p className="settings-note" data-testid="discovery-missing-key">{msg(discovery.missingKey.length === 1 ? 'settings.search.missingKey' : 'settings.search.missingKeys', { count: discovery.missingKey.length })}</p>}
                     {keyError && <p className="settings-error" role="alert" data-testid="discovery-key-error">{keyError}</p>}
+                    {refreshFailure && <Button variant="outline" size="sm" data-testid="source-key-refresh" onClick={() => void refreshKeyStatus()}>{msg('Refresh key status')}</Button>}
                 </>}
                 <div className="ui-group-footer"><StatusLine {...status} testId="discovery-status"/><Button variant="solid" size="sm" data-testid="search-test" disabled={!canTest || check === 'checking'} onClick={() => void testConnection()}>{msg('Test connection')}</Button></div>
                 <p className="settings-note">{msg('settings.ai.testCost')}</p>

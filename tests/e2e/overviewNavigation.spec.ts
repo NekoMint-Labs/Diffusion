@@ -41,6 +41,42 @@ async function saved(page: Page) {
 }
 
 for (const theme of ['light', 'dark']) {
+    for (const ime of [
+        { name: 'isComposing', isComposing: true, keyCode: 27 },
+        { name: 'legacy keyCode 229', isComposing: false, keyCode: 229 },
+    ]) test(`overview search keeps focus during IME composition Escape: ${theme}, ${ime.name}`, async ({ page }) => {
+        const initial = await boot(page, theme, .2);
+        const world = page.locator('.world'), before = await world.getAttribute('style');
+        const toggle = page.getByTestId('root-review-toggle');
+        await toggle.click();
+        const input = page.getByRole('textbox', { name: 'Find anchored thoughts' });
+        await input.fill('目标');
+        await expect(input).toBeFocused();
+        await input.dispatchEvent('compositionstart', { data: '中' });
+        const prevented = await input.evaluate((element, ime) => {
+            const event = new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true, cancelable: true, isComposing: ime.isComposing, keyCode: ime.keyCode });
+            element.dispatchEvent(event);
+            return event.defaultPrevented;
+        }, ime);
+        await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+        await expect(input).toBeFocused();
+        await expect(input).toHaveValue('目标');
+        expect(prevented).toBe(false);
+        await expect(world).toHaveAttribute('style', before!);
+        await input.dispatchEvent('compositionend', { data: '' });
+        await input.press('Escape');
+        await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+        await expect(toggle).toBeFocused();
+        await expect(input).toHaveCount(0);
+        await toggle.press('Enter');
+        await expect(input).toBeFocused();
+        await expect(input).toHaveValue('');
+        await expect(world).toHaveAttribute('style', before!);
+        const persisted = await saved(page);
+        expect(persisted.camera).toEqual(initial.camera);
+        expect(persisted.thoughts).toEqual(initial.thoughts);
+        expect(persisted.relations).toEqual(initial.relations);
+    });
     test(`overview navigation remains usable after Find closes: ${theme}`, async ({ page }) => {
         const initial = await boot(page, theme, .2);
         await page.keyboard.press('Control+f');

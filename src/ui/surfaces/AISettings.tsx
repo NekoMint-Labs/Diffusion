@@ -6,6 +6,7 @@ import { type ConnectionCheck, type ThinkingCapabilities } from '../../ai/contra
 import { DIRECT_PROVIDER_IDS, DIRECT_PROVIDERS, WIRE_PROTOCOLS, type DirectProviderId, type ProviderId, type WireProtocol } from '../../ai/providers.ts';
 import { failureText, type ThinkingFailure } from '../../ai/errors.ts';
 import { aiCredential, type CredentialId } from '../../credentials/contracts.ts';
+import { createCredentialStore } from '../../credentials/index.ts';
 import { Select } from '../primitives/Select.tsx';
 import { StatusLine, type StatusTone } from '../primitives/Status.tsx';
 import { Button } from '../primitives/Button.tsx';
@@ -87,6 +88,7 @@ export function AISettings({ settings, capabilities, check, gatewayReachable = f
 }) {
     const [keyDraft, setKeyDraft] = useState('');
     const [keyError, setKeyError] = useState('');
+    const [refreshFailure, setRefreshFailure] = useState<'saved' | 'removed' | null>(null);
     const [advanced, setAdvanced] = useState(false);
     /** The model suggestion list. It opens only when there is something to suggest: an empty
      * list that appeared on focus would be a floating box saying nothing, and it would take the
@@ -96,7 +98,7 @@ export function AISettings({ settings, capabilities, check, gatewayReachable = f
     const provider = settings.provider;
     const currentProvider = useRef(provider);
     currentProvider.current = provider;
-    useEffect(() => { setKeyDraft(''); setKeyError(''); setModelOpen(false); }, [provider]);
+    useEffect(() => { setKeyDraft(''); setKeyError(''); setRefreshFailure(null); setModelOpen(false); }, [provider]);
     const direct = (DIRECT_PROVIDER_IDS as string[]).includes(provider) ? DIRECT_PROVIDERS[provider as DirectProviderId] : null;
     const keyPresent = storedKeys[provider] === true;
     const credentialId: CredentialId | null = direct ? aiCredential(direct.id) : null;
@@ -112,29 +114,39 @@ export function AISettings({ settings, capabilities, check, gatewayReachable = f
     async function saveKey(): Promise<boolean> {
         if (!credentialId) return false;
         setKeyError('');
+        setRefreshFailure(null);
         const draft = keyDraft.trim();
         if (!draft) return false;
+        if (draft.length < 8) { setKeyError(msg('That key looks too short. Check it and try again.')); return false; }
+        let store;
+        try { store = await createCredentialStore(secureStore); }
+        catch { setKeyError(msg('The credential service could not load. Reload the app and try again.')); return false; }
         try {
-            const { createCredentialStore } = await import('../../credentials/index.ts');
-            const store = await createCredentialStore(secureStore);
-            if (draft.length < 8) { setKeyError(msg('That key looks too short. Check it and try again.')); return false; }
             await store.store(credentialId, draft);
-            setKeyDraft('');
-            await onCredentialChange();
-            return true;
         }
         catch { setKeyError(msg('The credential store refused the change.')); return false; }
+        setKeyDraft('');
+        try { await onCredentialChange(); return true; }
+        catch { setRefreshFailure('saved'); setKeyError(msg('The key was saved, but its status could not refresh.')); return false; }
     }
     async function removeKey(): Promise<void> {
         if (!credentialId) return;
+        setKeyError('');
+        setRefreshFailure(null);
+        let store;
+        try { store = await createCredentialStore(secureStore); }
+        catch { setKeyError(msg('The credential service could not load. Reload the app and try again.')); return; }
         try {
-            const { createCredentialStore } = await import('../../credentials/index.ts');
-            const store = await createCredentialStore(secureStore);
             await store.forget(credentialId);
-            setKeyDraft('');
-            await onCredentialChange();
         }
-        catch { setKeyError(msg('The credential store refused the change.')); }
+        catch { setKeyError(msg('The credential store refused the change.')); return; }
+        setKeyDraft('');
+        try { await onCredentialChange(); }
+        catch { setRefreshFailure('removed'); setKeyError(msg('The key was removed, but its status could not refresh.')); }
+    }
+    async function refreshKeyStatus(): Promise<boolean> {
+        try { await onCredentialChange(); setRefreshFailure(null); setKeyError(''); return true; }
+        catch { return false; }
     }
     /** A deliberate check acts on what the person can see: a key still sitting in the field is
      * committed first, so Test connection never reports on a configuration that is not on screen. */
@@ -144,6 +156,7 @@ export function AISettings({ settings, capabilities, check, gatewayReachable = f
         const requestedProvider = provider;
         if (keyDraft.trim() && !await saveKey())
             return;
+        if (refreshFailure && !await refreshKeyStatus()) return;
         await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
         if (requestedProvider !== currentProvider.current) return;
         if (action === 'connection') latestActions.current.onVerify();
@@ -214,6 +227,7 @@ export function AISettings({ settings, capabilities, check, gatewayReachable = f
             </SettingRow>
             {keyPresent && <p className="settings-note">{msg(secureStore ? 'settings.ai.keyStored' : 'settings.ai.keySession')}</p>}
             {keyError && <p className="settings-error" role="alert" data-testid="provider-key-error">{keyError}</p>}
+            {refreshFailure && <Button variant="outline" size="sm" data-testid="provider-key-refresh" onClick={() => void refreshKeyStatus()}>{msg('Refresh key status')}</Button>}
             <SettingRow label={msg('Model')} setting="model">
                 <span className="settings-key-row settings-model-row">{modelField}<Button variant="outline" size="sm" data-testid="refresh-models" disabled={verifying !== null} onClick={() => void withTypedKey('models')}>{msg('Refresh models')}</Button></span>
             </SettingRow>

@@ -7,6 +7,70 @@ test.beforeEach(async ({ page }) => {
     await expect(page.locator('[data-thought-id="attention"]')).toBeVisible();
 });
 
+test('questions default to one and an ignored repeated question ends without replacement calls', async ({ page }, testInfo) => {
+    const requests: { packet: ContextPacket; intent: UserIntent }[] = [];
+    const text = 'Which observation would change the chosen stopping threshold?';
+    await page.route('**/api/respond', async route => {
+        requests.push(route.request().postDataJSON());
+        await route.fulfill({ json: { providerLabel: 'Question fixture / not live', mock: true, intents: [{ type: 'surface_question', text }] } });
+    });
+    const source = page.locator('[data-thought-id="attention"]');
+    const original = await source.locator('p').innerText();
+    const before = await source.boundingBox();
+    await source.click();
+    await page.getByTestId('scope-question').click();
+    const preview = page.getByRole('dialog', { name: 'Generate a question', exact: true });
+    await expect(preview.getByRole('button', { name: '1', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await page.screenshot({ path: testInfo.outputPath('one-question-default.png') });
+    await preview.getByTestId('action-preview-run').click();
+    const ghost = page.locator('.thought.ghost');
+    await expect(ghost).toHaveCount(1);
+    await ghost.click({ button: 'right' });
+    await page.getByTestId('thought-menu').getByRole('menuitem', { name: 'Ignore', exact: true }).click();
+    await expect(ghost).toHaveCount(0);
+    await source.click();
+    await page.getByTestId('scope-question').click();
+    await page.getByTestId('action-preview-run').click();
+    await expect(page.locator('.notice[role="status"]')).toContainText('No new suggestion was surfaced this time.');
+    await expect(ghost).toHaveCount(0);
+    expect(requests).toHaveLength(2);
+    expect(requests.every(request => request.intent.kind === 'question' && request.packet.maxCandidates === 1)).toBe(true);
+    expect(requests[0].intent.text).toContain('missing definition or distinction');
+    expect(requests[1].intent.text).toContain('missing observation');
+    expect(JSON.stringify(requests[1])).not.toContain(text);
+    await expect(source.locator('p')).toHaveText(original);
+    expect(await source.boundingBox()).toEqual(before);
+});
+
+test('explicit Another Angle previews rotate their lens even after dismissing each result', async ({ page }) => {
+    const requests: { packet: ContextPacket; intent: UserIntent }[] = [];
+    await page.route('**/api/respond', async route => {
+        requests.push(route.request().postDataJSON());
+        await route.fulfill({ json: { providerLabel: 'Angle fixture / not live', mock: true, intents: [{ type: 'surface_possibility', text: 'Distinct authored observation fixture ' + requests.length }] } });
+    });
+    for (let run = 0; run < 3; run++) {
+        await page.locator('[data-thought-id="attention"]').click();
+        await page.getByTestId('scope-angle').click();
+        const preview = page.getByRole('dialog', { name: 'Another angle', exact: true });
+        await preview.getByRole('button', { name: '1', exact: true }).click();
+        await preview.getByTestId('action-preview-run').click();
+        const ghost = page.locator('.thought.ghost');
+        await expect(ghost).toHaveCount(1);
+        const indicator = page.getByRole('group', { name: 'Thinking activity', exact: true });
+        await expect(indicator).toContainText('Found 1 angle');
+        await ghost.click({ button: 'right' });
+        await page.getByTestId('thought-menu').getByRole('menuitem', { name: 'Ignore', exact: true }).click();
+        await indicator.getByRole('button', { name: 'Dismiss', exact: true }).click();
+        await expect(ghost).toHaveCount(0);
+    }
+    expect(requests).toHaveLength(3);
+    expect(new Set(requests.map(request => request.intent.text)).size).toBe(3);
+    expect(requests[1].intent.text).toContain('cost of an alternative');
+    expect(requests[2].intent.text).toContain('time horizon');
+    expect(requests.every(request => request.packet.scope[0].id === 'attention' && request.packet.maxCandidates === 1)).toBe(true);
+    expect(requests.every(request => !JSON.stringify(request).includes('Distinct authored observation fixture'))).toBe(true);
+});
+
 for (const end of ['repeated', 'empty'] as const) {
     test('an ignored exploration result stays excluded and a ' + end + ' step ends with an honest count', async ({ page }, testInfo) => {
         const requests: { packet: ContextPacket; intent: UserIntent }[] = [];

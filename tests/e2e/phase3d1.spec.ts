@@ -61,6 +61,9 @@ test('AI question is the obvious primary action while writing your own question 
     const preview = page.getByRole('dialog', { name: 'Generate a question', exact: true });
     await expect(preview).toBeVisible();
     await expect(preview).toContainText('Generate a question that could move the thinking.');
+    await expect(preview.getByRole('button', { name: '1', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await preview.getByRole('button', { name: '3', exact: true }).click();
+    await expect(preview.getByRole('button', { name: '3', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await preview.getByTestId('action-preview-run').click();
     await expect(preview).toHaveCount(0);
     await expect(page.getByRole('textbox', { name: 'Speak', exact: true })).toHaveCount(0);

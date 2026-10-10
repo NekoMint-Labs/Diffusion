@@ -159,7 +159,7 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .relation-label-overlay[data-status="tentative"] { border-style: dashed; border-color: color-mix(in srgb, var(--attention) 38%, var(--boundary)); background: color-mix(in srgb, var(--field-bg) 88%, var(--attention-soft)); color: var(--ink-secondary); }
 .relation-label-overlay:hover, .relation-label-overlay:focus-within { color: var(--ink-primary); background: color-mix(in srgb, var(--surface-1) 94%, transparent); border-color: color-mix(in srgb, var(--attention) 42%, var(--boundary)); }
 .relation-label-overlay:focus-within { box-shadow: var(--shadow-control); }
-.relation-token-label { width: 100%; min-width: 0; min-height: 28px; padding: 4px 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit; font: inherit; text-align: center; }
+.relation-token-label { display: flex; flex-direction: column; align-items: center; gap: 1px; width: 100%; min-width: 0; min-height: 28px; padding: 3px 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit; font: inherit; text-align: center; }
 .relation-token-label:focus-visible { outline: 1px dotted var(--trace-muted); outline-offset: 2px; }
 .relation-token-input { width: 100%; min-height: 28px; border: 0; outline: 0; padding: 4px 8px; background: transparent; color: var(--ink-primary); font: inherit; }
 .relation-token-actions { position: absolute; z-index: var(--layer-scope); left: 50%; top: calc(100% - 1px); padding-top: 5px; display: flex; gap: 2px; padding: 3px; transform: translateX(-50%); border: 1px solid var(--boundary); border-radius: var(--radius-control); background: var(--surface-1); box-shadow: var(--shadow); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity var(--motion-instant) ease; white-space: nowrap; }
@@ -379,3 +379,7 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .speak-references { margin: 0 5px 9px; max-height: min(150px, 24dvh); overflow: auto; overscroll-behavior: contain; color: var(--ink-secondary); font: var(--type-helper-size)/1.6 var(--ui-font); }
 .speak-references blockquote { margin: 4px 0; padding-left: 9px; border-left: 2px solid var(--boundary); overflow-wrap: anywhere; }
 .speak-references > span { display: block; margin-top: 4px; color: var(--ink-helper); }
+
+.relation-token-wording { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.relation-token-hint { display: block; font-size: var(--type-hint-size); color: var(--ink-tertiary); }
+.relation-label-overlay[data-just-kept="true"] { border-color: var(--attention); background: var(--attention-soft); color: var(--ink-primary); }

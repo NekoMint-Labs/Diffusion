@@ -159,7 +159,7 @@ test('Delete removes an opened confirmed relation and Undo restores it', async (
     await expect(page.getByRole('button', { name: /Confirmed relation: Attention reveals structure/ })).toBeVisible();
 });
 
-test('selection wakes existing relations without reflow, camera travel or AI', async ({ page }) => {
+test('selection wakes existing relations and their labels stay reopenable without selection', async ({ page }) => {
     const a = page.locator('[data-thought-id="attention"]');
     const before = await a.boundingBox();
     const camera = (await project(page)).camera;
@@ -177,7 +177,13 @@ test('selection wakes existing relations without reflow, camera travel or AI', a
     await expect(page.locator('.thought.ghost')).toHaveCount(0);
     await page.getByTestId('field').click({ position: { x: 1320, y: 720 } });
     await expect(a).toHaveAttribute('data-selected', 'false');
-    await expect(page.locator('.relation-label-overlay')).toHaveCount(0);
+    const kept = page.getByRole('button', { name: 'Confirmed relation: Attention reveals structure', exact: true });
+    await expect(kept).toBeVisible();
+    expect(await a.boundingBox()).toEqual(before);
+    expect((await project(page)).camera).toEqual(camera);
+    expect(requests).toBe(0);
+    await kept.click();
+    await expect(page.getByRole('dialog', { name: 'Confirmed relation', exact: true })).toBeVisible();
 });
 test('direct drag commits one final position and pan does not move the Thought', async ({ page }) => {
     const thought = page.locator('[data-thought-id="attention"]');

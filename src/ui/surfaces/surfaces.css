@@ -529,3 +529,14 @@ h3.history-day { display: flex; align-items: center; gap: 12px; margin: 30px 0 1
 /* Full wording is read outside the zoomed Field, without entering its editor. */
 .surface.anchored.thought-reader { width: min(460px, calc(100vw - 48px)); max-height: min(620px, calc(100dvh - 64px)); }
 .thought-reader-text { white-space: pre-wrap; color: var(--ink-primary); font: var(--thought-size)/1.75 var(--thought-font); }
+
+/* Reading structure keeps authored cards separate from proposed interpretations. */
+.structure-apply-summary { margin: 0; padding: 9px 12px; border-radius: var(--radius-control); background: var(--attention-soft); color: var(--ink-primary); }
+.organize-proposals h3 { margin: 6px 0; font: 600 var(--type-label-size)/1.5 var(--ui-font); }
+.structure-reading-hint { margin: 0 0 8px; font-size: var(--type-hint-size); }
+.structure-endpoints { margin: 8px 0; color: var(--ink-secondary); font-size: var(--type-hint-size); }
+.structure-endpoints summary { cursor: pointer; }
+.structure-endpoints ul { margin: 6px 0; padding-left: 18px; }
+.structure-endpoints li + li { margin-top: 6px; }
+
+.relation-edit textarea { width: 100%; margin-top: 8px; padding: 8px; resize: vertical; min-height: 80px; border: 1px solid var(--boundary); border-radius: var(--radius-control); background: var(--surface-1); color: var(--ink-primary); font: inherit; }

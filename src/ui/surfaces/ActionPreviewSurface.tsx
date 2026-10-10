@@ -23,7 +23,7 @@ export function ActionPreviewSurface({ action, anchor, allowSources, allowWeb, o
     onRun: (options: { count: ThinkingDirectionCount; fieldSources: boolean; web: boolean }) => void;
     onClose: () => void;
 }) {
-    const [count, setCount] = useState<ThinkingDirectionCount>(THINKING_DEFAULTS.directions);
+    const [count, setCount] = useState<ThinkingDirectionCount>(action === 'ask' ? THINKING_DEFAULTS.questions : THINKING_DEFAULTS.directions);
     const [sources, setSources] = useState(THINKING_DEFAULTS.fieldSources);
     const [web, setWeb] = useState(THINKING_DEFAULTS.web);
     const details = allowSources || allowWeb;

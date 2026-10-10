@@ -3,6 +3,7 @@ import { t as msg } from '../../shared/i18n.ts';
 import type { Point, StructureProposal } from '../../core/model.ts';
 import type { ProjectController } from '../../core/controller.ts';
 import type { AIRuntime } from '../../ai/runtime.ts';
+import { useProject } from '../hooks.ts';
 import { Button } from '../primitives/Button.tsx';
 import { Surface } from './Surface.tsx';
 
@@ -18,6 +19,7 @@ export function OrganizeSurface({ controller, runtime, scopeIds, anchor, onClose
     const [running, setRunning] = useState(false);
     const mounted = useRef(true);
     const proposalRef = useRef<string | null>(null);
+    const snapshot = useProject(controller);
     const setActiveProposal = (id: string | null) => { proposalRef.current = id; if (mounted.current) setProposalId(id); };
     const clearProposal = (id = proposalRef.current) => {
         if (id && controller.getSnapshot().session.structures[id]) controller.dismissStructureProposal(id);
@@ -27,7 +29,7 @@ export function OrganizeSurface({ controller, runtime, scopeIds, anchor, onClose
         clearProposal();
         setRunning(true);
         let emitted: string | null = null;
-        await runtime.run('organize', 'Reveal structure that is already present in these selected thoughts. Keep it restrained; it is valid to say there is not enough stable structure yet.', scopeIds, {
+        await runtime.run('organize', 'Reveal the selected reasoning: distinguish a proposed method, questions about its definition, and conditions still to check. Preserve questions and uncertainty; do not answer them or add causal claims. Groups are reading aids; propose only grounded relations worth keeping.', scopeIds, {
             maxCandidates: 1,
             activity: 'bridge',
             onEmission: key => { emitted = key; },
@@ -37,26 +39,39 @@ export function OrganizeSurface({ controller, runtime, scopeIds, anchor, onClose
     };
     useEffect(() => { mounted.current = true; void run(); return () => { mounted.current = false; runtime.cancel(); clearProposal(); }; // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-    const snapshot = controller.getSnapshot();
     const proposal: StructureProposal | null = proposalId ? snapshot.session.structures[proposalId] ?? null : null;
     const relations = proposal?.relationIds.map(key => snapshot.session.phenomena[key]).filter((relation): relation is NonNullable<typeof relation> => Boolean(relation)) ?? [];
     const apply = () => {
-        if (proposal) controller.applyStructureProposal(proposal.id);
+        if (!proposal || !relations.length) return;
+        controller.applyStructureProposal(proposal.id);
         setActiveProposal(null);
         onClose();
     };
     const cancel = () => { clearProposal(); onClose(); };
-    return <Surface title={msg('Organize thoughts')} subtitle={msg('Reveal structure already present here. Nothing changes until you apply it.')} level="anchored" anchor={anchor} onClose={cancel} className="organize-surface">
+    return <Surface title={msg('Organize thoughts')} subtitle={msg('Read the proposed structure, then choose which relations to keep.')} level="anchored" anchor={anchor} onClose={cancel} className="organize-surface">
         <div data-testid="organize-proposal" data-version={version}>
             {running ? <p>{msg('Looking for structure...')}</p> : proposal ? <div className="organize-proposals" data-testid="structure-proposal">
-                {proposal.groups.map((group, index) => <article key={`${group.label}-${index}`} className="structure-group-summary"><strong>{group.label}</strong><ul>{group.thoughtIds.map(key => snapshot.project.thoughts[key]).filter(Boolean).map(thought => <li key={thought.id}>{thought.text}</li>)}</ul></article>)}
-                {proposal.note && <p className="structure-note">{proposal.note}</p>}
-                {relations.map(relation => <article key={relation.id}><strong>{relation.label}</strong>{relation.explanation && <p>{relation.explanation}</p>}<small>{snapshot.project.thoughts[relation.a]?.text} <span aria-hidden="true">{String.fromCharCode(8596)}</span> {snapshot.project.thoughts[relation.b]?.text}</small></article>)}
+                <p className="structure-apply-summary" data-testid="structure-apply-summary">{relations.length ? relations.length === 1 ? msg('Apply will keep 1 relation. Card text and positions stay as they are.') : msg('Apply will keep {count} relations. Card text and positions stay as they are.', { count: relations.length }) : msg('There are no new relations to keep in this reading.')}</p>
+                {!!proposal.groups.length && <section aria-label={msg('Reading groups')}>
+                    <h3>{msg('Reading groups')}</h3>
+                    <p className="muted structure-reading-hint">{msg('These groups help read the preview; they are not saved as containers.')}</p>
+                    {proposal.groups.map((group, index) => <article key={`${group.label}-${index}`} className="structure-group-summary"><strong>{group.label}</strong><ul>{group.thoughtIds.map(key => snapshot.project.thoughts[key]).filter(Boolean).map(thought => <li key={thought.id}>{thought.text}</li>)}</ul></article>)}
+                </section>}
+                {!!relations.length && <section aria-label={msg('Relations to keep')}>
+                    <h3>{msg('Relations to keep')}</h3>
+                    {relations.map(relation => <article key={relation.id} className="structure-relation-summary">
+                        <strong>{relation.label}</strong>
+                        {relation.explanation && <p>{relation.explanation}</p>}
+                        <details className="structure-endpoints"><summary>{msg('Compare the original cards')}</summary><ul><li>{snapshot.project.thoughts[relation.a]?.text}</li><li>{snapshot.project.thoughts[relation.b]?.text}</li></ul></details>
+                        <Button variant="ghost" size="sm" onClick={() => controller.dismissPhenomenon(relation.id)}>{msg('Leave out this relation')}</Button>
+                    </article>)}
+                </section>}
+                {proposal.note && <section className="structure-note"><h3>{msg('Still unresolved')}</h3><p>{proposal.note}</p></section>}
                 {!proposal.groups.length && !relations.length && !proposal.note && <p className="muted">{msg('No clear structure was supported by these thoughts.')}</p>}
             </div> : <p className="muted">{msg('No clear structure was supported by these thoughts.')}</p>}
         </div>
         <div className="surface-choice">
-            <Button variant="solid" tone="attention" disabled={running || !proposal} onClick={apply}>{msg('Apply')}</Button>
+            <Button variant="solid" tone="attention" disabled={running || !proposal || !relations.length} onClick={apply}>{msg('Apply')}</Button>
             <Button variant="outline" disabled={running} onClick={() => void run()}>{msg('Try another')}</Button>
             <Button variant="ghost" onClick={cancel}>{msg('Cancel')}</Button>
         </div>

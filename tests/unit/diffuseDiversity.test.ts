@@ -27,6 +27,48 @@ const candidate = (text: string): SemanticIntent => ({ type: 'surface_possibilit
 async function completed(session: DiffuseSession) { await vi.waitFor(() => expect(session.getSnapshot().phase).toBe('complete'), { interval: 5, timeout: 2500 }); }
 
 describe('bounded exploration diversity (authored fixtures, not model-quality evidence)', () => {
+    it('rotates attempted Angle lenses across explicit runs without promoting prior model output', async () => {
+        const fixture = setup(call => [candidate('Distinct fixture ' + call)]);
+        try {
+            for (let run = 0; run < 7; run++) {
+                // The mounted preview clears its presentation before each explicit run.
+                fixture.session.clear();
+                fixture.session.start({ ...config, mode: 'angle', steps: 1 });
+                await completed(fixture.session);
+                fixture.controller.dismissGhost(Object.keys(fixture.controller.getSnapshot().session.ghosts)[0]);
+            }
+            expect(new Set(fixture.requests.map(request => request.intent.text)).size).toBe(7);
+            expect(fixture.requests[5].intent.text).toContain('plausible failure case');
+            expect(fixture.requests[6].intent.text).toContain('surrounding system');
+            expect(fixture.requests.every(request => request.intent.kind === 'angle' && request.packet.maxCandidates === 1)).toBe(true);
+            expect(fixture.requests.every(request => !JSON.stringify(request).includes('Distinct fixture'))).toBe(true);
+            fixture.session.start({ ...config, mode: 'angle', steps: 1 });
+            await completed(fixture.session);
+            expect(fixture.requests[7].intent.text).toBe(fixture.requests[0].intent.text);
+            expect(Object.keys(fixture.controller.getSnapshot().project.thoughts)).toEqual(['a']);
+        } finally { fixture.dispose(); }
+    });
+    it('resets Angle lenses for changed wording or permissions and leaves ordinary Diffuse separate', async () => {
+        const fixture = setup(() => []);
+        try {
+            fixture.session.start({ ...config, mode: 'angle', steps: 1 }); await completed(fixture.session);
+            const initial = fixture.requests[0].intent.text;
+            fixture.session.start({ ...config, mode: 'angle', steps: 1 }); await completed(fixture.session);
+            expect(fixture.requests[1].intent.text).not.toBe(initial);
+            fixture.session.start({ ...config, mode: 'angle', steps: 1, projectSources: true }); await completed(fixture.session);
+            expect(fixture.requests[2].intent.text).toBe(initial);
+            fixture.controller.dispatch({ type: 'thought.edit', id: 'a', text: 'A different selected object' }, 'user');
+            fixture.session.start({ ...config, mode: 'angle', steps: 1, projectSources: true }); await completed(fixture.session);
+            expect(fixture.requests[3].intent.text).toBe(initial);
+            fixture.session.start({ ...config, steps: 1 }); await completed(fixture.session);
+            expect(fixture.requests[4].intent.kind).toBe('diffuse');
+            expect(fixture.requests[4].intent.text).toContain('Name a missing question.');
+            fixture.session.clear();
+            fixture.session.start({ ...config, mode: 'angle', steps: 1, projectSources: true }); await completed(fixture.session);
+            expect(fixture.requests[5].intent.text).toContain('cost of an alternative');
+            expect(fixture.requests).toHaveLength(6);
+        } finally { fixture.dispose(); }
+    });
     it.each(['diffuse', 'angle'] as const)('limits %s to one proposal per direction even when a provider overproduces', async mode => {
         const fixture = setup(call => [candidate('Distinct fixture ' + call), candidate('Extra fixture ' + call)]);
         try {

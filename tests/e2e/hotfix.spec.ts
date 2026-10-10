@@ -131,6 +131,8 @@ test('a semantic relation candidate survives selection changes until it is expli
 test('submitting unscoped words is acknowledged locally before any model answers', async ({ page }) => {
     const gate = await installModelGate(page);
     await configureCompatible(page);
+    await expect(page.getByRole('button', { name: 'Confirmed relation: Attention reveals structure', exact: true })).toBeVisible();
+    const existingRelations = await page.locator('.relation-label-overlay').evaluateAll(elements => elements.map(element => element.getAttribute('data-relation-token')).sort());
     const sentence = '我想去北京玩，但我担心机票太贵。';
     await page.getByTestId('speak').click({ position: { x: 5, y: 5 } });
     await page.keyboard.type(sentence);
@@ -150,11 +152,13 @@ test('submitting unscoped words is acknowledged locally before any model answers
         { text: '我担心机票太贵', sourceQuotes: ['我担心机票太贵'] },
     ] }));
     await expect(page.locator('article.thought.ghost')).toHaveCount(2, { timeout: 15000 });
-    await expect(page.locator('.relation-label-overlay')).toHaveCount(0);
+    expect(await page.locator('.relation-label-overlay').evaluateAll(elements => elements.map(element => element.getAttribute('data-relation-token')).sort())).toEqual(existingRelations);
+    await expect(page.locator('.relation-label-overlay[data-status="tentative"]')).toHaveCount(0);
 
     // Writing does not infer a relation; that remains an explicit two-Thought action.
     expect(gate.calls()).toBe(1);
-    await expect(page.locator('.relation-label-overlay')).toHaveCount(0);
+    expect(await page.locator('.relation-label-overlay').evaluateAll(elements => elements.map(element => element.getAttribute('data-relation-token')).sort())).toEqual(existingRelations);
+    await expect(page.locator('.relation-label-overlay[data-status="tentative"]')).toHaveCount(0);
 });
 
 test('a compound paragraph becomes several manipulable proposals', async ({ page }) => {

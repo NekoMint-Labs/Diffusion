@@ -4,6 +4,7 @@ import { SuggestionHistory } from '../../src/ai/diversity.ts';
 import { UNKNOWN_CAPABILITIES, type AIProvider, type ContextPacket, type SemanticIntent, type UserIntent } from '../../src/ai/contracts.ts';
 import { createProject, makeThought } from '../../src/core/model.ts';
 import { ProjectController } from '../../src/core/controller.ts';
+import { t } from '../../src/shared/i18n.ts';
 
 function setup(responses?: SemanticIntent[], existingText = 'A different uncertainty') {
     const project = createProject('angle-avoidance', 'Authored fixture', 1);
@@ -11,6 +12,7 @@ function setup(responses?: SemanticIntent[], existingText = 'A different uncerta
     project.thoughts.b = makeThought(existingText, { x: 300, y: 100 }, 1, 'b');
     const controller = new ProjectController(project, async () => {});
     const requests: { packet: ContextPacket; intent: UserIntent }[] = [];
+    const notices: string[] = [];
     const provider: AIProvider = { label: 'Fixture / not live', mock: true,
         capabilities: async () => UNKNOWN_CAPABILITIES, structured: async () => { throw Error('Not used'); },
         respond: async (packet, intent) => {
@@ -18,8 +20,8 @@ function setup(responses?: SemanticIntent[], existingText = 'A different uncerta
             return { providerLabel: 'Fixture / not live', mock: true, intents: responses ?? [{ type: 'surface_possibility', text: 'An already tried frame.' }] };
         },
     };
-    const runtime = new AIRuntime(controller, async () => provider, { pending: () => {}, notice: () => {}, route: () => {}, anchor: () => ({ x: 400, y: 300 }) });
-    return { controller, runtime, requests, provider };
+    const runtime = new AIRuntime(controller, async () => provider, { pending: () => {}, notice: text => notices.push(text), route: () => {}, anchor: () => ({ x: 400, y: 300 }) });
+    return { controller, runtime, requests, provider, notices };
 }
 
 describe('repeated explicit thinking requests (fixtures, not semantic-quality evidence)', () => {
@@ -157,6 +159,142 @@ describe('literal duplicate proposal filtering (fixtures, not semantic-quality e
             const proposals = Object.values(fixture.controller.getSnapshot().session.ghosts);
             expect(proposals.map(proposal => proposal.text)).toEqual([pendingEcho, canvasEcho, distinct]);
             expect(fixture.controller.getSnapshot().project).toEqual(before);
+        } finally { fixture.runtime.dispose(); }
+    });
+});
+
+describe('repeated questions retain user agency (fixtures, not model-quality evidence)', () => {
+    it('rotates single-question focus without old output, resets with context and preserves the maximum prompt', async () => {
+        const fixture = setup([]);
+        try {
+            for (let run = 0; run < 5; run++) await fixture.runtime.run('question', 'Ask one question', ['a'], { maxCandidates: 1 });
+            expect(new Set(fixture.requests.map(request => request.intent.text)).size).toBe(5);
+            expect(fixture.requests[0].intent.text).toContain('missing definition or distinction');
+            expect(fixture.requests[1].intent.text).toContain('missing observation');
+            expect(fixture.requests[2].intent.text).toContain('unstated assumption');
+            expect(fixture.requests.every(request => request.packet.scope.map(item => item.id).join() === 'a')).toBe(true);
+            fixture.controller.dispatch({ type: 'thought.edit', id: 'a', text: 'A changed selected thought' }, 'user');
+            await fixture.runtime.run('question', 'Ask one question', ['a'], { maxCandidates: 1 });
+            expect(fixture.requests[5].intent.text).toBe(fixture.requests[0].intent.text);
+            const authored = 'x'.repeat(12000);
+            await fixture.runtime.run('question', authored, ['a'], { maxCandidates: 1 });
+            expect(fixture.requests[6].intent.text).toBe(authored);
+            await fixture.runtime.run('question', 'Ask three independent questions', ['a'], { maxCandidates: 3 });
+            expect(fixture.requests[7].intent.text).toContain('missing observation');
+            expect(fixture.requests[7].intent.text).toContain('unstated assumption');
+            expect(fixture.requests[7].intent.text).toContain('one boundary');
+            expect(fixture.requests[7].intent.text).not.toContain('missing definition or distinction');
+            await fixture.runtime.run('ask', 'My own question', ['a'], { maxCandidates: 1 });
+            expect(fixture.requests[8].intent.text).toBe('My own question');
+            expect(fixture.requests).toHaveLength(9);
+            expect(Object.keys(fixture.controller.getSnapshot().session.ghosts)).toHaveLength(0);
+        } finally { fixture.runtime.dispose(); }
+    });
+    it('three-question batches advance without wrapping or filling the count, including an honest empty result', async () => {
+        const batches = [
+            ['What counts as the decision?', 'Which observation changes it?', 'What assumption links it to stopping?'],
+            ['Under what boundary would stopping fail?'],
+            [],
+        ];
+        const fixture = setup();
+        fixture.provider.respond = async (packet, intent) => {
+            fixture.requests.push({ packet, intent });
+            return { providerLabel: 'Batch fixture / not live', mock: true, intents: batches[fixture.requests.length - 1].map(text => ({ type: 'surface_question' as const, text })) };
+        };
+        try {
+            const before = structuredClone(fixture.controller.getSnapshot().project);
+            for (const batch of batches) {
+                expect(await fixture.runtime.run('question', 'Ask up to three questions', ['a'], { maxCandidates: 3 })).toMatchObject({ status: 'completed', emitted: batch.length });
+                const ghosts = Object.values(fixture.controller.getSnapshot().session.ghosts);
+                expect(ghosts.map(ghost => ghost.text)).toEqual(batch);
+                expect(ghosts.every(ghost => ghost.proposalKind === 'question' && ghost.scopeIds.join() === 'a')).toBe(true);
+                for (const ghost of ghosts) fixture.controller.dismissGhost(ghost.id);
+                expect(fixture.controller.getSnapshot().project).toEqual(before);
+            }
+            expect(fixture.requests).toHaveLength(3);
+            expect(fixture.runtime.requestCount).toBe(3);
+            expect(fixture.requests.every(request => request.packet.maxCandidates === 3)).toBe(true);
+            expect(fixture.requests[0].intent.text).toContain('missing definition or distinction');
+            expect(fixture.requests[0].intent.text).toContain('missing observation');
+            expect(fixture.requests[0].intent.text).toContain('unstated assumption');
+            expect(fixture.requests[1].intent.text).toContain('one boundary');
+            expect(fixture.requests[1].intent.text).toContain('criterion for choosing');
+            expect(fixture.requests[1].intent.text).not.toContain('missing definition or distinction');
+            expect(fixture.requests[1].intent.text).not.toContain('missing observation');
+            expect(fixture.requests[1].intent.text).not.toContain('unstated assumption');
+            expect(fixture.requests[2].intent.text).toContain('does not prove');
+            expect(fixture.requests[2].intent.text).toContain('empty intents array');
+            for (const text of batches.flat()) expect(JSON.stringify(fixture.requests.slice(1))).not.toContain(text);
+            expect(fixture.notices.at(-1)).toBe(t('No new suggestion was surfaced this time.'));
+        } finally { fixture.runtime.dispose(); }
+    });
+    it('mixed batch sizes share attempted focuses and reset on scope or permissions without changing Ask or Thread', async () => {
+        const fixture = setup([]);
+        try {
+            await fixture.runtime.run('question', 'Ask', ['a'], { maxCandidates: 1 });
+            await fixture.runtime.run('question', 'Ask', ['a'], { maxCandidates: 3 });
+            await fixture.runtime.run('question', 'Ask', ['a'], { maxCandidates: 5 });
+            expect(fixture.requests[1].intent.text).toContain('missing observation');
+            expect(fixture.requests[1].intent.text).toContain('one boundary');
+            expect(fixture.requests[1].intent.text).not.toContain('missing definition or distinction');
+            expect(fixture.requests[2].intent.text).toContain('criterion for choosing');
+            expect(fixture.requests[2].intent.text).not.toContain('one boundary');
+            await fixture.runtime.run('question', 'Ask', ['b'], { maxCandidates: 3 });
+            expect(fixture.requests[3].intent.text).toContain('missing definition or distinction');
+            await fixture.runtime.run('question', 'Ask', ['b'], { maxCandidates: 3, projectSources: true });
+            expect(fixture.requests[4].intent.text).toContain('missing definition or distinction');
+            await fixture.runtime.run('ask', 'Authored Ask', ['b']);
+            await fixture.runtime.run('question', 'Frozen Thread', ['b'], { threadId: 'thread' });
+            expect(fixture.requests[5].intent.text).toBe('Authored Ask');
+            expect(fixture.requests[6].intent.text).toBe('Frozen Thread');
+        } finally { fixture.runtime.dispose(); }
+    });
+    it('remembers an ignored question, filters its punctuation variant, and never retries or submits it as context', async () => {
+        const text = 'Which observation would change the stopping threshold?';
+        const fixture = setup([{ type: 'surface_question', text }]);
+        try {
+            const before = structuredClone(fixture.controller.getSnapshot().project);
+            expect((await fixture.runtime.run('question', 'Ask one question', ['a'], { maxCandidates: 1 })).emitted).toBe(1);
+            fixture.controller.dismissGhost(Object.keys(fixture.controller.getSnapshot().session.ghosts)[0]);
+            fixture.provider.respond = async (packet, intent) => {
+                fixture.requests.push({ packet, intent });
+                return { providerLabel: 'Fixture / not live', mock: true, intents: [{ type: 'surface_question', text: text.slice(0, -1) + '!' }] };
+            };
+            expect((await fixture.runtime.run('question', 'Ask one question', ['a'], { maxCandidates: 1 })).emitted).toBe(0);
+            expect(fixture.requests).toHaveLength(2);
+            expect(JSON.stringify(fixture.requests[1])).not.toContain(text.slice(0, -1));
+            expect(fixture.controller.getSnapshot().project).toEqual(before);
+            expect(Object.keys(fixture.controller.getSnapshot().session.ghosts)).toHaveLength(0);
+        } finally { fixture.runtime.dispose(); }
+    });
+    it('allows a different unknown and an explicitly changed numerical criterion', async () => {
+        const texts = ['Would error > 0.1 change the stopping decision?', 'Would error >= 0.1 change the stopping decision?', 'Would error > 0.2 change the stopping decision?', 'Which agent is allowed to spend the remaining budget?'];
+        const fixture = setup();
+        fixture.provider.respond = async (packet, intent) => {
+            fixture.requests.push({ packet, intent });
+            return { providerLabel: 'Fixture / not live', mock: true, intents: [{ type: 'surface_question', text: texts[fixture.requests.length - 1] }] };
+        };
+        try {
+            for (const _text of texts) {
+                expect((await fixture.runtime.run('question', 'Ask', ['a'])).emitted).toBe(1);
+                fixture.controller.dismissGhost(Object.keys(fixture.controller.getSnapshot().session.ghosts)[0]);
+            }
+            expect(fixture.requests).toHaveLength(texts.length);
+        } finally { fixture.runtime.dispose(); }
+    });
+    it('resets question history when the selected thought or its supplied parent changes', async () => {
+        const fixture = setup([{ type: 'surface_question', text: 'Which missing measurement could change this judgment?' }]);
+        fixture.controller.getSnapshot().project.thoughts.a.derivedFrom = ['b'];
+        fixture.controller.getSnapshot().project.thoughts.a.generationAction = 'continue';
+        try {
+            expect((await fixture.runtime.run('question', 'Ask', ['a'])).emitted).toBe(1);
+            fixture.controller.dismissGhost(Object.keys(fixture.controller.getSnapshot().session.ghosts)[0]);
+            fixture.controller.dispatch({ type: 'thought.edit', id: 'b', text: 'A revised direct source' }, 'user');
+            expect((await fixture.runtime.run('question', 'Ask', ['a'])).emitted).toBe(1);
+            fixture.controller.dismissGhost(Object.keys(fixture.controller.getSnapshot().session.ghosts)[0]);
+            fixture.controller.dispatch({ type: 'thought.edit', id: 'a', text: 'A revised selected uncertainty' }, 'user');
+            expect((await fixture.runtime.run('question', 'Ask', ['a'])).emitted).toBe(1);
+            expect(fixture.requests.every(request => request.intent.text.includes('missing definition or distinction'))).toBe(true);
         } finally { fixture.runtime.dispose(); }
     });
 });

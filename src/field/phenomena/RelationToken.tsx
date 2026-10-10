@@ -18,6 +18,16 @@ export function RelationToken({ relation, placement, onOpen, onKeep, onIgnore, o
     const [editing, setEditing] = useState(false);
     const [draft, setDraft] = useState(relation.label);
     const input = useRef<HTMLInputElement>(null);
+    const wasConfirmed = useRef(relation.confirmed);
+    const [justKept, setJustKept] = useState(false);
+    useEffect(() => {
+        const newlyKept = relation.confirmed && !wasConfirmed.current;
+        wasConfirmed.current = relation.confirmed;
+        if (!newlyKept) return;
+        setJustKept(true);
+        const timer = setTimeout(() => setJustKept(false), 2600);
+        return () => clearTimeout(timer);
+    }, [relation.confirmed]);
     useEffect(() => { if (!editing) setDraft(relation.label); }, [relation.label, editing]);
     useEffect(() => { if (editing) input.current?.focus(); }, [editing]);
     const commit = () => {
@@ -31,6 +41,7 @@ export function RelationToken({ relation, placement, onOpen, onKeep, onIgnore, o
         data-relation-label={relation.id}
         data-relation-token={relation.id}
         data-status={status}
+        data-just-kept={justKept ? "true" : undefined}
         style={{ width: placement.width, minHeight: placement.height, transform: `translate(${placement.x}px,${placement.y}px) scale(var(--inverse-zoom))` }}
     >
         {editing ? <input
@@ -51,7 +62,7 @@ export function RelationToken({ relation, placement, onOpen, onKeep, onIgnore, o
             className="relation-token-label"
             aria-label={`${t(relation.confirmed ? 'Confirmed relation' : 'Candidate relation')}: ${relation.label}`}
             onClick={() => onOpen(relation.id, placement.anchor)}
-        >{relation.label}</button>}
+        ><span className="relation-token-wording">{relation.label}</span><span className="relation-token-hint">{t(justKept ? 'Kept — view relation' : relation.confirmed ? 'View relation' : 'To review — view relation')}</span></button>}
         {!relation.confirmed && !editing && <div className="relation-token-actions" role="group" aria-label={t('Candidate relation')}>
             <button type="button" onClick={() => onKeep(relation.id)}>{t('Keep')}</button>
             <button type="button" onClick={() => setEditing(true)}>{t('Modify')}</button>

@@ -25,10 +25,12 @@ export function RelationSurface({ controller, relationId, anchor, onClose }: {
     const relation = confirmedRelation ?? phenomenon;
     const [editing, setEditing] = useState(false);
     const [draft, setDraft] = useState('');
+    const [draftExplanation, setDraftExplanation] = useState('');
     useEffect(() => {
         setEditing(false);
         setDraft(relation?.label ?? '');
-    }, [relationId, relation?.label]);
+        setDraftExplanation(relation?.explanation ?? '');
+    }, [relationId, relation?.label, relation?.explanation]);
     const confirmed = !!confirmedRelation;
     useEffect(() => {
         const keydown = (event: KeyboardEvent) => {
@@ -54,10 +56,15 @@ export function RelationSurface({ controller, relationId, anchor, onClose }: {
     }, [controller, editing, confirmedRelation, phenomenon, relation, relationId, onClose]);
     if (!relation)
         return null;
+    const cancelEdit = () => {
+        setDraft(relation.label);
+        setDraftExplanation(relation.explanation ?? '');
+        setEditing(false);
+    };
     const save = () => {
         const label = draft.trim();
         if (!label) return;
-        controller.updatePhenomenon(relationId, { label });
+        controller.updatePhenomenon(relationId, { label, explanation: draftExplanation });
         setEditing(false);
     };
     return <Surface
@@ -71,15 +78,16 @@ export function RelationSurface({ controller, relationId, anchor, onClose }: {
         {editing && !confirmed ? <div className="relation-edit">
             <input data-autofocus aria-label={msg('Relation label')} value={draft} maxLength={80} onChange={event => setDraft(event.target.value)} onKeyDown={event => {
                 if (event.key === 'Enter') { event.preventDefault(); save(); }
-                if (event.key === 'Escape') { event.preventDefault(); setDraft(relation.label); setEditing(false); }
+                if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); cancelEdit(); }
             }}/>
-            <div className="surface-choice"><Button variant="solid" size="sm" onClick={save}>{msg('Save')}</Button><Button variant="ghost" size="sm" onClick={() => { setDraft(relation.label); setEditing(false); }}>{msg('Cancel')}</Button></div>
+            <textarea aria-label={msg('Relation explanation')} placeholder={msg('Explain how these two cards relate.')} value={draftExplanation} maxLength={320} rows={3} onChange={event => setDraftExplanation(event.target.value)} onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); cancelEdit(); } }}/>
+            <div className="surface-choice"><Button variant="solid" size="sm" onClick={save}>{msg('Save')}</Button><Button variant="ghost" size="sm" onClick={cancelEdit}>{msg('Cancel')}</Button></div>
         </div> : <p className="relation-surface-label">{relation.label}</p>}
-        {relation.explanation && <p className="relation-surface-explanation">{relation.explanation}</p>}
+        {!editing && relation.explanation && <p className="relation-surface-explanation">{relation.explanation}</p>}
         <p className="relation-endpoints"><span>{project.thoughts[relation.a]?.text ?? session.ghosts[relation.a]?.text}</span><span className="relation-endpoint-link" aria-hidden="true"/><span>{project.thoughts[relation.b]?.text ?? session.ghosts[relation.b]?.text}</span></p>
         {confirmed
             ? <div className="surface-choice"><Button variant="outline" size="sm" tone="danger" onClick={() => { controller.dispatch({ type: 'relation.remove', id: relationId }); onClose(); }}>{msg('Reconsider this relation')}</Button></div>
-            : <div className="surface-choice relation-decisions">
+            : !editing && <div className="surface-choice relation-decisions">
                 <Button variant="solid" size="sm" tone="attention" onClick={() => { presentSpatialTransition('settle', [relation.a, relation.b]); controller.confirmPhenomenon(relationId); onClose(); }}>{msg('Keep')}</Button>
                 <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>{msg('Modify')}</Button>
                 <Button variant="ghost" size="sm" onClick={() => { presentSpatialTransition('dissolve', [relation.a, relation.b]); const dismiss = () => { controller.dismissPhenomenon(relationId); onClose(); }; if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) dismiss(); else setTimeout(dismiss, 150); }}>{msg('Ignore')}</Button>

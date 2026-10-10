@@ -131,12 +131,17 @@ export function deleteFieldSelection(controller: ProjectController, selection: s
     return canonical.length + ghosts.length > 0;
 }
 
-export function relationPlacementObstacles(visible: string[], geometry: GeometryCache, camera: Camera, viewport: ViewportRect, scopePlacement: ScopeRect | null): Bounds[] {
+export function relationPlacementObstacles(visible: string[], geometry: GeometryCache, camera: Camera, viewport: ViewportRect, scopePlacement: ScopeRect | null, actionBounds: ReadonlyMap<string, Bounds> = new Map()): Bounds[] {
     const screenRectToWorld = (bounds: Bounds): Bounds => {
         const point = screenToWorld({ x: bounds.x - viewport.left, y: bounds.y - viewport.top }, camera);
         return { x: point.x, y: point.y, width: bounds.width / camera.zoom, height: bounds.height / camera.zoom };
     };
-    const obstacles = visible.map(key => geometry.get(key)).filter((bounds): bounds is Bounds => !!bounds);
+    const obstacles = visible.flatMap(key => {
+        const bounds = geometry.get(key);
+        if (!bounds) return [];
+        const actions = actionBounds.get(key);
+        return actions ? [bounds, { ...actions, x: bounds.x + actions.x, y: bounds.y + actions.y }] : [bounds];
+    });
     obstacles.push(screenRectToWorld({ x: viewport.left + viewport.width - 190, y: viewport.top, width: 190, height: 90 }));
     if (scopePlacement) obstacles.push(screenRectToWorld(scopePlacement));
     return obstacles;

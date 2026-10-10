@@ -17,11 +17,11 @@ const clamp = (value: number, min: number, max: number) => Math.max(min, Math.mi
 const outside = (a: Bounds, b: Bounds) => a.x + a.width <= b.x || b.x + b.width <= a.x || a.y + a.height <= b.y || b.y + b.height <= a.y;
 const inflate = (rect: Bounds, amount: number): Bounds => ({ x: rect.x - amount, y: rect.y - amount, width: rect.width + amount * 2, height: rect.height + amount * 2 });
 
-/** Compact Relation Token dimensions. Candidate state is carried by material, not a second text row. */
-export function estimateRelationLabelSize(label: string, tentative: boolean): { width: number; height: number } {
+/** Reserve the always-visible review cue so token placement includes its full height. */
+export function estimateRelationLabelSize(label: string, _tentative: boolean, interfaceScale = 1): { width: number; height: number } {
     const glyphs = Array.from(label.trim());
     const wide = glyphs.reduce((sum, char) => sum + (/[^\u0000-\u00ff]/u.test(char) ? 11 : 6.6), 0);
-    return { width: clamp(Math.round(wide + 26), 96, 236), height: tentative ? 34 : 30 };
+    return { width: clamp(Math.round(wide * interfaceScale + 26), 160 * interfaceScale, 236 * interfaceScale), height: Math.ceil(36 * interfaceScale) };
 }
 
 function candidateAnchors(relation: RelationPhenomenon, width: number, height: number, safeZoom: number) {
@@ -60,14 +60,14 @@ function candidateAnchors(relation: RelationPhenomenon, width: number, height: n
  * Deterministic local token placement. A blocked midpoint never becomes permission to overlap a
  * Thought: the search expands outward until a clear nearby slot is found.
  */
-export function placeRelationLabels(relations: readonly RelationPhenomenon[], thoughtBounds: readonly Bounds[], zoom: number): Record<string, RelationLabelPlacement> {
+export function placeRelationLabels(relations: readonly RelationPhenomenon[], thoughtBounds: readonly Bounds[], zoom: number, interfaceScale = 1): Record<string, RelationLabelPlacement> {
     const safeZoom = Math.max(.08, zoom || 1);
     const occupied: Bounds[] = [];
     const result: Record<string, RelationLabelPlacement> = {};
     const clearance = 8 / safeZoom;
     const ordered = [...relations].sort((a, b) => Number(a.confirmed) - Number(b.confirmed) || a.id.localeCompare(b.id));
     for (const relation of ordered) {
-        const size = estimateRelationLabelSize(relation.label, !relation.confirmed);
+        const size = estimateRelationLabelSize(relation.label, !relation.confirmed, interfaceScale);
         const width = size.width / safeZoom;
         const height = size.height / safeZoom;
         const blocked = (rect: Bounds) => thoughtBounds.some(bound => !outside(rect, inflate(bound, clearance))) || occupied.some(bound => !outside(rect, inflate(bound, clearance)));

@@ -8,7 +8,8 @@ import { ThinkingError, failureText, type ThinkingFailure } from './errors.ts';
 import type { Bounds } from '../field/spatial/geometry.ts';
 import { placePossibility } from '../field/spatial/placement.ts';
 import { SuggestionHistory, repeatedWording } from './diversity.ts';
-import { intentAllowedForAction, semanticQualityAllowed } from './prompt.ts';
+import { intentAllowedForAction, relationWordingAllowed, semanticQualityAllowed } from './prompt.ts';
+import { omitRepeatedRelations } from './relationQuality.ts';
 export { intentAllowedForAction, semanticQualityAllowed } from './prompt.ts';
 import { registerOperationCancellation } from './operationControl.ts';
 
@@ -267,9 +268,12 @@ export class AIRuntime {
                     .filter(ghost => ghost.scopeIds.some(scopeId => scopeIds.has(scopeId)))
                     .map(ghost => ghost.text),
             ];
+            const seenRelations = new Set<string>();
             const accepted = response.intents.slice(0, packet.maxCandidates)
                 .filter(candidate => intentAllowedForAction(kind, candidate.type))
                 .filter(candidate => permissionFor(candidate, packet, this.controller.getSnapshot().project).allowed)
+                .map(candidate => omitRepeatedRelations(candidate, currentState.project, currentState.session, relationWordingAllowed, seenRelations))
+                .filter((candidate): candidate is SemanticIntent => candidate !== null)
                 .filter(candidate => semanticQualityAllowed(kind, candidate))
                 .filter(candidate => !options.runId || ['surface_possibility', 'surface_question', 'surface_relation', 'surface_structure', 'respond_in_field', 'surface_evidence', 'request_recall'].includes(candidate.type))
                 .filter(candidate => {

@@ -62,8 +62,9 @@ interface Props {
     find: FieldFind | null;
     fieldStyle: FieldStyleId;
     connectionStyle: ConnectionStyle;
+    interfaceScale?: number;
 }
-export const Field = forwardRef<FieldHandle, Props>(function Field({ controller, fieldStyle, connectionStyle, onProbeRelation, scopeActions, onScopeAction, onKeepAllProposals, onKeepOriginalProposal, onAIProposalAction, onMore, onRegion, onRelation, onDropText, onSource, onReadThought, onRespondThought, onDropFiles, onObserve, onCreateThought, onContextMenu, onRevealMatch, find }, forwardedRef) {
+export const Field = forwardRef<FieldHandle, Props>(function Field({ controller, fieldStyle, connectionStyle, interfaceScale = 1, onProbeRelation, scopeActions, onScopeAction, onKeepAllProposals, onKeepOriginalProposal, onAIProposalAction, onMore, onRegion, onRelation, onDropText, onSource, onReadThought, onRespondThought, onDropFiles, onObserve, onCreateThought, onContextMenu, onRevealMatch, find }, forwardedRef) {
     const { project, session } = useProject(controller);
     const arrivals = useProposalArrivals(controller);
     const ui = useUI();
@@ -526,7 +527,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const aiProposalKind: AIProposalKind | undefined = activeSelection.length > 0 && selectedAIProposalGhosts.length === activeSelection.length && new Set(selectedAIProposalGhosts.map(ghost => ghost.proposalKind)).size === 1 ? selectedAIProposalGhosts[0].proposalKind : undefined;
     const probing = ui.operation?.phase === 'pending' && ui.operation.kind === 'probe' && ui.operation.scopeIds.length === 2 && ui.operation.scopeIds.every(key => activeSelection.includes(key));
     const showScopeHub = activeSelection.some(key => visible.includes(key)) && !ui.dragging && !ui.editing && !ui.carry.length && ui.surface === 'none' && !ui.speakFocused;
-    const relationObstacles = relationPlacementObstacles(visible, geometry, stableCamera, rect.current, showScopeHub ? scopePlacement : null);
+    const relationObstacles = relationPlacementObstacles(visible, geometry, stableCamera, rect.current, showScopeHub ? scopePlacement : null, actionBounds);
     const visibleSet = new Set(visible), eligibleSet = new Set(projection.current.eligible);
     const revealThought = (key: string) => {
         revealed.current = key;
@@ -554,7 +555,8 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     // Semantic relation existence is independent from transient focus.
     const visibleRelations = level === 'local' ? [...Object.values(project.relations), ...Object.values(session.phenomena)].filter(visibleRelation) : [];
     const activeRelationIds = new Set(activeRelations.map(relation => relation.id));
-    const tokenRelations = visibleRelations.filter(relation => !('status' in relation) || activeRelationIds.has(relation.id) || ui.relationId === relation.id);
+    // Both tentative and kept relations stay reopenable while their endpoints are visible.
+    const tokenRelations = visibleRelations;
     const findEmphasis = (key: string): 'current' | 'match' | 'dim' | undefined => {
         if (!find)
             return undefined;
@@ -630,7 +632,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     <StructureOverlay proposals={Object.values(session.structures)} geometry={geometry}/>
     <SpatialActivityLayer geometry={geometry} operation={ui.operation} structuring={ui.structuring} transition={ui.spatialTransition}/>
     <svg className="phenomena selection-phenomena" aria-hidden="true"><rect ref={lasso} className="lasso" style={{ display: 'none' }}/><g ref={cue} className="probe-cue" style={{ display: 'none' }}><text>?</text><text data-probe-caption="true" y="24" className="relation-label">{t('Hold to explore')}</text></g></svg>
-            {ui.surface !== 'relation' && <RelationLabels relations={relationHits} thoughtBounds={relationObstacles} zoom={stableCamera.zoom} onRelation={onRelation} onKeep={keepCandidate} onIgnore={ignoreCandidate} onRename={renameCandidate}/>}
+            {ui.surface !== 'relation' && <RelationLabels relations={relationHits} thoughtBounds={relationObstacles} zoom={stableCamera.zoom} interfaceScale={interfaceScale} onRelation={onRelation} onKeep={keepCandidate} onIgnore={ignoreCandidate} onRename={renameCandidate}/>}
    {visible.map(key => { if (ui.carry.includes(key))
         return null; const item = items[key]; if (!item)
         return null; return <ThoughtView key={key} item={item} ghost={key in session.ghosts} recalled={session.recalls.includes(key)} selected={ui.selection.includes(key)} settling={ui.spatialTransition?.material === true && ui.spatialTransition.scopeIds.includes(key)} find={findEmphasis(key)} emphasis={!focus.selected.size ? 'normal' : focus.selected.has(key) ? 'selected' : focus.direct.has(key) ? 'direct' : focus.nearby.has(key) ? 'nearby' : focus.peripheral.has(key) ? 'peripheral' : 'receded'} editing={ui.editing === key} level={level} depth={hierarchy.depth.get(key) ?? 0} root={hierarchy.originalRoots.has(key)} parentText={items[hierarchy.parent.get(key) ?? '']?.text} hasChildren={!!hierarchy.children.get(key)?.length} collapsedCount={(hierarchy.children.get(key) ?? []).filter(id => !eligibleSet.has(id)).length} onExpand={expandBranch} geometry={geometry} onEdit={handleThoughtEdit} onCancel={handleThoughtCancel} onMeasure={handleGhostMeasured} onActionsMeasure={onActionsMeasure} onRead={onReadThought} onRespond={onRespondThought} onHover={setHoveredThought} onReject={key => dismissGhostWithDissolve(controller, key, () => { const state = useUI.getState(); state.patch({ selection: state.selection.filter(id => id !== key) }); })}/>; })}

@@ -85,7 +85,8 @@ export function handoffMarkdown(project: ProjectState, crystalId: string): strin
     if (crystal?.kind !== 'crystal')
         throw new DomainError('Handoff starts from a user-confirmed Crystal.');
     const relations = Object.values(project.relations).filter(r => r.a === crystalId || r.b === crystalId);
-    const linked = new Set(relations.flatMap(r => [r.a, r.b]));
+    // Direct generation parents supply context; lineage never confirms a semantic relation.
+    const linked = new Set([...(crystal.derivedFrom ?? []), ...relations.flatMap(r => [r.a, r.b])]);
     for (const t of Object.values(project.thoughts))
         if (t.origin?.thoughtId === crystalId)
             linked.add(t.id);

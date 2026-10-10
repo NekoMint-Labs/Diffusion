@@ -45,7 +45,7 @@ export function SettingsSurface({ initialSection, settings, capabilities, check,
     onChange: (settings: Settings) => void;
     onVerify: () => void;
     onRefreshModels: () => void;
-    onCredentialChange: () => void;
+    onCredentialChange: () => void | Promise<void>;
     onClose: () => void;
 }) {
     const [section, setSection] = useState<SettingsSection>(initialSection ?? 'general');

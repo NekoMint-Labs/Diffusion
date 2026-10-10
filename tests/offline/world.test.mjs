@@ -24,3 +24,63 @@ test('Regions need repeated spatial actions and never change Thought geometry',(
 test('Handoff includes commitments and uncertainty; JSON export strips nonportable local paths',()=>{
  let p=seed();p=reduceProject(p,userEvent({type:'crystal.form',id:'a',text:'A commitment'},2));p.sources.s={id:'s',title:'Source',status:'limited',mime:'text/plain',excerpt:'Only a snippet',inspected:'First paragraph only.',originalPath:'/private/file.txt',originalKey:'local-key',provenance:{}};p.thoughts.a.origin={sourceId:'s'};const text=handoffMarkdown(p,'a');assert.match(text,/A commitment/);assert.match(text,/First paragraph only/);assert.match(text,/not a claim of objective truth/);const json=exportProjectJSON(p);assert.ok(!json.includes('/private/file.txt'));assert.ok(!json.includes('local-key'));assert.equal(JSON.parse(json).project.id,'main');assert.throws(()=>handoffMarkdown(p,'b'),/Crystal/);
 });
+
+test('Handoff carries direct generation parents without confirming lineage as a relation', () => {
+ const p = seed();
+ p.thoughts.b.derivedFrom = ['c'];
+ p.thoughts.b.generationAction = 'continue';
+ p.thoughts.a.derivedFrom = ['b', 'missing'];
+ p.thoughts.a.generationAction = 'continue';
+ const formed = reduceProject(p, userEvent({ type: 'crystal.form', id: 'a', text: 'A chosen direction' }, 2));
+ // Compatibility: duplicate/self references in an imported record must not duplicate context.
+ formed.thoughts.a.derivedFrom.push('b', 'a');
+ const original = JSON.stringify(formed);
+ const text = handoffMarkdown(formed, 'a');
+ assert.match(text, /### Still open \/ b\n\nb\?/);
+ assert.equal(text.split('### Still open / b').length - 1, 1);
+ assert.ok(!text.includes('### Still open / c'));
+ assert.ok(!text.includes('### Stable / a'));
+ assert.match(text, /## Confirmed relationships\n\nNone\. Unconfirmed phenomena were not promoted\./);
+ assert.equal(JSON.stringify(formed), original);
+});
+
+test('Handoff includes direct-parent source scope without local byte locations or credentials', () => {
+ const p = seed();
+ p.thoughts.a.derivedFrom = ['b'];
+ p.thoughts.a.generationAction = 'continue';
+ p.thoughts.b.origin = { sourceId: 'parent-source' };
+ p.sources['parent-source'] = {
+  id: 'parent-source', title: 'Parent reference', status: 'limited', mime: 'text/plain',
+  excerpt: 'Bounded excerpt only', inspected: 'One selected paragraph; remainder unread.',
+  originalPath: '/private/parent.txt', originalKey: 'private-byte-key',
+  lastSubmitted: { at: 123, provider: 'local', characters: 20, requestId: 'private-submission' },
+  provenance: { locator: 'Paragraph 2' },
+ };
+ const formed = reduceProject(p, userEvent({ type: 'crystal.form', id: 'a', text: 'A chosen direction' }, 2));
+ const text = handoffMarkdown(formed, 'a');
+ assert.match(text, /Parent reference/);
+ assert.match(text, /Bounded excerpt only/);
+ assert.match(text, /One selected paragraph; remainder unread\./);
+ assert.match(text, /Locator: Paragraph 2/);
+ assert.match(text, /original bytes are not included/);
+ assert.ok(!text.includes('/private/parent.txt'));
+ assert.ok(!text.includes('private-byte-key'));
+ assert.ok(!text.includes('lastSubmitted'));
+});
+
+test('Handoff prioritizes direct parents within the existing bounded context', () => {
+ const p = seed();
+ p.thoughts.a.derivedFrom = ['b'];
+ p.thoughts.a.generationAction = 'continue';
+ for (let i = 0; i < 25; i++) {
+  const key = `neighbor-${i}`;
+  p.thoughts[key] = makeThought(`Neighbor ${i}`, { x: i * 10, y: 100 }, 1, key);
+  p.relations[key] = { id: key, a: 'a', b: key, kind: 'support', label: `Confirmed ${i}`, status: 'confirmed', createdAt: 1 };
+ }
+ const formed = reduceProject(p, userEvent({ type: 'crystal.form', id: 'a', text: 'A chosen direction' }, 2));
+ const text = handoffMarkdown(formed, 'a');
+ assert.match(text, /### Still open \/ b\n\nb\?/);
+ assert.equal((text.match(/^### Still open \/ /gm) ?? []).length, 20);
+ assert.ok(!text.includes('### Still open / neighbor-19'));
+ assert.equal((text.match(/^- support: Confirmed /gm) ?? []).length, 25);
+});

@@ -34,3 +34,14 @@ An earlier October 10 screenshot set showed appended rationales and an overconfi
 A1/A2/A3/A5 still require repeated live-provider observations across all three scenario categories. Engineering fixtures validate contracts and ownership, not novelty or usefulness. The existing screenshot set used different selections across action groups and does not complete same-selection comparisons. Do not close Issue #10 or mark the PR ready solely because CI passes.
 
 Field decision-control clearance is tracked separately in PR #38 / #11. Handoff omission of direct `derivedFrom` parents is tracked separately in PR #39. Neither is included in this semantic pass.
+
+## Final operator feedback, October 10, 2026
+
+The operator supplied four screenshots after the batch-question change: two three-result Another Angle requests, then two requests described as three-question requests, on the same visible parent thought in a real technical problem. The operator considers the experience good and requested delivery closeout rather than further feature expansion.
+
+- The two Angle sets visibly offer different perspectives, including budget allocation, time horizon, downstream use, and decision reversibility. A shared-failure/convergence idea occurs in both sets; semantic repetition has improved in the operator's judgment, but is not eliminated or automatically detected.
+- The first Question set visibly has question markers and italic text. It separates definition, observable evidence and an assumption into three independently answerable unknowns without visible appended answers.
+- The fourth screenshot has ordinary possibility styling and a stopped status. The generating action and completion state are not established by that image. It cannot qualify a successful second Question batch or prove an action-routing defect. No new prompt rule or runtime change is justified solely by this image.
+- The screenshots show temporary proposals, not actual Ignore/Keep/reopen events, and remain limited to one technical scenario. They do not complete all six-action comparisons or the two other required real scenario categories. Private screenshots and input text are kept local.
+
+Implementation is frozen for this incremental pass. PR #39 was independently reviewed and merged into main on October 10; its parent-context change enters the stack through normal main synchronization, without any new semantics in this follow-up. PR #38 remains a separate Field follow-up. The independent review of #37 approved its code at `06df23a` and explicitly retained Draft status and outstanding real-model acceptance. Current-head engineering checks and integration status are recorded in the PR descriptions; earlier checks stay tied to their earlier heads.

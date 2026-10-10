@@ -5,7 +5,8 @@ import type { ProjectController } from '../core/controller.ts';
 import type { WebEvidenceProvider } from '../evidence/contracts.ts';
 import { abortableDelay } from './contracts.ts';
 import type { AIRuntime } from './runtime.ts';
-import { explorationPrompt } from './diversity.ts';
+import { explorationPrompt, suggestionContext } from './diversity.ts';
+import { compileContext } from './context.ts';
 export interface DiffuseConfig {
     scopeIds: string[];
     prompt: string;
@@ -29,7 +30,7 @@ export interface DiffuseState {
 const angles = ['Name a missing question.', 'Try a counterexample.', 'Expose a hidden assumption.', 'Look for a boundary where the thought stops applying.', 'Offer an unexpected but grounded bridge.', 'Propose a small observation, without turning it into a task list.'];
 // A lens changes how the same problem is judged; it must not merely add another next step.
 // A scope can reject an inapplicable lens rather than invent the people or facts it would need.
-const reframingAxes = ['Choose a different lens supported by this scope, rather than another condition or consequence along its current path. Name the lens plainly and give a concrete observation it reveals. Do not invent a premise to reverse.', 'View the same problem through the cost of an alternative, if this scope supports one.', 'Change the time horizon, if it reveals a different judgment grounded in this scope.', 'View the same problem from the affected person or role, only if supplied context supports it.', 'Change what counts as success, without claiming the original goal has been solved.'];
+const reframingAxes = ['Choose a different lens supported by this scope, rather than another condition or consequence along its current path. Name the lens plainly and give a concrete observation it reveals. Do not invent a premise to reverse.', 'View the same problem through the cost of an alternative, if this scope supports one.', 'Change the time horizon, if it reveals a different judgment grounded in this scope.', 'View the same problem from the affected person or role, only if supplied context supports it.', 'Change what counts as success, without claiming the original goal has been solved.', 'View the proposed approach from a plausible failure case, rather than refining how to implement it. Keep the failure conditional.', 'View the same object as part of its supplied surrounding system: name a dependency or displaced burden that changes the judgment. Do not invent an external system.'];
 export class DiffuseSession {
     private state: DiffuseState = { phase: 'idle', runId: '', config: null, used: 0, surfaced: 0, remainingSeconds: 0, reason: '', evidence: [] };
     private controller: ProjectController;
@@ -45,6 +46,8 @@ export class DiffuseSession {
     private claimedCandidates = new Set<string>();
     private baseTexts = new Map<string, string>();
     private attemptedTexts: string[] = [];
+    private lensScope = '';
+    private nextLens = 0;
     private unsubscribe: () => void;
     constructor(controller: ProjectController, runtime: Pick<AIRuntime, 'run' | 'cancel'>, provider: () => WebEvidenceProvider | null, stepDelay = 450) { this.controller = controller; this.runtime = runtime; this.provider = provider; this.delay = stepDelay; this.unsubscribe = controller.subscribe(() => this.observeUserOwnership()); }
     getSnapshot = () => this.state;
@@ -63,6 +66,10 @@ export class DiffuseSession {
         if (config.web && !this.provider())
             throw new Error(t('Turn on a search source in Settings before including a web search.'));
         this.stop(t('Restarted explicitly.'));
+        if (config.mode === 'angle') {
+            const lensScope = suggestionContext(compileContext(project, scope, { projectSources: config.projectSources, web: config.web, allowScopedSources: config.projectSources }));
+            if (lensScope !== this.lensScope) { this.lensScope = lensScope; this.nextLens = 0; }
+        }
         this.searched = false;
         this.claimedCandidates.clear();
         this.attemptedTexts = [];
@@ -137,7 +144,9 @@ export class DiffuseSession {
                 const step = this.state.used;
                 this.update({ used: step + 1 });
                 const angleMode = config.mode === 'angle';
-                const stepContract = angleMode ? reframingAxes[step % reframingAxes.length] : angles[step % angles.length];
+                // Rotate attempted lenses within the same supplied context, without feeding old
+                // model wording back as a premise or issuing replacement calls.
+                const stepContract = angleMode ? reframingAxes[this.nextLens++ % reframingAxes.length] : angles[step % angles.length];
                 const result = await this.runtime.run(angleMode ? 'angle' : 'diffuse', explorationPrompt(config.prompt, step, stepContract), config.scopeIds, {
                     runId: this.state.runId, signal: abort.signal, projectSources: config.projectSources, web: config.web, evidence: [], maxCandidates: 1,
                     excludeTexts: [...this.attemptedTexts], activity: 'radiate', onEmission: key => {

@@ -9,18 +9,32 @@ export function repeatedWording(text: string, previous: readonly string[]): bool
     return !value || previous.some(item => wording(item) === value);
 }
 
+export function suggestionContext(packet: ContextPacket): string {
+    return JSON.stringify([packet.projectId, packet.scope, packet.local, packet.continuations, packet.relations, packet.retrieved, packet.permissions]);
+}
+
+const questionFocuses = [
+    'Focus on one missing definition or distinction, only if the supplied wording leaves it unresolved. Do not ask to define an already explained term.',
+    'Focus on one missing observation that could change the judgment. Do not assume a measurement or result exists.',
+    'Focus on one unstated assumption behind the selected reasoning, without asserting that it is false.',
+    'Focus on one boundary where the selected idea might stop applying. Keep that boundary conditional.',
+    'Focus on one criterion for choosing between options actually supplied in the selection. Do not manufacture a choice.',
+];
+
 /** Session-only rejection history. Never send rejected wording back to the model as context or
  * instructions: the old negative prompt made those suggestions available as fresh premises. */
 export class SuggestionHistory {
     private scope = '';
     private texts: string[] = [];
+    private questionIndex = 0;
     forContext(packet: ContextPacket): readonly string[] {
-        const scope = JSON.stringify([packet.projectId, packet.scope, packet.local, packet.continuations, packet.relations, packet.retrieved, packet.permissions]);
-        if (scope !== this.scope) { this.scope = scope; this.texts = []; }
+        const scope = suggestionContext(packet);
+        if (scope !== this.scope) { this.scope = scope; this.texts = []; this.questionIndex = 0; }
         return this.texts;
     }
     remember(text: string): void { this.texts = [...this.texts, text].slice(-6); }
-    clear(): void { this.scope = ''; this.texts = []; }
+    nextQuestionFocus(): string { return questionFocuses[this.questionIndex++ % questionFocuses.length]; }
+    clear(): void { this.scope = ''; this.texts = []; this.questionIndex = 0; }
 }
 
 /** The run supplies a frame and budget, not past model output. Exclusions remain in the local

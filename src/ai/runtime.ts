@@ -235,9 +235,13 @@ export class AIRuntime {
                 const record = this.controller.getSnapshot().project.sources[source.id];
                 if (record) this.controller.dispatch({ type: 'source.update', source: { ...record, lastSubmitted: { at: Date.now(), provider: provider.label, characters: source.excerpt.length, requestId: started.requestId } } }, 'system');
             }
-            const trackSuggestions = (kind === 'continue' || kind === 'angle') && !options.threadId;
+            const trackSuggestions = (kind === 'continue' || kind === 'angle' || kind === 'question') && !options.threadId;
             const previousSuggestions = trackSuggestions ? this.suggestions.forContext(packet) : [];
-            const response = await provider.respond(packet, { kind, text, requestId: started.requestId }, started.abort.signal);
+            // Question is the generated-question action; the user's own Ask and frozen Threads
+            // retain their authored prompt. A single question can prefer a fresh unknown type.
+            const questionFocus = kind === 'question' && trackSuggestions && packet.maxCandidates === 1 ? this.suggestions.nextQuestionFocus() : '';
+            const focusedText = questionFocus && text.length + questionFocus.length + 2 <= 12000 ? `${text}\n\n${questionFocus}` : text;
+            const response = await provider.respond(packet, { kind, text: focusedText, requestId: started.requestId }, started.abort.signal);
             if (started.abort.signal.aborted || started.ticket !== this.serial) {
                 if (started.ticket === this.serial && started.abort.signal.reason === 'timeout') throw new ThinkingError('timeout', subject);
                 if (started.ticket === this.serial) this.settle(started, 'cancelled');
@@ -306,7 +310,7 @@ export class AIRuntime {
                     const candidate = accepted[index];
                     this.emit(candidate, packet, provenance, options, kind, index);
                     if (candidate.type === 'surface_relation') relationLabel = candidate.label;
-                    if (trackSuggestions && candidate.type === 'surface_possibility') this.suggestions.remember(candidate.text);
+                    if (trackSuggestions && (candidate.type === 'surface_possibility' || candidate.type === 'surface_question')) this.suggestions.remember(candidate.text);
                     emitted++;
                     if (index < accepted.length - 1) await abortableDelay(220, started.abort.signal);
                 }

@@ -204,7 +204,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         const action = preview.action === 'continue' ? 'continue' : 'question';
         const prompt = preview.action === 'continue'
             ? `Continue this line of thought. Return ${options.count} distinct continuation proposal${options.count === 1 ? '' : 's'}.`
-            : `Ask ${options.count} distinct question${options.count === 1 ? '' : 's'} that could move this thinking.`;
+            : `Ask up to ${options.count} distinct question${options.count === 1 ? '' : 's'} that could move this thinking. Fewer questions or no questions are valid when no useful new unknown remains.`;
         await runtime.run(action, prompt, preview.ids, { maxCandidates: options.count, projectSources: options.fieldSources, activity: preview.action === 'continue' ? 'unfold' : 'radiate' });
     };
     const handleAIProposalAction = (ids: string[], action: 'keep' | 'continue' | 'angle' | 'answer' | 'ignore') => {

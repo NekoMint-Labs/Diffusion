@@ -238,9 +238,9 @@ export class AIRuntime {
             const trackSuggestions = (kind === 'continue' || kind === 'angle' || kind === 'question') && !options.threadId;
             const previousSuggestions = trackSuggestions ? this.suggestions.forContext(packet) : [];
             // Question is the generated-question action; the user's own Ask and frozen Threads
-            // retain their authored prompt. A single question can prefer a fresh unknown type.
-            const questionFocus = kind === 'question' && trackSuggestions && packet.maxCandidates === 1 ? this.suggestions.nextQuestionFocus() : '';
-            const focusedText = questionFocus && text.length + questionFocus.length + 2 <= 12000 ? `${text}\n\n${questionFocus}` : text;
+            // retain their authored prompt. A batch prefers previously unattempted unknown types.
+            const questionFocus = kind === 'question' && trackSuggestions ? this.suggestions.nextQuestionFocus(packet.maxCandidates, 12000 - text.length - 2) : '';
+            const focusedText = questionFocus ? `${text}\n\n${questionFocus}` : text;
             const response = await provider.respond(packet, { kind, text: focusedText, requestId: started.requestId }, started.abort.signal);
             if (started.abort.signal.aborted || started.ticket !== this.serial) {
                 if (started.ticket === this.serial && started.abort.signal.reason === 'timeout') throw new ThinkingError('timeout', subject);

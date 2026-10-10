@@ -33,7 +33,16 @@ export class SuggestionHistory {
         return this.texts;
     }
     remember(text: string): void { this.texts = [...this.texts, text].slice(-6); }
-    nextQuestionFocus(): string { return questionFocuses[this.questionIndex++ % questionFocuses.length]; }
+    nextQuestionFocus(count: number, availableCharacters: number): string {
+        const focuses = questionFocuses.slice(this.questionIndex, this.questionIndex + count);
+        const guidance = focuses.length
+            ? `For this request, use only the following question focuses, at most one question per focus. Skip a focus if it is already resolved or does not apply. Return fewer questions or an empty intents array rather than filling the requested count.\n${focuses.join('\n')}`
+            : 'Earlier requests have already been guided toward definitions, observations, assumptions, boundaries and choice criteria. This does not prove those unknowns were covered or that the topic is exhausted. Do not restart those focuses just to fill the requested count. Return only a genuinely different grounded unknown outside those focuses, or an empty intents array if none is available.';
+        // Record attempted guidance only when it fits; never truncate the authored prompt.
+        if (guidance.length > availableCharacters) return '';
+        this.questionIndex += focuses.length;
+        return guidance;
+    }
     clear(): void { this.scope = ''; this.texts = []; this.questionIndex = 0; }
 }
 

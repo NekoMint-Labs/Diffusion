@@ -20,6 +20,21 @@ export function useTransientFocus(fallback: () => void) {
     const opener = useRef<HTMLElement | null>(null);
     const pressed = useRef<HTMLElement | null>(null);
     const frame = useRef(0);
+    const pendingMenu = useRef(0);
+    useEffect(() => {
+        // A newer gesture owns the next action, even before the deferred menu has mounted.
+        const cancelPendingMenu = () => {
+            cancelAnimationFrame(pendingMenu.current);
+            pendingMenu.current = 0;
+        };
+        window.addEventListener('pointerdown', cancelPendingMenu, true);
+        window.addEventListener('keydown', cancelPendingMenu, true);
+        return () => {
+            cancelPendingMenu();
+            window.removeEventListener('pointerdown', cancelPendingMenu, true);
+            window.removeEventListener('keydown', cancelPendingMenu, true);
+        };
+    }, []);
     const menuOpen = useUI(state => state.menu !== null);
     useEffect(() => {
         if (!menuOpen)
@@ -95,5 +110,13 @@ export function useTransientFocus(fallback: () => void) {
         opener.current = anchor ?? null;
         state.patch({ menu: { anchor, scope, ...target } });
     }
-    return { capture, restore, closeMenu, openMenu };
+    function deferMenu(anchor: HTMLElement, scope: MenuScope) {
+        cancelAnimationFrame(pendingMenu.current);
+        const epoch = useUI.getState().transientEpoch;
+        pendingMenu.current = requestAnimationFrame(() => {
+            pendingMenu.current = 0;
+            if (anchor.isConnected && useUI.getState().transientEpoch === epoch) openMenu(anchor, scope);
+        });
+    }
+    return { capture, restore, closeMenu, openMenu, deferMenu };
 }

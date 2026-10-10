@@ -29,7 +29,8 @@ for (const reducedMotion of ['reduce', 'no-preference'] as const) {
             const target = page.locator(`[data-thought-id="${id}"]`);
             await expect(target.locator('.ghost-label')).toHaveText('AI 建议 · 尚未保留');
             expect((await saved(page)).thoughts[id]).toBeUndefined();
-            await target.click();
+            await target.locator('.thought-preview').click();
+            await expect(target).toHaveAttribute('data-selected', 'true');
             const before = await target.evaluate(el => (el as HTMLElement).style.transform);
             await page.screenshot({ path: testInfo.outputPath('proposed.png') });
             await page.getByTestId('ai-proposal-keep').click();
@@ -42,9 +43,29 @@ for (const reducedMotion of ['reduce', 'no-preference'] as const) {
             await expect.poll(async () => Boolean((await saved(page)).thoughts[id])).toBe(false);
             await page.keyboard.press('Control+Shift+z');
             await expect.poll(async () => (await saved(page)).thoughts[id]).toEqual(committed);
-            const ignored = page.locator('article.ghost').first();
-            const ignoredId = (await ignored.getAttribute('data-thought-id'))!;
-            await ignored.click();
+            await expect(target).toHaveAttribute('data-kind', 'thought');
+            // DOM order is not visibility order: a clipped edge card's visible center can be
+            // its remove button. Select an unobstructed on-screen proposal's actual content.
+            let ignoredId = '';
+            await expect.poll(async () => {
+                ignoredId = await page.locator('article.ghost').evaluateAll(elements => {
+                    const field = document.querySelector('[data-testid="field"]')!.getBoundingClientRect();
+                    const proposal = elements.find(element => {
+                        const content = element.querySelector('.thought-preview')!.getBoundingClientRect();
+                        const centerX = content.x + content.width / 2, centerY = content.y + content.height / 2;
+                        return content.x >= field.x && content.y >= field.y
+                            && content.right <= field.right && content.bottom <= field.bottom
+                            && document.elementFromPoint(centerX, centerY)?.closest('article.ghost') === element;
+                    });
+                    return proposal?.getAttribute('data-thought-id') ?? '';
+                });
+                return ignoredId;
+            }).not.toBe('');
+            const ignored = page.locator(`[data-thought-id="${ignoredId}"]`);
+            await ignored.locator('.thought-preview').click();
+            await expect(ignored).toHaveAttribute('data-selected', 'true');
+            await expect(ignored).toHaveAttribute('data-kind', 'ghost');
+            expect((await saved(page)).thoughts[ignoredId]).toBeUndefined();
             await page.getByTestId('ai-proposal-ignore').click();
             await expect(page.locator(`[data-thought-id="${ignoredId}"]`)).toHaveCount(0);
             expect((await saved(page)).thoughts[ignoredId]).toBeUndefined();

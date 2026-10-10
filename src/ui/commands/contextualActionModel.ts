@@ -35,19 +35,19 @@ export function contextualActionModel(commands: DiffusionCommand[], context: Com
     const sole = count === 1 ? thoughts[0] : null;
     const primaryCandidates: ContextualAction[] = count === 1
         ? [
-            descriptor(sole?.kind === 'crystal' ? 'continue-crystal' : 'continue-thinking', 'Continue thinking', sole?.kind === 'crystal' ? 'Grow a new Thought without rewriting this Crystal.' : 'Follow the current line forward.', 'scope-continue'),
-            descriptor('diffuse', 'Another angle', 'Reframe this from a different direction.', 'scope-angle'),
+            descriptor(sole?.kind === 'crystal' ? 'continue-crystal' : 'continue-thinking', 'Continue thinking', sole?.kind === 'crystal' ? 'Grow a new Thought without rewriting this Crystal.' : 'Stay with this direction and add a concrete condition or consequence.', 'scope-continue'),
+            descriptor('diffuse', 'Another angle', 'Try a different lens, such as who is affected or what counts as success.', 'scope-angle'),
             descriptor('questions', 'Generate a question', 'Generate a question that could move the thinking.', 'scope-question'),
         ]
         : count === 2
             ? [
                 descriptor('find-relation', 'Find a relation', 'Look for a meaningful connection without assuming one exists.', 'scope-find-relation'),
-                descriptor('continue-thinking', 'Continue thinking', 'Follow the current line forward.', 'scope-continue'),
+                descriptor('continue-thinking', 'Continue thinking', 'Stay with this direction and add a concrete condition or consequence.', 'scope-continue'),
                 descriptor('questions', 'Generate a question', 'Generate a question that could move the thinking.', 'scope-question'),
             ]
             : [
-                descriptor('continue-thinking', 'Continue thinking', 'Follow the current line forward.', 'scope-continue'),
-                descriptor('diffuse', 'Another angle', 'Reframe this from a different direction.', 'scope-angle'),
+                descriptor('continue-thinking', 'Continue thinking', 'Stay with this direction and add a concrete condition or consequence.', 'scope-continue'),
+                descriptor('diffuse', 'Another angle', 'Try a different lens, such as who is affected or what counts as success.', 'scope-angle'),
                 descriptor('organize', 'Organize thoughts', 'Reveal structure that may already be present.', 'scope-organize'),
                 descriptor('questions', 'Generate a question', 'Generate a question that could move the thinking.', 'scope-question'),
             ];

@@ -4,7 +4,7 @@ import { bodyLimit } from 'hono/body-limit';
 import { secureHeaders } from 'hono/secure-headers';
 import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { requestSchema, structuredRequestSchema } from '../src/ai/schemas.ts';
-import { semanticInstructions, semanticAnswerSchema } from '../src/ai/prompt.ts';
+import { semanticInstructions, parseSemantics } from '../src/ai/prompt.ts';
 import { CORE_CONTRACT } from '../src/core/semantics.ts';
 import { searchRequestSchema, resourceRequestSchema, searchResultsSchema, fetchedSchema, extractedSchema, metadataSchema, reasonRequestSchema, reasoningSchema } from '../src/evidence/schemas.ts';
 import { boundedJSON, type GatewaySettings } from './config.ts';
@@ -14,7 +14,6 @@ import { validateReasoning } from '../src/evidence/pipeline.ts';
 import { DiscoveryError } from '../src/discovery/envelope.ts';
 import { ThinkingError } from '../src/ai/errors.ts';
 import { HTTPResponseError } from '../src/shared/http.ts';
-const semantics = semanticAnswerSchema;
 function tokenMatches(actual: string, expected: string) { const a = Buffer.from(actual), b = Buffer.from(expected); return a.length === b.length && timingSafeEqual(a, b); }
 export interface RequestDiagnostic { requestId: string; stage: string; provider: string; elapsedMs: number; status: number; code?: string; upstreamStatus?: number }
 type Variables = { requestId: string; stage: string; code?: string; upstreamStatus?: number };
@@ -109,8 +108,8 @@ export function createGateway(config: GatewaySettings, fetcher: typeof fetch = f
         // An operator-declared allow-list is authoritative: a model is only forwarded when overrides
         // are enabled and, when a list exists, the model is on it.
         const override = model && config.aiAllowModelOverride && (config.aiModels.length === 0 || config.aiModels.includes(model)) ? model : undefined;
-        const payload = semantics.parse(await callModel(CORE_CONTRACT + '\n' + semanticInstructions(intent), { intent, context: { ...packet, contract: CORE_CONTRACT } }, c.req.raw.signal, { model: override, depth }));
-        return c.json({ ...payload, providerLabel: config.aiModel.slice(0, 200), mock: false });
+        const intents = parseSemantics(await callModel(CORE_CONTRACT + '\n' + semanticInstructions(intent, packet.maxCandidates), { intent, context: { ...packet, contract: CORE_CONTRACT } }, c.req.raw.signal, { model: override, depth }), intent.kind);
+        return c.json({ intents, providerLabel: config.aiModel.slice(0, 200), mock: false });
     });
     for (const action of ['search', 'fetch', 'extract', 'metadata'] as const) {
         app.post(`/api/evidence/${action}`, async (c) => {

@@ -57,7 +57,7 @@ export function ScopeHub({ elementRef, count, placement, actions, probing = fals
                 <Button variant="ghost" size="sm" data-testid="ai-proposal-continue" onClick={() => onAIProposalAction?.('continue')}>{t('Continue thinking')}</Button>
                 <Button variant="ghost" size="sm" data-testid="ai-proposal-ignore" onClick={() => onAIProposalAction?.('ignore')}>{t('Ignore')}</Button>
             </> : aiProposalKind === 'question' ? <>
-                <Button variant="ghost" size="sm" data-testid="ai-question-answer" onClick={() => onAIProposalAction?.('answer')}>{t('Answer')}</Button>
+                <Button variant="ghost" size="sm" data-testid="ai-question-answer" onClick={() => onAIProposalAction?.('answer')}>{t('Keep and respond')}</Button>
                 <Button variant="ghost" size="sm" data-testid="ai-proposal-keep" onClick={() => onAIProposalAction?.('keep')}>{t('Keep this')}</Button>
                 <Button variant="ghost" size="sm" data-testid="ai-proposal-ignore" onClick={() => onAIProposalAction?.('ignore')}>{t('Ignore')}</Button>
             </> : actions.map(action => {

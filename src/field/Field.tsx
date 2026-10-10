@@ -13,6 +13,7 @@ import { type AIProposalKind, type Camera, type Point, type Ghost, type Thought 
 import type { ProjectController } from '../core/controller.ts';
 import { useProject } from '../ui/hooks.ts';
 import { useUI } from '../ui/store.ts';
+import { useThoughtActionMeasurements } from './useThoughtMeasurements.ts';
 import { ThoughtView } from '../ui/thought/ThoughtView.tsx';
 import { FieldOverlays, type FieldOverlaysHandle } from '../ui/scope/FieldOverlays.tsx';
 import { StructureOverlay } from './phenomena/StructureOverlay.tsx';
@@ -51,6 +52,8 @@ interface Props {
     onRelation: (id: string, point: Point) => void;
     onDropText: (text: string, point: Point) => void;
     onSource: (sourceId: string) => void;
+    onReadThought: (id: string) => void;
+    onRespondThought: (id: string) => void;
     onDropFiles: (files: File[], point: Point) => void;
     onObserve: (ids: string[]) => void;
     onCreateThought: (point: Point) => void;
@@ -60,7 +63,7 @@ interface Props {
     fieldStyle: FieldStyleId;
     connectionStyle: ConnectionStyle;
 }
-export const Field = forwardRef<FieldHandle, Props>(function Field({ controller, fieldStyle, connectionStyle, onProbeRelation, scopeActions, onScopeAction, onKeepAllProposals, onKeepOriginalProposal, onAIProposalAction, onMore, onRegion, onRelation, onDropText, onSource, onDropFiles, onObserve, onCreateThought, onContextMenu, onRevealMatch, find }, forwardedRef) {
+export const Field = forwardRef<FieldHandle, Props>(function Field({ controller, fieldStyle, connectionStyle, onProbeRelation, scopeActions, onScopeAction, onKeepAllProposals, onKeepOriginalProposal, onAIProposalAction, onMore, onRegion, onRelation, onDropText, onSource, onReadThought, onRespondThought, onDropFiles, onObserve, onCreateThought, onContextMenu, onRevealMatch, find }, forwardedRef) {
     const { project, session } = useProject(controller);
     const arrivals = useProposalArrivals(controller);
     const ui = useUI();
@@ -108,6 +111,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
     const liveHierarchy = useRef(hierarchy);
     liveHierarchy.current = hierarchy;
     const focus = useMemo(() => focusFor(project, session, ui.selection), [project, session, ui.selection]);
+    const { onActionsMeasure, actionBounds } = useThoughtActionMeasurements(items);
     useLayoutEffect(() => {
         const state = useUI.getState();
         const selection = state.selection.filter(key => !!items[key]);
@@ -206,12 +210,13 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         camera: () => camera.current?.get() ?? project.camera,
         screenPoint: (point) => { const p = worldToScreen(point, camera.current?.get() ?? project.camera); return { x: p.x + rect.current.left, y: p.y + rect.current.top }; },
         viewBounds: () => { const c = camera.current?.get() ?? project.camera, area = measureSafeArea(viewport.current, rect.current, true); return { x: (area.x - c.x) / c.zoom, y: (area.y - c.y) / c.zoom, width: area.width / c.zoom, height: area.height / c.zoom }; },
+        itemBounds: () => Object.fromEntries([...Object.keys(controller.getSnapshot().project.thoughts), ...Object.keys(controller.getSnapshot().session.ghosts)].flatMap(key => { const box = geometry.getMeasured(key); return box ? [[key, { ...box }]] : []; })),
         restore: (c) => { camera.current?.set(c, true); },
         centerPoint: () => { const area = measureSafeArea(viewport.current, rect.current, true); return camera.current?.worldPoint({ x: area.x + area.width / 2 - 125, y: area.y + area.height / 2 - 50 }) ?? { x: 300, y: 250 }; },
         centerOn: (ids) => { const boxes = ids.map(k => geometry.get(k)).filter((b): b is Bounds => !!b); if (!boxes.length)
             return; const b = boxes[0]; const c = camera.current; if (!c)
             return; c.set(fitInSafeArea(b, measureSafeArea(viewport.current, rect.current), 1), true); },
-        reveal: (ids) => { revealed.current = ids[0] ?? null; refreshVisible(camera.current?.get() ?? project.camera, true); const boxes = ids.map(k => geometry.get(k)).filter((b): b is Bounds => !!b); const c = camera.current; if (!boxes.length || !c)
+        reveal: (ids, options) => { revealed.current = ids[0] ?? null; refreshVisible(camera.current?.get() ?? project.camera, true); const boxes = ids.map(k => geometry.get(k)).filter((b): b is Bounds => !!b); const c = camera.current; if (options?.preserveCamera || !boxes.length || !c)
             return; c.set(revealCamera(boxes[0], liveItems.current[ids[0]], c.get().zoom, measureSafeArea(viewport.current, rect.current)), true); },
         zoomOut: () => { const c = camera.current; if (c)
             c.zoomTo({ x: rect.current.width / 2, y: rect.current.height / 2 }, c.get().zoom * Math.exp(-750 * .0015)); },
@@ -628,12 +633,12 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             {ui.surface !== 'relation' && <RelationLabels relations={relationHits} thoughtBounds={relationObstacles} zoom={stableCamera.zoom} onRelation={onRelation} onKeep={keepCandidate} onIgnore={ignoreCandidate} onRename={renameCandidate}/>}
    {visible.map(key => { if (ui.carry.includes(key))
         return null; const item = items[key]; if (!item)
-        return null; return <ThoughtView key={key} item={item} ghost={key in session.ghosts} recalled={session.recalls.includes(key)} selected={ui.selection.includes(key)} settling={ui.spatialTransition?.material === true && ui.spatialTransition.scopeIds.includes(key)} find={findEmphasis(key)} emphasis={!focus.selected.size ? 'normal' : focus.selected.has(key) ? 'selected' : focus.direct.has(key) ? 'direct' : focus.nearby.has(key) ? 'nearby' : focus.peripheral.has(key) ? 'peripheral' : 'receded'} editing={ui.editing === key} level={level} depth={hierarchy.depth.get(key) ?? 0} root={hierarchy.originalRoots.has(key)} parentText={items[hierarchy.parent.get(key) ?? '']?.text} hasChildren={!!hierarchy.children.get(key)?.length} collapsedCount={(hierarchy.children.get(key) ?? []).filter(id => !eligibleSet.has(id)).length} onExpand={expandBranch} geometry={geometry} onEdit={handleThoughtEdit} onCancel={handleThoughtCancel} onMeasure={handleGhostMeasured} onHover={setHoveredThought} onReject={key => dismissGhostWithDissolve(controller, key, () => { const state = useUI.getState(); state.patch({ selection: state.selection.filter(id => id !== key) }); })}/>; })}
+        return null; return <ThoughtView key={key} item={item} ghost={key in session.ghosts} recalled={session.recalls.includes(key)} selected={ui.selection.includes(key)} settling={ui.spatialTransition?.material === true && ui.spatialTransition.scopeIds.includes(key)} find={findEmphasis(key)} emphasis={!focus.selected.size ? 'normal' : focus.selected.has(key) ? 'selected' : focus.direct.has(key) ? 'direct' : focus.nearby.has(key) ? 'nearby' : focus.peripheral.has(key) ? 'peripheral' : 'receded'} editing={ui.editing === key} level={level} depth={hierarchy.depth.get(key) ?? 0} root={hierarchy.originalRoots.has(key)} parentText={items[hierarchy.parent.get(key) ?? '']?.text} hasChildren={!!hierarchy.children.get(key)?.length} collapsedCount={(hierarchy.children.get(key) ?? []).filter(id => !eligibleSet.has(id)).length} onExpand={expandBranch} geometry={geometry} onEdit={handleThoughtEdit} onCancel={handleThoughtCancel} onMeasure={handleGhostMeasured} onActionsMeasure={onActionsMeasure} onRead={onReadThought} onRespond={onRespondThought} onHover={setHoveredThought} onReject={key => dismissGhostWithDissolve(controller, key, () => { const state = useUI.getState(); state.patch({ selection: state.selection.filter(id => id !== key) }); })}/>; })}
     {offscreenMatches.map((key, index) => { const edge = recallEdge(project.thoughts[key], stableCamera, rect.current.width, rect.current.height, index); const hit = find?.current === key; return <button className="find-edge" data-current={hit || undefined} key={'find-' + key} style={{ left: edge.x, top: edge.y }} onClick={() => onRevealMatch(key)} title={project.thoughts[key].text}><span aria-hidden="true" style={{ display: 'inline-block', transform: `rotate(${edge.angle}deg)` }}>&#8594;</span> {t(hit ? 'Next match' : 'Match elsewhere')}</button>; })}
    {Object.values(project.regions).filter(region => level === 'atlas' && disclosedLandmarks.has('region:' + region.id)).map(region => <button className="region-label" data-active={ui.regionId === region.id || undefined} onClick={() => onRegion(region.id, { x: region.x, y: region.y })} key={region.id} style={{ transform: `translate(${region.x}px,${region.y}px) scale(var(--inverse-zoom))` }}><span>{t(region.name)}</span><small>{t('{count} thoughts', { count: region.members.length })}</small></button>)}
    {level === 'atlas' && frontiers.filter(key => disclosedLandmarks.has('frontier:' + key)).map(key => { const t = project.thoughts[key]; return <button className="frontier-label" key={'frontier-' + key} onClick={() => { controller.wake(key); ui.patch({ selection: [key] }); revealThought(key); }} style={{ transform: `translate(${t.x}px,${t.y}px) scale(var(--inverse-zoom))` }}><span aria-hidden="true">&#9671;</span> {semanticExcerpt(t.text, 'atlas', 'thought')}</button>; })}
   </div>
-   <FieldOverlays ref={overlays} viewport={viewport} camera={() => camera.current?.get() ?? project.camera} geometry={geometry} visibleIds={visible} selection={ui.selection} operation={ui.operation} enabled={ui.surface === 'none'} dragging={ui.dragging} onScopeBounds={onScopeBounds} suggestions={Object.values(session.ghosts).filter(ghost => !visibleSet.has(ghost.id))} thoughts={project.thoughts} roots={rootAnchors.map(key => project.thoughts[key]).filter(Boolean)} onRevealRoot={revealThought} hasHierarchy={hierarchy.children.size > 0} hasRelations={Object.keys(project.relations).length > 0 || Object.keys(session.phenomena).length > 0} localRelations={level === 'local'} reviewNeeded={true} onSuggestionAction={onAIProposalAction} scope={showScopeHub ? { count: activeSelection.length, actions: scopeActions, probing, proposalReview, aiProposalKind, onAction: onScopeAction, onKeepAll: () => onKeepAllProposals([...activeSelection]), onKeepOriginal: () => onKeepOriginalProposal([...activeSelection]), onAIProposalAction: action => onAIProposalAction([...activeSelection], action), onMore } : null} />
+   <FieldOverlays ref={overlays} viewport={viewport} camera={() => camera.current?.get() ?? project.camera} geometry={geometry} actionBounds={actionBounds} visibleIds={visible} selection={ui.selection} operation={ui.operation} enabled={ui.surface === 'none'} dragging={ui.dragging} onScopeBounds={onScopeBounds} suggestions={Object.values(session.ghosts).filter(ghost => !visibleSet.has(ghost.id))} thoughts={project.thoughts} roots={rootAnchors.map(key => project.thoughts[key]).filter(Boolean)} onRevealRoot={revealThought} hasHierarchy={hierarchy.children.size > 0} hasRelations={Object.keys(project.relations).length > 0 || Object.keys(session.phenomena).length > 0} localRelations={level === 'local'} reviewNeeded={true} onSuggestionAction={onAIProposalAction} scope={showScopeHub ? { count: activeSelection.length, actions: scopeActions, probing, proposalReview, aiProposalKind, onAction: onScopeAction, onKeepAll: () => onKeepAllProposals([...activeSelection]), onKeepOriginal: () => onKeepOriginalProposal([...activeSelection]), onAIProposalAction: action => onAIProposalAction([...activeSelection], action), onMore } : null} />
   {ui.carry.length > 0 && <div className="carry-preview">{project.thoughts[ui.carry[0]]?.text.slice(0, 180)}</div>}
   {ui.carry.length > 0 && <div className="carry-banner">{t('Carrying {count} thoughts. Click to place; Escape cancels.', { count: ui.carry.length })}</div>}
     {session.recalls.filter(k => !visibleSet.has(k) && !!project.thoughts[k]).map((k, index) => { const edge = recallEdge(project.thoughts[k], stableCamera, rect.current.width, rect.current.height, index); return <button className="recall-edge" key={k} style={{ left: edge.x, top: edge.y }} onClick={() => { controller.wake(k); ui.patch({ selection: [k], notice: t('Earlier thought awakened. Use Find / Take me there to travel.') }); }} title={project.thoughts[k].text}><span aria-hidden="true" style={{ display: 'inline-block', transform: `rotate(${edge.angle}deg)` }}>&#8594;</span> {t('Earlier thought')}</button>; })}

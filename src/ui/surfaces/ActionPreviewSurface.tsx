@@ -10,8 +10,8 @@ import { Surface } from './Surface.tsx';
 export type PreviewAction = 'continue' | 'angle' | 'ask';
 
 const copy = {
-    continue: { title: 'Continue thinking', helper: 'Follow the current line forward.', prompt: 'How many next steps?' },
-    angle: { title: 'Another angle', helper: 'Reframe this from a different direction.', prompt: 'How many different directions?' },
+    continue: { title: 'Continue thinking', helper: 'Stay with this direction and add a concrete condition or consequence.', prompt: 'How many next steps?' },
+    angle: { title: 'Another angle', helper: 'Try a different lens, such as who is affected or what counts as success.', prompt: 'How many different directions?' },
     ask: { title: 'Generate a question', helper: 'Generate a question that could move the thinking.', prompt: 'How many questions?' },
 } as const;
 

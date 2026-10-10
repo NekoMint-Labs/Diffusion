@@ -2,6 +2,50 @@
 
 Diffusion is a quiet thinking medium for ideas before commitment. This file describes the current checkout: what works, which subsystem owns it, what was freshly verified, and what remains incomplete. It is not a changelog. Historical phase reports and prior verification records remain under [`docs/history/`](docs/history/README.md).
 
+## PR #18 main synchronization (2026-10-10)
+
+This candidate merges main `feb8ac5` (including reviewed #32) into uploaded #18 `fff70f0`.
+Conflict resolution retains both measured reading/response action bounds and the new connection
+legend parameters, both locale additions, and revision-scoped status history. Application/core
+types, static imports, 968 locale keys, source-size policy, production build, 463 unit tests and
+266 offline tests passed. A first offline attempt hit this machine's Git ownership boundary;
+the rerun with command-scoped trust passed without changing assertions. Production Chromium
+navigation, response, continuationPlacement and proposalLocality: 38 passed, zero retries.
+This is focused integration coverage, not a new full-suite or live-model acceptance result.
+Keep #18 Draft and #10 open. Uncommitted local relation/Organize trials are not part of this upload.
+
+## PR #18 integration (2026-10-09)
+
+This candidate synchronizes merged main 2874e8f and integrates the pre-mount continuation repair from #31 (787a88f) and measured-arrival correction from #30 (52f820b). The Field conflict retains main's zoom/subtree behavior and #18's reading, response and action-measurement bindings. Final combined local validation: 57 files / 463 unit tests, 266 offline contracts, application/core types, 960 locale keys, source-size policy and production build passed. The eight-file targeted production browser suite passed 58 cases with one worker and zero retries, including the previously failing dark three-continuation viewport case. Remote CI is evaluated on the uploaded head separately. The complete 304-pass browser run recorded before the main/#30 integration belongs to that earlier candidate. The inherited reports below describe their own revisions and do not validate this candidate. Issue #10 model/operator acceptance remains open.
+
+## Issue #10 follow-up: timeout and readable outcomes (2026-10-04)
+
+Current #18 work is based on `350dcc8`, with real main `4191bb0` already integrated through `406e23b`; #17 was merged into main. #19 remains an older overlapping integration input and was not changed. The earlier records below describe their own candidates, not the current merge state.
+
+AI requests now distinguish the 45-second deadline (`failed` / timeout) from explicit Stop (`cancelled`), including structured ingestion and late responses. Visible terminal feedback lasts about 1.8 seconds on completion or 4 seconds on failure/Stop. Windows E2E startup now passes the lightweight-background flag through `webServer.env` instead of POSIX-only inline assignment.
+
+Fresh local verification: application/core typecheck and normal production build passed (existing chunk warning); 54 unit files / 416 tests passed; 266 offline tests, 960 locale keys and source-size checks passed. Both complete E2E projects ran serially: interaction 269 passed / 12 existing skips and production backgrounds 31 passed, zero failures and retries. After closing the old test server, the corrected Windows startup rebuilt/served and all 9 field-overlay cases passed. The earlier interrupted run's lasso failure is retained as an intermittent observation; it passed during the complete interaction run and was not weakened.
+
+Normal localhost preview was restored after stale lazy assets caused credential-save failure. Session-only save and the real DeepSeek connection check then passed; the probe reported `deepseek-flash` for requested `deepseek-chat`. Five live calls on the same research selection produced visible proposals (Continue twice, Angle twice, Ask once), with four Ignore paths and unchanged original mounted card wording/positions. Mixed quality includes paraphrase, an unsupported independence/conclusion claim, verbosity and an invented device premise. [Closeout notes](docs/ISSUE10_CLOSEOUT.md) retain these limits without private transcripts. A1/A2/A3/A5 remain incomplete; no ready-for-review, merge or Issue closure is claimed. Final-candidate Windows native acceptance remains with #12.
+
+## Issue #10 / #11 synchronized candidate (2026-10-03)
+
+The independent integration draft [#19](https://github.com/NekoMint-Labs/Diffusion/pull/19) now includes #17 head `639818ad6c2a9123c9f92989f6f2bcba81936b98` (product `9377a95`) and #18 head `c9a3cc6dfe5091af158e6837a9544b2441e3309c`. Product integration is `fc3fd199d782c71fb5e9216d62d8cd53cc5d11c7`. Both complete input revisions are ancestors; #13–#16 are already included through #17.
+
+Custom discovery readiness and Source-derived Atlas anchors now include #17's final review repairs. Scoped literal duplicate filtering, controlled connection verification and context-free Ask opener filtering now include #18's latest repairs. The sole new textual conflict merged the controlled connection route while retaining model/key/authentication and Configuration changed assertions. Existing visible-ID/measurement forwarding and camera/provenance/organization boundaries are preserved.
+
+Local application/core TypeScript, production build, 54 files / 411 unit tests, 266 offline tests, 960 locale entries, source-size and diff checks passed. Exact-product-head [CI](https://github.com/NekoMint-Labs/Diffusion/actions/runs/37134333211) and [complete E2E](https://github.com/NekoMint-Labs/Diffusion/actions/runs/37134333208) passed: 297 passed, 12 existing dev-only skips, zero failures; all six jobs passed, one worker per runner and zero retries. The duplicate local full E2E was stopped after remote full-suite success; its partial log is retained and is not claimed as a completed pass.
+
+Fixed-size visual follow-up is recorded in [the integration record](docs/ISSUE10_11_INTEGRATION_PREFLIGHT.md). No new native installer was produced. #12 owns final Windows acceptance and #10 retains real-model A2/A3/A5 closeout; #10/#11 remain open and no PR is merged.
+
+## Earlier Issue #10 / #11 integration candidate (33bd1a7 + 38eab8a)
+
+The independent `codex/integration-issue10-11` branch combines #17 `33bd1a7` and draft #18 `38eab8a`; #17 includes #13–#16. Fifteen textual conflicts were resolved while preserving selected-content priority, separate provenance/organization, user decisions over tentative AI results, original Thought coordinates and camera stability. The [integration record](docs/ISSUE10_11_INTEGRATION_PREFLIGHT.md) documents the seams, exact inputs and earlier failed evidence.
+
+TypeScript/production build, 266 offline tests and 54 files / 400 unit tests passed. Initial full E2E: 273 passed, 18 failed, 12 existing dev-only skips. After repairs, all 93 affected and related focus/geometry cases passed, one worker and zero retries. Title-by-title evidence audit: 295 distinct final passing cases, 12 existing skips, no unresolved failures across 307 cases; this is full-run plus affected-suite evidence, not a claim of a final single all-green full run. Fresh 1280×720 light/dark render checks qualified AI settings copy, full-row suggestion review and Atlas aggregation. Read/respond controls retain 32 screen-pixel height and clear the Hub.
+
+The independent #17 menu repair was separately built and checked (344 unit, 266 offline, 11 mounted-browser cases) before publication. This integration has no new native package or live-model qualification. The Windows and installer results in the next section belong to the earlier #17 repair pass at `19bbd42`, not this integration. #12 retains native acceptance; #10/#11 remain open and no PR is merged.
+
 ## PR #30 after the #29 merge (2026-10-09)
 
 The [4cfd066 review](https://github.com/NekoMint-Labs/Diffusion/pull/30#issuecomment-6079498025) identified cross-request packing and offscreen-source remeasurement risks. Mounted correction now captures the existing pending operation ID synchronously from controller/UI lifecycle changes. It corrects only the latest arrival request, treats prior requests as fixed obstacles even when ordinary Ghosts have no `runId`, and stops scoped correction when no source is visible. Selected proposals retain their position through deselection and Keep; detached/restored/unknown proposals are not automatically repacked. Unscoped arrival collision correction remains intact. No Core, provider, storage or canonical coordinate contract was extended.
@@ -30,7 +74,7 @@ The follow-up at `89042a1` passed all six remote CI/E2E jobs. A broader combined
 
 Combined product snapshot `cd5db1d` includes #18 `f3ee399`, #29 `4429ccc`, this mounted correction at `5d1227e`, and the separate directional fix #31 `787a88f`. It passed 451 unit tests, 266 offline contracts, type/static/locale/source-size gates, 25 Rust tests, and the full-background Windows NSIS build. Its complete browser run recorded 318 passed, 12 existing dev-only skips and one lasso comparison made during the Hub's two-pixel entry translation. The lasso test now waits for the final transform before both measurements, retaining the strict `<2px` threshold, scope/camera and canonical-coordinate checks. Its menu helper also waits for a target or overflow entry before choosing a path; an intermediate three-run check exposed that independent mount race (two passed, one failed). All three final repeated lasso checks passed against the unchanged combined build, with one worker and zero retries. The complete failing run and intermediate diagnostic remain retained; this is complete-suite coverage plus a repaired-case rerun, not a single all-green full run. The new Windows installer is built evidence; operator acceptance and live-model qualification remain separate.
 
-## PR #17 Windows feedback repair pass (2026-10-03)
+## Earlier PR #17 Windows feedback repair pass (19bbd42, 2026-10-03)
 
 This pass implements the maintainer's twelve-item Windows review on top of `943fd8e`. The [repair and acceptance record](docs/NATIVE_UX_ACCEPTANCE.md) maps each report to its implementation, regressions, reference/reuse boundary and remaining native checks. Source identity, installer SHA-256, screenshots and complete command logs are bundled with the local acceptance delivery; PR #17 remains unmerged and Issue #11 remains open.
 
@@ -204,3 +248,84 @@ The five previously recorded deterministic Playwright failures were resolved wit
 ## Continuation
 
 Read [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) before changing a shared seam. Current documentation is indexed in [`docs/README.md`](docs/README.md); [`docs/history/`](docs/history/README.md) is historical provenance only.
+
+
+## Issue #10 branch candidate — October 4, 2026
+
+This section describes `feat/issue-10-thinking-experience`; it does not replace the historical
+main stabilization record above or qualify the integrated/native product. Latest product
+`78d01ae` includes crowded visible placement `6bf3c55` and bounded Angle calibration.
+
+- Final product: production build/typecheck passed; 48 unit files / 366 tests passed;
+  265 offline contracts, 867 locale keys and source-size checks passed; 10 targeted mounted
+  continuation/diversity cases passed. The existing bundle warning is retained.
+- Full local E2E on preceding placement product `6bf3c55`: 196 passed / 12 existing skips /
+  0 failed, one worker, zero retries. This is not a final-head full-suite claim.
+- The first offline attempt overlapped Playwright's result-file deletion and failed with ENOENT;
+  diagnostic preserved, sequential final rerun passed. No assertions were weakened or skips added.
+- Real DeepSeek samples were exercised locally. Missing-card classifications and earlier
+  three-category completion claims are corrected in [the acceptance map](docs/ACCEPTANCE_MAP.md).
+  The contributor found two research directions worth continuing; other results were mixed,
+  including overlapping Diffuse frames and one Angle that may evade the attribution question.
+  A1/A2/A3/A5 remain open; fixtures do not prove semantic quality.
+- #17 was reviewed and squash-merged to main `4191bb0` on October 4; its owner reported installed
+  Windows acceptance. #10 and the newer #18 fixes still require synchronization with the existing
+  #19 integration and revision-specific checks. No #10 PR merge or native acceptance is claimed.
+- Complete uploaded-head remote CI remains to be checked. Keep #18 Draft and Issue #10 open.
+
+
+## Issue #10 synchronized main candidate — October 4, 2026
+
+This later entry supersedes the synchronization-pending status of the preceding branch entry.
+The candidate merges real main `4191bb0` into `2bd2de3`. Main's tree equals #17
+`639818a`; the reviewed #19 `b5b1938` seam resolutions were reused and checked, then
+combined with the newer #10 placement, Angle and persisted-response changes. The local
+`backup/issue10-pre-main-20261004` branch preserves the pre-merge head. #19 was not modified.
+
+| Gate on the merged product | Local result |
+|---|---|
+| `pnpm run build` | Typecheck and production build passed; existing chunk warning retained |
+| `pnpm test` | 54 files / 412 tests passed |
+| `pnpm run check:offline` | 266 passed / 0 failed; core typecheck, 960 locale keys and source-size passed |
+| `VITE_E2E_LIGHTWEIGHT_BACKGROUND=1 pnpm run build`, then `pnpm run test:e2e` | Full suite: 298 passed / 12 existing dev-only skips / 0 failed (11.9 minutes), one worker, zero retries; production-background project uses real renderers |
+| Conflict markers / cached whitespace | No unresolved paths or markers; `git diff --cached --check` passed |
+
+Windows offline fixtures retain the existing English-message environment with
+`NODE_OPTIONS=--no-experimental-global-navigator`. The offline gate completed before the full browser run,
+with no assertion weakening, new skip or retry. Light and dark mounted controlled-fixture
+continuation captures were reviewed and saved under ignored `verification/`; these are
+visibility/interaction evidence, not live-model quality proof. Full local logs remain there.
+
+The merged placement's preferred and raw-footprint indices both reserve only currently visible
+objects, while retaining measured geometry, safe areas, low-zoom read-control space and crowded
+visible-slot fallback. Keep regression retains original wording, exact `derivedFrom` and
+stable-ID reload assertions. Original Thoughts and camera remain outside AI mutation authority.
+
+[The closeout trial checklist](docs/ISSUE10_CLOSEOUT.md) now gives the three real categories,
+action comparison, unchanged-scope repeats, agency checks and honest output-state recording.
+A1/A2/A3/A5 remain open. No new native installer or semantic-quality pass is claimed. Uploaded-head
+remote checks still need separate confirmation. PR #18 stays Draft and Issue #10 stays open.
+
+
+## Issue #10 repeated-thinking candidate — October 4, 2026
+
+This candidate follows uploaded fa1169a; its exact revision is the commit containing this entry.
+Continue and Angle now share up to six bounded negative avoidance excerpts for unchanged compiled
+context. Ignore retains them; changed scope/background/permissions reset them. Thread and Diffuse
+remain separate, and Angle retains history for all existing count settings. A superseded provider
+lookup cannot erase newer history or emit a late request. The wire packet and durable state are unchanged.
+
+Final local build/typecheck, 54 Vitest files / 421 tests, 266 offline contracts, 960 locale keys,
+source-size review and whitespace checks passed. Relevant mounted E2E: 22 passed / 0 failed,
+one worker, zero retries. An intermediate product passed the full suite (302 passed / 12 existing
+dev-only skips / 0 failed); that preceded final prompt/history corrections and is not a final-head
+full-suite claim. Uploaded-head CI must be checked separately.
+
+Real DeepSeek repeats after prompt strengthening surfaced four visible suggestions (Continue twice,
+Angle twice), all ignored; seven original mounted cards retained IDs, text and DOM positions. One
+Continue gave a concrete tentative consequence; other outputs mixed strategies, assumed a usable
+feedback measure, or combined ignored suggestions. The last Angle remains a semantic avoidance and
+grounding failure. No secret or full private input/output is tracked. Details and remaining trials
+are in docs/ISSUE10_CLOSEOUT.md. A1/A2/A3/A5 remain open; keep #18 Draft and #10 open. No native
+acceptance or merge is claimed. #19 still carries an older input; coordinate the final revision
+before integration rather than applying overlapping products twice.

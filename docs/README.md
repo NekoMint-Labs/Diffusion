@@ -45,6 +45,7 @@ Current, but scoped to one subsystem or one record.
 
 | Document | What it covers |
 |---|---|
+| [ISSUE10_CLOSEOUT.md](ISSUE10_CLOSEOUT.md) | Contributor-facing live trial steps and closeout criteria; a procedure, not completed acceptance evidence. |
 | [PROVIDER_CONTRACT.md](PROVIDER_CONTRACT.md) | The AI provider boundary, protocols, and credential rules. |
 | [PROVIDER_DECISION.md](PROVIDER_DECISION.md) | Which providers were selected and why. |
 | [EVIDENCE_GATEWAY.md](EVIDENCE_GATEWAY.md) | The one normalized discovery/evidence HTTP seam and its required routes. |

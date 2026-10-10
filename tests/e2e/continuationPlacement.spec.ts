@@ -234,5 +234,24 @@ test('a continuation uses a nearby corner when all centered directions are block
     }
     expect(await page.locator('.world').evaluate(e => (e as HTMLElement).style.transform)).toBe(camera);
     expect((await projectRecord(page)).thoughts).toEqual(project.thoughts);
+    // The first child adds a root header and branch disclosure. Recheck the separate
+    // response footprint against the unchanged committed neighbors after that growth.
+    const response = source.getByTestId('thought-respond');
+    await expect(response).toBeVisible();
+    await expect.poll(async () => {
+        const control = (await response.boundingBox())!;
+        const neighbors = await page.locator('.thought:not(.ghost):not([data-thought-id="source"])').evaluateAll(elements => elements.map(e => {
+            const b = e.getBoundingClientRect(); return { x: b.x, y: b.y, width: b.width, height: b.height };
+        }));
+        return neighbors.some(other => control.x < other.x + other.width && control.x + control.width > other.x && control.y < other.y + other.height && control.y + control.height > other.y);
+    }).toBe(false);
     await page.screenshot({ path: testInfo.outputPath('nearby-corner-arrival.png') });
+    const responseBox = (await response.boundingBox())!;
+    expect(responseBox.x).toBeGreaterThanOrEqual(0);
+    expect(responseBox.y + responseBox.height).toBeLessThanOrEqual(1000);
+    await response.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.speak-references')).toContainText(project.thoughts.source.text);
+    expect((await projectRecord(page)).thoughts).toEqual(project.thoughts);
+    expect(await page.locator('.world').evaluate(e => (e as HTMLElement).style.transform)).toBe(camera);
 });

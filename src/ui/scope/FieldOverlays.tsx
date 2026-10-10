@@ -4,7 +4,7 @@ import { SuggestionReview } from './SuggestionReview.tsx';
 import { RootReview } from './RootReview.tsx';
 import { ConnectionKey } from './ConnectionKey.tsx';
 import type { GeometryCache } from '../../field/spatial/index.ts';
-import { worldToScreen, type Bounds } from '../../field/spatial/geometry.ts';
+import { intersects, worldToScreen, type Bounds } from '../../field/spatial/geometry.ts';
 import { selectionUIBounds } from '../../field/useThoughtMeasurements.ts';
 import { cancelThinkingOperation, canCancelThinkingOperation } from '../../ai/operationControl.ts';
 import { t } from '../../shared/i18n.ts';
@@ -77,7 +77,8 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             { element: reviewElement.current, ids: [], key: 'suggestions', forceDock: true },
             { element: rootsElement.current, ids: [], key: 'roots', forceDock: true },
         ].filter(item => item.element && state.enabled);
-        const liveKeys = new Set(controls.map(item => item.key));
+        const localRows = [...field.querySelectorAll<HTMLElement>('.thought:not(.ghost) .thought-local-actions')];
+        const liveKeys = new Set([...controls.map(item => item.key), ...localRows.map(row => `local:${row.closest<HTMLElement>('[data-thought-id]')?.dataset.thoughtId}`)]);
         for (const key of docked.current) if (!liveKeys.has(key)) docked.current.delete(key);
         const occupied = state.visibleIds.flatMap(id => {
             return selectionUIBounds([id], state.geometry, state.actionBounds).map(bounds => {
@@ -85,10 +86,18 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
                 return { id, x: viewport.x + point.x, y: viewport.y + point.y, width: bounds.width * camera.zoom, height: bounds.height * camera.zoom };
             });
         });
+        // Mounted card bounds include immediate hierarchy growth before GeometryCache catches up.
+        const mountedCards = new Map([...field.querySelectorAll<HTMLElement>('.thought:not(.ghost)[data-thought-id]')].map(element => [element.dataset.thoughtId!, element] as const));
+        const committedOccupied = state.visibleIds.flatMap(id => {
+            const mounted = mountedCards.get(id);
+            if (mounted?.getClientRects().length) return [{ id, ...screenRect(mounted.getBoundingClientRect()) }];
+            return occupied.filter(rect => rect.id === id);
+        });
         const reserved = [...app.querySelectorAll<HTMLElement>('[data-testid="speak"], .notice, .identity, .global-actions, .field-line-key')]
             .filter(element => element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden')
             .map(element => screenRect(element.getBoundingClientRect()));
         const placed: ScopeRect[] = [];
+        const localPlaced: ScopeRect[] = [];
         const waiting: Array<{ element: HTMLElement; width: number; height: number; scope: boolean }> = [];
         scopeBounds.current = null;
         for (const item of controls) {
@@ -122,6 +131,32 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             }
             element.dataset.placed = 'true';
         }
+        // Local read/respond controls use their measured footprint rather than the card cache.
+        for (const row of localRows) {
+            if (!state.enabled) { row.hidePopover(); continue; }
+            if (!row.matches(':popover-open')) {
+                try { row.showPopover(); } catch { /* Older WebViews may not implement manual popovers. */ }
+            }
+            const card = row.closest<HTMLElement>('[data-thought-id]');
+            if (!card) continue;
+            const key = `local:${card.dataset.thoughtId}`;
+            const anchor = screenRect(card.getBoundingClientRect());
+            const width = row.offsetWidth * camera.zoom, height = row.offsetHeight * camera.zoom;
+            const obstacles = [...committedOccupied.filter(rect => rect.id !== card.dataset.thoughtId), ...reserved, ...placed, ...localPlaced];
+            const preferred = { x: anchor.x, y: anchor.y + anchor.height + 7, width, height };
+            const fits = preferred.x >= viewport.x + 16 && preferred.y >= viewport.y + 16 && preferred.x + width <= viewport.x + viewport.width - 16 && preferred.y + height <= viewport.y + viewport.height - 16;
+            const candidate = docked.current.has(key) ? null : fits && !obstacles.some(rect => intersects(preferred, rect)) ? preferred : clearScopePlacement({ selectionBounds: anchor, viewportBounds: viewport, hubSize: { width, height }, occupiedRects: obstacles, offset: 7 });
+            Object.assign(row.style, { position: 'fixed', transform: `scale(${camera.zoom})`, transformOrigin: 'top left' });
+            if (candidate) {
+                Object.assign(row.style, { left: `${candidate.x}px`, top: `${candidate.y}px` });
+                delete row.dataset.docked;
+                localPlaced.push(candidate);
+            } else {
+                docked.current.add(key);
+                row.dataset.docked = 'true';
+                waiting.push({ element: row, width, height, scope: false });
+            }
+        }
         if (!state.enabled) {
             if (scopeElement.current) scopeElement.current.style.display = 'none';
             if (operationElement.current) operationElement.current.style.display = 'none';
@@ -138,16 +173,26 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         }
         const noticeHeight = parseFloat(getComputedStyle(app).getPropertyValue('--bottom-notice-height')) || 0;
         const laneBottom = noticeHeight ? noticeHeight + 22 : 12;
-        const laneHeight = waiting.reduce((total, item) => total + item.height + 8, 0);
-        const reservedHeight = waiting.length ? laneBottom + laneHeight + 12 : 0;
+        const scopeRow = waiting.find(item => item.scope);
+        const companion = scopeRow && waiting.find(item => localRows.includes(item.element) && item.width + scopeRow.width + 16 <= viewport.width - 32);
+        const lanes = waiting.filter(item => item !== companion).map(item => item === scopeRow && companion ? [companion, item] : [item]);
+        const laneHeight = lanes.reduce((total, lane) => total + Math.max(...lane.map(item => item.height)) + 8, 0);
+        const reservesField = waiting.some(item => !localRows.includes(item.element));
+        const reservedHeight = reservesField ? laneBottom + laneHeight + 12 : 0;
         app.style.setProperty('--field-dock-height', `${reservedHeight}px`);
         let top = appRect.bottom - laneBottom - laneHeight;
-        for (const item of waiting) {
-            const left = viewport.x + Math.max(16, (viewport.width - item.width) / 2);
-            item.element.style.left = `${left}px`;
-            item.element.style.top = `${top}px`;
-            if (item.scope) scopeBounds.current = { x: left, y: top, width: item.width, height: item.height };
-            top += item.height + 8;
+        for (const lane of lanes) {
+            const height = Math.max(...lane.map(item => item.height));
+            const width = lane.reduce((total, item) => total + item.width, 0) + (lane.length - 1) * 16;
+            let left = viewport.x + Math.max(16, (viewport.width - width) / 2);
+            for (const item of lane) {
+                const y = top + (height - item.height) / 2;
+                item.element.style.left = `${left}px`;
+                item.element.style.top = `${y}px`;
+                if (item.scope) scopeBounds.current = { x: left, y, width: item.width, height: item.height };
+                left += item.width + 16;
+            }
+            top += height + 8;
         }
         if (dockElement.current) {
             Object.assign(dockElement.current.style, { display: waiting.length ? 'block' : 'none', left: `${viewport.x}px`, top: `${appRect.bottom - reservedHeight}px`, width: `${viewport.width}px`, height: `${reservedHeight}px` });
@@ -176,7 +221,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         const resize = new ResizeObserver(update);
         const observed = new Set<Element>();
         const observe = () => {
-            const elements = new Set<Element>([field, ...app.querySelectorAll('.scope-hub, .spatial-operation-feedback, .suggestion-review, .field-line-key, [data-testid="speak"], .notice, .progressive-tutorial-coach')]);
+            const elements = new Set<Element>([field, ...app.querySelectorAll('.thought, .thought-local-actions, .scope-hub, .spatial-operation-feedback, .suggestion-review, .field-line-key, [data-testid="speak"], .notice, .progressive-tutorial-coach')]);
             for (const element of observed) if (!elements.has(element)) { resize.unobserve(element); observed.delete(element); }
             for (const element of elements) if (!observed.has(element)) { resize.observe(element); observed.add(element); }
         };

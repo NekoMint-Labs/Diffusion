@@ -372,6 +372,9 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 /* Read-only disclosure and explicit context for a person's own response. */
 /* Selection actions occupy a separate footprint; they never resize measured Thought geometry. */
 .thought-local-actions { position: absolute; top: calc(100% + 7px * var(--inverse-zoom)); left: 0; width: 100%; display: flex; flex-wrap: wrap; gap: calc(4px * var(--inverse-zoom)) calc(12px * var(--inverse-zoom)); }
+.thought-local-actions[popover] { inset: auto; margin: 0; padding: 0; border: 0; width: max-content; max-width: calc(100vw * var(--inverse-zoom) - 32px); background: transparent; color: inherit; }
+.thought-local-actions[popover]:not(:popover-open) { display: none; }
+.thought-local-actions[popover]::backdrop { display: none; }
 /* A proposal caption remains visible above its separate read control. */
 .thought.ghost .thought-local-actions { top: calc(100% + 22px * var(--inverse-zoom)); }
 .thought-read, .thought-respond { display: block; min-height: calc(32px * var(--inverse-zoom)); margin: 0; padding: calc(5px * var(--inverse-zoom)) calc(4px * var(--inverse-zoom)); border: 0; background: none; color: var(--ink-secondary); font: calc(var(--type-label-size) * var(--inverse-zoom))/1.5 var(--ui-font); cursor: pointer; }

@@ -244,3 +244,11 @@ scientific correctness, live-provider quality or Windows native acceptance of th
 format. Correctly scoped six-action comparisons and repeated real output review remain necessary;
 A1/A2/A3/A5 stay open. Prior mixed output and evidence corrections above remain applicable.
 The final uploaded head's remote CI must be checked separately. Keep #18 Draft and #10 open.
+
+## PR #18 Field review checkpoint, 2026-10-10
+
+The Field owner independently reviewed product `aae7796ddc321c245365122200872057fb34ec50`: nearby/forward continuation placement, measured reading/response controls, repeated mounted correction, selection and hierarchy disclosure, and Keep/Ignore/reopen boundaries. Application types, production bundling and 77 relevant unit regressions passed. A production Chromium run passed 73 cases across `continuationPlacement`, `fieldOverlays`, `hierarchy`, `hierarchyPresentation`, `integrationBoundary`, `overviewNavigation`, `proposalLocality` and `response`, with one worker, zero retries, zero skips and unchanged assertions. Fixed-size light/dark and Chinese reading/continuation captures were inspected. No new blocking Field defect was found in this scope.
+
+The #18 owner then synchronized main `8c01498` into product `0b205ed88381d416c53e396d95317d67af9d0155`, resolving the acceptance-record conflict. Field placement, Thought rendering/measurement and response implementations are unchanged between these products. Independent application types, production bundling and the same 77 unit regressions passed on `0b205ed`; 18 additional production-browser cases passed for overview navigation/IME, Crystal Handoff preview/download, and reading/responding at Local, Neighborhood and Atlas zoom. All six remote checks on `0b205ed` were independently verified successful. The 73-case result above belongs to `aae7796`, not the later product or a complete browser suite.
+
+This documentation-only follow-up records the Field review and introduces no further main synchronization or production-code change. It does not qualify live-model A1/A2/A3/A5, physical Windows input/scaling or the eventual packaged release. Keep #18 Draft and #10/#11 open; live semantic acceptance remains with #10 and final native integration with #12. The already-uploaded #38 relation-control clearance follow-up remains separate.

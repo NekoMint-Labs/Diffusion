@@ -18,7 +18,7 @@ test('Stage B gives Ghost, Question and Source distinct editorial identities wit
   assert.doesNotMatch(semantic + theme, /AI[-_ ]purple|neon|shimmer/i);
 });
 
-test('Stage B raises Field identity and settles Crystal while relations sleep at rest', () => {
+test('Field identity and Crystal stay distinct while confirmed relations remain quieter at rest', () => {
   const field = read('src/ui/field.css');
   const material = read('src/ui/materials.css');
 
@@ -26,7 +26,9 @@ test('Stage B raises Field identity and settles Crystal while relations sleep at
     // Field-local identity lives in field.css now (materials.css owns only Thought material + relations).
     assert.match(field, /html\[lang\^="zh"\] \.identity-eyebrow/);
     assert.match(field, /\.thought\.crystal::before[^{]*\{[^}]*\\25c6/s);
-    assert.match(material, /\.relation\.confirmed path[^{]*\{[^}]*opacity: \.24/s);
-    assert.match(material, /\.relation\.relevant\.confirmed path[^{]*\{[^}]*opacity: \.6/s);
+    const rest = Number(material.match(/\.relation\.confirmed path[^{]*\{[^}]*opacity: (\.[0-9]+)/s)?.[1]);
+    const attended = Number(material.match(/\.relation\.relevant\.confirmed path[^{]*\{[^}]*opacity: (\.[0-9]+)/s)?.[1]);
+    assert.ok(rest >= .4 && rest < attended && attended <= 1, 'confirmed relations are readable at rest and stronger under attention');
+    assert.match(material, /\.relation\.confirmed path[^{]*\{[^}]*stroke: var\(--relation\)/s);
     assert.match(read('src/field/phenomena/describe.ts'), /path: `M\$\{a\.x\},\$\{a\.y\} C/);
 });

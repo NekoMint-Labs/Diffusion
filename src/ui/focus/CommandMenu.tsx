@@ -56,7 +56,9 @@ export function CommandMenu({ anchor, point, rows, moreRows = [], scope, note, p
         onClose();
         row.run({ x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 });
     };
-    const sharedShell = scope === 'global' ? GLOBAL_TRANSIENT_SHELL_LAYOUT_ID : undefined;
+    // A live popup's shell follows its content. Register shared geometry only when
+    // it retires into a successor surface; floating placement is not an animation.
+    const sharedShell = scope === 'global' && !present ? GLOBAL_TRANSIENT_SHELL_LAYOUT_ID : undefined;
     const side = placement === 'right-start' ? 'right' : 'bottom';
     const align = placement === 'bottom-end' ? 'end' : 'start';
     const label = scope === 'global' ? 'Application actions' : scope === 'field' ? 'Field actions' : 'Thought actions';

@@ -2,6 +2,18 @@
 
 Diffusion is a quiet thinking medium for ideas before commitment. This file describes the current checkout: what works, which subsystem owns it, what was freshly verified, and what remains incomplete. It is not a changelog. Historical phase reports and prior verification records remain under [`docs/history/`](docs/history/README.md).
 
+## PR #18 main synchronization (2026-10-10)
+
+This candidate merges main `feb8ac5` (including reviewed #32) into uploaded #18 `fff70f0`.
+Conflict resolution retains both measured reading/response action bounds and the new connection
+legend parameters, both locale additions, and revision-scoped status history. Application/core
+types, static imports, 968 locale keys, source-size policy, production build, 463 unit tests and
+266 offline tests passed. A first offline attempt hit this machine's Git ownership boundary;
+the rerun with command-scoped trust passed without changing assertions. Production Chromium
+navigation, response, continuationPlacement and proposalLocality: 38 passed, zero retries.
+This is focused integration coverage, not a new full-suite or live-model acceptance result.
+Keep #18 Draft and #10 open. Uncommitted local relation/Organize trials are not part of this upload.
+
 ## PR #18 integration (2026-10-09)
 
 This candidate synchronizes merged main 2874e8f and integrates the pre-mount continuation repair from #31 (787a88f) and measured-arrival correction from #30 (52f820b). The Field conflict retains main's zoom/subtree behavior and #18's reading, response and action-measurement bindings. Final combined local validation: 57 files / 463 unit tests, 266 offline contracts, application/core types, 960 locale keys, source-size policy and production build passed. The eight-file targeted production browser suite passed 58 cases with one worker and zero retries, including the previously failing dark three-continuation viewport case. Remote CI is evaluated on the uploaded head separately. The complete 304-pass browser run recorded before the main/#30 integration belongs to that earlier candidate. The inherited reports below describe their own revisions and do not validate this candidate. Issue #10 model/operator acceptance remains open.

@@ -975,4 +975,12 @@ export const zh: Record<string, string> = {
   "Context constrains structure": "上下文约束结构呈现",
   "Selection defines which thoughts receive clearer attention while their positions stay unchanged.": "选择限定哪些想法变得更清晰，同时保持它们原来的位置。",
   "The background question asks whether context survives; the structure thought makes that context a condition for showing structure.": "背景问题担心上下文会丢失，而结构想法让这份上下文成为是否呈现结构的条件。",
+  "Locate {count} overview thoughts…": "定位 {count} 个概览想法…",
+  "Choose a thought to reveal its location. Zoom stays the same.": "选择一个想法，即可定位并显示；缩放倍率保持不变。",
+  "No overview thoughts match. Try a shorter phrase.": "没有匹配的概览想法，请尝试更短的词语。",
+  "Parent arrows connect visible thoughts. A blocked route may be hidden.": "归属箭头连接当前可见的想法；被其他卡片挡住时，连线可能隐藏。",
+  "Parent → child": "上级 → 下级",
+  "Semantic relation · no arrow": "内容关联 · 无箭头",
+  "Select a thought to inspect its relations.": "选中一个想法，查看它的内容关联。",
+  "Zoom in to inspect semantic relations.": "放大视图后可查看内容关联。",
 };

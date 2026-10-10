@@ -19,4 +19,14 @@ describe('relations clear the contextual card actions', () => {
         expect(obstacles.every(obstacle => !overlaps(rect, obstacle))).toBe(true);
         expect(geometry.get('card')).toEqual({ x: 100, y: 100, width: 250, height: 100 });
     });
+
+    it.each([0.75, 1, 1.5])('keeps candidate decision controls clear of another token at zoom %s', zoom => {
+        const candidate: RelationPhenomenon = { id: 'candidate', kind: 'gap', label: 'Condition to review', confirmed: false, released: false, a: { x: 0, y: 0 }, b: { x: 400, y: 0 }, mid: { x: 200, y: 0 }, path: '' };
+        const kept = { ...candidate, id: 'kept', kind: 'support' as const, label: 'Established reference', confirmed: true };
+        const tokens = placeRelationLabels([kept, candidate], [], zoom);
+        const controls = { x: tokens.candidate.x, y: tokens.candidate.y + tokens.candidate.height / zoom - 1 / zoom, width: tokens.candidate.width / zoom, height: 36 / zoom };
+        const other = { x: tokens.kept.x, y: tokens.kept.y, width: tokens.kept.width / zoom, height: tokens.kept.height / zoom };
+        expect(overlaps(controls, other)).toBe(false);
+        expect(placeRelationLabels([candidate, kept], [], zoom)).toEqual(tokens);
+    });
 });

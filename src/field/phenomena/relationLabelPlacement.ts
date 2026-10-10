@@ -70,28 +70,31 @@ export function placeRelationLabels(relations: readonly RelationPhenomenon[], th
         const size = estimateRelationLabelSize(relation.label, !relation.confirmed, interfaceScale);
         const width = size.width / safeZoom;
         const height = size.height / safeZoom;
+        // The hover/focus decision row is 36 screen pixels including padding and border.
+        // Reserve it before hover so showing Keep/Modify/Ignore never covers another object.
+        const footprintHeight = height + (relation.confirmed ? 0 : 36 / safeZoom);
         const blocked = (rect: Bounds) => thoughtBounds.some(bound => !outside(rect, inflate(bound, clearance))) || occupied.some(bound => !outside(rect, inflate(bound, clearance)));
-        const anchors = candidateAnchors(relation, width, height, safeZoom);
+        const anchors = candidateAnchors(relation, width, footprintHeight, safeZoom);
         let chosen: { rect: Bounds; anchor: { x: number; y: number } } | undefined;
         for (const anchor of anchors) {
-            const rect = { x: anchor.x - width / 2, y: anchor.y - height / 2, width, height };
+            const rect = { x: anchor.x - width / 2, y: anchor.y - height / 2, width, height: footprintHeight };
             if (!blocked(rect)) { chosen = { rect, anchor }; break; }
         }
         // Extremely dense Fields still prefer a farther deterministic slot to covering content.
         if (!chosen) {
             for (let step = 1; step <= 20 && !chosen; step++) {
-                const anchor = { x: relation.mid.x, y: relation.mid.y - (height + clearance) * (6 + step) };
-                const rect = { x: anchor.x - width / 2, y: anchor.y - height / 2, width, height };
+                const anchor = { x: relation.mid.x, y: relation.mid.y - (footprintHeight + clearance) * (6 + step) };
+                const rect = { x: anchor.x - width / 2, y: anchor.y - height / 2, width, height: footprintHeight };
                 if (!blocked(rect)) chosen = { rect, anchor };
             }
         }
         if (!chosen) {
             for (let ring = 7; ring <= 32 && !chosen; ring++) {
-                const radius = Math.max(width, height) / 2 + ring * 42 / safeZoom;
+                const radius = Math.max(width, footprintHeight) / 2 + ring * 42 / safeZoom;
                 for (let slot = 0; slot < 16; slot++) {
                     const angle = slot * Math.PI / 8;
                     const anchor = { x: relation.mid.x + Math.cos(angle) * radius, y: relation.mid.y + Math.sin(angle) * radius };
-                    const rect = { x: anchor.x - width / 2, y: anchor.y - height / 2, width, height };
+                    const rect = { x: anchor.x - width / 2, y: anchor.y - height / 2, width, height: footprintHeight };
                     if (!blocked(rect)) { chosen = { rect, anchor }; break; }
                 }
             }

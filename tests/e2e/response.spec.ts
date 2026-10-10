@@ -247,7 +247,8 @@ for (const [name, text, actionCount] of [
         const before = await card.boundingBox();
         expect(before).not.toBeNull();
         await card.click();
-        const actions = card.locator('.thought-local-actions');
+        const id = await card.getAttribute('data-thought-id');
+        const actions = page.locator(`[data-thought-actions-for="${id}"]`);
         await expect(actions.getByRole('button')).toHaveCount(actionCount);
         expect(await card.boundingBox()).toEqual(before);
         await expect.poll(async () => {
@@ -255,7 +256,7 @@ for (const [name, text, actionCount] of [
             const hub = await page.getByTestId('scope-hub').boundingBox();
             return Boolean(strip && hub && (strip.x + strip.width <= hub.x || hub.x + hub.width <= strip.x || strip.y + strip.height <= hub.y || hub.y + hub.height <= strip.y));
         }).toBe(true);
-        const respond = card.getByTestId('thought-respond');
+        const respond = actions.getByTestId('thought-respond');
         expect((await respond.boundingBox())!.height).toBeGreaterThanOrEqual(32);
         await respond.focus();
         await respond.press('Enter');

@@ -36,13 +36,14 @@ export function scopeHubDistance(a: ScopeRect, b: ScopeRect): number {
  * among placements that still sit outside the selected geometry. Dense Fields may therefore let
  * the Hub cover nearby unselected whitespace/material rather than teleporting it across the screen.
  */
-export function computeScopeHubPlacement({ selectionBounds, viewportBounds, occupiedRects = [], hubSize, offset = 20, padding = 16 }: {
+export function computeScopeHubPlacement({ selectionBounds, viewportBounds, occupiedRects = [], hubSize, offset = 20, padding = 16, preferredSide = 'top' }: {
     selectionBounds: ScopeRect;
     viewportBounds: ScopeRect;
     occupiedRects?: ScopeRect[];
     hubSize: { width: number; height: number };
     offset?: number;
     padding?: number;
+    preferredSide?: ScopePlacement['side'];
 }): ScopePlacement {
     const minX = viewportBounds.x + padding;
     const minY = viewportBounds.y + padding;
@@ -59,7 +60,7 @@ export function computeScopeHubPlacement({ selectionBounds, viewportBounds, occu
         place('bottom', selectionBounds.x + (selectionBounds.width - hubSize.width) / 2, selectionBounds.y + selectionBounds.height + offset),
         place('right', selectionBounds.x + selectionBounds.width + offset, selectionBounds.y + (selectionBounds.height - hubSize.height) / 2),
         place('left', selectionBounds.x - hubSize.width - offset, selectionBounds.y + (selectionBounds.height - hubSize.height) / 2),
-    ];
+    ].sort((a, b) => Number(b.side === preferredSide) - Number(a.side === preferredSide));
     const clearedRects = occupiedRects.map(rect => inflate(rect, SCOPE_HUB_CONTENT_CLEARANCE));
     const outsideSelection = candidates.filter(candidate => outside(candidate, selectionBounds));
     const clear = outsideSelection.find(candidate => clearedRects.every(rect => outside(candidate, rect)));

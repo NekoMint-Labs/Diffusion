@@ -47,8 +47,11 @@ The EN/ZH dictionary is small and reactive. User text, fetched passages and mode
 ## Reading and authored responses
 
 Selecting a bounded Thought reveals read-only full-text disclosure through the existing anchored
-Surface. Selected read/respond controls have a separate measured UI footprint for Hub placement;
-they never resize a Thought or enter collision, lasso, or canonical geometry. This does not edit,
+Surface. Committed-card read/respond controls share the Field's measured screen-space overlay
+placement: nearby clear space first, then its existing reserved lane when crowded. Card resize,
+viewport changes and camera frames update placement without changing authored geometry. Their
+footprint also clears the Hub; Ghost read controls retain their caption-aware world footprint.
+They never resize a Thought or enter collision, lasso, or canonical geometry. This does not edit,
 claim, or rewrite the material. A person's explicit response creates an
 InputRecord and a separate canonical Thought using the existing continuation lineage; it never
 calls a provider or automatically confirms a relation.

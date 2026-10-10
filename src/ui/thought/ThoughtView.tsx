@@ -1,6 +1,7 @@
 import { t } from '../../shared/i18n.ts';
 import { useLocale } from '../useLocale.ts';
 import { memo, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { Ghost, Thought } from '../../core/model.ts';
 import { isAuthoredExample } from '../../core/demo.ts';
 import type { GeometryCache } from '../../field/spatial/index.ts';
@@ -43,6 +44,7 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
     const input = useRef<HTMLTextAreaElement>(null);
     const preview = useRef<HTMLDivElement>(null);
     const localActions = useRef<HTMLDivElement>(null);
+    const [actionHost, setActionHost] = useState<HTMLElement | null>(null);
     const [truncated, setTruncated] = useState(false);
     const settled = useRef(false);
     const wasEditing = useRef(false);
@@ -56,6 +58,7 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
         const el = ref.current;
         if (!el)
             return;
+        setActionHost(el.closest<HTMLElement>('.app'));
         const measure = (initial = false) => {
             geometry.measure(item.id, el.offsetWidth, el.offsetHeight);
             const content = preview.current;
@@ -69,14 +72,16 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
     }, [item.id, item.text, editing, geometry, level, onMeasure]);
     useLayoutEffect(() => {
         const actions = localActions.current;
-        if (!actions || !onActionsMeasure) return;
+        // Committed-card actions belong to the screen-space overlay owner. Ghost captions/read
+        // controls retain their separate world footprint used by existing proposal placement.
+        if (!ghost || !actions || !onActionsMeasure) return;
         const measure = () => onActionsMeasure(item.id, { x: actions.offsetLeft, y: actions.offsetTop, width: actions.offsetWidth, height: actions.offsetHeight });
         measure();
         const observer = new ResizeObserver(measure);
         observer.observe(actions);
         if (ref.current) observer.observe(ref.current);
         return () => { observer.disconnect(); onActionsMeasure(item.id, null); };
-    }, [item.id, item.text, selected, editing, truncated, level, onActionsMeasure]);
+    }, [item.id, item.text, ghost, selected, editing, truncated, level, onActionsMeasure]);
     useLayoutEffect(() => {
         const entering = editing && !wasEditing.current;
         wasEditing.current = editing;
@@ -125,6 +130,11 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
     // compensation; a cached pre-mount world width must not override it for a new editor.
     const size = kind === 'thought' || kind === 'ghost' ? thoughtSizeClass(text) : undefined;
     const short = semanticExcerpt(text, editing || find === 'current' ? 'local' : level, kind);
+    const actions = selected && !editing && (!ghost && kind === 'thought' || truncated || short !== text)
+        ? <div ref={localActions} className="thought-local-actions" data-thought-actions-for={!ghost ? item.id : undefined} onPointerDown={event => event.stopPropagation()}>
+            {!ghost && kind === 'thought' && <button type="button" className="thought-respond" data-testid="thought-respond" onClick={event => { event.stopPropagation(); onRespond(item.id); }}>{t(isQuestion(item) ? 'Respond to this question' : 'Add my thoughts')}</button>}
+            {(truncated || short !== text) && <button type="button" className="thought-read" aria-haspopup="dialog" onClick={event => { event.stopPropagation(); onRead(item.id); }}>{t('Read full text')}</button>}
+        </div> : null;
     return <article ref={ref} data-thought-id={item.id} data-kind={kind} data-depth={depth} data-depth-style={hierarchyStyle(depth ?? 0)} data-original-root={root || undefined} data-size={size} data-life={'life' in item ? item.life : 'active'} data-emphasis={emphasis} data-selected={selected} data-material-settling={settling || undefined} data-recalled={recalled} data-causal={'scopeIds' in item ? item.scopeIds.length ? 'true' : undefined : 'derivedFrom' in item && item.derivedFrom?.length ? 'true' : undefined} data-origin-scope={'scopeIds' in item ? item.scopeIds.join(' ') : 'derivedFrom' in item ? item.derivedFrom?.join(' ') : undefined} data-proposal-kind={proposalKind} data-proposal-action={proposalAction} data-generation-action={'generationAction' in item ? item.generationAction : undefined} className={`thought ${kind} ${editing ? 'editing' : ''} ${ghost ? 'ghost' : ''} ${recalled ? 'recall' : ''}`} data-find={find} style={{ transform: `translate(${item.x}px, ${item.y}px)` }} tabIndex={0} aria-label={`${t(kind)}: ${text || t('New thought')}`} aria-current={selected ? 'true' : undefined} onPointerEnter={() => onHover?.(item.id)} onPointerLeave={() => onHover?.(null)}>
     {!editing && (level === 'local' || find === 'current' || editing) && (parentText !== undefined || hasChildren) && <div className="hierarchy-context" data-testid="hierarchy-context" title={parentText}>
         <span className="hierarchy-level">{depth ? t('Level {level}', { level: depth + 1 }) : t('Top level')}</span>
@@ -147,10 +157,7 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
                 ? <TransientTextPresence phase={ghost ? 'ghost' : 'recall'}>{short || t('A thought, not yet in words...')}</TransientTextPresence>
                 : <p>{short || t('A thought, not yet in words...')}</p>}</div>
     {!editing && hasChildren && (collapsedCount > 0 || selected) && <button type="button" className="branch-expand" data-testid="branch-expand" aria-expanded={collapsedCount === 0} onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); onExpand?.(item.id); }}><span aria-hidden="true">{collapsedCount ? '▸ ' : '▾ '}</span>{collapsedCount ? t('Show {count} children', { count: collapsedCount }) : t('Collapse branch')}</button>}
-    {selected && !editing && (!ghost && kind === 'thought' || truncated || short !== text) && <div ref={localActions} className="thought-local-actions" onPointerDown={event => event.stopPropagation()}>
-        {!ghost && kind === 'thought' && <button type="button" className="thought-respond" data-testid="thought-respond" onClick={event => { event.stopPropagation(); onRespond(item.id); }}>{t(isQuestion(item) ? 'Respond to this question' : 'Add my thoughts')}</button>}
-        {(truncated || short !== text) && <button type="button" className="thought-read" aria-haspopup="dialog" onClick={event => { event.stopPropagation(); onRead(item.id); }}>{t('Read full text')}</button>}
-    </div>}
+    {ghost ? actions : actionHost && createPortal(actions, actionHost)}
     {selected && <span className="thought-selected-dot" aria-hidden="true"/>}
     {kind === 'source' && <span className="thought-meta">{t('Source')}</span>}
     {ghost && <span className="thought-meta ghost-label">{t(proposal ? 'From your words · not kept' : 'AI suggestion · not kept')}</span>}

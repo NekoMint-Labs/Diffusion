@@ -48,8 +48,9 @@ for (const zoom of [1, .4, .16]) {
         }
         const sourcePosition = await source.getAttribute('style');
         const camera = await page.locator('.world').getAttribute('style');
-        const respond = source.getByTestId('thought-respond');
-        const read = source.getByRole('button', { name: '阅读全文', exact: true });
+        const actions = page.locator('[data-thought-actions-for="source"]');
+        const respond = actions.getByTestId('thought-respond');
+        const read = actions.getByRole('button', { name: '阅读全文', exact: true });
         for (const control of [respond, read]) {
             await expect(control).toBeVisible();
             const bounds = await control.boundingBox();

@@ -71,7 +71,10 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             const top = heading ? beside ? heading.top + 20 : heading.bottom + 8 : viewport.y + 16;
             Object.assign(key.style, { display: state.enabled ? '' : 'none', left: `${left}px`, top: `${top}px`, maxWidth: `${Math.max(0, right - left - 16)}px` });
         }
+        const thoughtActions = [...app.querySelectorAll<HTMLElement>('.thought-local-actions[data-thought-actions-for]')];
+        const actionRects = new Map<string, ScopeRect>();
         const controls = [
+            ...thoughtActions.map(element => ({ element, ids: [element.dataset.thoughtActionsFor!], key: `thought:${element.dataset.thoughtActionsFor}`, forceDock: state.dragging })),
             { element: scopeElement.current, ids: state.selection.filter(id => state.visibleIds.includes(id)), key: `scope:${state.selection.join(' ')}`, forceDock: false },
             { element: operationElement.current, ids: state.displayOperation?.scopeIds ?? [], key: `operation:${state.displayOperation?.id}`, forceDock: state.dragging },
             { element: reviewElement.current, ids: [], key: 'suggestions', forceDock: true },
@@ -96,13 +99,16 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             element.style.display = '';
             element.style.maxWidth = `${Math.max(0, viewport.width - 32)}px`;
             const width = Math.ceil(element.offsetWidth), height = Math.ceil(element.offsetHeight);
-            const anchor = unionScopeBounds(selectionUIBounds(item.ids, state.geometry, state.actionBounds).map(bounds => {
+            const anchor = unionScopeBounds([...selectionUIBounds(item.ids, state.geometry, state.actionBounds).map(bounds => {
                 const point = worldToScreen(bounds, camera);
                 return { x: viewport.x + point.x, y: viewport.y + point.y, width: bounds.width * camera.zoom, height: bounds.height * camera.zoom };
-            }));
-            const candidate = anchor && !item.forceDock && !docked.current.has(item.key) ? clearScopePlacement({
+            }), ...item.ids.flatMap(id => actionRects.has(id) ? [actionRects.get(id)!] : [])]);
+            const isThought = element.dataset.thoughtActionsFor;
+            const localDocked = !isThought && item.ids.some(id => docked.current.has(`thought:${id}`));
+            const candidate = anchor && !item.forceDock && !localDocked && !docked.current.has(item.key) ? clearScopePlacement({
                 selectionBounds: anchor, viewportBounds: viewport, hubSize: { width, height },
                 occupiedRects: [...occupied.filter(rect => !item.ids.includes(rect.id)), ...reserved, ...placed],
+                ...(isThought ? { preferredSide: 'bottom' as const, offset: 7 } : {}),
             }) : null;
             const isScope = element === scopeElement.current;
             if (candidate) {
@@ -111,6 +117,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
                 element.dataset.scopeSide = candidate.side;
                 delete element.dataset.docked;
                 placed.push(candidate);
+                if (isThought) actionRects.set(isThought, candidate);
                 if (isScope) scopeBounds.current = candidate;
             } else {
                 // Once reserved, keep the lane for this scope/request. Otherwise the reduced Field
@@ -123,6 +130,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             element.dataset.placed = 'true';
         }
         if (!state.enabled) {
+            for (const element of thoughtActions) element.style.display = 'none';
             if (scopeElement.current) scopeElement.current.style.display = 'none';
             if (operationElement.current) operationElement.current.style.display = 'none';
             if (reviewElement.current) reviewElement.current.style.display = 'none';
@@ -176,7 +184,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         const resize = new ResizeObserver(update);
         const observed = new Set<Element>();
         const observe = () => {
-            const elements = new Set<Element>([field, ...app.querySelectorAll('.scope-hub, .spatial-operation-feedback, .suggestion-review, .field-line-key, [data-testid="speak"], .notice, .progressive-tutorial-coach')]);
+            const elements = new Set<Element>([field, ...app.querySelectorAll('.thought, .thought-local-actions, .scope-hub, .spatial-operation-feedback, .suggestion-review, .field-line-key, [data-testid="speak"], .notice, .progressive-tutorial-coach')]);
             for (const element of observed) if (!elements.has(element)) { resize.unobserve(element); observed.delete(element); }
             for (const element of elements) if (!observed.has(element)) { resize.observe(element); observed.add(element); }
         };

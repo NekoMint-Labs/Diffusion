@@ -374,6 +374,8 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .thought-local-actions { position: absolute; top: calc(100% + 7px * var(--inverse-zoom)); left: 0; width: 100%; display: flex; flex-wrap: wrap; gap: calc(4px * var(--inverse-zoom)) calc(12px * var(--inverse-zoom)); }
 /* A proposal caption remains visible above its separate read control. */
 .thought.ghost .thought-local-actions { top: calc(100% + 22px * var(--inverse-zoom)); }
+.thought-local-actions[data-thought-actions-for] { position: fixed; z-index: var(--layer-scope); width: max-content; max-width: calc(100vw - 32px); --inverse-zoom: 1; }
+.thought-local-actions[data-thought-actions-for]:not([data-placed]) { visibility: hidden; }
 .thought-read, .thought-respond { display: block; min-height: calc(32px * var(--inverse-zoom)); margin: 0; padding: calc(5px * var(--inverse-zoom)) calc(4px * var(--inverse-zoom)); border: 0; background: none; color: var(--ink-secondary); font: calc(var(--type-label-size) * var(--inverse-zoom))/1.5 var(--ui-font); cursor: pointer; }
 .thought-read:hover, .thought-read:focus-visible, .thought-respond:hover, .thought-respond:focus-visible { color: var(--ink-primary); text-decoration: underline; }
 .speak-references { margin: 0 5px 9px; max-height: min(150px, 24dvh); overflow: auto; overscroll-behavior: contain; color: var(--ink-secondary); font: var(--type-helper-size)/1.6 var(--ui-font); }

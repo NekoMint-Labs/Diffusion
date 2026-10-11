@@ -122,3 +122,12 @@ export function describeDiscovery(settings: DiscoverySettings, storedKeys: Parti
 export function discoveryAvailable(status: DiscoveryStatus): boolean {
     return status.engineReady && (status.engine === 'custom' || status.ready.length > 0);
 }
+
+/** A missing search capability is not necessarily a disabled permission. */
+export function discoveryUnavailableText(settings: DiscoverySettings, status: DiscoveryStatus): string {
+    if (!settings.external) return 'Looking outside this Field is off. Turn it on in Settings to search.';
+    if (settings.backend === 'custom' && !usableCustomDiscoveryURL(settings.customUrl)) return 'settings.search.badAddress';
+    if (settings.backend === 'built-in' && enabledSources(settings).length === 0) return 'settings.search.chooseSource';
+    if (settings.backend === 'built-in' && status.ready.length === 0 && status.missingKey.length > 0) return 'settings.search.keyNeeded';
+    return 'settings.search.unavailable';
+}

@@ -1,5 +1,6 @@
 /* Product copy only. English source keys are the fallback dictionary. */
 export const zh: Record<string, string> = {
+    "External search refused these settings. Check the search source and service address.": "外部搜索拒绝了这些设置。请检查搜索来源和服务地址。",
     "settings.ai.gatewayReachable": "网关可连接",
     "settings.ai.gatewayUnverified": "已读取网关配置，尚未验证模型响应。",
     "settings.ai.gatewayUnconfigured": "网关尚未配置模型。",

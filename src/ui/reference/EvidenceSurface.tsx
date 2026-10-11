@@ -18,10 +18,12 @@ import { registerOperationCancellation } from '../../ai/operationControl.ts';
  * moment a person needed the next action instead. */
 function failure(subject: string, cause: unknown): { text: string; remedy: FailureRemedy } {
     const kind = classifyFailure(cause);
-    return { text: failureText(kind, subject), remedy: failureRemedy(kind) };
+    const remedy = failureRemedy(kind);
+    const text = kind === 'invalid-configuration' ? t('External search refused these settings. Check the search source and service address.') : failureText(kind, subject);
+    return { text, remedy: remedy === 'ai-settings' || remedy === 'model' ? 'search-settings' : remedy };
 }
-export function EvidenceSurface({ provider, initial, scopeIds, onBring, onOpen, onConfigure, onClose }: {
-    provider: WebEvidenceProvider | null; initial: string; scopeIds: string[]; onBring: (candidate: EvidenceCandidate, existingSourceId?: string) => Promise<string | undefined>; onOpen: (url: string) => void;
+export function EvidenceSurface({ provider, unavailableReason, initial, scopeIds, onBring, onOpen, onConfigure, onClose }: {
+    provider: WebEvidenceProvider | null; unavailableReason: string; initial: string; scopeIds: string[]; onBring: (candidate: EvidenceCandidate, existingSourceId?: string) => Promise<string | undefined>; onOpen: (url: string) => void;
     /** Where the person goes when nothing here can answer yet. */
     onConfigure: () => void;
     onClose: () => void;
@@ -55,7 +57,7 @@ export function EvidenceSurface({ provider, initial, scopeIds, onBring, onOpen, 
                 if (abort.signal.aborted) { terminal = 'cancelled'; return; }
                 setResults(values => values.map(value => value.id === updated.id ? updated : value));
             }
-        } catch (cause) { terminal = abort.signal.aborted ? 'cancelled' : 'failed'; if (!abort.signal.aborted) setError(failure(t('External search'), cause)); else if (abort.signal.reason === 'timeout') setError({ text: t('The evidence request timed out. No judgment was made.'), remedy: 'none' });  }
+        } catch (cause) { terminal = abort.signal.aborted && abort.signal.reason !== 'timeout' ? 'cancelled' : 'failed'; if (!abort.signal.aborted) setError(failure(t('External search'), cause)); else if (abort.signal.reason === 'timeout') setError({ text: t('The evidence request timed out. No judgment was made.'), remedy: 'none' });  }
         finally {
             clearTimeout(timeout);
             unregisterCancel();
@@ -65,10 +67,10 @@ export function EvidenceSurface({ provider, initial, scopeIds, onBring, onOpen, 
     }
     return <Surface title={t('Look for evidence')} subtitle={t('An explicit outside check / not a verdict')} onClose={onClose}>
         <p>{t('Search finds candidates. Read a source before assessing it against the current claim.')}</p>
-        {!provider && <p className="warning">{t('Looking outside this Field is off. Turn it on in Settings to search.')} <Button variant="outline" size="sm" data-testid="configure-search" onClick={onConfigure}>{t('Configure search')}</Button></p>}
+        {!provider && <p className="warning">{t(unavailableReason)} <Button variant="outline" size="sm" data-testid="configure-search" onClick={onConfigure}>{t('Configure search')}</Button></p>}
         <form onSubmit={event => { event.preventDefault(); void perform('search'); }}><label htmlFor="evidence-query">{t('What should be checked?')}</label><input id="evidence-query" value={query} maxLength={3000} onChange={event => setQuery(event.target.value)}/><Button variant="solid" tone="attention" type="submit" disabled={!provider || !!busy || !query.trim()}>{t('Search the web')}</Button>{busy && <Button variant="ghost" type="button" onClick={() => pending.current?.abort()}>{t('Stop')}</Button>}</form>
         {error && <p role="alert">{error.text}{error.remedy === 'search-settings' && <Button variant="outline" size="sm" data-testid="configure-search" onClick={onConfigure}>{t('Configure search')}</Button>}</p>}{claim && <p className="tiny muted">{t('Checking:')} {claim}</p>}
-        {!busy && !results.length && <p className="muted">{t('No evidence candidates to show.')}</p>}
+        {!busy && !results.length && <p className="muted">{t(claim ? 'External discovery returned no results.' : 'No evidence candidates to show.')}</p>}
         {results.map(candidate => <article key={candidate.id} className="evidence-result" data-evidence-stage={candidate.stage ?? 'candidate'}>
             <h3>{candidate.title}</h3><p className="tiny muted">{candidate.url}</p>
             {!hasReadPassages(candidate) && <><p className="tiny">{t('Discovery snippet, not read evidence')}</p><p>{candidate.excerpt}</p></>}

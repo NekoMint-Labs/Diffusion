@@ -9,7 +9,7 @@ export type ThinkingDirectionCount = typeof THINKING_DIRECTION_COUNTS[number];
  * explicit (an action preview or the run-settings surface), and the controls for that run live on
  * the surface itself. Keeping them beside the directions vocabulary gives the surfaces and the
  * ordinary path one source. */
-export const THINKING_DEFAULTS = { directions: 3 as ThinkingDirectionCount, fieldSources: false, web: false };
+export const THINKING_DEFAULTS = { directions: 3 as ThinkingDirectionCount, questions: 1 as ThinkingDirectionCount, fieldSources: false, web: false };
 export interface ThinkingDeps extends SurfaceDeps {
     /** The one relation-specific action: it exists only for a scope of exactly two Thoughts. */
     findRelation(ids: string[]): void;

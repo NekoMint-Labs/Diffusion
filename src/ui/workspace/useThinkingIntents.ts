@@ -241,8 +241,6 @@ export function useThinkingIntents({ controller, field, speak, surfaces, freePoi
             notice(t('Your response is saved beside the referenced thought.'));
             return;
         }
-        const relationWords = /relation|relate|between|compare|explore|\u5173\u7cfb|\u4e4b\u95f4/i.test(text);
-        const deep = /go deeper|deep dive|\u6df1\u5165/i.test(text);
         if ((state.surface === 'thread' || state.surface === 'thread-focus') && state.threadId) {
             const thread = controller.getSnapshot().project.threads[state.threadId];
             if (thread) {
@@ -336,10 +334,9 @@ export function useThinkingIntents({ controller, field, speak, surfaces, freePoi
         }
         retryable.current = true;
         let outcome;
-        const kind = deep ? 'deep' : scope.length === 2 && relationWords ? 'probe' : 'ask';
+        const kind = 'ask' as const;
         try {
-            // A scoped ask is an outward-looking question from the scope, so its activity is the
-            // grammar's `radiate`; probe and deep carry their own default activity.
+            // Authored words stay Ask. Relation/Deep actions have their own explicit commands.
             outcome = await runtime.run(kind, text, scope, kind === 'ask' ? { activity: 'radiate' } : undefined);
         }
         finally {

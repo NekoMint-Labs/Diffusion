@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { createProject, emptySession, makeThought } from '../../src/core/model.ts';
 import { placePossibility } from '../../src/field/spatial/placement.ts';
 import { intentAllowedForAction } from '../../src/ai/runtime.ts';
-import { THINKING_DIRECTION_COUNTS } from '../../src/ui/commands/thinking.ts';
+import { THINKING_DIRECTION_COUNTS, THINKING_DEFAULTS } from '../../src/ui/commands/thinking.ts';
 
 const src = file => fs.readFileSync(new URL(`../../src/${file}`, import.meta.url), 'utf8');
 
@@ -21,9 +21,10 @@ test('Phase 3E action boundaries reject semantic overlap', () => {
 
 test('Phase 3E 1 / 3 / 5 preview wiring reaches action-specific execution without changing Settings defaults', () => {
   assert.deepEqual([...THINKING_DIRECTION_COUNTS], [1, 3, 5]);
+  assert.deepEqual(THINKING_DEFAULTS, { directions: 3, questions: 1, fieldSources: false, web: false });
   const preview = src('ui/surfaces/ActionPreviewSurface.tsx');
   const workspace = src('ui/Workspace.tsx');
-  assert.match(preview, /useState<ThinkingDirectionCount>\(THINKING_DEFAULTS\.directions\)/);
+  assert.match(preview, /useState<ThinkingDirectionCount>\(action === 'ask' \? THINKING_DEFAULTS\.questions : THINKING_DEFAULTS\.directions\)/);
   assert.doesNotMatch(preview, /onChange=.*thinkingDefaults|updateSettings\(/);
   assert.match(workspace, /runtime\.run\(action,[\s\S]*maxCandidates: options\.count/);
   assert.match(workspace, /diffuse\.start\(\{[\s\S]*steps: options\.count,[\s\S]*mode: 'angle'/);

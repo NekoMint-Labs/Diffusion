@@ -19,11 +19,21 @@ export const responseSchema = z.object({ intents: z.array(semanticIntentSchema).
 const thought = z.object({ id: key, text: z.string().max(1600), kind: z.enum(['thought', 'crystal', 'source']) }).strict();
 const capsule = z.object({ goal: z.string().max(800), confirmed: z.array(z.string().max(500)).max(8), tentative: z.array(z.string().max(500)).max(8), openQuestions: z.array(z.string().max(500)).max(4), sources: z.array(key).max(24), rebuiltAt: z.number() }).strict();
 export const packetSchema = z.object({ contract: z.string().max(2000), projectId: key, scopeMode: z.enum(['selection', 'field']), scope: z.array(thought).max(24), local: z.array(thought).max(12),
+    continuations: z.array(z.object({ thoughtId: key, sourceIds: z.array(key).min(1).max(4) }).strict()).max(24).optional(),
     relations: z.array(z.object({ a: key, b: key, kind: relationKind, label: z.string().max(300) }).strict()).max(16),
     thread: z.object({ id: key, capsule: capsule.optional(), recent: z.array(z.object({ role: z.enum(['user', 'assistant']), text: z.string().max(1600) }).strict()).max(6) }).strict().optional(),
     retrieved: z.object({ thoughts: z.array(thought).max(4), sources: z.array(z.object({ id: key, title: z.string().max(1000), excerpt: z.string().max(2500), inspected: z.string().max(1000), url: z.string().url().optional() }).strict()).max(4) }).strict(),
     permissions: z.object({ web: z.boolean(), projectSources: z.boolean() }).strict(), tools: z.array(z.string().max(100)).max(10), maxCandidates: z.number().int().min(1).max(5)
-}).strict();
+}).strict().superRefine((packet, context) => {
+    const scope = new Set(packet.scope.map(item => item.id));
+    const available = new Set([...scope, ...packet.local.map(item => item.id)]);
+    const subjects = new Set<string>();
+    for (const link of packet.continuations ?? []) {
+        if (!scope.has(link.thoughtId) || subjects.has(link.thoughtId) || new Set(link.sourceIds).size !== link.sourceIds.length || link.sourceIds.some(key => key === link.thoughtId || !available.has(key)))
+            context.addIssue({ code: 'custom', path: ['continuations'], message: 'Continuation provenance must reference distinct supplied scope/background thoughts.' });
+        subjects.add(link.thoughtId);
+    }
+});
 export const userIntentSchema = z.object({ kind: z.enum(['ask', 'probe', 'thread', 'deep', 'crystal', 'diffuse', 'continue', 'angle', 'question', 'organize']), text: z.string().min(1).max(12000), requestId: key }).strict();
 export const thinkingDepthSchema = z.enum(['auto', 'light', 'standard', 'deep']);
 export const requestSchema = z.object({ packet: packetSchema, intent: userIntentSchema, model: z.string().min(1).max(200).optional(), depth: thinkingDepthSchema.optional() }).strict();

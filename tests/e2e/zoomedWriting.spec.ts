@@ -45,7 +45,7 @@ for (const level of ['atlas', 'neighborhood'] as const) {
                 await expect(editor).toHaveValue(draft);
                 await editor.fill('取消这次修改');
                 await editor.press('Escape');
-                await expect(thought).toHaveText(draft);
+                await expect(thought.locator('.thought-preview p')).toHaveText(draft);
                 expect(await page.locator('.world').getAttribute('style')).toBe(camera);
             });
         });

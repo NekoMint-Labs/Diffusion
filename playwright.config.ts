@@ -26,7 +26,8 @@ export default defineConfig({
         { name: 'production-backgrounds', testMatch: realBackgroundTests },
     ],
     webServer: {
-        command: 'VITE_E2E_LIGHTWEIGHT_BACKGROUND=1 pnpm run build && pnpm run preview',
+        command: 'pnpm run build && pnpm run preview',
+        env: { VITE_E2E_LIGHTWEIGHT_BACKGROUND: '1' },
         url: 'http://127.0.0.1:4173',
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

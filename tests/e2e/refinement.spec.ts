@@ -232,6 +232,20 @@ test('reduced motion removes the transition instead of hiding it', async ({ page
     await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
+
+test('new Field chrome remains clickable during arrival', async ({ page }) => {
+    await page.goto('/demo?locale=en');
+    await page.getByTestId('field-title').click();
+    await page.getByTestId('field-menu').locator('[data-command="new-field"]').click();
+    await expect(page.getByTestId('field-arrival')).toBeVisible();
+
+    // The user can act as soon as the new Field appears; the arrival choreography must not swallow
+    // the first pointer press on the application chrome.
+    await page.getByTestId('global-more').click();
+    await expect(page.getByTestId('global-menu')).toBeVisible();
+    await page.getByRole('menuitem', { name: 'Settings' }).click();
+    await expect(page.getByRole('dialog', { name: 'Field settings' })).toBeVisible();
+});
 test('creating a Field announces arrival and the reset fades instead of veiling', async ({ page }) => {
     await page.goto('/demo?locale=en');
     await expect(page.locator('[data-thought-id="attention"]')).toBeVisible();

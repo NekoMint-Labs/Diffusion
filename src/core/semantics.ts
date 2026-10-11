@@ -54,6 +54,8 @@ export interface ContextPacket {
     scopeMode: 'selection' | 'field';
     scope: ScopeThought[];
     local: ScopeThought[];
+    /** Direct provenance of selected, committed material; never a confirmed semantic relation. */
+    continuations?: { thoughtId: string; sourceIds: string[] }[];
     relations: {
         a: string;
         b: string;

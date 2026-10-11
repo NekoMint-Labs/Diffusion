@@ -57,7 +57,7 @@ export function DiffuseSurface({ session, project, scopeIds, canWeb, onBring, on
         : state.phase === 'paused'
             ? `${msg('Paused')} · ${progress}`
             : state.phase === 'complete'
-                ? foundLabel(state.used)
+                ? foundLabel(state.surfaced)
                 : state.phase === 'stopped'
                     ? msg('Stopped')
                     : '';
@@ -76,7 +76,7 @@ export function DiffuseSurface({ session, project, scopeIds, canWeb, onBring, on
         <Button variant="solid" tone="attention" type="submit" disabled={!ids.length}>{msg('Run')}</Button>
       </form>}
       {error && <p role="alert">{error}</p>}
-      {state.reason && state.phase !== 'complete' && <p className="muted">{msg(state.reason)}</p>}
+      {state.reason && (state.phase !== 'complete' || state.surfaced < state.used) && <p className="muted">{msg(state.reason)}</p>}
       {state.evidence.length > 0 && <><h3>{msg('Candidate evidence from this run')}</h3><p className="tiny muted">{msg('Search candidates were not submitted as evidence. Bring a reference back and read it before making a judgment.')}</p>{state.evidence.map(candidate => <article className="evidence-result" key={candidate.id}><h3>{candidate.title}</h3><p>{candidate.excerpt}</p><p className="muted">{inspectionMessage(candidate.inspected)}</p><Button variant="outline" size="sm" disabled={added.includes(candidate.id) || operation?.kind === 'bring' && operation.phase === 'pending'} onClick={() => { void onBring(candidate).then(sourceId => { if (sourceId) setAdded(value => [...value, candidate.id]); }); }}>{msg(operation?.kind === 'bring' && operation.phase === 'pending' && operation.scopeIds.includes(candidate.id) ? 'Bringing...' : added.includes(candidate.id) ? 'Brought to Field' : 'Bring reference to Field')}</Button></article>)}</>}
     </Surface>;
 }
@@ -95,7 +95,7 @@ export function DiffuseIndicator({ session, onReview }: {
         : state.phase === 'paused'
             ? msg('Paused · {used} / {count}', { used: state.used, count })
             : state.phase === 'complete'
-                ? foundLabel(state.used)
+                ? foundLabel(state.surfaced)
                 : msg('Stopped');
     return <div className="diffuse-indicator" data-surface="true" role="group" aria-label={msg('Thinking activity')}><span>{status}</span><Button variant="ghost" size="sm" onClick={onReview}>{msg('Details')}</Button>{active ? <>{state.phase === 'paused' && <Button variant="ghost" size="sm" onClick={() => session.resume()}>{msg('Resume')}</Button>}<Button variant="ghost" tone="danger" size="sm" onClick={() => session.stop()}>{msg('Stop')}</Button></> : <Button variant="ghost" size="sm" onClick={() => session.clear()}>{msg('Dismiss')}</Button>}</div>;
 }

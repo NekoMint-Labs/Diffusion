@@ -138,7 +138,7 @@ export function useFirstFieldTutorial({ project, session, controller, field }: {
         clearTutorialGhost();
         const proposal = actionText(actionId);
         const key = id('tutorial-ghost');
-        const point = placePossibility(snapshot.project, snapshot.session, { x: thought.x, y: thought.y }, 0, [thought.id], field.current?.viewBounds(), proposal.text, proposal.mode, field.current ? new Set(field.current.visibleIds()) : undefined);
+        const point = placePossibility(snapshot.project, snapshot.session, { x: thought.x, y: thought.y }, 0, [thought.id], field.current?.viewBounds(), proposal.text, proposal.mode, field.current ? new Set(field.current.visibleIds()) : undefined, field.current?.itemBounds());
         controller.addGhost({ id: key, text: t(proposal.text), ...point, createdAt: Date.now(), scopeIds: [thought.id], origin: { projectId: snapshot.project.id, thoughtId: thought.id, note: TUTORIAL_ORIGIN }, proposalKind: proposal.proposalKind, proposalAction: proposal.proposalAction });
         setGhostId(key); setPhase('ghost');
         // `patch` merges, so this line has to clear an action the previous notice left behind (the

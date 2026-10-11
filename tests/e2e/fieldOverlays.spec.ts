@@ -168,3 +168,53 @@ test('one-time multi-selection coaching reserves space and releases it on dismis
     await expect.poll(async () => (await page.getByTestId('field').boundingBox())!.height).toBe(720);
     expect(await source.evaluate(el => (el as HTMLElement).style.transform)).toEqual(before);
 });
+
+
+test.describe('terminal feedback distinguishes output from deadlines', () => {
+    test.use({ reducedMotion: 'reduce' });
+
+    test('an empty response reports zero results and keeps readable feedback', async ({ page }, testInfo) => {
+        let release!: () => void;
+        const gate = new Promise<void>(resolve => { release = resolve; });
+        await page.route('**/api/respond', async route => {
+            await gate;
+            await route.fulfill({ json: { providerLabel: 'E2E fixture', mock: false, intents: [] } });
+        });
+        try {
+            await page.clock.install();
+            await page.addInitScript(() => localStorage.setItem('diffusion-settings', JSON.stringify({ locale: 'en', provider: 'gateway' })));
+            await page.goto('/demo?locale=en');
+            await start(page);
+            release();
+            const feedback = page.getByTestId('operation-feedback');
+            await expect(feedback).toHaveAttribute('data-phase', 'completed');
+            await expect(feedback).toContainText('0 results · Continue');
+            await expect(page.locator('.notice')).toContainText('No new suggestion was surfaced this time.');
+            await expect(page.locator('.thought.ghost')).toHaveCount(0);
+            await page.clock.fastForward(1000);
+            await expect(feedback).toBeVisible();
+            await page.screenshot({ path: testInfo.outputPath('empty-result-feedback.png') });
+        } finally { release(); }
+    });
+
+    test('a deadline reports failure rather than Stop and retains readable feedback', async ({ page }, testInfo) => {
+        const model = holdModel(page); await model.routing;
+        try {
+            await page.clock.install();
+            await configured(page, 'en');
+            await start(page);
+            await page.clock.fastForward(45000);
+            const feedback = page.getByTestId('operation-feedback');
+            await expect(feedback).toHaveAttribute('data-phase', 'failed');
+            await expect(feedback).toContainText('This action did not finish.');
+            await expect(feedback).not.toContainText('Stopped.');
+            await expect(page.locator('.notice')).toContainText('did not answer in time.');
+            await expect(page.locator('.thought.ghost')).toHaveCount(0);
+            await page.clock.fastForward(2000);
+            await expect(feedback).toBeVisible();
+            await page.screenshot({ path: testInfo.outputPath('timeout-feedback.png') });
+            await page.locator('[data-thought-id="attention"]').dblclick();
+            await expect(page.getByRole('textbox', { name: 'Edit thought' })).toBeFocused();
+        } finally { model.release(); }
+    });
+});

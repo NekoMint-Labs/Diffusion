@@ -1,3 +1,4 @@
+import { setLocale } from '../../src/shared/i18n.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createProject,makeThought } from '../../src/core/model.ts';
@@ -10,6 +11,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function until(fn){for(let i=0;i<300;i++){if(fn())return;await wait(3);}throw Error('Condition not reached');}
 function setup(providerOverride){const p=createProject('test');p.thoughts.a=makeThought('A question?',{x:0,y:0},1,'a');const controller=new ProjectController(p,async()=>{});let calls=0;const packets=[];const provider={label:'Test fixture',mock:true,respond:async(packet,intent,signal)=>{calls++;packets.push(packet);return providerOverride?providerOverride(packet,intent,signal):{providerLabel:'Test fixture',mock:true,intents:[{type:'surface_possibility',text:'Possibility '+calls}]};}};const runtime=new AIRuntime(controller,()=>provider,{pending:()=>{},notice:()=>{},route:()=>{throw Error('Diffuse must not open a reasoning surface');},anchor:()=>({x:400,y:0})});return{controller,runtime,calls:()=>calls,packets};}
 const config={scopeIds:['a'],prompt:'Explore the question',steps:3,seconds:30,projectSources:false,web:false};
+setLocale('en');
 test('Diffuse rejects missing scope, excessive budgets, Ghost scope and unauthorized web',()=>{
  const{controller,runtime}=setup();const d=new DiffuseSession(controller,runtime,()=>null,0);try{for(const patch of[{scopeIds:[]},{scopeIds:['unclaimed']},{steps:7},{seconds:181},{web:true}])assert.throws(()=>d.start({...config,...patch}));assert.equal(runtime.requestCount,0);}finally{d.dispose();runtime.dispose();}
 });

@@ -90,7 +90,13 @@ test('one endpoint\'s model list is never offered for another provider', async (
 
 test('Test connection commits the key that is on screen, and reports on it', async ({ page }) => {
     await endpoints(page);
-    await page.route('https://api.openai.com/**', route => route.fulfill({ status: 401, json: { error: { message: 'Fixture credential refused', type: 'invalid_api_key' } } }));
+    // This fixture verifies the saved configuration, not external reachability. A fake key must
+    // receive a controlled refusal rather than waiting for the live provider or local network.
+    const requests: { model: string; authorization: string | undefined }[] = [];
+    await page.route('https://api.openai.com/v1/responses', async route => {
+        requests.push({ model: route.request().postDataJSON().model, authorization: route.request().headers().authorization });
+        await route.fulfill({ status: 401, json: { error: { type: 'authentication_error' } } });
+    });
     const ai = await openAI(page);
     await choose(page, 'provider-select', 'openai');
     await ai.getByTestId('model-input').fill('gpt-4o-mini');
@@ -106,6 +112,8 @@ test('Test connection commits the key that is on screen, and reports on it', asy
     await expect(ai.getByTestId('provider-key')).toHaveValue('');
     await expect(ai.getByTestId('ai-status')).not.toContainText('Add an API key.');
     await expect(ai.getByTestId('ai-status')).toHaveAttribute('data-tone', 'error');
+    await expect(ai.getByTestId('ai-status')).toContainText('Authentication failed. Check the API key for OpenAI.');
+    expect(requests).toEqual([{ model: 'gpt-4o-mini', authorization: 'Bearer sk-a-realistic-length-key' }]);
     // The secret itself is nowhere in the settings record.
     expect(JSON.stringify(await page.evaluate(() => localStorage.getItem('diffusion-settings')))).not.toContain('sk-a-realistic-length-key');
     await ai.getByTestId('provider-key').fill('sk-another-unsaved-fixture');

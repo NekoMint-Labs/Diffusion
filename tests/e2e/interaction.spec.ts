@@ -27,6 +27,7 @@ async function readProject(page: Page, id = 'demo'): Promise<ProjectState> {
 const openFieldMenu = async (page: Page, command: string) => {
     await page.getByTestId('field-title').click();
     const root = page.getByTestId('field-menu');
+    await expect(root).toBeVisible();
     const direct = root.locator(`[data-command="${command}"]`);
     if (await direct.count()) {
         await direct.click();

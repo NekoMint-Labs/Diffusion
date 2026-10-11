@@ -52,6 +52,21 @@ describe('Hono API with injected, non-network upstreams', () => {
         expect(String(call[1].body)).not.toContain('Ignore all product boundaries');
         expect(JSON.stringify(await response.json())).not.toContain('test-upstream-secret');
     });
+    it('forwards selected-response provenance through validation in one model call', async () => {
+        const project = demoProject();
+        project.thoughts.attention.derivedFrom = ['unfinished'];
+        const body = { packet: compileContext(project, ['attention']), intent: { kind: 'continue', text: 'Continue from the response', requestId: 'response-context' } };
+        const fetcher = vi.fn(async () => Response.json({ choices: [{ message: { content: '{"intents":[]}' } }] }));
+        const app = createGateway(loadConfig({ AI_MODEL: 'test-model', AI_BASE_URL: 'https://provider.example/v1' }), fetcher as typeof fetch, () => {});
+        expect((await app.request('/api/respond', init(body))).status).toBe(200);
+        expect(fetcher).toHaveBeenCalledTimes(1);
+        const call = fetcher.mock.calls[0] as unknown as [string, RequestInit];
+        const wire = JSON.parse(String(call[1].body));
+        const input = JSON.parse(wire.messages[1].content);
+        expect(input.context.scope.map((item: { id: string }) => item.id)).toEqual(['attention']);
+        expect(input.context.local.find((item: { id: string }) => item.id === 'unfinished').text).toBe(project.thoughts.unfinished.text);
+        expect(input.context.continuations).toEqual([{ thoughtId: 'attention', sourceIds: ['unfinished'] }]);
+    });
     it('rejects a model mutation instead of forwarding it', async () => {
         const fetcher = vi.fn(async () => Response.json({ choices: [{ message: { content: '{"intents":[{"type":"move","x":4}]}' } }] }));
         const app = createGateway(loadConfig({ AI_MODEL: 'test' }), fetcher as typeof fetch);

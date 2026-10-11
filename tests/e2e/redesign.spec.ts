@@ -34,7 +34,7 @@ test('global More has five global operations, not the internal capability invent
 });
 test('Thought gains quiet material presence without changing geometry and Focus retains spatial context', async ({ page }) => {
     await page.goto('/demo?locale=en');const thought=page.locator('[data-thought-id="attention"]');await expect(thought).toBeVisible();const before=await thought.boundingBox();
-    await thought.hover();expect(await thought.boundingBox()).toEqual(before);await expect(page.locator('.relation-label-overlay')).toHaveCount(0);
+    await thought.hover();expect(await thought.boundingBox()).toEqual(before);await expect(page.getByRole('button', { name: 'Confirmed relation: Attention reveals structure', exact: true })).toBeVisible();
     await thought.click();const proof=page.locator('[data-thought-id="proof"]');const proofInk=proof.locator('.thought-preview');
     await expect.poll(()=>proofInk.evaluate(e=>Number(getComputedStyle(e).opacity))).toBeLessThanOrEqual(.85);expect(await thought.boundingBox()).toEqual(before);
     expect(await thought.evaluate(e=>getComputedStyle(e).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
@@ -44,7 +44,7 @@ test('Thought gains quiet material presence without changing geometry and Focus 
 });
 test('Chinese UI is selectable and the command hierarchy remains the same', async ({ page }) => {
     await page.goto('/?locale=zh');await expect(page.locator('html')).toHaveAttribute('lang','zh-CN');
-    await page.getByTestId('global-more').click();const labels=await page.getByTestId('global-menu').getByRole('menuitem').allTextContents();expect(labels).toHaveLength(5);expect(labels.join(' ')).not.toContain('Settings');
+    await page.getByTestId('global-more').click();const menu=page.getByTestId('global-menu');await expect(menu).toBeVisible();const labels=await menu.getByRole('menuitem').allTextContents();expect(labels).toHaveLength(5);expect(labels.join(' ')).not.toContain('Settings');
     await page.getByTestId('global-menu').locator('[data-command="settings"]').click();await choose(page, 'locale-select', 'en');
     await expect(page.getByRole('dialog',{name:'Field settings'})).toBeVisible();await expect(page.locator('html')).toHaveAttribute('lang','en');
 });

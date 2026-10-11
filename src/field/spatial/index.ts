@@ -62,5 +62,6 @@ export class GeometryCache {
         return; const w = Math.max(1, width), h = Math.max(1, height); this.sizes.set(id, { width: w, height: h }); if (old.width !== w || old.height !== h)
         this.index.set(id, { ...old, width: w, height: h }); }
     get(id: string) { return this.index.get(id); }
+    getMeasured(id: string) { return this.sizes.has(id) ? this.get(id) : undefined; }
     remove(id: string) { this.index.delete(id); this.sizes.delete(id); }
 }

@@ -111,6 +111,7 @@ function free(bounds: Bounds, occupied: readonly Bounds[]): boolean {
 /**
  * Local collision correction only. If the requested position is not severely overlapping anything,
  * it is left alone; otherwise only this rectangle searches outward for the nearest clear slot.
+ * New Ghost arrivals may also request viewport containment; intentional drag positions do not.
  */
 export function correctSevereOverlap(desired: Bounds, occupied: readonly Bounds[], viewport?: Bounds, reserved: readonly Bounds[] = [], keepInView = false, scope?: Bounds, distancePolicy: { min: number; target: number; max: number } = RESULT_PREFERRED_DISTANCE): Point {
     // UI regions are strict exclusions for newly arriving material; user-authored overlaps

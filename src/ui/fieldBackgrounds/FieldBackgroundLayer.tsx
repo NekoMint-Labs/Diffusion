@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState, type ComponentType, type LazyExoticComponent } from 'react';
+import React, { lazy, Suspense, useEffect, useState, type ComponentType, type LazyExoticComponent, type ReactNode } from 'react';
 import type { FieldStyleId, StyleProfileId } from '../appearance.ts';
 import { useMotionReduced } from '../motion/signature.ts';
 import type { FieldBackgroundPalette, FieldBackgroundRendererProps } from './types.ts';
@@ -11,6 +11,12 @@ const RENDERERS: Record<FieldStyleId, LazyExoticComponent<ComponentType<FieldBac
     waves: lazy(() => import('./WavesBackground.tsx')),
     silk: lazy(() => import('./SilkBackground.tsx')),
 };
+
+class BackgroundRendererBoundary extends React.Component<{ children: ReactNode; fallback: ReactNode }, { failed: boolean }> {
+    state = { failed: false };
+    static getDerivedStateFromError() { return { failed: true }; }
+    render() { return this.state.failed ? this.props.fallback : this.props.children; }
+}
 
 const FALLBACK: Record<'light' | 'dark', FieldBackgroundPalette> = {
     light: { field: '#f0efeb', surface: '#f8f6f2', boundary: '#c8c5c0', secondary: '#68645d', light: true },
@@ -56,6 +62,8 @@ export function FieldBackgroundLayer({ style }: { style: FieldStyleId }) {
     return <div className="field-background-layer" data-testid="field-background" data-background-id={style}
         data-camera-attachment="screen" data-profile={presentation.profile} data-motion={effectiveMotion} aria-hidden="true"
         style={{ opacity: presentation.presence }}>
-        <Suspense fallback={null}>{lightweight ? <div className="field-background-renderer"/> : <Renderer palette={presentation.palette} motion={effectiveMotion} detail={42}/>}</Suspense>
+        <BackgroundRendererBoundary key={style} fallback={<div className="field-background-renderer" data-background-fallback="true"/>}>
+            <Suspense fallback={<div className="field-background-renderer" data-background-fallback="true"/>}>{lightweight ? <div className="field-background-renderer"/> : <Renderer palette={presentation.palette} motion={effectiveMotion} detail={42}/>}</Suspense>
+        </BackgroundRendererBoundary>
     </div>;
 }

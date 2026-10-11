@@ -883,7 +883,7 @@ test('composing Speak masks underlying Crystal text and leaves outside Field inp
 
 test('generic generated Ghost menu actions do not hide Field More actions', async ({ page }) => {
     await page.route('**/api/respond', async route => {
-        await route.fulfill({ json: { providerLabel: 'E2E stub / not live', mock: true, intents: [{ type: 'surface_possibility', text: 'A generic generated possibility.' }] } });
+        await route.fulfill({ json: { providerLabel: 'E2E stub / not live', mock: true, intents: [{ type: 'respond_in_field', text: 'A generic generated answer.' }] } });
     });
     await menu(page, 'Settings');
     await choose(page, 'provider-select', 'gateway');
@@ -893,7 +893,7 @@ test('generic generated Ghost menu actions do not hide Field More actions', asyn
     await page.getByRole('textbox', { name: 'Speak', exact: true }).fill('Explore this thought in another direction.');
     await page.getByRole('textbox', { name: 'Speak', exact: true }).press('Enter');
 
-    const ghost = page.locator('article.thought.ghost').filter({ hasText: 'A generic generated possibility.' });
+    const ghost = page.locator('article.thought.ghost').filter({ hasText: 'A generic generated answer.' });
     await expect(ghost).toBeVisible();
     await expect(ghost).toHaveAttribute('data-proposal-kind', 'thought');
     await ghost.click();

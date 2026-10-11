@@ -119,7 +119,7 @@ test('a valid response arriving after Stop cannot replace a newer request', asyn
     await page.route('**/api/respond', async route => {
         const first = ++requests === 1;
         if (first) await gate;
-        await route.fulfill({ json: { providerLabel: 'E2E fixture', mock: true, intents: [{ type: 'surface_possibility', text: first ? 'Late cancelled possibility' : 'Current possibility' }] } }).catch(() => {});
+        await route.fulfill({ json: { providerLabel: 'E2E fixture', mock: true, intents: [{ type: 'respond_in_field', text: first ? 'Late cancelled answer' : 'Current answer' }] } }).catch(() => {});
         if (first) finished();
     });
     try {
@@ -137,12 +137,12 @@ test('a valid response arriving after Stop cannot replace a newer request', asyn
         await expect(page.getByTestId('operation-feedback')).toHaveAttribute('data-copy-visible', 'true');
         await page.getByTestId('operation-feedback').getByRole('button', { name: 'Stop', exact: true }).click();
         await ask();
-        await expect(page.locator('article.ghost').filter({ hasText: 'Current possibility' })).toBeVisible();
+        await expect(page.locator('article.ghost').filter({ hasText: 'Current answer' })).toBeVisible();
         release();
         await lateDelivered;
         await expect(page.locator('article.ghost')).toHaveCount(1);
-        await expect(page.locator('article.ghost')).toContainText('Current possibility');
-        await expect(page.locator('article.ghost').filter({ hasText: 'Late cancelled possibility' })).toHaveCount(0);
+        await expect(page.locator('article.ghost')).toContainText('Current answer');
+        await expect(page.locator('article.ghost').filter({ hasText: 'Late cancelled answer' })).toHaveCount(0);
     } finally { release(); }
 });
 

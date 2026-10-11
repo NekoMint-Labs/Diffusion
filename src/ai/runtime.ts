@@ -253,7 +253,11 @@ export class AIRuntime {
                 const project = this.controller.getSnapshot().project;
                 return (packet.continuations ?? []).every(link => link.sourceIds.every(key => {
                     const supplied = packet.scope.find(item => item.id === key) ?? packet.local.find(item => item.id === key);
-                    return project.thoughts[link.thoughtId]?.derivedFrom?.includes(key) && supplied && project.thoughts[key]?.text.slice(0, 1600) === supplied.text;
+                    return project.thoughts[link.thoughtId]?.derivedFrom?.includes(key) && supplied && project.thoughts[key]?.text.slice(0, supplied.text.length) === supplied.text;
+                })) && (packet.ancestry ?? []).every(link => link.path.every((key, index) => {
+                    if (!project.thoughts[key] || index && !project.thoughts[link.path[index - 1]]?.derivedFrom?.includes(key)) return false;
+                    const supplied = packet.scope.find(item => item.id === key) ?? packet.local.find(item => item.id === key);
+                    return !supplied || project.thoughts[key].text.slice(0, supplied.text.length) === supplied.text;
                 }));
             };
             if (!validScope() || !validContinuation()) throw new Error(t('The scope changed while thinking. Ask again with its new wording.'));

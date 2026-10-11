@@ -58,3 +58,11 @@ Diagnostics: server-generated request ID, fixed stage/provider kind, elapsed tim
 ## Tests
 
 Pure wire, evidence pipeline, source validation, CLI envelope/process-boundary and authority fixtures were executed by the offline suite. Hono/Zod mocked-route tests were authored but not executed without dependencies. Neither a fixture nor `/health` proves live connectivity. Real provider verification must include valid/invalid output, refusal, partial/empty evidence, cancellation, timeout and missing configuration, not only a happy response.
+
+## Selected Field lineage (Round 2)
+
+Ask answers keep their actual `ask` action and surviving causal `derivedFrom` IDs only when a person chooses Keep. Provenance is not agreement, confirmed evidence or an organizing relation; legacy thoughts without lineage remain valid.
+
+Explicit Field context preserves selection as the subject and supplies up to four direct background parents, then at most two ancestors. Traversal follows only `derivedFrom`, at most four edges deep and 32 visited subject/node pairs, with at most four outgoing parents considered per node. Authored ancestors with a surviving Input identity (or plain authored roots without model/source provenance) take priority, nearest first; unknown/model material is fallback background. `authored` is an authorship hint, never a truth/endorsement flag.
+
+The six-thought local budget stays at 6400 characters. Each ancestor uses at most 800 characters, reserved before allocating the remaining budget evenly across direct background parents (each at most 1600). Optional `ancestry` paths record selected ID → direct parent → ancestor; they neither fetch omitted text nor expand source permissions. In-flight changes to supplied ancestor wording, existence or path edges invalidate the response. Current selected wording and explicit intent take priority; nearer user-authored redirection overrides an older goal. These are bounded prompt/context rules, not a guarantee of live-model quality. Frozen Threads and unselected Field context retain their existing contracts. No extra provider request is introduced.

@@ -40,7 +40,8 @@ export function fetchSend(subject: string): HttpSend {
                 });
             }
             catch (error) {
-                if (error instanceof DOMException && (error.name === 'AbortError' || error.name === 'TimeoutError')) throw error;
+                if (error instanceof DOMException && error.name === 'TimeoutError') throw new ThinkingError('timeout', subject);
+                if (error instanceof DOMException && error.name === 'AbortError') throw error;
                 // A rejected fetch is the transport failing: offline, a wrong host, or a refused
                 // connection. All three are "could not be reached", not a provider opinion.
                 throw new ThinkingError('provider-unreachable', subject);
@@ -61,6 +62,8 @@ export function fetchSend(subject: string): HttpSend {
             }
             catch (error) {
                 if (error instanceof ThinkingError) throw error;
+                if (error instanceof DOMException && error.name === 'TimeoutError') throw new ThinkingError('timeout', subject);
+                if (error instanceof DOMException && error.name === 'AbortError') throw error;
                 // The provider's own malformed body is never retained or quoted.
                 throw new ThinkingError('malformed-provider-response', subject);
             }

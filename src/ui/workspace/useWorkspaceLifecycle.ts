@@ -14,17 +14,22 @@ export function useWorkspaceLifecycle({ controller, field }: {
     field: { current: FieldHandle | null };
 }) {
     const notice = useUI(state => state.notice);
+    const noticeTone = useUI(state => state.noticeTone);
+    const noticeAction = useUI(state => state.noticeAction);
     useEffect(() => {
         if (!notice)
             return;
-        // A failure that offers the control which resolves it stays until it is answered or
-        // replaced. A message that fades while it is still being read is a message never delivered,
-        // and the control it carries is the whole reason it exists. Ordinary notices still settle.
-        if (useUI.getState().noticeAction)
+        // Failures stay even when there is no actionable button (for example, a Continue timeout
+        // has no composer to retry). Changing only the tone or action must also cancel an old timer.
+        if (noticeTone === 'error' || noticeAction)
             return;
-        const timer = setTimeout(() => useUI.getState().patch({ notice: '' }), 6500);
+        const timer = setTimeout(() => {
+            const current = useUI.getState();
+            if (current.notice === notice && current.noticeTone !== 'error' && !current.noticeAction)
+                current.patch({ notice: '' });
+        }, 6500);
         return () => clearTimeout(timer);
-    }, [notice]);
+    }, [notice, noticeTone, noticeAction]);
     useEffect(() => {
         const tick = setInterval(() => {
             if (useUI.getState().dragging || useUI.getState().editing)

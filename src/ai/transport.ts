@@ -52,8 +52,19 @@ export function fetchSend(subject: string): HttpSend {
             }
             const declared = Number(response.headers.get('Content-Length') || 0);
             if (declared > MAX_BYTES) { release(response); throw new ThinkingError('malformed-provider-response', subject); }
+            let body: string;
             try {
-                const body = await response.text();
+                body = await response.text();
+            }
+            catch (error) {
+                // A broken response stream is a transport failure, not invalid JSON. Preserve an
+                // actual caller cancellation/deadline so the runtime can distinguish it from loss
+                // of connectivity; never forward the transport's raw error text.
+                if (signal.aborted) throw signal.reason ?? new DOMException('Cancelled', 'AbortError');
+                if (error instanceof DOMException && (error.name === 'AbortError' || error.name === 'TimeoutError')) throw error;
+                throw new ThinkingError('provider-unreachable', subject);
+            }
+            try {
                 // A JSON envelope is always far smaller than the budget; anything larger is not a
                 // provider answer, and reading it would only widen the private-data surface.
                 if (body.length > MAX_BYTES) throw new ThinkingError('malformed-provider-response', subject);

@@ -213,6 +213,11 @@ test.describe('terminal feedback distinguishes output from deadlines', () => {
             await page.clock.fastForward(2000);
             await expect(feedback).toBeVisible();
             await page.screenshot({ path: testInfo.outputPath('timeout-feedback.png') });
+            // Continue has no composer-backed Retry action. Its failure must still remain readable
+            // after the workspace's ordinary-notice timer and terminal animation have both settled.
+            await expect(page.getByTestId('notice-action')).toHaveCount(0);
+            await page.clock.fastForward(7000);
+            await expect(page.locator('.notice')).toContainText('did not answer in time.');
             await page.locator('[data-thought-id="attention"]').dblclick();
             await expect(page.getByRole('textbox', { name: 'Edit thought' })).toBeFocused();
         } finally { model.release(); }

@@ -93,6 +93,10 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             if (mounted?.getClientRects().length) return [{ id, ...screenRect(mounted.getBoundingClientRect()) }];
             return occupied.filter(rect => rect.id === id);
         });
+        // Relation wording and candidate decisions are mounted UI obstacles, not card geometry.
+        const relationOccupied = [...field.querySelectorAll<HTMLElement>('.relation-token-overlay, .relation-token-actions')]
+            .filter(element => element.getClientRects().length)
+            .map(element => screenRect(element.getBoundingClientRect()));
         const reserved = [...app.querySelectorAll<HTMLElement>('[data-testid="speak"], .notice, .identity, .global-actions, .field-line-key')]
             .filter(element => element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden')
             .map(element => screenRect(element.getBoundingClientRect()));
@@ -142,7 +146,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             const key = `local:${card.dataset.thoughtId}`;
             const anchor = screenRect(card.getBoundingClientRect());
             const width = row.offsetWidth * camera.zoom, height = row.offsetHeight * camera.zoom;
-            const obstacles = [...committedOccupied.filter(rect => rect.id !== card.dataset.thoughtId), ...reserved, ...placed, ...localPlaced];
+            const obstacles = [...committedOccupied.filter(rect => rect.id !== card.dataset.thoughtId), ...relationOccupied, ...reserved, ...placed, ...localPlaced];
             const preferred = { x: anchor.x, y: anchor.y + anchor.height + 7, width, height };
             const fits = preferred.x >= viewport.x + 16 && preferred.y >= viewport.y + 16 && preferred.x + width <= viewport.x + viewport.width - 16 && preferred.y + height <= viewport.y + viewport.height - 16;
             const candidate = docked.current.has(key) ? null : fits && !obstacles.some(rect => intersects(preferred, rect)) ? preferred : clearScopePlacement({ selectionBounds: anchor, viewportBounds: viewport, hubSize: { width, height }, occupiedRects: obstacles, offset: 7 });
@@ -221,7 +225,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         const resize = new ResizeObserver(update);
         const observed = new Set<Element>();
         const observe = () => {
-            const elements = new Set<Element>([field, ...app.querySelectorAll('.thought, .thought-local-actions, .scope-hub, .spatial-operation-feedback, .suggestion-review, .field-line-key, [data-testid="speak"], .notice, .progressive-tutorial-coach')]);
+            const elements = new Set<Element>([field, ...app.querySelectorAll('.thought, .thought-local-actions, .relation-token-overlay, .relation-token-actions, .scope-hub, .spatial-operation-feedback, .suggestion-review, .field-line-key, [data-testid="speak"], .notice, .progressive-tutorial-coach')]);
             for (const element of observed) if (!elements.has(element)) { resize.unobserve(element); observed.delete(element); }
             for (const element of elements) if (!observed.has(element)) { resize.observe(element); observed.add(element); }
         };

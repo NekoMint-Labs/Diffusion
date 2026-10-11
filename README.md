@@ -4,6 +4,8 @@ Diffusion is a quiet thinking medium for ideas that are not fully formed yet. Th
 
 This README describes the current `main` branch. The package metadata remains `0.3.0`; that is not a claim that every current feature belongs to a published release.
 
+As of October 11, 2026, [PR #18](https://github.com/NekoMint-Labs/Diffusion/pull/18) is merged and [#10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone. Follow-up work is in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51). [#11](https://github.com/NekoMint-Labs/Diffusion/issues/11) and [#12](https://github.com/NekoMint-Labs/Diffusion/issues/12) remain open for Field and installed Windows / real-task acceptance; see [current status](STATUS.md) and the [acceptance map](docs/ACCEPTANCE_MAP.md) for revision-specific evidence.
+
 ## What is different
 
 - **The Field is state; messages are history.** The spatial Field holds canonical work. Threads and model responses are context and history until the user explicitly brings something into the Field.
@@ -47,7 +49,7 @@ Open the repository's **Actions** tab, choose **Windows Package**, click **Run w
 
 The **Windows Package** workflow is **MANUAL ONLY**. It does not run on normal pushes or pull requests.
 
-The current Issue #11 candidate is also available as a [Windows x64 preview release](https://github.com/NekoMint-Labs/Diffusion/releases/tag/issue11-preview-20261002). See the [Chinese experience guide](docs/ISSUE11_PREVIEW.md) for the complete changes, screenshots, installation steps and validation boundaries. The candidate remains under review in [PR #17](https://github.com/NekoMint-Labs/Diffusion/pull/17).
+A historical Issue #11 candidate is available as a [Windows x64 preview release](https://github.com/NekoMint-Labs/Diffusion/releases/tag/issue11-preview-20261002). See the [Chinese experience guide](docs/ISSUE11_PREVIEW.md) for the complete changes, screenshots, installation steps and validation boundaries. [PR #17](https://github.com/NekoMint-Labs/Diffusion/pull/17) has since merged; this earlier preview does not qualify the latest integrated main or complete #12 acceptance.
 
 ## Basic Field interaction
 
@@ -141,7 +143,7 @@ pnpm exec playwright install chromium
 pnpm run test:e2e
 ```
 
-The full Playwright suite is a blocking CI gate. The final stabilization pass produced two consecutive complete local runs with 148 passed and 8 intentionally skipped tests per run, using one worker and no retries. See [`STATUS.md`](STATUS.md) and [`docs/TESTING.md`](docs/TESTING.md) for exact claim boundaries.
+The full Playwright suite is a blocking CI gate. The earlier stabilization checkpoint recorded two complete local runs with 148 passed and 8 intentionally skipped tests per run, using one worker and no retries. Those counts describe that historical revision, not the current checkout. See [`STATUS.md`](STATUS.md) and [`docs/TESTING.md`](docs/TESTING.md) for exact claim boundaries.
 
 The production build succeeds and retains Vite's warning that the main minified chunk exceeds 500 kB. The warning is documented rather than suppressed; no speculative split was added without startup or interaction evidence.
 

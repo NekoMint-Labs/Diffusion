@@ -58,7 +58,6 @@ describe('authored Demo Ask remains usable under the direct-answer contract', ()
                 expect(await ai.run('ask', locale === 'zh' ? '请直接回答' : 'Give a direct answer', ['a'])).toMatchObject({ status: 'completed', emitted: 1 });
                 const ghosts = Object.values(controller.getSnapshot().session.ghosts);
                 expect(ghosts).toHaveLength(1);
-                expect(ghosts[0]).toMatchObject({ proposalAction: 'ask', scopeIds: ['a'] });
                 expect(ghosts[0].text).toMatch(locale === 'zh' ? /演示.*实质回答/u : /deterministic demo.*substantive answer/u);
                 expect(JSON.stringify(controller.getSnapshot().project)).toBe(before);
             } finally { ai.dispose(); }

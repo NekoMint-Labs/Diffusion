@@ -1,0 +1,231 @@
+<div id="diffusion-compact-review" aria-label="Diffusion 满屏建议交互草稿">
+  <style>
+    #diffusion-compact-review { color-scheme: light dark; width:100%; }
+    #diffusion-compact-review * { box-sizing:border-box; }
+    #diffusion-compact-review .df-window {
+      --df-ink:light-dark(#54514c,#dfdcd5); --df-muted:light-dark(#79756f,#b6b0a5);
+      --df-paper:light-dark(#f8f6f2,#242521); --df-line:light-dark(#d8d4cb,#4c4b44);
+      --df-accent:light-dark(#9d614e,#dfa188); --df-wash:light-dark(#f0ede7,#191b18);
+      --df-panel-width:420px; --df-panel-height:320px;
+      position:relative;width:100%;height:720px;overflow:hidden;
+      color:var(--df-ink);background:radial-gradient(ellipse at 40% 42%,var(--df-paper),var(--df-wash));
+      font-family:"Noto Serif SC","Songti SC","SimSun",serif;font-size:17px;line-height:1.55;
+    }
+    #diffusion-compact-review button,#diffusion-compact-review input,#diffusion-compact-review textarea {
+      font-family:"Microsoft YaHei UI","Microsoft YaHei",sans-serif;font-size:13px;color:var(--df-ink);
+    }
+    #diffusion-compact-review button { background:var(--df-paper);border:1px solid var(--df-line);border-radius:7px;padding:6px 12px;min-height:36px; }
+    #diffusion-compact-review button:hover { background:var(--df-wash); }
+    #diffusion-compact-review button:disabled { opacity:.55; }
+    #diffusion-compact-review [hidden] { display:none !important; }
+    #diffusion-compact-review .df-header { position:absolute;top:27px;left:40px; }
+    #diffusion-compact-review .df-header small { display:block;font-size:12px;color:var(--df-muted); }
+    #diffusion-compact-review .df-header h1 { margin:0;font-size:20px;font-weight:400; }
+    #diffusion-compact-review .df-context { position:absolute;top:30px;left:230px;padding:8px 14px;background:var(--df-paper);border-radius:7px;font-size:12px; }
+    #diffusion-compact-review .df-thoughts { position:absolute;inset:122px 64px 82px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:22px;align-items:center; }
+    #diffusion-compact-review .df-thought { border:1px solid var(--df-line);border-radius:7px;background:var(--df-paper);padding:12px 15px;min-width:0; }
+    #diffusion-compact-review .df-thought p { margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden; }
+    #diffusion-compact-review .df-thought small { display:block;margin-bottom:4px;font-size:12px;color:var(--df-muted); }
+    #diffusion-compact-review .df-source { border-color:var(--df-accent); }
+    #diffusion-compact-review .df-source small { color:var(--df-accent); }
+    #diffusion-compact-review .df-entries { position:absolute;bottom:16px;left:24px;display:flex;gap:8px;z-index:3; }
+    #diffusion-compact-review .df-entries button { box-shadow:0 2px 10px light-dark(#54514c0d,#00000033); }
+    #diffusion-compact-review .df-entries button[aria-expanded="true"] { border-color:var(--df-accent); }
+    #diffusion-compact-review .df-compose { position:absolute;bottom:16px;left:50%;transform:translateX(-50%);width:360px;height:36px;resize:none;border:1px solid var(--df-line);border-radius:7px;background:var(--df-paper);padding:8px 12px;z-index:3; }
+    #diffusion-compact-review .df-panel { position:absolute;left:24px;bottom:68px;width:min(var(--df-panel-width),calc(100% - 48px));height:var(--df-panel-height);max-height:calc(100% - 132px);border:1px solid var(--df-line);border-radius:10px;background:var(--df-paper);box-shadow:0 12px 40px light-dark(#534f452b,#00000066);z-index:4;display:flex;flex-direction:column; }
+    #diffusion-compact-review .df-panel-header { padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--df-line);flex:0 0 52px; }
+    #diffusion-compact-review .df-panel-header h2 { margin:0;font-weight:400;font-size:16px; }
+    #diffusion-compact-review .df-panel-header button { min-height:30px;padding:3px 10px; }
+    #diffusion-compact-review .df-scroll { overflow-y:auto;overscroll-behavior:contain;flex:1;min-height:0; }
+    #diffusion-compact-review .df-scroll::-webkit-scrollbar,#diffusion-compact-review .df-overview-body::-webkit-scrollbar { width:7px; }
+    #diffusion-compact-review .df-scroll::-webkit-scrollbar-thumb,#diffusion-compact-review .df-overview-body::-webkit-scrollbar-thumb { background:var(--df-line);border-radius:7px; }
+    #diffusion-compact-review .df-suggestion { padding:12px 16px 14px;border-bottom:1px solid var(--df-line); }
+    #diffusion-compact-review .df-suggestion:last-child { border-bottom:0; }
+    #diffusion-compact-review .df-suggestion small { font-family:"Microsoft YaHei",sans-serif;font-size:12px;color:var(--df-muted); }
+    #diffusion-compact-review .df-suggestion p { margin:6px 0;font-size:16px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere; }
+    #diffusion-compact-review .df-origin { font-size:12px;font-family:"Microsoft YaHei",sans-serif;line-height:1.5;color:var(--df-muted);margin:8px 0; }
+    #diffusion-compact-review .df-actions { display:flex;gap:8px;align-items:center;flex-wrap:wrap; }
+    #diffusion-compact-review .df-actions .df-keep { border-color:var(--df-accent); }
+    #diffusion-compact-review .df-receipt { font-family:"Microsoft YaHei",sans-serif;font-size:13px;color:var(--df-accent); }
+    #diffusion-compact-review .df-overview-body { overflow-y:auto;flex:1;padding:12px 16px;min-height:0; }
+    #diffusion-compact-review .df-search-label { display:block;font-family:"Microsoft YaHei",sans-serif;font-size:12px;color:var(--df-muted); }
+    #diffusion-compact-review .df-search { width:100%;margin:5px 0 10px;padding:8px 10px;border:1px solid var(--df-line);border-radius:7px;background:var(--df-paper);height:36px; }
+    #diffusion-compact-review .df-root-row { display:flex;align-items:center;gap:10px;margin:4px 0;padding:7px 0;border-top:1px solid var(--df-line); }
+    #diffusion-compact-review .df-root-row span { flex:1;font-size:15px; }
+    #diffusion-compact-review .df-panel-footer { border-top:1px solid var(--df-line);padding:6px 14px;flex:0 0 auto; }
+    #diffusion-compact-review .df-empty { padding:18px 16px;font-size:14px; }
+    #diffusion-compact-review .df-announcement { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
+    @media(max-width:780px) {
+      #diffusion-compact-review .df-thoughts { inset:110px 22px 100px;gap:13px; }
+      #diffusion-compact-review .df-thought { padding:10px;font-size:15px; }
+      #diffusion-compact-review .df-context { left:auto;right:24px;max-width:45%; }
+      #diffusion-compact-review .df-header { left:24px; }
+      #diffusion-compact-review .df-compose { left:auto;right:24px;transform:none;width:44%; }
+    }
+    @media(max-width:560px) {
+      #diffusion-compact-review .df-window { height:980px; }
+      #diffusion-compact-review .df-header { top:18px;left:18px; }
+      #diffusion-compact-review .df-context { top:77px;left:18px;right:18px;max-width:none; }
+      #diffusion-compact-review .df-thoughts { inset:140px 18px 150px;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));gap:10px; }
+      #diffusion-compact-review .df-thought { font-size:14px; }
+      #diffusion-compact-review .df-thought p { -webkit-line-clamp:3; }
+      #diffusion-compact-review .df-entries { left:18px;bottom:70px; }
+      #diffusion-compact-review .df-entries button { min-height:40px; }
+      #diffusion-compact-review .df-compose { left:18px;right:18px;bottom:18px;transform:none;width:calc(100% - 36px);height:40px; }
+      #diffusion-compact-review .df-panel { left:18px;bottom:122px;width:calc(100% - 36px); }
+    }
+    @media(pointer:coarse) {
+      #diffusion-compact-review button { min-height:44px; }
+      #diffusion-compact-review .df-panel-header { flex-basis:62px; }
+      #diffusion-compact-review .df-panel-header button { min-height:44px; }
+      #diffusion-compact-review input,#diffusion-compact-review textarea { font-size:16px; }
+    }
+  </style>
+  <div class="df-window" aria-label="思绪场 · 紧凑建议草稿">
+    <header class="df-header"><small>思绪场</small><h1>课程与科研</h1></header>
+    <div class="df-context">内容关联 · 无箭头<br>课程学习与科研入门</div>
+    <div class="df-thoughts" aria-label="已有想法">
+      <article class="df-thought"><small>已有想法</small><p>课程学习提供知识框架，做题帮助我发现哪些基本概念还没有理解。</p></article>
+      <article class="df-thought df-source"><small>当前来源</small><p>课程学习和科研入门之间存在取舍，我需要逐步整理自己可以验证的假设，并保留此前的判断依据。</p></article>
+      <article class="df-thought"><small>已有想法</small><p>先读一篇与课程相关的论文，区分研究问题、采用的方法和结论的适用范围。</p></article>
+      <article class="df-thought"><small>已有想法</small><p>已有事实仍需验证。记录资料来源，再检查事实与自己的推断是否一致。</p></article>
+      <article class="df-thought"><small>已有想法</small><p>把大问题拆成一个可重复的小实验，先观察现象，再讨论可能的原因。</p></article>
+      <article class="df-thought"><small>已有想法</small><p>初步假设需要比较。寻找反例，避免只保留符合自己预期的证据。</p></article>
+      <article class="df-thought"><small>已有想法</small><p>每周用一次课程知识解释真实问题，记录解释不了的地方。</p></article>
+      <article class="df-thought"><small>已有想法</small><p>确认哪些步骤依赖数据，哪些来自模型假设，再判断结论可以推广到哪里。</p></article>
+      <article class="df-thought"><small>已有想法</small><p>保留原来的想法与修改依据，方便下次回到这里继续比较。</p></article>
+    </div>
+    <div class="df-entries" aria-label="临时阅读入口">
+      <button class="cursor-interaction df-overview-toggle" type="button" aria-expanded="false" aria-controls="df-overview-panel">总览</button>
+      <button class="cursor-interaction df-suggestions-toggle" type="button" aria-expanded="false" aria-controls="df-suggestions-panel">建议 5</button>
+    </div>
+    <textarea class="df-compose" aria-label="写下一个想法" placeholder="写下一个想法…" rows="1"></textarea>
+    <section id="df-suggestions-panel" class="df-panel" role="dialog" aria-modal="false" aria-labelledby="df-suggestions-title" hidden>
+      <div class="df-panel-header"><h2 id="df-suggestions-title">建议 5</h2><button class="cursor-interaction df-close" type="button" aria-label="关闭建议">关闭</button></div>
+      <div class="df-scroll"></div>
+    </section>
+    <section id="df-overview-panel" class="df-panel" role="dialog" aria-modal="false" aria-labelledby="df-overview-title" hidden>
+      <div class="df-panel-header"><h2 id="df-overview-title">总览</h2><button class="cursor-interaction df-close" type="button" aria-label="关闭总览">关闭</button></div>
+      <div class="df-overview-body">
+        <label class="df-search-label" for="df-root-search">查找想法</label>
+        <input id="df-root-search" class="df-search" placeholder="输入关键词…" autocomplete="off">
+        <div class="df-root-rows">
+          <div class="df-root-row"><span>课程学习和科研入门之间的取舍</span><button class="cursor-interaction" type="button">阅读</button></div>
+          <div class="df-root-row"><span>已有事实仍需验证</span><button class="cursor-interaction" type="button">阅读</button></div>
+          <div class="df-root-row"><span>初步假设需要比较</span><button class="cursor-interaction" type="button">阅读</button></div>
+        </div>
+      </div>
+      <div class="df-panel-footer"><button class="cursor-interaction df-return" type="button">返回原视图</button></div>
+    </section>
+    <span class="df-announcement" aria-live="polite"></span>
+  </div>
+  <script>
+    (() => {
+      const root = document.getElementById('diffusion-compact-review');
+      const windowEl = root.querySelector('.df-window');
+      const suggestionPanel = root.querySelector('#df-suggestions-panel');
+      const overviewPanel = root.querySelector('#df-overview-panel');
+      const suggestionToggle = root.querySelector('.df-suggestions-toggle');
+      const overviewToggle = root.querySelector('.df-overview-toggle');
+      const composer = root.querySelector('.df-compose');
+      const scroller = root.querySelector('.df-scroll');
+      const announcer = root.querySelector('.df-announcement');
+      const text = [
+        '可以先把一周中的一个小问题作为起点：用刚学过的课程知识解释它，写下当前解释依赖的假设，再做一个能够反驳这些假设的小实验。这样课程学习和科研练习可以互相补充。',
+        '把阅读笔记拆成三个部分：作者观察到的事实、作者的推断、你还需要验证的问题。不要因为结论看起来合理，就跳过它依赖的条件。',
+        '先重现一个规模很小的结果，记录输入、步骤和输出。出现差异时，逐项比较数据、参数与实现，而不是立刻更换整个研究方向。',
+        '给本周设一个可以完成的目标：理解一个关键概念、核对一个数据来源，或者复现一张图。下周根据具体结果调整计划。',
+        '保留被否定的假设和对应证据。以后发现新的条件时，能够看清此前的判断为什么成立、又为什么需要修改。'
+      ];
+      const settings = { width:420, height:320 };
+      let panel = null;
+      let results = text.map((value,index) => ({ id:`draft-${index}`, text:value, status:'pending' }));
+      const saved = globalThis.openai?.widgetState?.privateContent;
+      if (saved && ['suggestions','overview',null].includes(saved.panel)) panel = saved.panel;
+      if (saved && Array.isArray(saved.statuses) && saved.statuses.length === 5) {
+        results.forEach((value,index) => { if (['pending','kept','ignored','completed'].includes(saved.statuses[index])) value.status = saved.statuses[index]; });
+      }
+      function save() {
+        globalThis.openai?.setWidgetState?.({ modelContent:{ design:'compact-full-viewport-review', panel, width:settings.width, height:settings.height },privateContent:{panel,statuses:results.map(value => value.status)} })?.catch(() => {});
+      }
+      function count() { return results.filter(value => value.status === 'pending').length; }
+      function renderItems() {
+        scroller.replaceChildren();
+        results.filter(value => value.status === 'pending' || value.status === 'kept').forEach(value => {
+          const item = document.createElement('article'); item.className = 'df-suggestion'; item.dataset.id = value.id;
+          const label = document.createElement('small'); label.textContent = value.status === 'kept' ? '已留下' : 'AI 建议 · 尚未留下';
+          const paragraph = document.createElement('p'); paragraph.textContent = value.text;
+          const origin = document.createElement('div'); origin.className = 'df-origin';origin.textContent = '来源：课程学习和科研入门之间存在取舍，我需要逐步整理自己可以验证的假设，并保留此前的判断依据。';
+          const actions = document.createElement('div'); actions.className = 'df-actions';
+          if (value.status === 'pending') {
+            ['keep','ignore'].forEach(action => {
+              const button = document.createElement('button');button.type = 'button';button.className = `cursor-interaction ${action === 'keep' ? 'df-keep' : ''}`;
+              button.textContent = action === 'keep' ? '留下' : '忽略';
+              button.addEventListener('click',() => {
+                value.status = action === 'keep' ? 'kept' : 'ignored'; renderItems(); render(); save();
+                announcer.textContent = `${action === 'keep' ? '已留下，全文保留在当前阅读面板' : '已忽略'}，还有 ${count()} 条建议。`;
+                const next = scroller.querySelector(`[data-id="${value.id}"] button`) || scroller.querySelector('button') || suggestionPanel.querySelector('.df-close');
+                next.focus({preventScroll:true});
+              });actions.append(button);
+            });
+          } else {
+            const receipt = document.createElement('span'); receipt.className = 'df-receipt';receipt.textContent = '已留下 · 全文可继续阅读';actions.append(receipt);
+          }
+          item.append(label,paragraph,origin,actions);scroller.append(item);
+        });
+        if (!scroller.children.length) { const empty = document.createElement('div');empty.className='df-empty';empty.textContent='本次建议已处理完。';scroller.append(empty); }
+      }
+      function render() {
+        windowEl.style.setProperty('--df-panel-width',`${settings.width}px`);
+        windowEl.style.setProperty('--df-panel-height',`${settings.height}px`);
+        suggestionPanel.hidden = panel !== 'suggestions'; overviewPanel.hidden = panel !== 'overview';
+        suggestionToggle.setAttribute('aria-expanded',String(panel === 'suggestions'));overviewToggle.setAttribute('aria-expanded',String(panel === 'overview'));
+        suggestionToggle.textContent = count() ? `建议 ${count()}` : '建议已处理';
+        suggestionToggle.hidden = count() === 0 && panel !== 'suggestions';
+        root.querySelector('#df-suggestions-title').textContent = count() ? `建议 ${count()}` : '建议已处理';
+      }
+      function open(next) {
+        if (panel === next) { close(); return; }
+        if (panel === 'suggestions') results.forEach(value => {if (value.status === 'kept') value.status = 'completed';});
+        panel = next;renderItems();render();save();
+        const target = panel === 'suggestions' ? suggestionPanel.querySelector('.df-close') : panel === 'overview' ? root.querySelector('.df-search') : next === 'suggestions' ? suggestionToggle : overviewToggle;
+        target.focus({preventScroll:true});
+      }
+      function close(returnFocus = true) {
+        const previous = panel;panel = null;
+        results.forEach(value => {if (value.status === 'kept') value.status = 'completed';});
+        renderItems();render();save();
+        if (returnFocus) (previous === 'overview' || suggestionToggle.hidden ? overviewToggle : suggestionToggle).focus({preventScroll:true});
+      }
+      suggestionToggle.addEventListener('click',() => open('suggestions'));
+      overviewToggle.addEventListener('click',() => open('overview'));
+      root.querySelectorAll('.df-close,.df-return').forEach(button => button.addEventListener('click',() => close()));
+      root.addEventListener('keydown',event => {
+        if (event.key === 'Escape' && panel && !event.isComposing && event.keyCode !== 229) {event.preventDefault();close();}
+      });
+      composer.addEventListener('focus',() => { if (panel) close(false); });
+      root.querySelector('.df-search').addEventListener('input',event => {
+        root.querySelectorAll('.df-root-row').forEach(row => {row.hidden = !row.querySelector('span').textContent.includes(event.target.value);});
+      });
+      root.querySelectorAll('.df-root-row button').forEach(button => button.addEventListener('click',() => {
+        const value = button.closest('.df-root-row').querySelector('span').textContent;
+        root.querySelector('#df-overview-title').textContent = value;announcer.textContent=`正在阅读：${value}`;
+      }));
+      renderItems();render();
+      window.addEventListener('openai:set_globals',event => {
+        const snapshot = event.detail?.globals?.widgetState?.privateContent;
+        if (!snapshot || !['suggestions','overview',null].includes(snapshot.panel)) return;
+        panel = snapshot.panel;
+        if (Array.isArray(snapshot.statuses) && snapshot.statuses.length === 5) results.forEach((value,index) => {
+          if (['pending','kept','ignored','completed'].includes(snapshot.statuses[index])) value.status = snapshot.statuses[index];
+        });
+        renderItems();render();
+      });
+      if (globalThis.Tweak) {
+        const tweak = new Tweak({container:windowEl,onChange:() => {render();save();}});
+        tweak.addSlider(settings,'width',{label:'展开面板宽度',min:360,max:440,step:20,unit:'px'});
+        tweak.addSlider(settings,'height',{label:'展开面板高度',min:260,max:360,step:20,unit:'px'});
+      }
+    })();
+  </script>
+</div>

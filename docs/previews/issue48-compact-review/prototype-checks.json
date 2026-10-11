@@ -1,0 +1,32 @@
+{
+  "kind": "design-prototype-only",
+  "field": {
+    "width": 1280,
+    "height": 720
+  },
+  "panel": {
+    "width": 420,
+    "height": 320
+  },
+  "checks": [
+    "mutually exclusive surfaces",
+    "unchanged Field/card rectangles",
+    "bounded internal scroll",
+    "Escape focus restoration",
+    "synthetic composing Escape guard",
+    "Keep receipt and count",
+    "receipt ends with reading session",
+    "writing closes review without discarding draft",
+    "zero pending entry removal and focus fallback",
+    "light/dark rendering",
+    "320px no horizontal overflow"
+  ],
+  "unverified": [
+    "production behavior",
+    "installed Windows/Tauri",
+    "physical DPI scaling",
+    "native IME",
+    "live provider"
+  ],
+  "errors": []
+}

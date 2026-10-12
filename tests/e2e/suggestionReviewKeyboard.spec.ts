@@ -5,7 +5,7 @@ test.use({ viewport: { width: 1280, height: 720 }, reducedMotion: 'reduce' });
 
 async function boot(page: Page, theme: 'light' | 'dark') {
     await page.addInitScript(theme => {
-        localStorage.setItem('diffusion-settings', JSON.stringify({ locale: 'zh', provider: 'gateway', theme }));
+        localStorage.setItem('diffusion-settings', JSON.stringify({ locale: 'zh', provider: 'gateway', theme, appearance: { profile: theme === 'dark' ? 'graphite-night' : 'editorial-warm' } }));
         localStorage.setItem('diffusion-first-field-tutorial-v1', JSON.stringify({ status: 'complete' }));
     }, theme);
     await page.route('**/api/respond', route => route.fulfill({ json: {
@@ -27,6 +27,7 @@ async function boot(page: Page, theme: 'light' | 'dark') {
         };
     }), project);
     await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-style-profile', theme === 'dark' ? 'graphite-night' : 'editorial-warm');
     await page.locator('[data-thought-id="source"]').click();
     await page.getByTestId('scope-continue').click();
     await page.getByTestId('action-preview-run').click();

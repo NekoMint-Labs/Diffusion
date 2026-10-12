@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DirectAIProvider } from '../../src/ai/direct.ts';
 import { classifyFailure } from '../../src/ai/errors.ts';
-import { fetchSend } from '../../src/ai/transport.ts';
+import { fetchSend, nativeSend } from '../../src/ai/transport.ts';
 import { AIRuntime } from '../../src/ai/runtime.ts';
 import { createProject, makeThought, type ThinkingOperation } from '../../src/core/model.ts';
 import { ProjectController } from '../../src/core/controller.ts';
@@ -54,7 +54,7 @@ describe('ordinary and structured provider failures (#42)', () => {
             expect(Object.keys(controller.getSnapshot().project.thoughts)).toEqual(['a']);
         } finally { runtime.dispose(); }
     });
-    it.each([['TimeoutError', 'timeout'], ['AbortError', 'cancelled'], ['TypeError', 'provider-unreachable']] as const)('preserves %s transport classification', async (name, failure) => {
+    it.each([['TimeoutError', 'timeout'], ['AbortError', 'provider-unreachable'], ['TypeError', 'provider-unreachable']] as const)('preserves independent %s transport classification', async (name, failure) => {
         vi.stubGlobal('fetch', vi.fn(async () => { if (name === 'TypeError') throw new TypeError('private network details'); throw new DOMException('private transport details', name); }));
         const p = new DirectAIProvider({ providerId: 'deepseek', apiKey: 'fixture-only', model: 'fixture', depth: 'standard' }, fetchSend('DeepSeek'));
         const error = await p.respond(packet(), { kind: 'ask', text: 'Question', requestId: 'r' }).catch(error => error);
@@ -64,5 +64,41 @@ describe('ordinary and structured provider failures (#42)', () => {
         vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, headers: new Headers(), text: async () => { throw new DOMException('private details', name); } })));
         const p = new DirectAIProvider({ providerId: 'deepseek', apiKey: 'fixture-only', model: 'fixture', depth: 'standard' }, fetchSend('DeepSeek'));
         const error = await p.respond(packet(), { kind: 'ask', text: 'Question', requestId: 'r' }).catch(error => error);
-        expect(classifyFailure(error)).toBe(name === 'TimeoutError' ? 'timeout' : 'cancelled');
-    });});
+        expect(classifyFailure(error)).toBe(name === 'TimeoutError' ? 'timeout' : 'provider-unreachable');
+    });
+    for (const path of ['fetch', 'body', 'native'] as const) {
+        it.each(['AbortError', 'TimeoutError', 'TypeError'] as const)('PATH %s fails Continue, then allows only an explicit retry'.replace('PATH', path), async name => {
+            let calls = 0;
+            const fault = name === 'TypeError' ? new TypeError('private transport details') : new DOMException('private transport details', name);
+            const recovered = JSON.stringify({ intents: [{ type: 'surface_possibility', text: 'A continuation' }] });
+            const answer = envelope('chat-completions', false, recovered);
+            vi.stubGlobal('fetch', vi.fn(async () => {
+                calls++;
+                if (calls === 1 && path === 'fetch') throw fault;
+                if (calls === 1) return { ok: true, headers: new Headers(), text: async () => { throw fault; } };
+                return Response.json(answer);
+            }));
+            const send = path === 'native' ? nativeSend('Fixture', {
+                request: async () => { if (++calls === 1) throw fault; return { status: 200, body: JSON.stringify(answer) }; },
+                cancel: async () => {},
+            }) : fetchSend('Fixture');
+            const p = new DirectAIProvider({ providerId: 'deepseek', apiKey: 'fixture-only', model: 'fixture', depth: 'standard' }, send);
+            const controller = new ProjectController(project(), async () => {});
+            const operations: ThinkingOperation[] = [], failures: string[] = [], pending: boolean[] = [];
+            const runtime = new AIRuntime(controller, async () => p, { pending: value => pending.push(value), operation: value => operations.push(value), notice() {}, failure: value => failures.push(value), route() {}, anchor: () => ({ x: 300, y: 0 }) });
+            try {
+                expect((await runtime.run('continue', 'Continue', ['a'])).status).toBe('failed');
+                expect(operations.at(-1)?.phase).toBe('failed');
+                expect(failures).toEqual([name === 'TimeoutError' ? 'timeout' : 'provider-unreachable']);
+                expect(pending.at(-1)).toBe(false);
+                expect(calls).toBe(1);
+                expect(Object.keys(controller.getSnapshot().session.ghosts)).toHaveLength(0);
+                expect(Object.keys(controller.getSnapshot().project.thoughts)).toEqual(['a']);
+                expect((await runtime.run('continue', 'Continue', ['a'])).status).toBe('completed');
+                expect(calls).toBe(2);
+                expect(Object.keys(controller.getSnapshot().session.ghosts)).toHaveLength(1);
+                expect(Object.keys(controller.getSnapshot().project.thoughts)).toEqual(['a']);
+            } finally { runtime.dispose(); }
+        });
+    }
+});

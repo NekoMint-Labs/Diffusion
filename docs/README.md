@@ -60,6 +60,15 @@ Current, but scoped to one subsystem or one record.
 | [third_party/](third_party/MATERIAL_GALLERY.md) | Field-background provenance, retained notices and license texts. |
 | [language/](language/examples.zh.md) | Locale examples and regression fixtures. |
 
+## REVIEW RECORDS AND PROPOSALS
+
+These records do not establish a new product contract or completed native acceptance.
+
+| Document | Status |
+|---|---|
+| [DESKTOP_REVIEW_0312.md](DESKTOP_REVIEW_0312.md) | Draft #63 combined candidate: implemented repairs, exact integration inputs, checks and remaining acceptance work. |
+| [WEB_ANSWER_PROPOSAL.md](WEB_ANSWER_PROPOSAL.md) | Proposed web-answer flow and search-source alternatives; not implemented or approved. |
+
 ## HISTORY
 
 | Location | What it is |

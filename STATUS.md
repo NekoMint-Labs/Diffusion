@@ -26,7 +26,7 @@ The latest distinct checks observed through the public GitHub check-runs API wer
 | [#55](https://github.com/NekoMint-Labs/Diffusion/pull/55) | `d97eb4be` | [38225435659](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38225435659) | [38225435754](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38225435754) |
 | [#56](https://github.com/NekoMint-Labs/Diffusion/pull/56) | `7e9bbb6b` | [38248208582](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38248208582) | [38248208504](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38248208504) |
 
-The #54 browser job was retried once after an intermittent failed attempt; the retained
+The #54 browser job was retried once after a failed attempt; the retained
 original failure is not erased, and the retry completed successfully. The checks above
 are PR-head evidence, not integrated-main or Windows/native acceptance.
 

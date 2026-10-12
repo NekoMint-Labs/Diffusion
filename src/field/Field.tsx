@@ -326,6 +326,9 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             if (element)
                 element.style.transform = `translate(${original.x + dx / c.get().zoom}px, ${original.y + dy / c.get().zoom}px)`;
         }
+        // Local read/respond controls live in screen space. Reposition them after
+        // applying the preview transforms, before any early return for probing.
+        overlays.current?.layout(c.get());
         anchorPath.current?.setAttribute('d', worldAnchorPath(projection.current.roots, liveItems.current, c.get().zoom, g.positions, { x: dx / c.get().zoom, y: dy / c.get().zoom }));
         // The Thought transform above is only a preview until pointer-up. Keep confirmed topology
         // spatially honest against that preview without touching canonical coordinates.
@@ -464,6 +467,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
             }
         }
         resetGesture();
+        overlays.current?.layout(camera.current?.get());
     }
     function doubleClick(e: ReactMouseEvent<HTMLDivElement>) {
         if (ownsDoubleClick(e.target))

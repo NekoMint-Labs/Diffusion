@@ -93,6 +93,10 @@ class Config:
         return _seconds("EXA_TIMEOUT_SECONDS")
 
     @property
+    def tavily_keyless(self) -> bool:
+        return _flag("TAVILY_KEYLESS", False)
+
+    @property
     def tavily_api_key(self) -> str | None:
         return _text("TAVILY_API_KEY")
 

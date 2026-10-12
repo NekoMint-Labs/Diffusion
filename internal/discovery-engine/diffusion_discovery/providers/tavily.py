@@ -15,7 +15,7 @@ from typing import Any, Mapping
 import httpx
 from tenacity import AsyncRetrying, retry_if_exception, stop_after_attempt, wait_random_exponential
 
-from .base import BaseSearchProvider, ProviderResult, classify_provider_exception
+from .base import BaseSearchProvider, ProviderError, ProviderResult, classify_provider_exception
 from ..core.normalizers import normalize_tavily as to_discovery_candidates
 from ..config import config
 from ..security import safe_provider_message, sanitize_data
@@ -55,9 +55,10 @@ class TavilySearchProvider(BaseSearchProvider):
     capability = "web_search"
     normalizer = staticmethod(to_discovery_candidates)
 
-    def __init__(self, api_url: str, api_key: str, timeout: float = 30.0):
+    def __init__(self, api_url: str, api_key: str, timeout: float = 30.0, *, keyless: bool = False):
         super().__init__(api_url, api_key)
         self.timeout = timeout
+        self.keyless = keyless
 
     def get_provider_name(self) -> str:
         return "Tavily"
@@ -68,7 +69,7 @@ class TavilySearchProvider(BaseSearchProvider):
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
-            "authorization": f"Bearer {self.api_key}",
+            **({"X-Tavily-Access-Mode": "keyless", "X-Client-Source": "diffusion-explorer"} if self.keyless else {"authorization": f"Bearer {self.api_key}"}),
         }
         # Discovery-only v1 payload. No answer generation or raw content.
         payload = {
@@ -123,7 +124,7 @@ class TavilySearchProvider(BaseSearchProvider):
             async for attempt in AsyncRetrying(
                 stop=stop_after_attempt(config.retry_max_attempts + 1),
                 wait=lambda retry_state: bounded_retry_delay(base_wait(retry_state), ctx),
-                retry=retry_if_exception(_is_retryable_exception),
+                retry=retry_if_exception(lambda exc: _is_retryable_exception(exc) and not (self.keyless and isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code == 429)),
                 reraise=True,
             ):
                 with attempt:
@@ -134,7 +135,10 @@ class TavilySearchProvider(BaseSearchProvider):
                         **request_timeout_kwargs(self.timeout, ctx),
                     )
                     response.raise_for_status()
-                    return response.json()
+                    data = response.json()
+                    if self.keyless and isinstance(data, dict) and isinstance(data.get("error"), dict):
+                        raise ProviderError("rate_limited", "keyless access limit reached", retryable=False)
+                    return data
 
 
 __all__ = ["TavilySearchProvider"]

@@ -223,3 +223,29 @@ test.describe('terminal feedback distinguishes output from deadlines', () => {
         } finally { model.release(); }
     });
 });
+
+test('Continue transport abort shows a persistent connection failure instead of Stop', async ({ page }) => {
+    await page.clock.install();
+    await page.addInitScript(() => {
+        const original = window.fetch;
+        window.fetch = async (...args) => {
+            if (String(args[0]).startsWith('http://127.0.0.1:11434/')) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                throw new DOMException('private transport detail', 'AbortError');
+            }
+            return original(...args);
+        };
+    });
+    await configured(page, 'en');
+    await start(page);
+    await page.clock.fastForward(600);
+    const feedback = page.getByTestId('operation-feedback');
+    await expect(feedback).toHaveAttribute('data-phase', 'failed');
+    await expect(feedback).not.toContainText('Stopped.');
+    await expect(page.locator('.notice')).toContainText('could not be reached');
+    await expect(page.locator('.notice')).not.toContainText('private transport detail');
+    await expect(page.locator('.thought.ghost')).toHaveCount(0);
+    await page.clock.fastForward(9000);
+    await expect(page.locator('.notice')).toContainText('could not be reached');
+    await expect(page.locator('[data-thought-id="attention"]')).toBeVisible();
+});

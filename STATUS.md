@@ -2,6 +2,38 @@
 
 Diffusion is a quiet thinking medium for ideas before commitment. This file describes the current checkout: what works, which subsystem owns it, what was freshly verified, and what remains incomplete. It is not a changelog. Historical phase reports and prior verification records remain under [`docs/history/`](docs/history/README.md).
 
+## Desktop repair candidate and unresolved search acceptance (2026-10-12)
+
+This review candidate is based on main `edf56d5`. It includes the local #22/#27
+error/readiness repairs, Windows discovery process startup and UTF-8 JSON output,
+an explicit opt-in Tavily keyless mode, contextual-menu/read-control separation,
+and frame-by-frame read/respond control placement during card dragging and cancellation.
+It is a review candidate, not an accepted change to main. The drag work overlaps
+the separately open #46 / PR #60 and should be reconciled during review.
+
+**Web search remains incomplete and must not be accepted as working.** The operator
+has no usable search API key for the currently configured key-based search path.
+After trying the optional keyless path, the operator reports that the returned
+answers are almost entirely garbled ("免 Key 搜索得出的答案几乎全是乱码").
+The cause and exact failing display/read/assessment stage have not been established.
+Do not treat the UTF-8 pipe fix as proof that this reported problem is resolved.
+
+A real packaged-engine request without a key returned `complete` and three public
+candidates. This proves transport/result-envelope success only; it does not prove
+readable, relevant search results, full-text reading, or useful evidence assessment
+in the installed desktop application. Keyless access remains experimental and
+subject to shared limits. No paid-key or complete desktop search acceptance is claimed.
+
+Local checks for this candidate: 505 unit tests, 286 offline tests, 82 discovery
+engine tests, 10 native environment-mapping tests and three packaged-engine tests
+passed. Focused browser runs passed 12 search/credential cases, 16 menu/reading/response
+cases and seven drag/menu/canonical-position cases. These are separate focused runs,
+not a full E2E suite. Application/core typechecking, locale/source-size checks,
+production build and Windows NSIS packaging were checked locally. The packaged
+component tests do not replace installed Windows/WebView2 or physical disconnect
+acceptance. The operator reports normal progress on the UI repairs; search remains
+an explicit blocker for review and follow-up.
+
 ## PR #18 main synchronization (2026-10-10)
 
 This candidate merges main `feb8ac5` (including reviewed #32) into uploaded #18 `fff70f0`.

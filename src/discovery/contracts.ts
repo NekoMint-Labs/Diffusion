@@ -35,6 +35,8 @@ export type DiscoveryBackend = 'built-in' | 'custom';
  * record stores selection and presence, not the secret. */
 export interface DiscoverySettings {
     external: boolean;
+    /** Explicit free Tavily access; never falls back from a stored credential silently. */
+    tavilyKeyless?: boolean;
     sources: Record<DiscoverySourceId, boolean>;
     backend: DiscoveryBackend;
     customUrl: string;
@@ -42,6 +44,7 @@ export interface DiscoverySettings {
 
 export const DEFAULT_DISCOVERY: DiscoverySettings = {
     external: false,
+    tavilyKeyless: false,
     sources: { exa: false, tavily: false, brave: false },
     backend: 'built-in',
     customUrl: '',
@@ -52,6 +55,7 @@ export function normalizeDiscoverySettings(value: unknown): DiscoverySettings {
     const selected = raw.sources && typeof raw.sources === 'object' && !Array.isArray(raw.sources) ? raw.sources as Record<string, unknown> : {};
     return {
         external: raw.external === true,
+        tavilyKeyless: raw.tavilyKeyless === true,
         sources: Object.fromEntries(DISCOVERY_SOURCE_IDS.map(id => [id, selected[id] === true])) as Record<DiscoverySourceId, boolean>,
         backend: raw.backend === 'custom' ? 'custom' : 'built-in',
         customUrl: typeof raw.customUrl === 'string' ? raw.customUrl.slice(0, 500) : '',
@@ -106,8 +110,9 @@ export interface DiscoveryStatus {
 
 export function describeDiscovery(settings: DiscoverySettings, storedKeys: Partial<Record<DiscoverySourceId, boolean>>, platform: { builtInEngine: boolean }): DiscoveryStatus {
     const chosen = settings.backend === 'built-in' ? enabledSources(settings) : [];
-    const keyed = chosen.filter(id => storedKeys[id] === true);
-    const missing = chosen.filter(id => storedKeys[id] !== true);
+    const usable = (id: DiscoverySourceId) => storedKeys[id] === true || (id === 'tavily' && settings.tavilyKeyless === true);
+    const keyed = chosen.filter(usable);
+    const missing = chosen.filter(id => !usable(id));
     const engine: DiscoveryBackend | null = settings.backend === 'built-in' ? (platform.builtInEngine ? 'built-in' : null) : usableCustomDiscoveryURL(settings.customUrl) ? 'custom' : null;
     return {
         engine,

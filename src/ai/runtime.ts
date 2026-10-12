@@ -76,6 +76,19 @@ function operationKind(kind: UserIntent['kind']): ThinkingOperationKind {
     return 'ask';
 }
 
+/** A transport abort is not evidence that the person pressed Stop. Only our request
+ * signal can establish cancellation; an independent timeout remains a failure. */
+function interruptedFailure(error: unknown, signal: AbortSignal, subject: string): unknown {
+    if (signal.aborted) return error;
+    if (error instanceof Error && error.name === 'AbortError') return new ThinkingError('provider-unreachable', subject);
+    if (error instanceof Error && error.name === 'TimeoutError') return new ThinkingError('timeout', subject);
+    return error;
+}
+
+function deadline(signal: AbortSignal): boolean {
+    return signal.reason === 'timeout' || (signal.reason instanceof Error && signal.reason.name === 'TimeoutError');
+}
+
 /** One response per invocation. Only DiffuseSession can schedule bounded subsequent calls. */
 export class AIRuntime {
     private controller: ProjectController;
@@ -95,9 +108,9 @@ export class AIRuntime {
         const abort = new AbortController();
         this.active = abort;
         const requestId = id('request');
-        const abortParent = () => abort.abort();
+        const abortParent = () => abort.abort(parent?.reason);
         parent?.addEventListener('abort', abortParent, { once: true });
-        if (parent?.aborted) abort.abort();
+        if (parent?.aborted) abort.abort(parent.reason);
         const timeout = setTimeout(() => abort.abort('timeout'), REQUEST_TIMEOUT_MS);
         const operation: ThinkingOperation = { id: requestId, kind, phase: 'pending', scopeIds: [...scopeIds], activity };
         const unregisterCancel = registerOperationCancellation(requestId, () => abort.abort());
@@ -130,6 +143,7 @@ export class AIRuntime {
         this.hooks.notice(t('Structuring this thought...'));
         try {
             if (started.abort.signal.aborted) {
+                if (deadline(started.abort.signal)) throw new ThinkingError('timeout', subject);
                 this.settle(started, 'cancelled');
                 options.onEvent?.({ type: 'cancelled', requestId: started.requestId, inputId });
                 return { status: 'cancelled', emitted: 0, inputId, proposalIds, single: false };
@@ -143,7 +157,7 @@ export class AIRuntime {
             this.requestCount += Math.max(0, extraction.requests - 1);
             const semanticAt = performance.now();
             if (started.abort.signal.aborted || started.ticket !== this.serial) {
-                if (started.ticket === this.serial && started.abort.signal.reason === 'timeout') throw new ThinkingError('timeout', subject);
+                if (started.ticket === this.serial && deadline(started.abort.signal)) throw new ThinkingError('timeout', subject);
                 if (started.ticket === this.serial) this.settle(started, 'cancelled');
                 options.onEvent?.({ type: 'cancelled', requestId: started.requestId, inputId });
                 return { status: 'cancelled', emitted: 0, inputId, proposalIds, single: false };
@@ -158,7 +172,7 @@ export class AIRuntime {
             const anchor = options.anchor ?? this.hooks.anchor();
             for (let index = 0; index < extraction.units.length; index++) {
                 if (started.abort.signal.aborted || started.ticket !== this.serial) {
-                    if (started.ticket === this.serial && started.abort.signal.reason === 'timeout') throw new ThinkingError('timeout', subject);
+                    if (started.ticket === this.serial && deadline(started.abort.signal)) throw new ThinkingError('timeout', subject);
                     if (started.ticket === this.serial) this.settle(started, 'cancelled');
                     options.onEvent?.({ type: 'cancelled', requestId: started.requestId, inputId });
                     return { status: 'cancelled', emitted: proposalIds.length, inputId, proposalIds, single: false };
@@ -187,7 +201,7 @@ export class AIRuntime {
             // The deadline uses the same AbortController as Stop, but it is a provider failure,
             // not a user cancellation. Keep the distinction all the way to the operation state so
             // a slow or unavailable model cannot leave the Field saying only “Stopped”.
-            if (started.ticket === this.serial && started.abort.signal.reason === 'timeout') {
+            if (started.ticket === this.serial && deadline(started.abort.signal)) {
                 const timeoutText = failureText('timeout', subject);
                 if (this.hooks.failure) this.hooks.failure('timeout', subject);
                 else this.hooks.notice(timeoutText);
@@ -195,12 +209,13 @@ export class AIRuntime {
                 options.onEvent?.({ type: 'failed', requestId: started.requestId, inputId });
                 return { status: 'failed', emitted: proposalIds.length, inputId, proposalIds, single: false, reason: timeoutText };
             }
-            if ((error instanceof DOMException && error.name === 'AbortError') || started.abort.signal.aborted) {
+            if (started.abort.signal.aborted || started.ticket !== this.serial) {
                 if (started.ticket === this.serial) this.hooks.notice(t('Structuring stopped. The original input is still saved.'));
                 this.settle(started, 'cancelled');
                 options.onEvent?.({ type: 'cancelled', requestId: started.requestId, inputId });
                 return { status: 'cancelled', emitted: proposalIds.length, inputId, proposalIds, single: false };
             }
+            error = interruptedFailure(error, started.abort.signal, subject);
             const reason = error instanceof Error ? error.message : String(error);
             if (error instanceof ThinkingError && this.hooks.failure) this.hooks.failure(error.failure, subject);
             else this.hooks.notice(t('The structure could not be verified. The original input is still saved.'));
@@ -219,6 +234,7 @@ export class AIRuntime {
         let subject = 'The provider';
         try {
             if (started.abort.signal.aborted) {
+                if (deadline(started.abort.signal)) throw new ThinkingError('timeout', subject);
                 this.settle(started, 'cancelled');
                 return { status: 'cancelled', emitted };
             }
@@ -226,7 +242,7 @@ export class AIRuntime {
             const provider = await this.provider();
             subject = provider.label;
             if (started.abort.signal.aborted || started.ticket !== this.serial) {
-                if (started.ticket === this.serial && started.abort.signal.reason === 'timeout') throw new ThinkingError('timeout', subject);
+                if (started.ticket === this.serial && deadline(started.abort.signal)) throw new ThinkingError('timeout', subject);
                 if (started.ticket === this.serial) this.settle(started, 'cancelled');
                 return { status: 'cancelled', emitted };
             }
@@ -243,7 +259,7 @@ export class AIRuntime {
             const focusedText = questionFocus ? `${text}\n\n${questionFocus}` : text;
             const response = await provider.respond(packet, { kind, text: focusedText, requestId: started.requestId }, started.abort.signal);
             if (started.abort.signal.aborted || started.ticket !== this.serial) {
-                if (started.ticket === this.serial && started.abort.signal.reason === 'timeout') throw new ThinkingError('timeout', subject);
+                if (started.ticket === this.serial && deadline(started.abort.signal)) throw new ThinkingError('timeout', subject);
                 if (started.ticket === this.serial) this.settle(started, 'cancelled');
                 return { status: 'cancelled', emitted };
             }
@@ -302,7 +318,7 @@ export class AIRuntime {
             else {
                 for (let index = 0; index < accepted.length; index++) {
                     if (started.abort.signal.aborted || started.ticket !== this.serial) {
-                        if (started.ticket === this.serial && started.abort.signal.reason === 'timeout') throw new ThinkingError('timeout', subject);
+                        if (started.ticket === this.serial && deadline(started.abort.signal)) throw new ThinkingError('timeout', subject);
                         if (started.ticket === this.serial) this.settle(started, 'cancelled');
                         return { status: 'cancelled', emitted };
                     }
@@ -327,18 +343,19 @@ export class AIRuntime {
             // The deadline uses the same AbortController as Stop, but it is a provider failure,
             // not a user cancellation. Keep the distinction all the way to the operation state so
             // a slow or unavailable model cannot leave the Field saying only “Stopped”.
-            if (started.ticket === this.serial && started.abort.signal.reason === 'timeout') {
+            if (started.ticket === this.serial && deadline(started.abort.signal)) {
                 const timeoutText = failureText('timeout', subject);
                 if (this.hooks.failure) this.hooks.failure('timeout', subject);
                 else this.hooks.notice(timeoutText);
                 this.settle(started, 'failed');
                 return { status: 'failed', emitted, reason: timeoutText };
             }
-            if ((error instanceof DOMException && error.name === 'AbortError') || started.abort.signal.aborted) {
+            if (started.abort.signal.aborted || started.ticket !== this.serial) {
                 if (started.ticket === this.serial) this.hooks.notice(t('Thinking stopped. Only already surfaced possibilities remain.'));
                 this.settle(started, 'cancelled');
                 return { status: 'cancelled', emitted };
             }
+            error = interruptedFailure(error, started.abort.signal, subject);
             const reason = error instanceof Error ? error.message : String(error);
             if (error instanceof ThinkingError && this.hooks.failure) {
                 this.hooks.failure(error.failure, subject);

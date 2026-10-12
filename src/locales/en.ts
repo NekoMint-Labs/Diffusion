@@ -1,4 +1,6 @@
 export const en: Record<string, string> = {
+    "settings.search.keyless": "Use without an API key",
+    "settings.search.keylessHelp": "Free Tavily trial with shared rate limits. Stored keys are not used in this mode.",
     "settings.ai.gatewayReachable": "Gateway reachable",
     "settings.ai.gatewayUnverified": "Configuration received; the model response has not been verified.",
     "settings.ai.gatewayUnconfigured": "The gateway has not configured a model.",

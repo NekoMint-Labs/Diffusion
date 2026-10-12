@@ -332,7 +332,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         else
             intents.openThread(ids, kind === 'deep', text, provider); },
     };
-    return <main className="app" data-active-surface={ui.surface} ref={root}>
+    return <main className="app" data-active-surface={ui.surface} data-menu-open={ui.menu ? true : undefined} ref={root}>
   {/* Atmosphere is presentation state, never semantic state: the Field's material is lit by
       what is transiently happening, not by what the Field means. A selection is a scope, and a
       scope is a fact about attention *right now*, so the place shifts its local illumination

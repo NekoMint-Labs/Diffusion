@@ -2,6 +2,7 @@ mod ai_request;
 mod credentials;
 mod discovery;
 mod discovery_env;
+mod discovery_process_env;
 mod native_ai;
 
 /// The native shell hosts the same React/Vite UI and local IndexedDB repository.

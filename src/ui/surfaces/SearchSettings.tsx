@@ -122,13 +122,14 @@ export function SearchSettings({ settings, discovery, sourceKeys, secureStore, o
     const configured = enabledSources(discoverySettings);
     const descriptor = DISCOVERY_SOURCES[source];
     const present = sourceKeys[source] === true;
+    const keyless = source === 'tavily' && discoverySettings.tavilyKeyless === true;
     const addressUsable = discoverySettings.backend !== 'custom' || usableCustomDiscoveryURL(discoverySettings.customUrl);
-    const canTest = discoverySettings.external && addressUsable && discovery.engineReady && (custom || discoverySettings.sources[source] && present && !(keyDraft[source] ?? '').trim());
+    const canTest = discoverySettings.external && addressUsable && discovery.engineReady && (custom || discoverySettings.sources[source] && (keyless || present && !(keyDraft[source] ?? '').trim()));
     const status = !discoverySettings.external
         ? { tone: 'unconfigured' as const, label: msg('Off') }
         : !custom && configured.length === 0 ? { tone: 'limited' as const, label: msg('No search source configured') }
         : !addressUsable ? { tone: 'error' as const, label: msg('settings.search.badAddress') }
-        : !custom && !present ? { tone: 'unconfigured' as const, label: msg('settings.search.keyNeeded') }
+        : !custom && !keyless && !present ? { tone: 'unconfigured' as const, label: msg('settings.search.keyNeeded') }
         : !discovery.engineReady ? { tone: 'limited' as const, label: msg('settings.search.unavailable') }
         : check === 'checking' ? { tone: 'checking' as const, label: msg('Checking...') }
         : check === 'verified' ? { tone: 'connected' as const, label: msg('settings.search.passed') }
@@ -152,13 +153,14 @@ export function SearchSettings({ settings, discovery, sourceKeys, secureStore, o
                     <SettingRow label={msg('settings.search.enable')}>
                         <Switch ariaLabel={descriptor.label} testId={`source-${source}`} checked={discoverySettings.sources[source]} onChange={checked => setDiscovery({ sources: { ...discoverySettings.sources, [source]: checked } })} label={discoverySettings.sources[source] ? msg('On') : msg('Off')}/>
                     </SettingRow>
-                    <SettingRow label={msg('settings.ai.apiKey')} description={<ApiKeyLink url={descriptor.keyUrl}/>}>
+                    {source === 'tavily' && <SettingRow label={msg('settings.search.keyless')} description={msg('settings.search.keylessHelp')}><Switch ariaLabel={msg('settings.search.keyless')} testId="tavily-keyless" checked={keyless} onChange={checked => setDiscovery({ tavilyKeyless: checked })} label={keyless ? msg('On') : msg('Off')}/></SettingRow>}
+                    {!keyless && <SettingRow label={msg('settings.ai.apiKey')} description={<ApiKeyLink url={descriptor.keyUrl}/> }>
                         <span className="settings-key-row">
                             <input aria-label={msg('settings.ai.apiKey')} id={`source-key-field-${source}`} type="password" autoComplete="off" data-testid={`source-key-${source}`} value={keyDraft[source] ?? ''} placeholder={present ? msg('Stored securely') : msg('Not set')} onChange={event => { activeRequest.current?.abort(); activeRequest.current = null; setCheck('idle'); setKeyDraft(current => ({ ...current, [source]: event.target.value })); }}/>
                             {present && !(keyDraft[source] ?? '').trim() ? <Button variant="outline" size="sm" data-testid={`source-key-remove-${source}`} onClick={() => void removeKey(source)}>{msg('Remove')}</Button> : <Button variant="solid" size="sm" data-testid={`source-key-save-${source}`} disabled={!(keyDraft[source] ?? '').trim()} onClick={() => void saveKey(source)}>{msg('Save')}</Button>}
                         </span>
-                    </SettingRow>
-                    {present && <p className="settings-note">{msg(secureStore ? 'settings.ai.keyStored' : 'settings.ai.keySession')}</p>}
+                    </SettingRow>}
+                    {present && !keyless && <p className="settings-note">{msg(secureStore ? 'settings.ai.keyStored' : 'settings.ai.keySession')}</p>}
                     {configured.length === 0 && <p className="settings-note" data-testid="discovery-empty">{msg('settings.search.chooseSource')}</p>}
                     {discovery.missingKey.length > 0 && <p className="settings-note" data-testid="discovery-missing-key">{msg(discovery.missingKey.length === 1 ? 'settings.search.missingKey' : 'settings.search.missingKeys', { count: discovery.missingKey.length })}</p>}
                     {keyError && <p className="settings-error" role="alert" data-testid="discovery-key-error">{keyError}</p>}

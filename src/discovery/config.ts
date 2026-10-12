@@ -26,9 +26,9 @@ export { customDiscoveryURL };
  * disables it, so this has no opinion about the reader. The engine also has no config file and no
  * user-level persistence, so it cannot pick up a configuration the person did not choose here.
  */
-export function discoveryInvocation(settings: DiscoverySettings, args: string[]): { args: string[]; sources: DiscoverySourceId[] } {
+export function discoveryInvocation(settings: DiscoverySettings, args: string[]): { args: string[]; sources: DiscoverySourceId[]; tavilyKeyless?: boolean } {
     // External exploration off means no source is enabled, said here as well as by the caller that
     // refrains from running the engine at all: the write-off must not depend on that discipline.
-    return { args, sources: settings.external ? enabledSources(settings) : [] };
+    return { args, sources: settings.external ? enabledSources(settings) : [], ...(settings.external && settings.sources.tavily && settings.tavilyKeyless ? { tavilyKeyless: true } : {}) };
 }
 

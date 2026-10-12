@@ -242,7 +242,7 @@ describe('normalizeDiscoverySettings rejects junk and defaults everything off', 
 
     it('keeps only real booleans and a known backend', () => {
         expect(normalizeDiscoverySettings({ external: true, sources: { exa: true, tavily: 'yes', extra: true }, backend: 'custom', customUrl: 'https://x.example' }))
-            .toEqual({ external: true, sources: { exa: true, tavily: false, brave: false }, backend: 'custom', customUrl: 'https://x.example' });
+            .toEqual({ external: true, sources: { exa: true, tavily: false, brave: false }, tavilyKeyless: false, backend: 'custom', customUrl: 'https://x.example' });
     });
 
     it('bounds the custom URL length', () => {

@@ -51,6 +51,14 @@ pub fn is_source(id: &str) -> bool {
 /// running app degrade to "no source configured" instead of to a confusing provider failure.
 pub fn child_environment(
     enabled: &[String],
+    read_secret: impl FnMut(&str) -> Option<String>,
+) -> Result<HashMap<String, String>, String> {
+    child_environment_with_access(enabled, false, read_secret)
+}
+
+pub fn child_environment_with_access(
+    enabled: &[String],
+    tavily_keyless: bool,
     mut read_secret: impl FnMut(&str) -> Option<String>,
 ) -> Result<HashMap<String, String>, String> {
     if let Some(unknown) = enabled.iter().find(|id| !is_source(id)) {
@@ -59,13 +67,15 @@ pub fn child_environment(
     let mut environment = HashMap::new();
     for source in SOURCES {
         let wanted = enabled.iter().any(|id| id == source.id);
-        let secret = if wanted {
+        let keyless = wanted && source.id == "tavily" && tavily_keyless;
+        if keyless { environment.insert("TAVILY_KEYLESS".to_string(), "true".to_string()); }
+        let secret = if wanted && !keyless {
             read_secret(source.credential_slot).filter(|value| !value.is_empty())
         }
         else {
             None
         };
-        environment.insert(source.enable_variable.to_string(), if secret.is_some() { "true" } else { "false" }.to_string());
+        environment.insert(source.enable_variable.to_string(), if secret.is_some() || keyless { "true" } else { "false" }.to_string());
         environment.insert(source.key_variable.to_string(), secret.unwrap_or_default());
     }
     Ok(environment)
@@ -74,6 +84,23 @@ pub fn child_environment(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn keyless_tavily_does_not_read_or_forward_a_stored_key() {
+        let environment = child_environment_with_access(&["tavily".to_string()], true, |_| panic!("must not read any secret")).unwrap();
+        assert_eq!(environment["TAVILY_ENABLED"], "true");
+        assert_eq!(environment["TAVILY_KEYLESS"], "true");
+        assert_eq!(environment["TAVILY_API_KEY"], "");
+        assert_eq!(environment["EXA_ENABLED"], "false");
+        assert_eq!(environment["BRAVE_ENABLED"], "false");
+    }
+
+    #[test]
+    fn keyless_access_cannot_enable_an_unselected_source() {
+        let environment = child_environment_with_access(&[], true, |_| panic!("must not read any secret")).unwrap();
+        assert_eq!(environment["TAVILY_ENABLED"], "false");
+        assert!(!environment.contains_key("TAVILY_KEYLESS"));
+    }
 
     fn no_secrets(_: &str) -> Option<String> {
         None

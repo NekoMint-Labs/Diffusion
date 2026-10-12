@@ -1,5 +1,7 @@
 /* Product copy only. English source keys are the fallback dictionary. */
 export const zh: Record<string, string> = {
+    "settings.search.keyless": "免 Key 搜索试用",
+    "settings.search.keylessHelp": "Tavily 免费试用，有共享限流；此模式不会使用已保存的 Key。",
     "External search refused these settings. Check the search source and service address.": "外部搜索拒绝了这些设置。请检查搜索来源和服务地址。",
     "settings.ai.gatewayReachable": "网关可连接",
     "settings.ai.gatewayUnverified": "已读取网关配置，尚未验证模型响应。",

@@ -2,11 +2,39 @@
 
 Diffusion is a quiet thinking medium for ideas before commitment. This file describes the current checkout: what works, which subsystem owns it, what was freshly verified, and what remains incomplete. It is not a changelog. Historical phase reports and prior verification records remain under [`docs/history/`](docs/history/README.md).
 
-## Current main checkpoint — October 11, 2026
+## Current main checkpoint — October 12, 2026
 
 The integrated main baseline is `edf56d59a8fe35d1c5d8446a223f8d6aa54fc357`, the merge of [PR #18](https://github.com/NekoMint-Labs/Diffusion/pull/18). PR #17 and PR #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51), including #42–#45. Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
 
 Dated records below preserve their original revision, failures, validation scope and then-current PR/Issue status. Earlier instructions to keep #18 Draft or #10 open are historical checkpoint statements, superseded by the merge and milestone closure above. They are not current work instructions. New Round 2 PR evidence belongs to each PR head; it does not retroactively qualify a historical installer or establish integrated-main/native acceptance.
+
+## Round 2 review checkpoint (2026-10-12)
+
+Main remains the baseline above. A-owned PRs #52-#56 are Ready for independent review,
+not integrated deliveries. The #42 follow-up at `a022d403c14ba45133446e947223b1d219cc2139`
+normalizes timeout and stream interruptions across browser/native AI transports and
+preserves explicit caller cancellation. It propagates through #53 -> #54 -> #55 without
+rewriting published history. The combined A stack at `d97eb4be0b015d8f95f658ee5b17aa807dddfb58`
+passed 535 unit tests, 289 offline tests, application typechecking and production build.
+These are local candidate results; remote checks must be evaluated on the new PR heads.
+
+C's draft #63 replaces the withdrawn #58/#59 review input. Its original body-read tests
+still require raw exception identity, contrary to the normalized timeout contract. A
+disposable combination with #63 head `c948a7997122d905f86f780ed07674f0ed32f184` and
+proposed assertion corrections passed 551 unit and 306 offline tests, application
+typechecking/build and 26 focused browser cases (one worker, zero retries). The first
+offline combination retained three incompatible exception-identity assertions and a
+temporary-checkout Git ownership failure; the final pass uses normalized failure-code
+assertions and process-scoped Git trust. Those corrections
+are review suggestions, not changes delivered to C's branch. C must review the shared
+contract and complete #27/#22, including real readable Verify and physical interruption.
+#63 reports unresolved garbled search results and includes a keyless search change that
+needs reconciliation with #51's no-provider-expansion scope. It is not accepted evidence.
+
+#11/#12 stay open. C owns reviewed integration and the identifiable Windows candidate;
+the operator owns final acceptance. Historical records below retain their original limits.
+Current-head remote CI was not observed: the checks connector required sign-in and the
+desktop browser-control helper was unavailable. Prior green checks belong to prior heads.
 
 ## PR #18 main synchronization (2026-10-10)
 

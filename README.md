@@ -4,7 +4,7 @@ Diffusion is a quiet thinking medium for ideas that are not fully formed yet. Th
 
 This README describes the current `main` branch. The package metadata remains `0.3.0`; that is not a claim that every current feature belongs to a published release.
 
-As of October 11, 2026, [PR #18](https://github.com/NekoMint-Labs/Diffusion/pull/18) is merged and [#10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone. Follow-up work is in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51). [#11](https://github.com/NekoMint-Labs/Diffusion/issues/11) and [#12](https://github.com/NekoMint-Labs/Diffusion/issues/12) remain open for Field and installed Windows / real-task acceptance; see [current status](STATUS.md) and the [acceptance map](docs/ACCEPTANCE_MAP.md) for revision-specific evidence.
+As of October 12, 2026, [PR #18](https://github.com/NekoMint-Labs/Diffusion/pull/18) is merged and [#10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone. Follow-up work is in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51). [#11](https://github.com/NekoMint-Labs/Diffusion/issues/11) and [#12](https://github.com/NekoMint-Labs/Diffusion/issues/12) remain open for Field and installed Windows / real-task acceptance; see [current status](STATUS.md) and the [acceptance map](docs/ACCEPTANCE_MAP.md) for revision-specific evidence.
 
 ## What is different
 

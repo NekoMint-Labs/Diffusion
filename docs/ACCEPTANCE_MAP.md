@@ -2,11 +2,16 @@
 
 This map separates implemented contracts from executed evidence and physical/operator checks. Product authority lives in the current product, architecture and contract documents — see the [documentation index](README.md); historical phase reports are provenance only. Exact current command results and environment limits are in [`../STATUS.md`](../STATUS.md).
 
-## Current main checkpoint — October 11, 2026
+## Current main checkpoint — October 12, 2026
 
 The integrated main baseline is `edf56d59a8fe35d1c5d8446a223f8d6aa54fc357`, the merge of [PR #18](https://github.com/NekoMint-Labs/Diffusion/pull/18). PR #17 and PR #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51), including #42–#45. Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
 
 Dated records below preserve their original revision, failures, validation scope and then-current PR/Issue status. Earlier instructions to keep #18 Draft or #10 open are historical checkpoint statements, superseded by the merge and milestone closure above. They are not current work instructions. New Round 2 PR evidence belongs to each PR head; it does not retroactively qualify a historical installer or establish integrated-main/native acceptance.
+
+Round 2 PRs #52-#56 are Ready but still require independent review and integration.
+The October 12 shared-transport validation is candidate evidence in [STATUS.md](../STATUS.md);
+it does not establish installed-product acceptance. C's draft #63 retains unresolved readable
+Verify and real-interruption acceptance, and its keyless search scope needs review under #51.
 
 | Requirement | Current implementation | Executed evidence | Remaining acceptance |
 |---|---|---|---|

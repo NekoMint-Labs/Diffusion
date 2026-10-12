@@ -11,6 +11,9 @@ explicitly rather than assuming one of them is right.
 
 **Current checkpoint (October 12, 2026):** PR #18 is merged and #10 is closed as its delivered milestone. The [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51) owns the new queue. #11/#12 remain open for Field and installed-product acceptance. Start with [STATUS.md](../STATUS.md) and [ACCEPTANCE_MAP.md](ACCEPTANCE_MAP.md); their dated records preserve original evidence and then-current statuses, not new acceptance claims.
 
+The live Round 2 review checkpoint and the limited requester trial of candidate `d97eb4be`
+are recorded in [STATUS.md](../STATUS.md); use that entry before relying on older history.
+
 ## START HERE
 
 | Document | What it is |

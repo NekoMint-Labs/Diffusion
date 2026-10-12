@@ -6,6 +6,11 @@ This README describes the current `main` branch. The package metadata remains `0
 
 As of October 12, 2026, [PR #18](https://github.com/NekoMint-Labs/Diffusion/pull/18) is merged and [#10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone. Follow-up work is in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51). [#11](https://github.com/NekoMint-Labs/Diffusion/issues/11) and [#12](https://github.com/NekoMint-Labs/Diffusion/issues/12) remain open for Field and installed Windows / real-task acceptance; see [current status](STATUS.md) and the [acceptance map](docs/ACCEPTANCE_MAP.md) for revision-specific evidence.
 
+The current Round 2 review checkpoint, including green PR-head checks and the limited
+requester trial of candidate `d97eb4be`, is maintained in [STATUS.md](STATUS.md). It is
+review evidence for the queued PRs, not a claim that the changes are merged or accepted
+on installed Windows.
+
 ## What is different
 
 - **The Field is state; messages are history.** The spatial Field holds canonical work. Threads and model responses are context and history until the user explicitly brings something into the Field.

@@ -1,4 +1,13 @@
 export const en: Record<string, string> = {
+    "Table preview; expand to inspect the original passage.": "Table preview; expand to inspect the original passage.",
+    "Show original read passage": "Show original read passage",
+    "Request timed out": "Request timed out",
+    "Try again manually when you are ready. Closing this message will not retry.": "Try again manually when you are ready. Closing this message will not retry.",
+    "Assessment sends only this claim and the read passages to your configured AI provider.": "Assessment sends only this claim and the read passages to your configured AI provider.",
+    "Configure a live AI provider to assess the read passages.": "Configure a live AI provider to assess the read passages.",
+    "Connection failed": "Connection failed",
+    "Check your connection, then start the action again when you are ready.": "Check your connection, then start the action again when you are ready.",
+    "Show original search snippet": "Show original search snippet",
     "settings.search.keyless": "Use without an API key",
     "settings.search.keylessHelp": "Free Tavily trial with shared rate limits. Stored keys are not used in this mode.",
     "settings.ai.gatewayReachable": "Gateway reachable",

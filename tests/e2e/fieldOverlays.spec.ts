@@ -119,7 +119,7 @@ test('a valid response arriving after Stop cannot replace a newer request', asyn
     await page.route('**/api/respond', async route => {
         const first = ++requests === 1;
         if (first) await gate;
-        await route.fulfill({ json: { providerLabel: 'E2E fixture', mock: true, intents: [{ type: 'surface_possibility', text: first ? 'Late cancelled possibility' : 'Current possibility' }] } }).catch(() => {});
+        await route.fulfill({ json: { providerLabel: 'E2E fixture', mock: true, intents: [{ type: 'respond_in_field', text: first ? 'Late cancelled answer' : 'Current answer' }] } }).catch(() => {});
         if (first) finished();
     });
     try {
@@ -137,12 +137,12 @@ test('a valid response arriving after Stop cannot replace a newer request', asyn
         await expect(page.getByTestId('operation-feedback')).toHaveAttribute('data-copy-visible', 'true');
         await page.getByTestId('operation-feedback').getByRole('button', { name: 'Stop', exact: true }).click();
         await ask();
-        await expect(page.locator('article.ghost').filter({ hasText: 'Current possibility' })).toBeVisible();
+        await expect(page.locator('article.ghost').filter({ hasText: 'Current answer' })).toBeVisible();
         release();
         await lateDelivered;
         await expect(page.locator('article.ghost')).toHaveCount(1);
-        await expect(page.locator('article.ghost')).toContainText('Current possibility');
-        await expect(page.locator('article.ghost').filter({ hasText: 'Late cancelled possibility' })).toHaveCount(0);
+        await expect(page.locator('article.ghost')).toContainText('Current answer');
+        await expect(page.locator('article.ghost').filter({ hasText: 'Late cancelled answer' })).toHaveCount(0);
     } finally { release(); }
 });
 
@@ -210,21 +210,45 @@ test.describe('terminal feedback distinguishes output from deadlines', () => {
             await expect(feedback).not.toContainText('Stopped.');
             await expect(page.locator('.notice')).toContainText('did not answer in time.');
             await expect(page.locator('.thought.ghost')).toHaveCount(0);
-            await page.clock.fastForward(2000);
-            await expect(feedback).toBeVisible();
+            const popup = page.getByRole('alertdialog', { name: 'Request timed out' });
+            await expect(popup).toBeVisible();
             await page.screenshot({ path: testInfo.outputPath('timeout-feedback.png') });
+            await popup.getByRole('button', { name: 'Close', exact: true }).click();
+            await feedback.getByRole('button', { name: 'Close', exact: true }).click();
+            await expect(feedback).toHaveCount(0);
             // Continue has no composer-backed Retry action. Its failure must still remain readable
             // after the workspace's ordinary-notice timer and terminal animation have both settled.
             await expect(page.getByTestId('notice-action')).toHaveCount(0);
             await page.clock.fastForward(7000);
             await expect(page.locator('.notice')).toContainText('did not answer in time.');
+            await page.getByTestId('dismiss-notice').click();
+            await expect(page.locator('.notice')).toHaveCount(0);
             await page.locator('[data-thought-id="attention"]').dblclick();
             await expect(page.getByRole('textbox', { name: 'Edit thought' })).toBeFocused();
         } finally { model.release(); }
     });
 });
 
-test('Continue transport abort shows a persistent connection failure instead of Stop', async ({ page }) => {
+test('Chinese connection popup closes by button and restores editing', async ({ page }, testInfo) => {
+    let release!: () => void;
+    const ready = new Promise<void>(resolve => { release = resolve; });
+    await page.route('http://127.0.0.1:11434/**', async route => { await ready; await route.abort('internetdisconnected'); });
+    try {
+        await configured(page, 'zh');
+        await start(page);
+        release();
+        const popup = page.getByRole('alertdialog', { name: '连接失败' });
+        await expect(popup).toBeVisible();
+        await expect(popup).toContainText('恢复后可手动重新发起操作');
+        await page.screenshot({ path: testInfo.outputPath('connection-failure-popup-zh.png') });
+        await popup.getByRole('button', { name: '关闭', exact: true }).click();
+        await expect(popup).toHaveCount(0);
+        await page.locator('[data-thought-id="attention"]').dblclick();
+        await expect(page.getByRole('textbox', { name: '编辑想法' })).toBeFocused();
+    } finally { release(); }
+});
+
+test('Continue transport abort shows a persistent connection failure instead of Stop', async ({ page }, testInfo) => {
     await page.clock.install();
     await page.addInitScript(() => {
         const original = window.fetch;
@@ -244,8 +268,19 @@ test('Continue transport abort shows a persistent connection failure instead of 
     await expect(feedback).not.toContainText('Stopped.');
     await expect(page.locator('.notice')).toContainText('could not be reached');
     await expect(page.locator('.notice')).not.toContainText('private transport detail');
+    const popup = page.getByRole('alertdialog', { name: 'Connection failed' });
+    await expect(popup).toBeVisible();
+    await expect(popup).toContainText('could not be reached');
+    await expect(popup).not.toContainText('private transport detail');
+    await expect(popup.getByRole('button', { name: 'Close', exact: true })).toBeFocused();
+    await popup.getByRole('button', { name: 'Close', exact: true }).press('Tab');
+    await expect(popup.getByRole('button', { name: 'Close', exact: true })).toBeFocused();
+    await page.screenshot({ path: testInfo.outputPath('connection-failure-popup.png') });
     await expect(page.locator('.thought.ghost')).toHaveCount(0);
     await page.clock.fastForward(9000);
+    await expect(popup).toBeVisible();
+    await popup.getByRole('button', { name: 'Close', exact: true }).press('Escape');
+    await expect(popup).toHaveCount(0);
     await expect(page.locator('.notice')).toContainText('could not be reached');
     await expect(page.locator('[data-thought-id="attention"]')).toBeVisible();
 });

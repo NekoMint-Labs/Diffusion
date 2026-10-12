@@ -9,6 +9,7 @@ import { selectionUIBounds } from '../../field/useThoughtMeasurements.ts';
 import { cancelThinkingOperation, canCancelThinkingOperation } from '../../ai/operationControl.ts';
 import { t } from '../../shared/i18n.ts';
 import { Button } from '../primitives/Button.tsx';
+import { useUI } from '../store.ts';
 import { pendingCopy, terminalCopy, useOperationPresentation } from '../motion/operationPresentation.ts';
 import { ScopeHub, type ScopeHubProps } from './ScopeHub.tsx';
 import { clearScopePlacement, unionScopeBounds, type ScopeRect } from './scopePlacement.ts';
@@ -115,7 +116,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             }));
             const candidate = anchor && !item.forceDock && !docked.current.has(item.key) ? clearScopePlacement({
                 selectionBounds: anchor, viewportBounds: viewport, hubSize: { width, height },
-                occupiedRects: [...occupied.filter(rect => !item.ids.includes(rect.id)), ...reserved, ...placed],
+                occupiedRects: [...occupied.filter(rect => !item.ids.includes(rect.id)), ...relationOccupied, ...reserved, ...placed],
             }) : null;
             const isScope = element === scopeElement.current;
             if (candidate) {
@@ -252,6 +253,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             <span className="operation-feedback-mark" aria-hidden="true" />
             {showCopy && <span className="operation-feedback-copy">{displayOperation.phase === 'pending' ? t(pendingCopy(displayOperation.kind)) : terminalCopy(displayOperation)}</span>}
             {cancelable && showCopy && <Button variant="ghost" size="sm" className="operation-stop" onClick={() => cancelThinkingOperation(displayOperation.id)}>{t('Stop')}</Button>}
+            {displayOperation.phase !== 'pending' && showCopy && <Button variant="ghost" size="sm" onClick={() => { const ui = useUI.getState(); if (ui.operation?.id === displayOperation.id && ui.operation.phase !== 'pending') ui.patch({ operation: null }); }}>{t('Close')}</Button>}
         </div>}
     </>;
 });

@@ -27,6 +27,7 @@ export interface EvidenceProvenance {
 }
 export interface WebEvidenceProvider {
     readonly label?: string;
+    readonly reasoningLabel?: string;
     reason?(claim: string, passages: EvidencePassage[], signal?: AbortSignal): Promise<EvidenceReasoning>;
     search(query: string, options?: SearchOptions): Promise<EvidenceCandidate[]>;
     fetch(url: string, signal?: AbortSignal): Promise<FetchedResource>;

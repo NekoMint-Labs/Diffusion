@@ -60,8 +60,57 @@ test('a Verify deadline releases running controls and reports that no judgment w
         await dialog.getByRole('button', { name: 'Search the web' }).click();
         await expect(dialog.getByRole('button', { name: 'Stop', exact: true })).toBeVisible();
         await page.clock.fastForward(65000);
+        const popup = page.getByRole('alertdialog', { name: 'Request timed out' });
+        await expect(popup).toBeVisible();
+        await popup.getByRole('button', { name: 'Close', exact: true }).click();
         await expect(dialog.getByRole('alert')).toHaveText('The evidence request timed out. No judgment was made.');
         await expect(dialog.getByRole('button', { name: 'Search the web' })).toBeEnabled();
         await expect(dialog.getByRole('button', { name: 'Stop', exact: true })).toHaveCount(0);
     } finally { release(); }
+});
+
+test('search reacts immediately to going offline, keeps earlier candidates and retries only explicitly', async ({ page }) => {
+    let calls = 0, release!: () => void;
+    const held = new Promise<void>(resolve => { release = resolve; });
+    await page.route('https://verify.example/search', async route => {
+        calls++;
+        if (calls === 2) await held;
+        await route.fulfill({ json: { candidates: [{ id: 'public', title: calls === 2 ? 'Late unwanted candidate' : 'Readable candidate', url: 'https://example.org/reference', excerpt: 'A plain search snippet.', inspected: 'Snippet only' }] } }).catch(() => {});
+    });
+    try {
+        const dialog = await openVerify(page, { external: true, backend: 'custom', customUrl: 'https://verify.example' });
+        const search = dialog.getByRole('button', { name: 'Search the web' });
+        await search.click(); await expect(dialog).toContainText('Readable candidate');
+        await search.click(); await expect.poll(() => calls).toBe(2);
+        await page.evaluate(() => window.dispatchEvent(new Event('offline')));
+        const popup = page.getByRole('alertdialog', { name: 'Connection failed' });
+        await expect(popup).toContainText('This device appears to be offline.');
+        await popup.getByRole('button', { name: 'Close', exact: true }).click();
+        await expect(search).toBeEnabled();
+        await expect(dialog).toContainText('Readable candidate');
+        await page.evaluate(() => window.dispatchEvent(new Event('online')));
+        release(); await expect(dialog.getByText('Late unwanted candidate')).toHaveCount(0);
+        expect(calls).toBe(2);
+        await search.click(); await expect.poll(() => calls).toBe(3);
+        await expect(dialog.getByRole('alert')).toHaveCount(0);
+    } finally { release(); }
+});
+
+test('an already offline search never starts, while a transport disconnect also opens a popup', async ({ page }) => {
+    let calls = 0;
+    await page.route('https://verify.example/search', route => { calls++; return route.abort('internetdisconnected'); });
+    const dialog = await openVerify(page, { external: true, backend: 'custom', customUrl: 'https://verify.example' });
+    await page.evaluate(() => Object.defineProperty(navigator, 'onLine', { configurable: true, value: false }));
+    await dialog.getByRole('button', { name: 'Search the web' }).click();
+    let popup = page.getByRole('alertdialog', { name: 'Connection failed' });
+    await expect(popup).toContainText('This device appears to be offline.');
+    expect(calls).toBe(0);
+    await popup.getByRole('button', { name: 'Close', exact: true }).click();
+    await page.evaluate(() => Object.defineProperty(navigator, 'onLine', { configurable: true, value: true }));
+    await dialog.getByRole('button', { name: 'Search the web' }).click();
+    popup = page.getByRole('alertdialog', { name: 'Connection failed' });
+    await expect(popup).toContainText('could not be reached');
+    await popup.getByRole('button', { name: 'Close', exact: true }).click();
+    expect(calls).toBe(1);
+    await expect(dialog.getByRole('button', { name: 'Search the web' })).toBeEnabled();
 });

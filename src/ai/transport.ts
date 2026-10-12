@@ -21,6 +21,15 @@ function release(response: Response): void {
     void response.body?.cancel().catch(() => { /* The transport may already be closed. */ });
 }
 
+/** Only the caller's signal establishes Stop; upstream aborts are transport failures. */
+function transportFailure(error: unknown, signal: AbortSignal, subject: string): unknown {
+    const reason = signal.aborted ? signal.reason : error;
+    if (reason === 'timeout' || (reason instanceof Error && reason.name === 'TimeoutError'))
+        return new ThinkingError('timeout', subject);
+    if (signal.aborted) return reason ?? new DOMException('Cancelled', 'AbortError');
+    return new ThinkingError('provider-unreachable', subject);
+}
+
 /** A bounded transport with the provider's own failure *type* preserved.
  *
  * The status alone is not enough to be honest: a provider that reports `rate_limit_error` inside a
@@ -40,10 +49,9 @@ export function fetchSend(subject: string): HttpSend {
                 });
             }
             catch (error) {
-                if (error instanceof DOMException && (error.name === 'AbortError' || error.name === 'TimeoutError')) throw error;
                 // A rejected fetch is the transport failing: offline, a wrong host, or a refused
                 // connection. All three are "could not be reached", not a provider opinion.
-                throw new ThinkingError('provider-unreachable', subject);
+                throw transportFailure(error, signal, subject);
             }
             if (!response.ok) {
                 const type = await errorTypeFrom(response);
@@ -53,17 +61,8 @@ export function fetchSend(subject: string): HttpSend {
             const declared = Number(response.headers.get('Content-Length') || 0);
             if (declared > MAX_BYTES) { release(response); throw new ThinkingError('malformed-provider-response', subject); }
             let body: string;
-            try {
-                body = await response.text();
-            }
-            catch (error) {
-                // A broken response stream is a transport failure, not invalid JSON. Preserve an
-                // actual caller cancellation/deadline so the runtime can distinguish it from loss
-                // of connectivity; never forward the transport's raw error text.
-                if (signal.aborted) throw signal.reason ?? new DOMException('Cancelled', 'AbortError');
-                if (error instanceof DOMException && (error.name === 'AbortError' || error.name === 'TimeoutError')) throw error;
-                throw new ThinkingError('provider-unreachable', subject);
-            }
+            try { body = await response.text(); }
+            catch (error) { throw transportFailure(error, signal, subject); }
             try {
                 // A JSON envelope is always far smaller than the budget; anything larger is not a
                 // provider answer, and reading it would only widen the private-data surface.
@@ -124,10 +123,6 @@ export const tauriAiBridge: NativeAiBridge = {
     cancel: async requestId => { await callNative('native_ai_cancel', { requestId }); },
 };
 
-function isAbort(error: unknown): boolean {
-    return error instanceof DOMException && (error.name === 'AbortError' || error.name === 'TimeoutError');
-}
-
 /** The desktop transport.
  *
  * Everything observable here is deliberately the same as `fetchSend`: the same failure taxonomy, the
@@ -138,7 +133,7 @@ export function nativeSend(subject: string, bridge: NativeAiBridge = tauriAiBrid
     return {
         kind: 'native',
         async send(request, signal) {
-            if (signal.aborted) throw signal.reason ?? new DOMException('Cancelled', 'AbortError');
+            if (signal.aborted) throw transportFailure(undefined, signal, subject);
             const requestId = crypto.randomUUID();
             let settled = false;
             const cancelled = new Promise<never>((_, reject) => {
@@ -146,7 +141,7 @@ export function nativeSend(subject: string, bridge: NativeAiBridge = tauriAiBrid
                     if (settled) return;
                     // Fire and forget: the local rejection must not wait on the shell answering.
                     void bridge.cancel(requestId).catch(() => { /* A lost cancel is not something the person can act on. */ });
-                    reject(signal.reason ?? new DOMException('Cancelled', 'AbortError'));
+                    reject(transportFailure(undefined, signal, subject));
                 };
                 signal.addEventListener('abort', onAbort, { once: true });
             });
@@ -183,8 +178,7 @@ export function nativeSend(subject: string, bridge: NativeAiBridge = tauriAiBrid
                 if (error instanceof ThinkingError) throw error;
                 // A rejected invoke, or an aborted one, is the transport failing — the same story a
                 // rejected `fetch` tells. Its own text is never carried forward.
-                if (isAbort(error)) throw error;
-                throw new ThinkingError('provider-unreachable', subject);
+                throw transportFailure(error, signal, subject);
             }
         },
     };

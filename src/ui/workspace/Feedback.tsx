@@ -1,14 +1,17 @@
 import { useLayoutEffect, useRef, type ReactElement, type ReactNode } from 'react';
 import type { FeedbackTone } from './feedback.ts';
+import { Button } from '../primitives/Button.tsx';
+import { t } from '../../shared/i18n.ts';
 
 /** The workspace reserves the measured bottom line so a wrapped notice cannot cover writing. */
-export function FeedbackLine({ text, tone, action, secondary, onBottomHeight }: {
+export function FeedbackLine({ text, tone, action, secondary, onBottomHeight, onDismiss }: {
     text: string;
     tone: FeedbackTone;
     action?: ReactNode;
     /** The established placement for a standing, non-blocking statement (the demo disclosure). */
     secondary?: string;
     onBottomHeight?: (height: number) => void;
+    onDismiss?: () => void;
 }): ReactElement {
     const line = useRef<HTMLDivElement>(null);
     useLayoutEffect(() => {
@@ -20,5 +23,5 @@ export function FeedbackLine({ text, tone, action, secondary, onBottomHeight }: 
         observer.observe(element);
         return () => { observer.disconnect(); onBottomHeight(0); };
     }, [secondary, onBottomHeight]);
-    return <div ref={line} className="notice" data-tone={tone} data-secondary={secondary} role="status">{text}{action}</div>;
+    return <div ref={line} className="notice" data-tone={tone} data-secondary={secondary} role="status">{text}{action}{onDismiss && <Button variant="ghost" size="sm" data-testid="dismiss-notice" onClick={onDismiss}>{t('Close')}</Button>}</div>;
 }

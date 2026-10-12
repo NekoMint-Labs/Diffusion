@@ -178,3 +178,37 @@ for (const theme of ['light', 'dark'] as const) for (const zoom of [1, .55]) {
         expect(errors).toEqual([]);
     });
 }
+
+test.describe('five-result reading neighborhood', () => {
+    test.use({ viewport: { width: 1440, height: 960 } });
+    for (const [theme, zoom] of [['light', 1], ['dark', .55]] as const) {
+        test('five long arrivals form a visible local cluster in ' + theme, async ({ page }, info) => {
+            await page.route('**/api/respond', route => route.fulfill({ json: {
+                providerLabel: 'Five-result layout fixture / not live', mock: true,
+                intents: Array.from({ length: 5 }, (_, i) => ({ type: 'surface_possibility', text: '观察' + i + '：' + '先记录这个条件，再用一个能够复现的小实验判断它怎样影响当前选择，保留尚未验证的假设。'.repeat(2) })),
+            } }));
+            const project = await boot(page, theme, zoom, 'gateway');
+            const source = page.locator('[data-thought-id="source"]');
+            const camera = await page.locator('.world').getAttribute('style');
+            await source.click(); await page.getByTestId('scope-continue').click();
+            await page.getByRole('dialog', { name: '继续想', exact: true }).getByRole('button', { name: '5', exact: true }).click();
+            await page.getByTestId('action-preview-run').click();
+            const ghosts = page.locator('article.ghost');
+            await expect(ghosts).toHaveCount(5);
+            await expect(page.getByTestId('operation-feedback')).toHaveCount(0);
+            await expect.poll(async () => {
+                const a = (await source.boundingBox())!;
+                const boxes = await ghosts.evaluateAll(elements => elements.map(e => e.getBoundingClientRect().toJSON()));
+                return boxes.every((b, i) => {
+                    const dx = Math.max(0, a.x - b.right, b.x - a.x - a.width);
+                    const dy = Math.max(0, a.y - b.bottom, b.y - a.y - a.height);
+                    return b.x >= 0 && b.y >= 0 && b.right <= 1440 && b.bottom + 64 <= 960 && Math.hypot(dx, dy) <= 216
+                        && boxes.slice(0, i).every(c => b.x >= c.right || b.right <= c.x || b.y >= c.bottom || b.bottom <= c.y);
+                });
+            }).toBe(true);
+            await expect(page.locator('.world')).toHaveAttribute('style', camera!);
+            await expect(source).toContainText(project.thoughts.source.text);
+            await page.screenshot({ path: info.outputPath('five-local-' + theme + '.png') });
+        });
+    }
+});

@@ -43,3 +43,24 @@ describe('authored Demo relationships use the production quality gate', () => {
         expect(Object.values(controller.getSnapshot().project.relations)).toHaveLength(0);
     });
 });
+
+
+describe('authored Demo Ask remains usable under the direct-answer contract', () => {
+    for (const locale of ['en', 'zh'] as const) {
+        it(`${locale}: admits its limitations in one uncommitted answer instead of emitting reframing`, async () => {
+            setLocale(locale);
+            const project = createProject('demo-ask-' + locale, 'Demo Ask');
+            project.thoughts.a = makeThought(locale === 'zh' ? '我的问题' : 'My question', { x: 0, y: 0 }, 1, 'a');
+            const controller = new ProjectController(project, async () => {});
+            const before = JSON.stringify(controller.getSnapshot().project);
+            const ai = runtime(controller);
+            try {
+                expect(await ai.run('ask', locale === 'zh' ? '请直接回答' : 'Give a direct answer', ['a'])).toMatchObject({ status: 'completed', emitted: 1 });
+                const ghosts = Object.values(controller.getSnapshot().session.ghosts);
+                expect(ghosts).toHaveLength(1);
+                expect(ghosts[0].text).toMatch(locale === 'zh' ? /演示.*实质回答/u : /deterministic demo.*substantive answer/u);
+                expect(JSON.stringify(controller.getSnapshot().project)).toBe(before);
+            } finally { ai.dispose(); }
+        });
+    }
+});

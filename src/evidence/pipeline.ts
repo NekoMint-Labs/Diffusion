@@ -52,5 +52,5 @@ export async function reasonCandidate(provider: WebEvidenceProvider, candidate: 
     checkAbort(signal);
     const reasoning = validateReasoning(await provider.reason(claim.slice(0, 3000), candidate.passages!, signal), candidate.passages!);
     checkAbort(signal);
-    return { ...candidate, stage: 'judged', judgment: { ...reasoning, claim: claim.slice(0, 3000), at: Date.now(), provider: (provider.label || 'Configured evidence gateway').slice(0, 200) } };
+    return { ...candidate, stage: 'judged', judgment: { ...reasoning, claim: claim.slice(0, 3000), at: Date.now(), provider: (provider.reasoningLabel || provider.label || 'Configured evidence gateway').slice(0, 200) } };
 }

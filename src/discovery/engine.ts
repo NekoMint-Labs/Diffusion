@@ -7,6 +7,7 @@ import type { EvidenceChunk, EvidenceProvenance, FetchedResource, ResourceMetada
 /** Scoped reasoning over read passages. Separated from discovery because whoever can *read* a page
  * and whoever can *think* about it are different capabilities, and either may be missing. */
 export interface EvidenceReasoner {
+    readonly label?: string;
     reason(claim: string, passages: EvidencePassage[], signal?: AbortSignal): Promise<EvidenceReasoning>;
 }
 
@@ -51,7 +52,8 @@ export class DiscoveryEvidenceProvider implements WebEvidenceProvider {
     reason?: (claim: string, passages: EvidencePassage[], signal?: AbortSignal) => Promise<EvidenceReasoning>;
     private readonly runtime: DiscoveryRuntime;
     private outcome: SearchOutcome | null = null;
-    constructor(runtime: DiscoveryRuntime, reasoner?: EvidenceReasoner) {
+    get reasoningLabel(): string | undefined { return this.reasoner?.label; }
+    constructor(runtime: DiscoveryRuntime, private readonly reasoner?: EvidenceReasoner) {
         this.runtime = runtime;
         if (reasoner) this.reason = (claim, passages, signal) => reasoner.reason(claim, passages, signal);
     }

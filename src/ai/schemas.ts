@@ -16,10 +16,11 @@ export const semanticIntentSchema = z.discriminatedUnion('type', [
     z.object({ type: z.literal('surface_evidence'), sourceId: key, outcome: z.enum(['support', 'challenge', 'partial', 'prior-art', 'inconclusive', 'conflicting']), text }).strict(),
 ]);
 export const responseSchema = z.object({ intents: z.array(semanticIntentSchema).max(8), providerLabel: z.string().max(200), mock: z.boolean() }).strict();
-const thought = z.object({ id: key, text: z.string().max(1600), kind: z.enum(['thought', 'crystal', 'source']) }).strict();
+const thought = z.object({ authored: z.boolean().optional(), id: key, text: z.string().max(1600), kind: z.enum(['thought', 'crystal', 'source']) }).strict();
 const capsule = z.object({ goal: z.string().max(800), confirmed: z.array(z.string().max(500)).max(8), tentative: z.array(z.string().max(500)).max(8), openQuestions: z.array(z.string().max(500)).max(4), sources: z.array(key).max(24), rebuiltAt: z.number() }).strict();
 export const packetSchema = z.object({ contract: z.string().max(2000), projectId: key, scopeMode: z.enum(['selection', 'field']), scope: z.array(thought).max(24), local: z.array(thought).max(12),
     continuations: z.array(z.object({ thoughtId: key, sourceIds: z.array(key).min(1).max(4) }).strict()).max(24).optional(),
+    ancestry: z.array(z.object({ thoughtId: key, path: z.array(key).min(3).max(5) }).strict()).max(24).optional(),
     relations: z.array(z.object({ a: key, b: key, kind: relationKind, label: z.string().max(300) }).strict()).max(16),
     thread: z.object({ id: key, capsule: capsule.optional(), recent: z.array(z.object({ role: z.enum(['user', 'assistant']), text: z.string().max(1600) }).strict()).max(6) }).strict().optional(),
     retrieved: z.object({ thoughts: z.array(thought).max(4), sources: z.array(z.object({ id: key, title: z.string().max(1000), excerpt: z.string().max(2500), inspected: z.string().max(1000), url: z.string().url().optional() }).strict()).max(4) }).strict(),
@@ -27,6 +28,14 @@ export const packetSchema = z.object({ contract: z.string().max(2000), projectId
 }).strict().superRefine((packet, context) => {
     const scope = new Set(packet.scope.map(item => item.id));
     const available = new Set([...scope, ...packet.local.map(item => item.id)]);
+    const paths = new Set<string>();
+    for (const link of packet.ancestry ?? []) {
+        const signature = JSON.stringify(link.path);
+        const direct = packet.continuations?.find(item => item.thoughtId === link.thoughtId);
+        if (!scope.has(link.thoughtId) || link.path[0] !== link.thoughtId || !direct?.sourceIds.includes(link.path[1]) || !available.has(link.path.at(-1)!) || new Set(link.path).size !== link.path.length || paths.has(signature) || packet.thread)
+            context.addIssue({ code: 'custom', path: ['ancestry'], message: 'Ancestry must be a distinct bounded causal path from supplied selection to background.' });
+        paths.add(signature);
+    }
     const subjects = new Set<string>();
     for (const link of packet.continuations ?? []) {
         if (!scope.has(link.thoughtId) || subjects.has(link.thoughtId) || new Set(link.sourceIds).size !== link.sourceIds.length || link.sourceIds.some(key => key === link.thoughtId || !available.has(key)))
@@ -44,7 +53,7 @@ export const capabilitiesSchema = z.object({
     depth: z.object({ supported: z.boolean(), mode: z.enum(['output-budget', 'none']), levels: z.array(thinkingDepthSchema).max(8) }).strict(),
 }).strict();
 
-const structuredPurpose = z.enum(['thought-extraction', 'thought-extraction-recheck', 'relation-inference', 'ingestion-repair']);
+const structuredPurpose = z.enum(['thought-extraction', 'thought-extraction-recheck', 'relation-inference', 'ingestion-repair', 'evidence-assessment']);
 export const structuredRequestSchema = z.object({
     purpose: structuredPurpose,
     instructions: z.string().min(1).max(16000),

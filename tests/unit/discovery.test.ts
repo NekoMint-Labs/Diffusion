@@ -170,6 +170,19 @@ describe('BuiltInDiscoveryRuntime maps the engine envelope without inventing evi
         expect(reads).toBe(2);
     });
 
+    it('extracts the same fetched body after a reader reports a redirected URL', async () => {
+        let reads = 0;
+        const { run } = runner(() => { reads++; return readEnvelope('https://example.org/final', reads === 1 ? body : 'A different later page body that must not replace the fetched evidence.'); });
+        const runtime = new BuiltInDiscoveryRuntime(run);
+        const fetched = await runtime.fetch('https://example.org/old', signal);
+        const chunks = await runtime.extract('https://example.org/old', 'paragraph', signal);
+        expect(reads).toBe(1);
+        expect(fetched.url).toBe('https://example.org/final');
+        expect(chunks.every(chunk => fetched.text.includes(chunk.text))).toBe(true);
+        await runtime.fetch('https://example.org/old', signal);
+        expect(reads).toBe(2);
+    });
+
     it('bounds the reader cache, so an evicted URL is read again', async () => {
         let reads = 0;
         const { run } = runner(args => { reads += 1; return readEnvelope(String(args[args.length - 1]), body); });

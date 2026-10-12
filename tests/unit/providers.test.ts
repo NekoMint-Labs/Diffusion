@@ -158,7 +158,7 @@ describe('readWireText normalizes each protocol and refuses to invent a model', 
         expect(caught('responses', { status: 'completed', output: [{ type: 'message', content: [{ type: 'refusal', refusal: 'no' }] }] }).kind).toBe('refusal');
         expect(caught('chat-completions', { choices: [{ message: { refusal: 'no', content: 'x' } }] }).kind).toBe('refusal');
         expect(caught('responses', { status: 'in_progress', output: [] }).kind).toBe('incomplete');
-        expect(caught('chat-completions', { choices: [{ finish_reason: 'content_filter', message: { content: 'x' } }] }).kind).toBe('incomplete');
+        expect(caught('chat-completions', { choices: [{ finish_reason: 'content_filter', message: { content: 'x' } }] }).kind).toBe('refusal');
         expect(caught('anthropic-messages', { content: 'nope' }).kind).toBe('malformed');
     });
 });

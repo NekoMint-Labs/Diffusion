@@ -269,7 +269,11 @@ export class AIRuntime {
                 const project = this.controller.getSnapshot().project;
                 return (packet.continuations ?? []).every(link => link.sourceIds.every(key => {
                     const supplied = packet.scope.find(item => item.id === key) ?? packet.local.find(item => item.id === key);
-                    return project.thoughts[link.thoughtId]?.derivedFrom?.includes(key) && supplied && project.thoughts[key]?.text.slice(0, 1600) === supplied.text;
+                    return project.thoughts[link.thoughtId]?.derivedFrom?.includes(key) && supplied && project.thoughts[key]?.text.slice(0, supplied.text.length) === supplied.text;
+                })) && (packet.ancestry ?? []).every(link => link.path.every((key, index) => {
+                    if (!project.thoughts[key] || index && !project.thoughts[link.path[index - 1]]?.derivedFrom?.includes(key)) return false;
+                    const supplied = packet.scope.find(item => item.id === key) ?? packet.local.find(item => item.id === key);
+                    return !supplied || project.thoughts[key].text.slice(0, supplied.text.length) === supplied.text;
                 }));
             };
             if (!validScope() || !validContinuation()) throw new Error(t('The scope changed while thinking. Ask again with its new wording.'));
@@ -380,7 +384,7 @@ export class AIRuntime {
             case 'surface_evidence': {
                 const key = id('ghost');
                 const text = candidate.type === 'surface_evidence' ? `${candidate.outcome}: ${candidate.text}` : candidate.text;
-                const proposalAction = action === 'continue' || action === 'angle' ? action : undefined;
+                const proposalAction = action === 'continue' || action === 'angle' || action === 'ask' ? action : undefined;
                 const mode = candidate.type === 'surface_evidence' ? 'evidence' : action === 'continue' ? 'continue' : action === 'angle' ? 'branch' : 'default';
                 const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), text, mode, this.hooks.visibleIds?.(), this.hooks.measurements?.());
                 this.controller.addGhost({ id: key, text, ...point, createdAt: Date.now(), scopeIds, runId: options.runId, origin: provenance, proposalKind: 'thought' as const, ...(proposalAction ? { proposalAction } : {}) });

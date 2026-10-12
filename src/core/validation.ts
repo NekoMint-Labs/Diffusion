@@ -175,7 +175,7 @@ export function validateProject(value: unknown): ProjectState {
             if (t.generationAction === undefined) fail('causal lineage lacks generation action');
         }
         if (t.generationAction !== undefined) {
-            choices(t.generationAction, ['continue', 'angle', 'question'], 'generation action');
+            choices(t.generationAction, ['continue', 'angle', 'question', 'ask'], 'generation action');
             if (t.derivedFrom === undefined) fail('generation action lacks causal lineage');
         }
         if (t.sourceId !== undefined) {

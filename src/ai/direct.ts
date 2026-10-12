@@ -131,12 +131,13 @@ export class DirectAIProvider implements AIProvider {
         const envelope = await this.send.send(request, this.combine(signal));
         try {
             const result = readWireText(this.protocol, envelope);
-            if (result.truncated) throw new ThinkingError('malformed-provider-response', this.label);
+            if (result.truncated) throw new ThinkingError('response-truncated', this.label);
             return { value: JSON.parse(result.text), providerLabel: this.label, mock: false, model: { requested: model, effective: result.effectiveModel } };
         }
         catch (error) {
             if (error instanceof ThinkingError) throw error;
-            if (error instanceof WireOutputError && error.kind === 'refusal') throw new ThinkingError('semantic-validation-failure', this.label);
+            if (error instanceof WireOutputError && error.kind === 'incomplete') throw new ThinkingError('response-truncated', this.label);
+            if (error instanceof WireOutputError && error.kind === 'refusal') throw new ThinkingError('provider-refused', this.label);
             throw new ThinkingError('malformed-provider-response', this.label);
         }
     }
@@ -157,11 +158,14 @@ export class DirectAIProvider implements AIProvider {
         let effectiveModel: string | null;
         try {
             const result = readWireText(this.protocol, envelope);
+            if (result.truncated) throw new ThinkingError('response-truncated', this.label);
             text = result.text;
             effectiveModel = result.effectiveModel;
         }
         catch (error) {
-            if (error instanceof WireOutputError && error.kind === 'refusal') throw new ThinkingError('semantic-validation-failure', this.label);
+            if (error instanceof ThinkingError) throw error;
+            if (error instanceof WireOutputError && error.kind === 'incomplete') throw new ThinkingError('response-truncated', this.label);
+            if (error instanceof WireOutputError && error.kind === 'refusal') throw new ThinkingError('provider-refused', this.label);
             throw new ThinkingError('malformed-provider-response', this.label);
         }
         const intents = parseSemanticText(text, intent.kind);

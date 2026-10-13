@@ -110,9 +110,12 @@ export class DirectAIProvider implements AIProvider {
             }, this.protocol);
             const envelope = await this.send.send(request, this.combine(signal));
             const result = readWireText(this.protocol, envelope);
+            if (result.truncated) throw new ThinkingError('response-truncated', this.label);
             return { ok: result.text.trim().length > 0, effectiveModel: result.effectiveModel };
         }
         catch (error) {
+            if (error instanceof WireOutputError && error.kind === 'incomplete') return { ok: false, effectiveModel: null, failure: 'response-truncated' };
+            if (error instanceof WireOutputError && error.kind === 'refusal') return { ok: false, effectiveModel: null, failure: 'provider-refused' };
             return { ok: false, effectiveModel: null, failure: classifyFailure(error) };
         }
     }

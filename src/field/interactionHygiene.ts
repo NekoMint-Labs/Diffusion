@@ -4,7 +4,7 @@ import type { ScopeRect } from '../ui/scope/scopePlacement.ts';
 import { dismissGhostWithDissolve, presentSpatialTransition } from '../ui/motion/spatialGrammar.ts';
 import { correctSevereOverlap } from './spatial/collision.ts';
 import { CONTINUATION_DISTANCE, packVisibleProposals, RESULT_PREFERRED_DISTANCE } from './spatial/proposalPlacement.ts';
-import { intersects, screenToWorld, unionBounds, viewportBounds, type Bounds } from './spatial/geometry.ts';
+import { distanceBetween, intersects, screenToWorld, unionBounds, viewportBounds, type Bounds } from './spatial/geometry.ts';
 import type { GeometryCache } from './spatial/index.ts';
 import type { ProposalArrivals } from './spatial/proposalArrivals.ts';
 
@@ -90,9 +90,11 @@ export function correctMeasuredProposalBatch(controller: ProjectController, geom
     }
     for (const group of groups.values()) {
         const boxes = group.map(ghost => geometry.get(ghost.id));
-        if (boxes.some(box => !box) || boxes.every(box => contains(box!))) continue;
+        if (boxes.some(box => !box)) continue;
         const scope = unionBounds(group[0].scopeIds.filter(id => itemIds.includes(id)).map(id => geometry.get(id)).filter((box): box is Bounds => !!box && intersects(box, view)));
         if (!scope) continue;
+        // A wholly visible batch can still leave a result outside the reading neighborhood.
+        if (boxes.every(box => contains(box!) && distanceBetween(box!, scope) <= RESULT_PREFERRED_DISTANCE.max)) continue;
         const groupIds = new Set(group.map(ghost => ghost.id)), gap = 6 / camera.zoom;
         const fixed = itemIds.filter(id => !groupIds.has(id)).map(id => geometry.get(id)).filter((box): box is Bounds => !!box).map(box => ({ x: box.x - gap, y: box.y - gap, width: box.width + gap * 2, height: box.height + gap * 2 }));
         for (const rect of screenObstacles) {

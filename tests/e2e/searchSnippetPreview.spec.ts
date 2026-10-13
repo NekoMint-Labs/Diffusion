@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 import { wordhippoSnippet } from '../fixtures/wordhippoSnippet.ts';
 
 for (const [sentence, query] of [
+    ['Do not answer "Ready?" with Yes without confirmation.', 'Yes'],
+    ['不要把“你好吗？”翻译为 Hello；它是问句。', 'Hello'],
     ['Do not translate e.g. 你好 as goodbye; it means hello.', '你好'],
     ['Only if p < 0.05, translate 你好 as hello.', '你好'],
     ['不要参考版本 1.2 的错误示例把你好翻译成再见。', '你好'],

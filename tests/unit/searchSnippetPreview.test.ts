@@ -3,6 +3,15 @@ import { searchSnippetPreview } from '../../src/ui/reference/searchSnippetPrevie
 
 describe('search snippets remain short previews rather than evidence or generated answers', () => {
     it.each([
+        ['Do not answer "Ready?" with Yes without confirmation.', 'Yes'],
+        ['不要把“你好吗？”翻译为 Hello；它是问句。', 'Hello'],
+        ['Do not translate (Stop!) as permission to Proceed.', 'Proceed'],
+        ['不要将「已完成。」理解为 Approved；仍需审核。', 'Approved'],
+    ])('retains the source prefix around quoted or nested punctuation: %s', (sentence, query) => {
+        const raw = 'Navigation '.repeat(20) + sentence;
+        expect(searchSnippetPreview(raw, query)).toBe(raw);
+    });
+    it.each([
         ['Do not send reports to Prof. Smith without consent.', 'Smith'],
         ['Only send the request to Dept. Alpha after approval.', 'Alpha'],
         ['Do not use the result from ArbitraryAbbrev. Smith without checking.', 'Smith'],

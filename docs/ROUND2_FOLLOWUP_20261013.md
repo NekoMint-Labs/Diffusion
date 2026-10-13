@@ -1,5 +1,11 @@
 # C follow-up: reviews, search preview and navigation
 
+## Quoted-punctuation follow-up after a63e1d1
+
+A/B independently found that question marks inside quoted wording still removed negation. C reproduced four failures covering English/Chinese questions, parentheses and corner-quoted full stops, then removed the remaining query-directed punctuation-boundary scan entirely. Ordinary previews now retain the bounded original prefix. Explicit dictionary-heading/table handling, 360-code-point ordinary excerpt limit, original expansion and raw assessment passages are unchanged. This accepts navigation noise rather than guessing where substantive context begins; no provider/model call is added.
+
+All 649 unit tests passed after the repair. Two new mounted English/Chinese quoted-question cases require the complete source and candidate-only permissions alongside the existing abbreviation/dictionary/table/raw-passage tests. Application typecheck and production/browser validation are recorded in the PR handoff. The previous a63e1d1 green gates remain historical and do not cover this new source. #63 stays Draft pending repaired-head checks/review; the existing 0.3.14 installer is unchanged. Main's later #54/#55 squash integration is separate from this focused presentation repair.
+
 ## C response to the 45fc435 review
 
 B's [current review](https://github.com/NekoMint-Labs/Diffusion/pull/63#pullrequestreview-5503151584) found two additional product defects and two fixture problems. C reproduced Prof./Dept./an arbitrary long abbreviation as three failing unit cases, and the first-field tutorial intercepting the ordinary pointer Return click until the unchanged 30s timeout. The original remote E2E run [38390888034](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38390888034) failed only the obsolete automatic-Find-return assertion; that failure remains historical evidence.

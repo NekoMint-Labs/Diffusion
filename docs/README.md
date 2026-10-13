@@ -69,6 +69,8 @@ These records do not establish a new product contract or completed native accept
 
 | Document | Status |
 |---|---|
+| [ROUND2_REVIEW_20261013.md](ROUND2_REVIEW_20261013.md) | Independent A/documentation reviews, transport confirmation, B receipt finding and C integration inputs. |
+| [ISSUE49_NAVIGATION_PROPOSAL.md](ISSUE49_NAVIGATION_PROPOSAL.md) | Shared compact-surface rules confirmed; detailed #49 reveal/return behavior proposed, not approved. |
 | [DESKTOP_REVIEW_0312.md](DESKTOP_REVIEW_0312.md) | Draft #63 combined candidate: implemented repairs, exact integration inputs, checks and remaining acceptance work. |
 | [WEB_ANSWER_PROPOSAL.md](WEB_ANSWER_PROPOSAL.md) | Proposed web-answer flow and search-source alternatives; not implemented or approved. |
 

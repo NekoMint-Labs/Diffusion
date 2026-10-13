@@ -1,5 +1,6 @@
+import { insideSubmenuTravel } from './submenuTravel.ts';
 import type React from 'react';
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion, useIsPresent, useReducedMotion } from 'motion/react';
 import { Menu } from '@base-ui/react/menu';
 import { t } from '../../shared/i18n.ts';
@@ -31,6 +32,20 @@ export function CommandMenu({ anchor, point, rows, moreRows = [], scope, note, p
     const [pinned, setPinned] = useState(false);
     const moreButton = useRef<HTMLElement | null>(null);
     const secondaryPopup = useRef<HTMLDivElement | null>(null);
+    const pointer = useRef<Point | null>(null);
+    const inTravel = (point: Point | null) => !!point && !!moreButton.current && !!secondaryPopup.current
+        && insideSubmenuTravel(point, moreButton.current.getBoundingClientRect(), secondaryPopup.current.getBoundingClientRect());
+    useEffect(() => {
+        if (!secondaryOpen || pinned) return;
+        let closeTimer: ReturnType<typeof setTimeout> | undefined;
+        const move = (event: MouseEvent) => {
+            pointer.current = { x: event.clientX, y: event.clientY };
+            if (inTravel(pointer.current)) { clearTimeout(closeTimer); closeTimer = undefined; }
+            else if (closeTimer === undefined) closeTimer = setTimeout(() => setSecondaryOpen(false), MORE_CLOSE_DELAY);
+        };
+        document.addEventListener('mousemove', move, true);
+        return () => { document.removeEventListener('mousemove', move, true); clearTimeout(closeTimer); };
+    }, [secondaryOpen, pinned]);
     useLayoutEffect(() => {
         if (!present) return;
         setSecondaryOpen(false);
@@ -110,7 +125,11 @@ export function CommandMenu({ anchor, point, rows, moreRows = [], scope, note, p
                                 <span className="command-menu-copy"><span>{row.label}</span>{row.description && <small>{row.description}</small>}</span>{row.hint && <kbd aria-hidden="true">{row.hint}</kbd>}
                             </Menu.Item>)}
                             {moreRows.length > 0 && <Menu.SubmenuRoot open={secondaryOpen} onOpenChange={(open, details) => {
-                                if (!open && pinned && String(details.reason).includes('hover')) { details.cancel(); return; }
+                                if (!open && String(details.reason).includes('hover')) {
+                                    const event = details.event as MouseEvent;
+                                    const point = pointer.current ?? (typeof event.clientX === 'number' ? { x: event.clientX, y: event.clientY } : null);
+                                    if (pinned || inTravel(point)) { details.cancel(); return; }
+                                }
                                 setSecondaryOpen(open); if (!open) setPinned(false);
                             }}>
                                 <Menu.SubmenuTrigger ref={moreButton} className="command-menu-item command-menu-more" data-command="more" label={t('More')} delay={MORE_HOVER_DELAY} closeDelay={MORE_CLOSE_DELAY} onClick={event => { setPinned(true); setSecondaryOpen(true); if (event.detail === 0) requestAnimationFrame(() => secondaryPopup.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus()); }}>

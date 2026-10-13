@@ -2,15 +2,34 @@
 
 Diffusion is a quiet thinking medium for ideas before commitment. This file describes the current checkout: what works, which subsystem owns it, what was freshly verified, and what remains incomplete. It is not a changelog. Historical phase reports and prior verification records remain under [`docs/history/`](docs/history/README.md).
 
-## Current main checkpoint — October 12, 2026
+## Current main checkpoint - October 13, 2026
 
-The integrated main baseline is `edf56d59a8fe35d1c5d8446a223f8d6aa54fc357`, the merge of [PR #18](https://github.com/NekoMint-Labs/Diffusion/pull/18). PR #17 and PR #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51), including #42–#45. Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
+The integrated main baseline is `337fcc46932fea3018a348118246e39e8a8e8f32`, following the merges of [PR #57](https://github.com/NekoMint-Labs/Diffusion/pull/57) (proposal locality) and [PR #64](https://github.com/NekoMint-Labs/Diffusion/pull/64) (suggestion-review IME Escape and focus return). PR #18, #17 and #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51), including #42–#45. Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
 
 Dated records below preserve their original revision, failures, validation scope and then-current PR/Issue status. Earlier instructions to keep #18 Draft or #10 open are historical checkpoint statements, superseded by the merge and milestone closure above. They are not current work instructions. New Round 2 PR evidence belongs to each PR head; it does not retroactively qualify a historical installer or establish integrated-main/native acceptance.
 
-## Round 2 review checkpoint (2026-10-12)
+## Round 2 review update (2026-10-13)
 
-Main remains the baseline above. A-owned PRs #52-#56 are Ready for independent review,
+A's #52-#55 now include main `337fcc46` through normal merges. The #52 source-review
+follow-up rejects non-success Gemini finish reasons even with parseable JSON and makes
+connection probes reject declared truncation/refusal. Unknown, missing and unsupported
+Gemini finish reasons are unreadable responses, not assumed refusal. The 38 new regression
+cases failed before the correction. Local #52 validation passed 556 unit and 289 offline
+tests, application/Core typechecking and production build. Current-head remote results
+are maintained in the PR descriptions; October 12 checks below apply to their recorded heads.
+
+C's #63 `7ff0e09` is a newer Draft integration input that incorporates earlier A/B snapshots
+and publishes a Windows prerelease; it is not reviewed main or installed/live acceptance.
+B's #65 `94db15a` is a Draft compact-review implementation on current main; #48's product
+direction is approved, while independent review and C's #49 shared/navigation review remain
+pending. The #64 pre-merge browser failure and successful failed-job rerun are retained in
+the [integration handoff](https://github.com/NekoMint-Labs/Diffusion/pull/65#issuecomment-6136299940).
+#52 still needs C's shared-transport review; #56 needs independent documentation review.
+#11/#12 remain open.
+
+## Recorded Round 2 review checkpoint (2026-10-12)
+
+At this checkpoint main was `edf56d59`. A-owned PRs #52-#56 were Ready for independent review,
 not integrated deliveries. The #42 follow-up at `a022d403c14ba45133446e947223b1d219cc2139`
 normalizes timeout and stream interruptions across browser/native AI transports and
 preserves explicit caller cancellation. It propagates through #53 -> #54 -> #55 without

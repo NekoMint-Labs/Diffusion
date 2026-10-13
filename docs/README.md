@@ -9,7 +9,7 @@ a current document may be cited as a contract. Material under [`history/`](histo
 current document. When a current document and the code disagree, stop and resolve the conflict
 explicitly rather than assuming one of them is right.
 
-**Current checkpoint (October 12, 2026):** PR #18 is merged and #10 is closed as its delivered milestone. The [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51) owns the new queue. #11/#12 remain open for Field and installed-product acceptance. Start with [STATUS.md](../STATUS.md) and [ACCEPTANCE_MAP.md](ACCEPTANCE_MAP.md); their dated records preserve original evidence and then-current statuses, not new acceptance claims.
+**Current checkpoint (October 13, 2026):** main is `337fcc46`, including merged #18, #57 and #64; #10 is closed as its delivered milestone. The [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51) owns the new queue. #11/#12 remain open for Field and installed-product acceptance. Start with [STATUS.md](../STATUS.md) and [ACCEPTANCE_MAP.md](ACCEPTANCE_MAP.md); their dated records preserve original evidence and then-current statuses, not new acceptance claims.
 
 The live Round 2 review checkpoint and the limited requester trial of candidate `d97eb4be`
 are recorded in [STATUS.md](../STATUS.md); use that entry before relying on older history.

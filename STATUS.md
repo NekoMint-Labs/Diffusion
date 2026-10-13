@@ -27,9 +27,17 @@ A independently approved #60 `f395e95` and #61 `edc8778`; applying both onto cur
 main passed eight production-browser cases. C's Draft #63 `2c82f50` passed 21 independently
 run Verify/compact/feedback cases and 75 focused unit tests, but A requested changes:
 mixed navigation plus meaningful sentence prefixes can lose negation in search previews.
-B's Draft #65 `94db15a` also requires the existing C Keep-receipt repair `53403ad` for
-suggestions arriving while the review panel is already open. No PR was merged by these
+B's Draft #65 advanced from `94db15a` to `4c15485`, adopting C's Keep-receipt repair
+`53403ad` for suggestions arriving while the review panel is already open. A independently
+ran 23 compact/feedback browser cases on the new head and updated its review to Approval;
+C's refreshed formal review remains requested. No PR was merged by these
 reviews. #49's single return point remains proposed. #11/#12 remain open.
+
+Post-publication readback: all six new-head CI/E2E checks passed for #53 `b1f1596`,
+#54 `87d9fdb` and #55 `8a58e96`. The first #54/#55 workflow groups were superseded/cancelled
+by the sequential upstream updates; their aggregate gates are recorded as failed. The
+subsequent complete runs on these same final heads passed, not a retry of a reproduced
+test failure. New-head independent review remains separate from these automated results.
 
 ## Recorded earlier Round 2 review update (2026-10-13)
 

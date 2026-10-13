@@ -10,8 +10,9 @@ Dated records below preserve their original revision, failures, validation scope
 
 Round 2 PR #52 is merged. #53-#55 were restacked onto this main and remain Ready,
 requiring refreshed independent review and new-head checks; #56 is independent documentation.
-A approved #60/#61 after current-main compatibility testing. Draft #63/#65 require changes
-for search-preview meaning preservation and late-arrival Keep receipts respectively.
+A approved #60/#61 after current-main compatibility testing. Draft #63 requires changes
+for search-preview meaning preservation. #65 `4c15485` incorporates the late-arrival Keep
+receipt repair and has A's updated approval; C's refreshed review remains requested.
 These review outcomes are not final installed/live acceptance.
 The October 12 shared-transport validation and the limited requester trial of candidate
 `d97eb4be` are recorded in [STATUS.md](../STATUS.md); neither establishes installed-product

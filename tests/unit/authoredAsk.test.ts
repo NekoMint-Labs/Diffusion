@@ -2,10 +2,25 @@ import { describe, expect, it, vi } from 'vitest';
 import { intentAllowedForAction, parseSemantics, semanticInstructions } from '../../src/ai/prompt.ts';
 import { AIRuntime } from '../../src/ai/runtime.ts';
 import { MockAIProvider } from '../../src/ai/mock.ts';
+import { compileContext } from '../../src/ai/context.ts';
 import { ProjectController } from '../../src/core/controller.ts';
 import { createProject, makeThought } from '../../src/core/model.ts';
 
 describe('authored Ask answer contract (#43)', () => {
+    it('limits the Demo earlier recall shortcut to an explicit recall request', async () => {
+        const project = createProject('ask-recall');
+        project.thoughts.a = makeThought('Plan three practice evenings', { x: 0, y: 0 }, 1, 'a');
+        const packet = compileContext(project, ['a']);
+        packet.retrieved.thoughts = [{ id: 'earlier', text: 'An earlier practice plan', kind: 'thought' }];
+        const provider = new MockAIProvider();
+        const answer = await provider.respond(packet, { kind: 'ask', text: 'How should I improve the earlier practice plan?', requestId: 'answer' });
+        expect(answer.intents).toEqual([expect.objectContaining({ type: 'respond_in_field' })]);
+        const recall = await provider.respond(packet, { kind: 'ask', text: ' earlier ', requestId: 'recall' });
+        expect(recall.intents).toEqual([{ type: 'request_recall', thoughtId: 'earlier' }]);
+        packet.retrieved.thoughts = [];
+        const missing = await provider.respond(packet, { kind: 'ask', text: 'earlier', requestId: 'missing' });
+        expect(missing.intents).toEqual([expect.objectContaining({ type: 'respond_in_field' })]);
+    });
     it('accepts one or several substantive answer cards without padding the requested maximum', () => {
         const one = [{ type: 'respond_in_field', text: 'Use the first evening for practice.' }];
         expect(parseSemantics({ intents: one }, 'ask')).toEqual(one);

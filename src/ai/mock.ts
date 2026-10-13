@@ -51,7 +51,7 @@ export class MockAIProvider implements AIProvider {
                             : t('The background question asks whether context survives; the structure thought makes that context a condition for showing structure.');
             intents = [{ type: 'surface_relation', a: first.id, b: second.id, kind: visualApplication ? 'bridge' : 'gap', label, explanation }];
         }
-        else if (intent.kind === 'ask' && packet.retrieved.thoughts.some(thought => thought.id === 'earlier'))
+        else if (intent.kind === 'ask' && intent.text.trim().toLowerCase() === 'earlier' && packet.retrieved.thoughts.some(thought => thought.id === 'earlier'))
             intents = [{ type: 'request_recall', thoughtId: 'earlier' }];
         else if (intent.kind === 'ask') {
             // An arbitrary authored question needs a live model. Keep the Demo honest

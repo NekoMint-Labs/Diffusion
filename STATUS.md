@@ -4,11 +4,34 @@ Diffusion is a quiet thinking medium for ideas before commitment. This file desc
 
 ## Current main checkpoint - October 13, 2026
 
-The integrated main baseline is `337fcc46932fea3018a348118246e39e8a8e8f32`, following the merges of [PR #57](https://github.com/NekoMint-Labs/Diffusion/pull/57) (proposal locality) and [PR #64](https://github.com/NekoMint-Labs/Diffusion/pull/64) (suggestion-review IME Escape and focus return). PR #18, #17 and #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51), including #42–#45. Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
+The integrated main baseline is `12cc0fe36d2668d20ce98498341c52b0118bd965`, including [PR #57](https://github.com/NekoMint-Labs/Diffusion/pull/57) (proposal locality), [PR #64](https://github.com/NekoMint-Labs/Diffusion/pull/64) (suggestion-review IME Escape and focus return), [PR #66](https://github.com/NekoMint-Labs/Diffusion/pull/66) (complete-arrival drag test precondition) and [PR #52](https://github.com/NekoMint-Labs/Diffusion/pull/52) (provider failure/completion classification). PR #18, #17 and #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51), including #42–#45. Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
 
 Dated records below preserve their original revision, failures, validation scope and then-current PR/Issue status. Earlier instructions to keep #18 Draft or #10 open are historical checkpoint statements, superseded by the merge and milestone closure above. They are not current work instructions. New Round 2 PR evidence belongs to each PR head; it does not retroactively qualify a historical installer or establish integrated-main/native acceptance.
 
-## Round 2 review update (2026-10-13)
+## Current Round 2 review and restack (2026-10-13)
+
+#52 received C's independent shared-transport approval and was merged. After its squash,
+A replayed the feature-only sequence: #53 `b1f1596` on main `12cc0fe`, #54 `87d9fdb`
+on new #53, and #55 `8a58e96` on new #54. Incremental scopes are 11/6/9 files;
+replayed range-diffs are unchanged and exact force-with-lease protected publication.
+The #66 test precondition is preserved. A small #43 correction requires explicit `earlier`
+input before Demo can choose its authored recall shortcut; ordinary Ask retains its answer path.
+
+The exact restacked A sequence passed 577 unit and 289 offline tests, application/Core
+types, locale/source-size checks and production build. Six focused production-browser
+cases passed with one worker, zero retries/skips. Full new-head CI/E2E and refreshed review
+are tracked in each PR, separately from old-head approvals/green runs. Historical live
+samples and the requester's October 12 trial retain their recorded versions.
+
+A independently approved #60 `f395e95` and #61 `edc8778`; applying both onto current
+main passed eight production-browser cases. C's Draft #63 `2c82f50` passed 21 independently
+run Verify/compact/feedback cases and 75 focused unit tests, but A requested changes:
+mixed navigation plus meaningful sentence prefixes can lose negation in search previews.
+B's Draft #65 `94db15a` also requires the existing C Keep-receipt repair `53403ad` for
+suggestions arriving while the review panel is already open. No PR was merged by these
+reviews. #49's single return point remains proposed. #11/#12 remain open.
+
+## Recorded earlier Round 2 review update (2026-10-13)
 
 A's #52-#55 now include main `337fcc46` through normal merges. The #52 source-review
 follow-up rejects non-success Gemini finish reasons even with parseable JSON and makes

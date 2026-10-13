@@ -4,11 +4,15 @@ This map separates implemented contracts from executed evidence and physical/ope
 
 ## Current main checkpoint - October 13, 2026
 
-The integrated main baseline is `337fcc46932fea3018a348118246e39e8a8e8f32`, following the merges of [PR #57](https://github.com/NekoMint-Labs/Diffusion/pull/57) and [PR #64](https://github.com/NekoMint-Labs/Diffusion/pull/64). PR #18, #17 and #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51), including #42–#45. Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
+The integrated main baseline is `12cc0fe36d2668d20ce98498341c52b0118bd965`, following the merges of [PR #57](https://github.com/NekoMint-Labs/Diffusion/pull/57), [PR #64](https://github.com/NekoMint-Labs/Diffusion/pull/64), [PR #66](https://github.com/NekoMint-Labs/Diffusion/pull/66) and [PR #52](https://github.com/NekoMint-Labs/Diffusion/pull/52). PR #18, #17 and #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51), including #42–#45. Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
 
 Dated records below preserve their original revision, failures, validation scope and then-current PR/Issue status. Earlier instructions to keep #18 Draft or #10 open are historical checkpoint statements, superseded by the merge and milestone closure above. They are not current work instructions. New Round 2 PR evidence belongs to each PR head; it does not retroactively qualify a historical installer or establish integrated-main/native acceptance.
 
-Round 2 PRs #52-#56 are Ready but still require independent review and integration.
+Round 2 PR #52 is merged. #53-#55 were restacked onto this main and remain Ready,
+requiring refreshed independent review and new-head checks; #56 is independent documentation.
+A approved #60/#61 after current-main compatibility testing. Draft #63/#65 require changes
+for search-preview meaning preservation and late-arrival Keep receipts respectively.
+These review outcomes are not final installed/live acceptance.
 The October 12 shared-transport validation and the limited requester trial of candidate
 `d97eb4be` are recorded in [STATUS.md](../STATUS.md); neither establishes installed-product
 acceptance. The October 13 review queue, including A's completion/probe correction,

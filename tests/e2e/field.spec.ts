@@ -270,8 +270,10 @@ test('continue-thinking proposal does not inherit drag ownership from its source
     const ghost = page.locator(`[data-thought-id="${ghostId}"]`);
     expect((await project(page)).thoughts[ghostId]).toBeUndefined();
 
-    // Pending arrivals get one coalesced collision correction after text/source measurement.
-    // Compare ownership only after that arrival geometry has settled; drag assertions remain exact.
+    // Demo reveals three proposals across frames. A stable first card can still be repacked
+    // when the third arrives, so finish the batch before settling its measured geometry.
+    await expect(page.locator('.thought.ghost')).toHaveCount(3);
+    await expect(page.getByTestId('operation-feedback')).not.toHaveAttribute('data-phase', 'pending');
     let lastBounds = '', stableSince = Date.now();
     await expect.poll(async () => { const bounds = JSON.stringify(await ghost.boundingBox()); if (bounds !== lastBounds) { lastBounds = bounds; stableSince = Date.now(); } return Date.now() - stableSince; }).toBeGreaterThan(150);
     const anchorStart = await anchorThought.boundingBox();

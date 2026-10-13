@@ -308,3 +308,29 @@ describe.each([true, false])('continuation around an occupied lineage (viewport:
         expect(JSON.stringify(project)).toBe(before);
     });
 });
+
+describe('local arrival before distant breathing room', () => {
+    it.each([1000, 1600])('prefers a tight local slot over a distant or culled arrival in a %s-wide view', width => {
+        const project = createProject('tight-local');
+        const wording = '先保留这个观察，再用可复现的小实验判断它是否能推进当前问题。'.repeat(4);
+        const measured = {
+            parent: { x: 0, y: 280, width: 140, height: 190 },
+            source: { x: 500, y: 300, width: 328, height: 138 },
+            top: { x: 140, y: 0, width: 860, height: 280 },
+            bottom: { x: 140, y: 470, width: 860, height: 250 },
+            right: { x: 850, y: 280, width: 150, height: 190 },
+        };
+        for (const [id, bounds] of Object.entries(measured)) project.thoughts[id] = makeThought(id, bounds, 1, id);
+        project.thoughts.source.derivedFrom = ['parent'];
+        const before = JSON.stringify(project);
+        const point = placePossibility(project, emptySession(), { x: width / 2, y: 360 }, 0, ['source'], { x: 0, y: 0, width, height: 720 }, wording, 'continue', new Set(Object.keys(measured)), measured);
+        const box = { ...point, width: 328, height: 138 };
+        expect(distanceBetween(box, measured.source)).toBeLessThanOrEqual(128);
+        expect(box.x).toBeGreaterThanOrEqual(0);
+        expect(box.y).toBeGreaterThanOrEqual(0);
+        expect(box.x + box.width).toBeLessThanOrEqual(width);
+        expect(box.y + box.height + 64).toBeLessThanOrEqual(720);
+        for (const occupied of Object.values(measured)) expect(overlaps(box, occupied)).toBe(false);
+        expect(JSON.stringify(project)).toBe(before);
+    });
+});

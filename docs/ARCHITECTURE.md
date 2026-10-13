@@ -87,13 +87,17 @@ Messages are response history, not canonical Field content. Bring from a respons
 
 Explicit intent compiles a bounded packet -> replaceable provider -> semantic intent validation -> Core permission gate -> session candidates/permitted presentation. Canonical state is not handed to a model as a mutable object.
 
-For explicit Field selections, the context compiler may supply up to four direct durable lineage
-sources as background, within the existing local/text limits. Optional request-only
-`continuations` maps selected IDs to the supplied source IDs. Selection remains primary; lineage
-is provenance, not a confirmed semantic relation or endorsement. No ancestors are recursively
-loaded, no Ghost is included, and Thread snapshots do not gain live lineage. A changed/deleted
-supplied source or removed lineage invalidates the remaining in-flight result. This adds no
-canonical fields or automatic provider calls.
+For explicit Field selections, the context compiler follows durable `derivedFrom` lineage:
+up to four direct sources and two ancestors, bounded to four hops, 32 visited subject/node
+pairs and four considered parents per node. Background stays within six thoughts and 6400
+characters, with at most 800 characters per ancestor. Request-only `continuations` and
+`ancestry` record supplied causal paths; selection stays primary and nearer authored
+redirection takes precedence over older goals. Lineage is provenance, not agreement or
+evidence. Visual organization, unrelated siblings and Ghosts are excluded; Thread snapshots
+do not gain live lineage. Changed supplied wording (including appended text within its
+budget), deleted sources or removed causal links invalidate remaining in-flight results.
+Runtime reapplies the request's context rules rather than comparing only the old prefix;
+unchanged truncated text stays valid. This adds no canonical fields or model calls.
 
 Phase 3A gives unscoped authored input a separate structured-ingestion contract. The exact text is first persisted as an `InputRecord`; extraction then returns bounded Thought/Question proposals whose exact `sourceQuotes` are resolved deterministically into ranges over that record, followed by a separate relation-inference pass over validated proposal IDs. Those results remain session `Ghost` / tentative `Phenomenon` state until the person claims, edits, keeps or confirms them. A failed/disabled ingestion falls back to one canonical Thought containing the authored text, while the raw input remains durable. This path reuses provider transport but is deliberately not squeezed through `SemanticIntent`.
 

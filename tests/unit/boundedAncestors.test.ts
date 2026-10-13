@@ -81,6 +81,43 @@ describe('bounded ancestor context', () => {
         for (const path of [['selected', 'second', 'selected'], ['selected', 'sibling', 'root'], ['other', 'second', 'root'], ['selected', 'second', 'missing'], ['selected', 'second', 'first', 'root', 'n1', 'n2']])
             expect(packetSchema.safeParse({ ...packet, ancestry: [{ thoughtId: 'selected', path }] }).success).toBe(false);
     });
+    it.each(['second', 'root'])('discards late answers after appending a goal to supplied %s', async key => {
+        const controller = new ProjectController(chain(), async () => {});
+        const provider = new MockAIProvider();
+        let finish!: (value: AIResponse) => void, entered!: () => void;
+        const called = new Promise<void>(resolve => { entered = resolve; });
+        vi.spyOn(provider, 'respond').mockImplementation(async () => { entered(); return new Promise(resolve => { finish = resolve; }); });
+        const runtime = new AIRuntime(controller, async () => provider, { pending: () => {}, notice: () => {}, route: () => {}, anchor: () => ({ x: 500, y: 300 }) });
+        runtimes.push(runtime);
+        const pending = runtime.run('continue', 'Continue', ['selected']); await called;
+        const original = controller.getSnapshot().project.thoughts[key].text;
+        const redirection = ' Change of goal: do not choose new camera positions; compare offline reconstruction only.';
+        controller.dispatch({ type: 'thought.edit', id: key, text: original + redirection });
+        expect(compileContext(controller.getSnapshot().project, ['selected']).local.find(item => item.id === key)?.text).toContain(redirection);
+        finish({ providerLabel: 'Fixture', mock: true, intents: [{ type: 'surface_possibility', text: 'An obsolete suggestion' }] });
+        expect(await pending).toMatchObject({ status: 'failed', emitted: 0 });
+        expect(Object.keys(controller.getSnapshot().session.ghosts)).toHaveLength(0);
+    });
+    it.each([
+        { key: 'second', appendOutsideBudget: false }, { key: 'root', appendOutsideBudget: false },
+        { key: 'second', appendOutsideBudget: true }, { key: 'root', appendOutsideBudget: true },
+    ])('accepts the same truncated context from $key (outside-budget append: $appendOutsideBudget)', async ({ key, appendOutsideBudget }) => {
+        const project = chain();
+        project.thoughts[key].text = 'A long supplied context. '.repeat(200);
+        const controller = new ProjectController(project, async () => {});
+        const provider = new MockAIProvider();
+        let finish!: (value: AIResponse) => void, entered!: () => void;
+        const called = new Promise<void>(resolve => { entered = resolve; });
+        vi.spyOn(provider, 'respond').mockImplementation(async () => { entered(); return new Promise(resolve => { finish = resolve; }); });
+        const runtime = new AIRuntime(controller, async () => provider, { pending: () => {}, notice: () => {}, route: () => {}, anchor: () => ({ x: 500, y: 300 }) });
+        runtimes.push(runtime);
+        const pending = runtime.run('continue', 'Continue', ['selected']); await called;
+        expect(compileContext(project, ['selected']).local.find(item => item.id === key)?.text.length).toBe(key === 'root' ? 800 : 1600);
+        if (appendOutsideBudget) controller.dispatch({ type: 'thought.edit', id: key, text: project.thoughts[key].text + ' An unsupplied suffix.' });
+        finish({ providerLabel: 'Fixture', mock: true, intents: [{ type: 'surface_possibility', text: 'A bounded suggestion for the unchanged context' }] });
+        expect(await pending).toMatchObject({ status: 'completed', emitted: 1 });
+        expect(Object.keys(controller.getSnapshot().session.ghosts)).toHaveLength(1);
+    });
     it.each(['edit', 'delete', 'unlink'] as const)('discards late answers after an ancestor changes: %s', async change => {
         const controller = new ProjectController(chain(), async () => {});
         const provider = new MockAIProvider();

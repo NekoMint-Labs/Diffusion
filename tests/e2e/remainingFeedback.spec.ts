@@ -154,7 +154,7 @@ for (const initialZoom of [1, .4, .08]) {
             await page.getByTestId('action-preview-run').click();
             const ghost = page.locator('article.ghost');
             const toggle = page.getByTestId('suggestion-review-toggle');
-            await expect.poll(async () => await ghost.count() + await toggle.count()).toBe(1);
+            await expect.poll(async () => await ghost.count() > 0 || await toggle.count() > 0).toBe(true);
             const onCanvas = await ghost.count() === 1;
             if (onCanvas) {
                 const tier = await page.getByTestId('field').getAttribute('data-level');
@@ -168,24 +168,29 @@ for (const initialZoom of [1, .4, .08]) {
                 expect(boxes.width).toBeLessThanOrEqual(335); expect(boxes.height).toBeLessThanOrEqual(245); expect(boxes.font).toBeGreaterThanOrEqual(10);
                 if (tier === 'local') { await expect(ghost.locator('.hierarchy-parent')).toBeVisible(); await expect(ghost.locator('.ghost-label')).toContainText('尚未保留'); }
                 else { await expect(ghost.locator('.hierarchy-parent')).toHaveCount(0); await expect(ghost.locator('.proposal-reject')).toHaveCount(0); }
-                await ghost.click();
-            } else {
-                await toggle.click(); await expect(page.getByTestId('suggestion-review')).toContainText(texts[round]);
-                await expect(ghost).toHaveCount(0);
             }
+            const throughReview = await toggle.count() === 1;
+            if (throughReview) {
+                await toggle.click();
+                const panel = page.getByTestId('suggestion-review-panel');
+                await expect(panel.locator('section')).toHaveCount(1); await expect(panel).toContainText(texts[round]);
+                if (!onCanvas) await expect(ghost).toHaveCount(0);
+            } else { await expect(ghost).toHaveCount(1); await ghost.click(); }
+            expect(await page.evaluate(() => new Set([...document.querySelectorAll<HTMLElement>('article.ghost')].map(el => el.dataset.thoughtId).concat([...document.querySelectorAll<HTMLElement>('[data-suggestion-id]')].map(el => el.dataset.suggestionId))).size)).toBe(1);
             await page.screenshot({ path: info.outputPath(`generation-${round}.png`) });
             for (const [id, value] of Object.entries(roots)) expect((await readProject(page)).thoughts[id]).toEqual(value);
             if (round === 0) {
-                if (onCanvas) await page.getByTestId('scope-hub').getByRole('button', { name: '留下', exact: true }).click();
+                if (!throughReview) await page.getByTestId('scope-hub').getByRole('button', { name: '留下', exact: true }).click();
                 else await page.getByTestId('suggestion-keep').click();
                 await expect.poll(async () => Object.keys((await readProject(page)).thoughts).length).toBe(2);
+                if (throughReview) { await expect(page.getByTestId('suggestion-review-panel').locator('section')).toHaveAttribute('data-kept', 'true'); await page.getByTestId('suggestion-review-close').click(); }
                 // New actions use a visible scope; the kept child stays folded at Atlas.
                 await root.click();
             } else {
-                if (onCanvas) {
+                if (!throughReview) {
                     await ghost.click({ button: 'right' });
                     await page.getByTestId('thought-menu').locator('[data-command="ignore"]').click();
-                } else await page.getByTestId('suggestion-ignore').click();
+                } else { await page.getByTestId('suggestion-ignore').click(); await expect(page.getByTestId('suggestion-review-panel').locator('section')).toHaveCount(0); await page.getByTestId('suggestion-review-close').click(); }
                 await expect(ghost).toHaveCount(0); await expect(toggle).toHaveCount(0);
                 expect(Object.keys((await readProject(page)).thoughts)).toHaveLength(2);
             }

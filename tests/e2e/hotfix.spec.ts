@@ -176,9 +176,17 @@ test('a compound paragraph becomes several manipulable proposals', async ({ page
         { text: '我不确定三年研究生值不值', sourceQuotes: ['我也不知道三年到底值不值'] },
     ] }));
     const ghosts = page.locator('article.thought.ghost'), review = page.getByTestId('suggestion-review-toggle');
-    await expect.poll(async () => await ghosts.count() + (await review.count() ? Number((await review.innerText()).match(/\d+/)?.[0] ?? 0) : 0), { timeout: 15000 }).toBe(3);
+    await expect.poll(async () => await ghosts.count() > 0 || await review.count() > 0, { timeout: 15000 }).toBe(true);
     if (await review.count()) await review.click();
-    const represented = [...await ghosts.locator('.thought-preview').allTextContents(), ...await page.getByTestId('suggestion-review').locator('section > p').allTextContents()];
+    // A clipped mounted proposal can also have a reading entry. Count identities, not views.
+    const representedEntries = () => page.evaluate(() => {
+        const entries = new Map<string, string>();
+        for (const ghost of document.querySelectorAll<HTMLElement>('article.thought.ghost')) entries.set(ghost.dataset.thoughtId!, ghost.querySelector('.thought-preview')?.textContent ?? '');
+        for (const section of document.querySelectorAll<HTMLElement>('[data-suggestion-id]')) entries.set(section.dataset.suggestionId!, section.querySelector('p')?.textContent ?? '');
+        return [...entries];
+    });
+    await expect.poll(async () => (await representedEntries()).length, { timeout: 15000 }).toBe(3);
+    const represented = (await representedEntries()).map(([, text]) => text);
     expect(represented.sort()).toEqual(['我还没决定要不要考研', '读研可能让我有更多时间探索', '我不确定三年研究生值不值'].sort());
     // The paragraph is not collapsed into one committed Thought: each part stays its own proposal.
     await expect(page.locator('article.thought:not(.ghost)').filter({ hasText: paragraph })).toHaveCount(0);

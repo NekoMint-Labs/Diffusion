@@ -1,7 +1,7 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, type RefObject } from 'react';
 import type { Camera, Ghost, Thought, ThinkingOperation } from '../../core/model.ts';
-import { SuggestionReview } from './SuggestionReview.tsx';
-import { RootReview } from './RootReview.tsx';
+import { FieldReview, type FieldReviewHandle } from './FieldReview.tsx';
+import { placeFieldReview, unreadableSuggestionIds } from './fieldReviewPlacement.ts';
 import { ConnectionKey } from './ConnectionKey.tsx';
 import type { GeometryCache } from '../../field/spatial/index.ts';
 import { intersects, worldToScreen, type Bounds } from '../../field/spatial/geometry.ts';
@@ -45,7 +45,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
     const scopeElement = useRef<HTMLDivElement>(null);
     const operationElement = useRef<HTMLDivElement>(null);
     const reviewElement = useRef<HTMLDivElement>(null);
-    const rootsElement = useRef<HTMLDivElement>(null);
+    const review = useRef<FieldReviewHandle>(null);
     const linesElement = useRef<HTMLDivElement>(null);
     const dockElement = useRef<HTMLDivElement>(null);
     const current = useRef({ ...props, displayOperation });
@@ -74,8 +74,6 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         const controls = [
             { element: scopeElement.current, ids: state.selection.filter(id => state.visibleIds.includes(id)), key: `scope:${state.selection.join(' ')}`, forceDock: false },
             { element: operationElement.current, ids: state.displayOperation?.scopeIds ?? [], key: `operation:${state.displayOperation?.id}`, forceDock: state.dragging },
-            { element: reviewElement.current, ids: [], key: 'suggestions', forceDock: true },
-            { element: rootsElement.current, ids: [], key: 'roots', forceDock: true },
         ].filter(item => item.element && state.enabled);
         const localRows = [...field.querySelectorAll<HTMLElement>('.thought:not(.ghost) .thought-local-actions')];
         const liveKeys = new Set([...controls.map(item => item.key), ...localRows.map(row => `local:${row.closest<HTMLElement>('[data-thought-id]')?.dataset.thoughtId}`)]);
@@ -164,8 +162,6 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         if (!state.enabled) {
             if (scopeElement.current) scopeElement.current.style.display = 'none';
             if (operationElement.current) operationElement.current.style.display = 'none';
-            if (reviewElement.current) reviewElement.current.style.display = 'none';
-            if (rootsElement.current) rootsElement.current.style.display = 'none';
             if (linesElement.current) linesElement.current.style.display = 'none';
         }
         // One-time coaching shares the reserved feedback lane instead of covering the Field.
@@ -200,6 +196,26 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         }
         if (dockElement.current) {
             Object.assign(dockElement.current.style, { display: waiting.length ? 'block' : 'none', left: `${viewport.x}px`, top: `${appRect.bottom - reservedHeight}px`, width: `${viewport.width}px`, height: `${reservedHeight}px` });
+        }
+        const entry = reviewElement.current;
+        if (entry) {
+            const mountedProposals = new Map([...field.querySelectorAll<HTMLElement>('.thought.ghost[data-thought-id]')].map(element => [element.dataset.thoughtId!, element] as const));
+            const toScreen = (id: string): Bounds | undefined => {
+                const mounted = mountedCards.get(id) ?? mountedProposals.get(id);
+                if (mounted?.getClientRects().length) return screenRect(mounted.getBoundingClientRect());
+                const box = state.geometry.get(id);
+                if (!box) return;
+                const point = worldToScreen(box, camera);
+                return { x: viewport.x + point.x, y: viewport.y + point.y, width: box.width * camera.zoom, height: box.height * camera.zoom };
+            };
+            review.current?.refresh(state.reviewNeeded ? unreadableSuggestionIds(state.suggestions, state.visibleIds, viewport, toScreen, [...committedOccupied, ...reserved], camera.zoom) : []);
+            entry.style.maxWidth = `${Math.max(1, viewport.width - 48)}px`;
+            const essential = [...reserved, ...relationOccupied, ...placed, ...localPlaced, ...waiting.map(item => screenRect(item.element.getBoundingClientRect()))];
+            const placement = placeFieldReview(viewport, { width: entry.offsetWidth, height: entry.offsetHeight || 36 }, essential);
+            Object.assign(entry.style, { left: `${placement.entry.x}px`, top: `${placement.entry.y}px` });
+            entry.style.setProperty('--review-panel-width', `${placement.panel.width}px`);
+            entry.style.setProperty('--review-panel-height', `${placement.panel.height}px`);
+            entry.style.setProperty('--review-panel-bottom', `${placement.entry.y + placement.entry.height - placement.panel.y - placement.panel.height}px`);
         }
     }, []);
     useImperativeHandle(forwardedRef, () => ({ layout }), [layout]);
@@ -244,9 +260,8 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
     const cancelable = Boolean(displayOperation && displayOperation.phase === 'pending' && canCancelThinkingOperation(displayOperation.id));
     return <>
         <div ref={dockElement} className="field-overlay-dock" aria-hidden="true" />
-        <RootReview elementRef={rootsElement} roots={props.roots} thoughts={props.thoughts} onReveal={props.onRevealRoot} />
+        <FieldReview ref={review} elementRef={reviewElement} enabled={props.enabled} pending={props.suggestions} thoughts={props.thoughts} roots={props.roots} onReveal={props.onRevealRoot} onAction={props.onSuggestionAction} />
         <ConnectionKey elementRef={linesElement} hasHierarchy={props.hasHierarchy} hasRelations={props.hasRelations} local={props.localRelations} />
-        {props.reviewNeeded && props.suggestions.length > 0 && <SuggestionReview elementRef={reviewElement} suggestions={props.suggestions} thoughts={props.thoughts} onAction={props.onSuggestionAction} />}
         {props.scope && <ScopeHub {...props.scope} elementRef={scopeElement} />}
         {displayOperation && <div ref={operationElement} className="spatial-operation-feedback" data-testid="operation-feedback" data-phase={displayOperation.phase} data-operation-id={displayOperation.id} data-origin-scope={displayOperation.scopeIds.join(' ')} data-copy-visible={showCopy || undefined} role="status" aria-live="polite" aria-atomic="true" onPointerDown={event => event.stopPropagation()}>
             <span className="operation-feedback-mark" aria-hidden="true" />

@@ -146,8 +146,10 @@ export function readWireText(protocol: WireProtocol, envelope: unknown): WireRes
         if (root.promptFeedback && object(root.promptFeedback).blockReason) throw new WireOutputError('refusal');
         if (!Array.isArray(root.candidates)) throw new WireOutputError('malformed');
         const candidate = object(root.candidates[0]);
-        if (typeof candidate.finishReason === 'string' && candidate.finishReason.toUpperCase() === 'MAX_TOKENS') truncated = true;
-        if (['SAFETY', 'RECITATION', 'BLOCKLIST', 'PROHIBITED_CONTENT', 'SPII'].includes(String(candidate.finishReason).toUpperCase())) throw new WireOutputError('refusal');
+        const finishReason = typeof candidate.finishReason === 'string' ? candidate.finishReason.toUpperCase() : '';
+        if (finishReason === 'MAX_TOKENS') truncated = true;
+        else if (['SAFETY', 'RECITATION', 'BLOCKLIST', 'PROHIBITED_CONTENT', 'SPII'].includes(finishReason)) throw new WireOutputError('refusal');
+        else if (finishReason !== 'STOP') throw new WireOutputError('malformed');
         const content = candidate.content;
         if (content !== undefined) {
             const parts = object(content).parts;

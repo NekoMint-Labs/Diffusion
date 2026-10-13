@@ -9,6 +9,35 @@ import { distanceBetween } from '../../src/field/spatial/geometry.ts';
 import { ProposalArrivals } from '../../src/field/spatial/proposalArrivals.ts';
 
 describe('visible proposals near the active source', () => {
+    it('repacks a wholly visible five-card batch when one result is distant despite nearby room', () => {
+        const project = createProject('five');
+        project.thoughts.source = makeThought('来源', { x: 850, y: 390 }, 1, 'source');
+        project.thoughts.other = makeThought('已有内容', { x: 380, y: 260 }, 1, 'other');
+        const controller = new ProjectController(project, async () => {}), geometry = new GeometryCache(), arrivals = new ProposalArrivals();
+        geometry.setPosition('source', 850, 390); geometry.measure('source', 328, 123.4375);
+        geometry.setPosition('other', 380, 260); geometry.measure('other', 328, 74);
+        const points = [{ x: 850, y: 565 }, { x: 850, y: 124 }, { x: 394, y: 382.5 }, { x: 34.75, y: 497 }, { x: 486.5, y: 53.25 }];
+        for (const [index, point] of points.entries()) {
+            const id = 'g' + index;
+            controller.addGhost({ id, text: '观察' + index, ...point, scopeIds: ['source'], createdAt: 2, proposalAction: 'continue' });
+            geometry.setPosition(id, point.x, point.y); geometry.measure(id, 328, 196.265625);
+            arrivals.observe(controller.getSnapshot().session.ghosts, { id: 'request', kind: 'continue', phase: 'pending', scopeIds: ['source'] });
+        }
+        const canonical = controller.getSnapshot().project;
+        correctMeasuredProposalBatch(controller, geometry, ['source', 'other', ...points.map((_, i) => 'g' + i)], { x: 0, y: 0, zoom: 1 }, { left: 0, top: 0, width: 1440, height: 960 }, [], arrivals);
+        const boxes = points.map((_, i) => geometry.get('g' + i)!);
+        for (const [index, box] of boxes.entries()) {
+            expect(distanceBetween(box, geometry.get('source')!)).toBeLessThanOrEqual(216);
+            expect(box.x).toBeGreaterThanOrEqual(0); expect(box.y).toBeGreaterThanOrEqual(0);
+            expect(box.x + box.width).toBeLessThanOrEqual(1440);
+            expect(box.y + box.height + 64).toBeLessThanOrEqual(960);
+            expect(overlapArea(box, geometry.get('source')!)).toBe(0);
+            expect(overlapArea(box, geometry.get('other')!)).toBe(0);
+            expect(boxes.slice(0, index).some(other => overlapArea(box, other) > 0)).toBe(false);
+        }
+        expect(controller.getSnapshot().project).toBe(canonical);
+        expect(controller.canUndo).toBe(false);
+    });
     const view = { x: 0, y: 0, width: 1280, height: 720 };
     const viewport = { left: 0, top: 0, width: view.width, height: view.height };
     function mounted(point = { x: 1030, y: 400 }) {

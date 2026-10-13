@@ -115,7 +115,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             }));
             const candidate = anchor && !item.forceDock && !docked.current.has(item.key) ? clearScopePlacement({
                 selectionBounds: anchor, viewportBounds: viewport, hubSize: { width, height },
-                occupiedRects: [...occupied.filter(rect => !item.ids.includes(rect.id)), ...reserved, ...placed],
+                occupiedRects: [...occupied.filter(rect => !item.ids.includes(rect.id)), ...relationOccupied, ...reserved, ...placed],
             }) : null;
             const isScope = element === scopeElement.current;
             if (candidate) {

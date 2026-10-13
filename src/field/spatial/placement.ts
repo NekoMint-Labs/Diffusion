@@ -212,7 +212,7 @@ export function placePossibility(project: ProjectState, session: SessionState, a
 
         const score = (pool: Point[], tight = false) => pool.map((point, priority) => {
             const bounds = { ...point, ...resultSize };
-            const occupied = tight ? tightIndex.query(bounds).length > 0 : collides(point);
+            const occupied = tight ? tightIndex.query(inflate(bounds, 6 / project.camera.zoom)).length > 0 : collides(point);
             if (!fits(point) || occupied || intersects(bounds, scopeBounds)) return null;
             const distance = distanceBetween(bounds, scopeBounds);
             const bandPenalty = distance < preferredDistance.min ? preferredDistance.min - distance : distance > preferredDistance.max ? distance - preferredDistance.max : 0;
@@ -221,9 +221,9 @@ export function placePossibility(project: ProjectState, session: SessionState, a
         }).filter((candidate): candidate is { point: Point; score: number } => !!candidate).sort((a, b) => a.score - b.score);
         // Continue can bend around an obstacle, but search the nearby forward half-plane
         // before settling beside or behind its source. Other modes keep their own posture.
-        const nearby = (pool: ReturnType<typeof score>) => pool.find(({ point }) => {
+        const nearby = (pool: ReturnType<typeof score>, forwardOnly = true) => pool.find(({ point }) => {
             const advance = trajectory ? (point.x + resultSize.width / 2 - centerX) * trajectory.x + (point.y + resultSize.height / 2 - centerY) * trajectory.y : 0;
-            return distanceBetween({ ...point, ...resultSize }, scopeBounds) <= preferredDistance.max && (mode !== 'continue' || !trajectory || advance > 1e-6);
+            return distanceBetween({ ...point, ...resultSize }, scopeBounds) <= preferredDistance.max && (!forwardOnly || mode !== 'continue' || !trajectory || advance > 1e-6);
         })?.point;
         // Semantic posture wins while a valid local slot exists. Only then do we escape into a ring.
         const forward = nearby(score(trajectoryCandidates));
@@ -265,17 +265,31 @@ export function placePossibility(project: ProjectState, session: SessionState, a
         const dy = Math.max(24, (maxY - searchBounds.y) / 32);
         for (let x = searchBounds.x; x <= maxX; x += dx)
             for (let y = searchBounds.y; y <= maxY; y += dy) slots.push({ x, y });
+        // A tight source-adjacent strip can fall between the regular grid samples.
+        const compactGap = 6 / project.camera.zoom + 1;
+        slots.push(
+            { x: left - resultSize.width - compactGap, y: origin.y },
+            { x: right + compactGap, y: origin.y },
+            { x: origin.x, y: top - resultSize.height - compactGap },
+            { x: origin.x, y: bottom + compactGap },
+        );
         const local = score([...trajectoryCandidates, ...trajectoryDetours, ...candidates, ...candidates.map(intoView), ...escape, ...slots]);
         const localForward = nearby(local);
         if (localForward) return localForward;
-        if (local.length) return local[0].point;
+        // A visible local slot wins over a distant posture, even beside or behind the source.
+        const localNearby = nearby(local, false);
+        if (localNearby) return localNearby;
         if (visibleBounds) {
             // Preferred breathing room can exhaust a crowded view even when a non-overlapping
             // slot exists. Use the real footprints before placing a proposal beyond culling,
             // where it cannot mount or receive the measured visibility correction.
             const tight = score(slots, true);
+            const tightNearby = nearby(tight, false);
+            if (tightNearby) return tightNearby;
+            if (local.length) return local[0].point;
             if (tight.length) return tight[0].point;
         }
+        if (local.length) return local[0].point;
     }
 
     for (let step = 0; step < 72; step++) {

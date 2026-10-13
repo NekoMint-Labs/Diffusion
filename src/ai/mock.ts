@@ -51,8 +51,17 @@ export class MockAIProvider implements AIProvider {
                             : t('The background question asks whether context survives; the structure thought makes that context a condition for showing structure.');
             intents = [{ type: 'surface_relation', a: first.id, b: second.id, kind: visualApplication ? 'bridge' : 'gap', label, explanation }];
         }
-        else if (intent.kind === 'ask' && packet.retrieved.thoughts.some(thought => thought.id === 'earlier'))
+        else if (intent.kind === 'ask' && intent.text.trim().toLowerCase() === 'earlier' && packet.retrieved.thoughts.some(thought => thought.id === 'earlier'))
             intents = [{ type: 'request_recall', thoughtId: 'earlier' }];
+        else if (intent.kind === 'ask') {
+            // An arbitrary authored question needs a live model. Keep the Demo honest
+            // while returning an answer-shaped result accepted by the Ask contract.
+            const question = intent.text.slice(0, 130);
+            const text = chinese || /[\u3400-\u9fff]/u.test(intent.text)
+                ? `关于“${question}”，确定性演示没有足够的信息来提供实质回答。请使用真实模型回答选中的思绪；演示内容不构成证据。`
+                : `For “${question}”, this deterministic demo lacks the information to give a substantive answer. Use a live model to answer the selected thoughts; demo content is not evidence.`;
+            intents = [{ type: 'respond_in_field', text }];
+        }
         else if (intent.kind === 'crystal')
             intents = [{ type: 'request_crystal_preview', text: first?.text || intent.text }];
         else if (intent.kind === 'thread' || intent.kind === 'deep')

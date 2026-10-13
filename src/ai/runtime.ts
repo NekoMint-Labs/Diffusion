@@ -222,7 +222,8 @@ export class AIRuntime {
                 this.settle(started, 'cancelled');
                 return { status: 'cancelled', emitted };
             }
-            const packet = compileContext(this.controller.getSnapshot().project, selection, { ...options, allowScopedSources: ['diffuse', 'angle', 'continue', 'question'].includes(kind) ? !!options.projectSources : undefined, query: kind === 'ask' ? text : undefined });
+            const contextOptions = { ...options, allowScopedSources: ['diffuse', 'angle', 'continue', 'question'].includes(kind) ? !!options.projectSources : undefined, query: kind === 'ask' ? text : undefined };
+            const packet = compileContext(this.controller.getSnapshot().project, selection, contextOptions);
             const provider = await this.provider();
             subject = provider.label;
             if (started.abort.signal.aborted || started.ticket !== this.serial) {
@@ -250,10 +251,18 @@ export class AIRuntime {
             const provenance = credited(response.providerLabel || provider.label, response.model);
             const validScope = () => { const project = this.controller.getSnapshot().project; return project.id === packet.projectId && packet.scope.every(item => (options.threadId ? (project.threads[options.threadId]?.scopeSnapshot?.[item.id] ?? project.thoughts[item.id]) : project.thoughts[item.id])?.text.slice(0, 1600) === item.text); };
             const validContinuation = () => {
+                if (!packet.continuations?.length && !packet.ancestry?.length) return true;
                 const project = this.controller.getSnapshot().project;
+                // Reapply the request's budgets: a short old prefix cannot hide appended goals.
+                const current = compileContext(project, selection, contextOptions);
+                const currentText = new Map([...current.scope, ...current.local].map(item => [item.id, item.text]));
                 return (packet.continuations ?? []).every(link => link.sourceIds.every(key => {
                     const supplied = packet.scope.find(item => item.id === key) ?? packet.local.find(item => item.id === key);
-                    return project.thoughts[link.thoughtId]?.derivedFrom?.includes(key) && supplied && project.thoughts[key]?.text.slice(0, 1600) === supplied.text;
+                    return project.thoughts[link.thoughtId]?.derivedFrom?.includes(key) && supplied && currentText.get(key) === supplied.text;
+                })) && (packet.ancestry ?? []).every(link => link.path.every((key, index) => {
+                    if (!project.thoughts[key] || index && !project.thoughts[link.path[index - 1]]?.derivedFrom?.includes(key)) return false;
+                    const supplied = packet.scope.find(item => item.id === key) ?? packet.local.find(item => item.id === key);
+                    return !supplied || currentText.get(key) === supplied.text;
                 }));
             };
             if (!validScope() || !validContinuation()) throw new Error(t('The scope changed while thinking. Ask again with its new wording.'));

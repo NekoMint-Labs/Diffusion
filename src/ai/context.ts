@@ -1,3 +1,4 @@
+import { authoredContext, boundedLineage, LINEAGE_LIMITS } from './lineageContext.ts';
 import { hasReadPassages, readableSource } from '../evidence/pipeline.ts';
 import { threadScope } from '../core/thread.ts';
 import { CORE_CONTRACT, type ContextPacket, type ScopeThought } from '../core/semantics.ts';
@@ -36,34 +37,24 @@ export function compileContext(project: ProjectState, selection: string[], optio
     const scopeSet = new Set(scope.map(t => t.id));
     const relations = Object.values(project.relations).filter(r => scopeSet.has(r.a) || scopeSet.has(r.b)).slice(0, 16).map(({ a, b, kind, label }) => ({ a, b, kind, label: label.slice(0, 300) }));
     const related = new Set(relations.flatMap(r => [r.a, r.b]));
-    // Selection remains the subject. Direct durable lineage supplies bounded background, not
-    // a semantic relation or a recursive history. Threads keep their frozen context contract.
-    const continuationBackground = new Set<string>();
-    const continuations: NonNullable<ContextPacket['continuations']> = [];
-    if (explicit && !thread) {
-        for (const item of scope) {
-            const sourceIds: string[] = [];
-            for (const key of new Set(project.thoughts[item.id]?.derivedFrom ?? [])) {
-                if (key === item.id || !project.thoughts[key]) continue;
-                if (!scopeSet.has(key) && !continuationBackground.has(key)) {
-                    if (continuationBackground.size >= 4) continue;
-                    continuationBackground.add(key);
-                }
-                sourceIds.push(key);
-                if (sourceIds.length === 4) break;
-            }
-            if (sourceIds.length) continuations.push({ thoughtId: item.id, sourceIds });
-        }
-    }
-    const localIds = new Set([...continuationBackground, ...all.filter(t => !scopeSet.has(t.id) && related.has(t.id)).map(t => t.id)]);
-    // Direct sources come first and keep their exact bounded wording. Only explicit Field actions
-    // use the smaller local budget; frozen Thread and unselected Field contracts remain intact.
+    // Only explicit Field context follows durable causal lineage. Threads remain frozen.
+    const lineage = explicit && !thread ? boundedLineage(project, scope.map(item => item.id)) : undefined;
+    const continuations = lineage?.continuations ?? [];
+    if (lineage) for (const item of scope) item.authored = authoredContext(project, item.id);
+    const localIds = new Set([...lineage?.background ?? [], ...lineage?.ancestorIds ?? [], ...all.filter(t => !scopeSet.has(t.id) && related.has(t.id)).map(t => t.id)]);
     const local: ScopeThought[] = [];
-    let remaining = explicit && !thread ? 6400 : 19200;
+    let remaining = explicit && !thread ? LINEAGE_LIMITS.localCharacters : 19200;
+    const reserved = (lineage?.ancestorIds.size ?? 0) * LINEAGE_LIMITS.ancestorCharacters;
+    const directBudget = Math.min(1600, Math.floor((LINEAGE_LIMITS.localCharacters - reserved) / Math.max(1, lineage?.background.size ?? 0)));
     for (const key of [...localIds].slice(0, explicit && !thread ? 6 : 12)) {
         if (!remaining) break;
         const item = brief(project.thoughts[key]);
-        item.text = item.text.slice(0, remaining);
+        const ancestor = lineage?.ancestorIds.has(key);
+        const direct = lineage?.background.has(key);
+        const budget = ancestor ? Math.min(remaining, LINEAGE_LIMITS.ancestorCharacters) : direct ? Math.min(directBudget, Math.max(0, remaining - reserved)) : remaining;
+        if (!budget) continue;
+        item.text = item.text.slice(0, budget);
+        if (lineage) item.authored = authoredContext(project, key);
         local.push(item);
         remaining -= item.text.length;
     }
@@ -90,6 +81,7 @@ export function compileContext(project: ProjectState, selection: string[], optio
     }
     return { contract: CORE_CONTRACT, projectId: project.id, scopeMode: explicit ? 'selection' : 'field', scope, local, relations: relations.filter(relation => suppliedIds.has(relation.a) && suppliedIds.has(relation.b)),
         ...(continuations.length ? { continuations } : {}),
+        ...(lineage?.ancestry.length ? { ancestry: lineage.ancestry } : {}),
         ...(thread ? { thread: { id: thread.id, capsule: rebuildCapsule(thread, project), recent: thread.messages.slice(-6).map(m => ({ role: m.role, text: m.text.slice(0, 1600) })) } } : {}),
         retrieved: { thoughts: retrievedThoughts, sources }, permissions: { web: !!options.web, projectSources: !!options.projectSources }, tools: ['surface_possibility', 'surface_question', 'surface_relation', 'surface_structure', 'request_thread', 'request_deep_dive', 'request_crystal_preview'], maxCandidates: Math.max(1, Math.min(5, options.maxCandidates ?? 3)) };
 }

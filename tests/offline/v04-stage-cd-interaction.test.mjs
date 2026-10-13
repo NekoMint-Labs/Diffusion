@@ -92,7 +92,9 @@ test('Stage C Field source locks the new direct-manipulation grammar', () => {
   assert.match(field, /commitDraggedItems\(controller, positions\)/);
   assert.doesNotMatch(field, /followers|current\.session\.ghosts\)\s*\.filter\(ghost/);
   assert.doesNotMatch(controller, /followAttachedGhosts/);
-  assert.match(field, /for \(const key of g\.ids\)/);
+  assert.match(field, /paintDraggedItems\(world\.current, g\.ids, g\.positions,/);
+  assert.match(hygiene, /for \(const key of ids\)/);
+  assert.match(hygiene, /const original = positions\[key\]/);
   assert.doesNotMatch(field, /controller\.claim\(g\.target/);
   assert.match(hygiene, /controller\.moveGhost\(key, point, \{ detach: true \}\)/);
 });

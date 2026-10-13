@@ -2,9 +2,33 @@
 
 This map separates implemented contracts from executed evidence and physical/operator checks. Product authority lives in the current product, architecture and contract documents — see the [documentation index](README.md); historical phase reports are provenance only. Exact current command results and environment limits are in [`../STATUS.md`](../STATUS.md).
 
+## Current main checkpoint - October 13, 2026
+
+The integrated main baseline is `bb8de89935a3fff6f13ab13b9ad0c0d88a75d074`, including [PR #57](https://github.com/NekoMint-Labs/Diffusion/pull/57), [PR #64](https://github.com/NekoMint-Labs/Diffusion/pull/64), [PR #66](https://github.com/NekoMint-Labs/Diffusion/pull/66) and A's [PR #52](https://github.com/NekoMint-Labs/Diffusion/pull/52)-[#55](https://github.com/NekoMint-Labs/Diffusion/pull/55) for #42-#45. PR #18, #17 and #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51). Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
+
+Dated records below preserve their original revision, failures, validation scope and then-current PR/Issue status. Earlier instructions to keep #18 Draft or #10 open are historical checkpoint statements, superseded by the merge and milestone closure above. They are not current work instructions. New Round 2 PR evidence belongs to each PR head; it does not retroactively qualify a historical installer or establish integrated-main/native acceptance.
+
+Round 2 PRs #52-#55 are merged; #56 is independent documentation.
+#60/#61/#65 remain unmerged, with current-head A/C approvals and green checks.
+Draft #63 `a63e1d1` passed A's 645 unit / 315 offline and 40 mounted cases,
+plus all six remote gates. B's later quoted-question preview finding still loses negation;
+A independently confirmed it, so delivery remains blocked pending C repair/new-head review.
+Prior findings about abbreviation prefixes, tutorial Return and camera fixtures are resolved.
+These review outcomes are not final installed/live acceptance; current tests lack the quoted-question cases.
+
+The operator [approved #49's navigation interaction](https://github.com/NekoMint-Labs/Diffusion/issues/49#issuecomment-6139794827),
+including a discoverable, keyboard-accessible explicit return after the panel closes.
+C implemented and tested it in #63; B reviewed shared panel/focus compatibility.
+It is not merged-main or installed-product delivery. This approval does not approve #63/#65 for merge or satisfy #11/#12.
+The October 12 shared-transport validation and the limited requester trial of candidate
+`d97eb4be` are recorded in [STATUS.md](../STATUS.md); neither establishes installed-product
+acceptance. The October 13 review queue, including A's completion/probe correction,
+C's newer Draft #63 and B's Ready #65, is maintained in [STATUS.md](../STATUS.md).
+Independent review, live Verify and physical-interruption acceptance remain separate gates.
+
 | Requirement | Current implementation | Executed evidence | Remaining acceptance |
 |---|---|---|---|
-| Product identity and AI authority | Core permission gates; provider output remains transient until explicit Claim/Bring/confirm | Offline/unit authority, Crystal, Claim, Fork, Diffuse, and mounted browser flows | Real-provider semantic behavior is **UNVERIFIED** |
+| Product identity and AI authority | Core permission gates; provider output remains transient until explicit Claim/Bring/confirm | Offline/unit authority, Crystal, Claim, Fork, Diffuse, mounted browser flows, and a limited requester trial on candidate `d97eb4be` | The full real-provider semantic matrix remains **UNVERIFIED**; the limited trial is recorded in [STATUS.md](../STATUS.md) |
 | Camera and spatial hot path | One imperative `CameraController`; pointer-frequency work stays outside React state | Camera/interaction unit tests and complete Playwright suite | 150% native viewport checks are recorded below; 100%/125% system scale and physical trackpad behavior remain **UNVERIFIED** |
 | Full-bleed Field materials | Paper Texture (default), Topography, Threads, Waves, and Silk are lazy viewport-bounded screen-space renderers; all are pointer-inert presentation outside camera ownership | Field background unit/offline contracts plus production-background and material-gallery Playwright coverage | GPU/driver matrix and extended visual dogfood |
 | Adaptive Thought geometry | Bounded compact/regular/wide sizing; editing freezes width; mounted interaction uses cached DOM measurements, while kind-aware pre-mount/disclosure estimates mirror ordinary, Source, and Crystal CSS widths | Unicode/punctuation/multiline and mixed-kind placement unit cases; edit-stability, lasso, drag, Scope Hub, and semantic-disclosure E2E | Chinese IME in native WebView2 is **UNVERIFIED** |
@@ -12,7 +36,7 @@ This map separates implemented contracts from executed evidence and physical/ope
 | Commands and transient ownership | One command registry; one focus coordinator; Base UI menu semantics; one Escape owner; exiting surfaces are inert | Keyboard, focus handoff, Home/End, outside-click, and surface Playwright coverage | Cross-WebView accessibility inspection |
 | Thread and Deep Dive return | Frozen scope and exact camera/selection return; pending camera frame is committed before persistence | Core scope tests and exact transform-return Playwright coverage | Native window interruption/reopen behavior |
 | Sources and evidence | Bounded text extraction; explicit candidate → read → assessment stages; provenance retained | Offline/unit normalization, forged-evidence rejection, discovery engine 79-test suite | Real discovery source query/read is **UNVERIFIED** |
-| Provider integration | Explicit protocols, bounded payloads/timeouts, semantic validation, native secret boundary | Fixture-backed provider/gateway/unit contracts; PR #18 records approval of an earlier DeepSeek operator experience | The complete current-head live-model action/scenario matrix remains **UNVERIFIED** in #10; that earlier approval does not qualify every action/provider |
+| Provider integration | Explicit protocols, bounded payloads/timeouts, semantic validation, native secret boundary | Fixture-backed provider/gateway/unit contracts; PR #18 records approval of an earlier DeepSeek operator experience; limited #42–#45 requester trial on candidate `d97eb4be` | The complete current-head live-model action/scenario matrix remains **UNVERIFIED**; new thinking follow-ups are tracked by [Round 2 #51](https://github.com/NekoMint-Labs/Diffusion/issues/51), with final integrated/native acceptance in #12. The closed #10 milestone and limited trial do not qualify every action/provider |
 | Persistence and migration | Existing Dexie database, in-place migration, single-flight save queue, portable recovery | Migration/repository tests and mounted browser persistence flows | Multi-tab coordination and measured IndexedDB disk latency |
 | Localization and accessibility | Reactive EN/ZH dictionary, IME guards, semantic roles and focus return | Locale checks and Chromium keyboard/role assertions | Native Chinese IME and screen-reader matrix are **UNVERIFIED** |
 | Browser delivery | Production Vite bundle served to Chromium; full suite uses one worker and no retries | Merged PR #32 head `2575dbf`: 305 passed / 12 existing dev-only skipped locally and remotely; current follow-up results belong to its own PR head | Broader browser engine matrix |

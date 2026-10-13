@@ -9,6 +9,11 @@ a current document may be cited as a contract. Material under [`history/`](histo
 current document. When a current document and the code disagree, stop and resolve the conflict
 explicitly rather than assuming one of them is right.
 
+**Current checkpoint (October 13, 2026):** main is `bb8de89`, including merged #18, #57, #64, #66 and A's #52-#55; #10 is closed as its delivered milestone. #60/#61/#65 remain reviewed Field inputs. Draft #63 implements approved #49 in its candidate but still has a quoted-question source-preview blocker at `a63e1d1`; the old `2c82f50` installer excludes these changes. The [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51) owns the queue. #11/#12 remain open for Field and installed-product acceptance. Start with [STATUS.md](../STATUS.md) and [ACCEPTANCE_MAP.md](ACCEPTANCE_MAP.md); dated records preserve their actual versions and evidence limits.
+
+The live Round 2 review checkpoint and the limited requester trial of candidate `d97eb4be`
+are recorded in [STATUS.md](../STATUS.md); use that entry before relying on older history.
+
 ## START HERE
 
 | Document | What it is |

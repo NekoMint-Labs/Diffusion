@@ -4,25 +4,26 @@ This map separates implemented contracts from executed evidence and physical/ope
 
 ## Current main checkpoint - October 13, 2026
 
-The integrated main baseline is `12cc0fe36d2668d20ce98498341c52b0118bd965`, following the merges of [PR #57](https://github.com/NekoMint-Labs/Diffusion/pull/57), [PR #64](https://github.com/NekoMint-Labs/Diffusion/pull/64), [PR #66](https://github.com/NekoMint-Labs/Diffusion/pull/66) and [PR #52](https://github.com/NekoMint-Labs/Diffusion/pull/52). PR #18, #17 and #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51), including #42–#45. Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
+The integrated main baseline is `bb8de89935a3fff6f13ab13b9ad0c0d88a75d074`, including [PR #57](https://github.com/NekoMint-Labs/Diffusion/pull/57), [PR #64](https://github.com/NekoMint-Labs/Diffusion/pull/64), [PR #66](https://github.com/NekoMint-Labs/Diffusion/pull/66) and A's [PR #52](https://github.com/NekoMint-Labs/Diffusion/pull/52)-[#55](https://github.com/NekoMint-Labs/Diffusion/pull/55) for #42-#45. PR #18, #17 and #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51). Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
 
 Dated records below preserve their original revision, failures, validation scope and then-current PR/Issue status. Earlier instructions to keep #18 Draft or #10 open are historical checkpoint statements, superseded by the merge and milestone closure above. They are not current work instructions. New Round 2 PR evidence belongs to each PR head; it does not retroactively qualify a historical installer or establish integrated-main/native acceptance.
 
-Round 2 PR #52 is merged. #53-#55 were restacked onto this main and remain Ready,
-with all six new-head checks passed and refreshed independent review requested; #56 is independent documentation.
-A approved #60/#61 after current-main compatibility testing. Draft #63 requires changes
-for search-preview meaning preservation. #65 `4c15485` incorporates the late-arrival Keep
-receipt repair and has A's updated approval; C's refreshed review remains requested.
-These review outcomes are not final installed/live acceptance.
+Round 2 PRs #52-#55 are merged; #56 is independent documentation.
+#60/#61/#65 remain unmerged, with current-head A/C approvals and green checks.
+Draft #63 `a63e1d1` passed A's 645 unit / 315 offline and 40 mounted cases,
+plus all six remote gates. B's later quoted-question preview finding still loses negation;
+A independently confirmed it, so delivery remains blocked pending C repair/new-head review.
+Prior findings about abbreviation prefixes, tutorial Return and camera fixtures are resolved.
+These review outcomes are not final installed/live acceptance; current tests lack the quoted-question cases.
 
 The operator [approved #49's navigation interaction](https://github.com/NekoMint-Labs/Diffusion/issues/49#issuecomment-6139794827),
 including a discoverable, keyboard-accessible explicit return after the panel closes.
-C implements and tests it; B reviews the shared panel/focus compatibility. The behavior
-has not yet been delivered. This approval does not approve #63/#65 for merge or satisfy #11/#12.
+C implemented and tested it in #63; B reviewed shared panel/focus compatibility.
+It is not merged-main or installed-product delivery. This approval does not approve #63/#65 for merge or satisfy #11/#12.
 The October 12 shared-transport validation and the limited requester trial of candidate
 `d97eb4be` are recorded in [STATUS.md](../STATUS.md); neither establishes installed-product
 acceptance. The October 13 review queue, including A's completion/probe correction,
-C's newer Draft #63 and B's Draft #65, is maintained in [STATUS.md](../STATUS.md).
+C's newer Draft #63 and B's Ready #65, is maintained in [STATUS.md](../STATUS.md).
 Independent review, live Verify and physical-interruption acceptance remain separate gates.
 
 | Requirement | Current implementation | Executed evidence | Remaining acceptance |

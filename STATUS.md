@@ -4,11 +4,45 @@ Diffusion is a quiet thinking medium for ideas before commitment. This file desc
 
 ## Current main checkpoint - October 13, 2026
 
-The integrated main baseline is `12cc0fe36d2668d20ce98498341c52b0118bd965`, including [PR #57](https://github.com/NekoMint-Labs/Diffusion/pull/57) (proposal locality), [PR #64](https://github.com/NekoMint-Labs/Diffusion/pull/64) (suggestion-review IME Escape and focus return), [PR #66](https://github.com/NekoMint-Labs/Diffusion/pull/66) (complete-arrival drag test precondition) and [PR #52](https://github.com/NekoMint-Labs/Diffusion/pull/52) (provider failure/completion classification). PR #18, #17 and #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51), including #42–#45. Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
+The integrated main baseline is `bb8de89935a3fff6f13ab13b9ad0c0d88a75d074`, including [PR #57](https://github.com/NekoMint-Labs/Diffusion/pull/57) (proposal locality), [PR #64](https://github.com/NekoMint-Labs/Diffusion/pull/64) (suggestion-review IME Escape and focus return), [PR #66](https://github.com/NekoMint-Labs/Diffusion/pull/66) (complete-arrival drag test precondition) and A's [PR #52](https://github.com/NekoMint-Labs/Diffusion/pull/52)-[#55](https://github.com/NekoMint-Labs/Diffusion/pull/55) (#42-#45 provider classification, authored Ask, kept lineage and bounded ancestors). PR #18, #17 and #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51). Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
 
 Dated records below preserve their original revision, failures, validation scope and then-current PR/Issue status. Earlier instructions to keep #18 Draft or #10 open are historical checkpoint statements, superseded by the merge and milestone closure above. They are not current work instructions. New Round 2 PR evidence belongs to each PR head; it does not retroactively qualify a historical installer or establish integrated-main/native acceptance.
 
-## Current Round 2 review and restack (2026-10-13)
+## Current Round 2 delivery and review (2026-10-13)
+
+The operator merged #53 as `5a47bff`, #54 as `3afc82a` and #55 as `bb8de89`.
+The final #55 input `2583bb4` had current-head B Approval and all six successful checks
+([CI](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38394811403),
+[complete E2E](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38394811387)).
+Its full tree matched A's tested `01b7247`: 583 unit / 289 offline and six focused browser
+cases passed. The appended-goal repair invalidates obsolete results when supplied direct
+or ancestor wording changes, while preserving unchanged truncated context. These input-head
+results are not new installed-product acceptance or a rerun on the squash commit.
+
+#60 `2aabff62`, #61 `46b30c02` and #65 `4c15485` have A/C current-head approvals and
+green checks but remain unmerged. C's Draft #63 `a63e1d1` implements the approved #49
+single-return interaction and combines A's stale-goal repair with failure recovery.
+A independently passed 645 unit / 315 offline, application types/build and 40 related
+production-browser cases, one worker, zero retries/skips. Its six remote checks passed;
+earlier `45fc435` and `208d20a` failed runs retain their original identities.
+
+B then identified a further source-preview gap on `a63e1d1`: a question mark inside a
+quoted English or Chinese question can remove the containing sentence's negation.
+`Do not answer "Ready?" with Yes without confirmation.` becomes `...with Yes without confirmation.`;
+`不要把“你好吗？”翻译为 Hello；它是问句。` loses `不要把`.
+A independently confirmed both helper outputs. B's [current Request Changes](https://github.com/NekoMint-Labs/Diffusion/pull/63#pullrequestreview-5503741935)
+therefore blocks delivery despite existing green tests. C owns conservative presentation
+repair and quoted-question regressions; no new provider/model call is required.
+B has already verified the previous abbreviation, tutorial/pointer-return and camera
+fixture findings fixed; shared Field review is not awaiting its first pass.
+
+The latest published Windows preview remains `0.3.14` from `2c82f50`; it excludes these
+follow-ups. #49 approval and candidate implementation are not merged-main/native acceptance.
+C prepares the corresponding installer after repaired-head review/gates. #11/#12 remain
+open for live Verify/provider quality, physical input/failure/reopen and final real-task trial.
+The October 12 `d97eb4be` user trial retains its original version.
+
+## Recorded Round 2 review and restack (2026-10-13)
 
 #52 received C's independent shared-transport approval and was merged. After its squash,
 A replayed the feature-only sequence: #53 `b1f1596` on main `12cc0fe`, #54 `87d9fdb`

@@ -1,3 +1,4 @@
+import { navigationDisclosureTarget } from './spatial/navigationDisclosureTarget.ts';
 import { readableLabels, recallEdge, revealCamera, semanticExcerpt } from './spatial/representation.ts';
 import { discloseHierarchy, type DisclosureProjection } from './spatial/hierarchyDisclosure.ts';
 import { measureSafeArea, fitInSafeArea } from './spatial/safeArea.ts';
@@ -40,6 +41,8 @@ import { ownsWheelInput, paintDraggedItems, commitDraggedItems, correctVisibleGh
 import type { FieldHandle, FieldFind } from './contracts.ts';
 export type { FieldHandle, FieldFind } from './contracts.ts';
 interface Props {
+    onNavigate: (id: string) => void;
+    onReturnView?: () => void;
     controller: ProjectController;
     onProbeRelation: (ids: string[]) => void;
     scopeActions: ContextualAction[];
@@ -64,7 +67,7 @@ interface Props {
     connectionStyle: ConnectionStyle;
     interfaceScale?: number;
 }
-export const Field = forwardRef<FieldHandle, Props>(function Field({ controller, fieldStyle, connectionStyle, interfaceScale = 1, onProbeRelation, scopeActions, onScopeAction, onKeepAllProposals, onKeepOriginalProposal, onAIProposalAction, onMore, onRegion, onRelation, onDropText, onSource, onReadThought, onRespondThought, onDropFiles, onObserve, onCreateThought, onContextMenu, onRevealMatch, find }, forwardedRef) {
+export const Field = forwardRef<FieldHandle, Props>(function Field({ onNavigate, onReturnView, controller, fieldStyle, connectionStyle, interfaceScale = 1, onProbeRelation, scopeActions, onScopeAction, onKeepAllProposals, onKeepOriginalProposal, onAIProposalAction, onMore, onRegion, onRelation, onDropText, onSource, onReadThought, onRespondThought, onDropFiles, onObserve, onCreateThought, onContextMenu, onRevealMatch, find }, forwardedRef) {
     const { project, session } = useProject(controller);
     const arrivals = useProposalArrivals(controller);
     const ui = useUI();
@@ -129,7 +132,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
         const snap = controller.getSnapshot();
         const state = useUI.getState();
         if (revealed.current && !state.selection.includes(revealed.current)) revealed.current = null;
-        const disclosure = discloseHierarchy({ items: liveItems.current, hierarchy: liveHierarchy.current, found, camera: cam, viewport: rect.current, selection: state.selection, editing: state.editing, currentMatch: liveFind.current?.current ?? revealed.current, matches: liveFind.current?.matches, recalls: snap.session.recalls, branches: snap.session.branchDisclosure, measured: key => measuredBox(key, liveItems.current[key], cam) });
+        const disclosure = discloseHierarchy({ items: liveItems.current, hierarchy: liveHierarchy.current, found, camera: cam, viewport: rect.current, selection: state.selection, editing: state.editing, currentMatch: navigationDisclosureTarget(liveFind.current?.current ?? revealed.current, liveHierarchy.current.parent, snap.session.branchDisclosure), matches: liveFind.current?.matches, recalls: snap.session.recalls, branches: snap.session.branchDisclosure, measured: key => measuredBox(key, liveItems.current[key], cam) });
         // Eligibility can change without mounted IDs changing (for example an offscreen fold).
         const eligibilityChanged = projection.current.eligible.join(' ') !== disclosure.eligible.join(' ');
         projection.current = disclosure;
@@ -637,7 +640,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ controller,
    {Object.values(project.regions).filter(region => level === 'atlas' && disclosedLandmarks.has('region:' + region.id)).map(region => <button className="region-label" data-active={ui.regionId === region.id || undefined} onClick={() => onRegion(region.id, { x: region.x, y: region.y })} key={region.id} style={{ transform: `translate(${region.x}px,${region.y}px) scale(var(--inverse-zoom))` }}><span>{t(region.name)}</span><small>{t('{count} thoughts', { count: region.members.length })}</small></button>)}
    {level === 'atlas' && frontiers.filter(key => disclosedLandmarks.has('frontier:' + key)).map(key => { const t = project.thoughts[key]; return <button className="frontier-label" key={'frontier-' + key} onClick={() => { controller.wake(key); ui.patch({ selection: [key] }); revealThought(key); }} style={{ transform: `translate(${t.x}px,${t.y}px) scale(var(--inverse-zoom))` }}><span aria-hidden="true">&#9671;</span> {semanticExcerpt(t.text, 'atlas', 'thought')}</button>; })}
   </div>
-   <FieldOverlays ref={overlays} viewport={viewport} camera={() => camera.current?.get() ?? project.camera} geometry={geometry} actionBounds={actionBounds} visibleIds={visible} selection={ui.selection} operation={ui.operation} enabled={ui.surface === 'none'} dragging={ui.dragging} onScopeBounds={onScopeBounds} suggestions={Object.values(session.ghosts)} thoughts={project.thoughts} roots={rootAnchors.map(key => project.thoughts[key]).filter(Boolean)} onRevealRoot={revealThought} hasHierarchy={hierarchy.children.size > 0} hasRelations={Object.keys(project.relations).length > 0 || Object.keys(session.phenomena).length > 0} localRelations={level === 'local'} reviewNeeded={true} onSuggestionAction={onAIProposalAction} scope={showScopeHub ? { count: activeSelection.length, actions: scopeActions, probing, proposalReview, aiProposalKind, onAction: onScopeAction, onKeepAll: () => onKeepAllProposals([...activeSelection]), onKeepOriginal: () => onKeepOriginalProposal([...activeSelection]), onAIProposalAction: action => onAIProposalAction([...activeSelection], action), onMore } : null} />
+   <FieldOverlays ref={overlays} viewport={viewport} camera={() => camera.current?.get() ?? project.camera} geometry={geometry} actionBounds={actionBounds} visibleIds={visible} selection={ui.selection} operation={ui.operation} enabled={ui.surface === 'none'} dragging={ui.dragging} onScopeBounds={onScopeBounds} suggestions={Object.values(session.ghosts)} thoughts={project.thoughts} roots={rootAnchors.map(key => project.thoughts[key]).filter(Boolean)} onRevealRoot={onNavigate} onReturnView={onReturnView} hasHierarchy={hierarchy.children.size > 0} hasRelations={Object.keys(project.relations).length > 0 || Object.keys(session.phenomena).length > 0} localRelations={level === 'local'} reviewNeeded={true} onSuggestionAction={onAIProposalAction} scope={showScopeHub ? { count: activeSelection.length, actions: scopeActions, probing, proposalReview, aiProposalKind, onAction: onScopeAction, onKeepAll: () => onKeepAllProposals([...activeSelection]), onKeepOriginal: () => onKeepOriginalProposal([...activeSelection]), onAIProposalAction: action => onAIProposalAction([...activeSelection], action), onMore } : null} />
   {ui.carry.length > 0 && <div className="carry-preview">{project.thoughts[ui.carry[0]]?.text.slice(0, 180)}</div>}
   {ui.carry.length > 0 && <div className="carry-banner">{t('Carrying {count} thoughts. Click to place; Escape cancels.', { count: ui.carry.length })}</div>}
     {session.recalls.filter(k => !visibleSet.has(k) && !!project.thoughts[k]).map((k, index) => { const edge = recallEdge(project.thoughts[k], stableCamera, rect.current.width, rect.current.height, index); return <button className="recall-edge" key={k} style={{ left: edge.x, top: edge.y }} onClick={() => { controller.wake(k); ui.patch({ selection: [k], notice: t('Earlier thought awakened. Use Find / Take me there to travel.') }); }} title={project.thoughts[k].text}><span aria-hidden="true" style={{ display: 'inline-block', transform: `rotate(${edge.angle}deg)` }}>&#8594;</span> {t('Earlier thought')}</button>; })}

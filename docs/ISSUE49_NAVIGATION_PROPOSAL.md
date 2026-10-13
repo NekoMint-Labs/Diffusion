@@ -1,6 +1,6 @@
 # #49 导航交互提案与共享规则确认
 
-2026-10-13。#48 紧凑阅读方向已获产品批准；本次对照 #65 `94db15aa6b4c670955964fb53e447660f991b4be` 确认共享位置、互斥、写作安全区、焦点/Escape/IME 与普通关闭边界。下文的 #49 单返回点导航仍是提案，未获批准或写入生产代码。依据：[共享清单](https://github.com/NekoMint-Labs/Diffusion/issues/49#issuecomment-6120055622)、[#48 批准](https://github.com/NekoMint-Labs/Diffusion/issues/48#issuecomment-6125616799)。
+2026-10-13。#48 紧凑阅读方向已获产品批准；本次对照 #65 `94db15aa6b4c670955964fb53e447660f991b4be` 确认共享位置、互斥、写作安全区、焦点/Escape/IME 与普通关闭边界。下文的 #49 单返回点导航已获 [operator 批准](https://github.com/NekoMint-Labs/Diffusion/issues/49#issuecomment-6139794827)，本轮实现并增加回归。批准额外要求：面板收起后仍可发现、用键盘操作显式返回。依据：[共享清单](https://github.com/NekoMint-Labs/Diffusion/issues/49#issuecomment-6120055622)、[#48 批准](https://github.com/NekoMint-Labs/Diffusion/issues/48#issuecomment-6125616799)。
 
 ## 返回点与动作
 
@@ -35,7 +35,7 @@
 
 批准后在真实组件记录 A→B→C→返回 A 的精确相机、缩放、选择；关闭/Escape/切换建议/写作均保持当前位置及请求；零匹配、目标删除、选区部分删除、折叠、重复打开、Field 切换和重载分别验证。浏览器合成 IME 事件和逻辑缩放，与 Windows 物理输入法/DPI 分别记录。
 
-本补充仍需 @onedotmint 确认可见行为，尤其单返回点生命周期。原型只有示例 A/B，不冒称已实现全部生产契约。本轮按操作者要求提交至 GitHub，请 @onedotmint 确认 #49 的上述导航行为；#48 的既有批准不自动批准本提案。
+2026-10-13 operator 已批准上述行为。返回点存在时，在共用小入口区域显示“返回刚才视图”按钮，Find 打开时也有同名按钮；都可 Tab 聚焦并用 Enter/Space 触发。普通关闭保留返回点，显式返回恢复后清除。该实现需 B 独立兼容审核；浏览器回归不替代 Windows 输入法/触控板/DPI 或实机体验签收。
 
 ## 1280×720 静态示意
 

@@ -1,5 +1,6 @@
 /* Product copy only. English source keys are the fallback dictionary. */
 export const zh: Record<string, string> = {
+    "Return to previous view": "返回刚才视图",
     "Table preview; expand to inspect the original passage.": "表格整理预览；展开可核对原始段落。",
     "Show original read passage": "展开原始阅读段落",
     "Request timed out": "请求超时",

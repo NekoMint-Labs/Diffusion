@@ -1,7 +1,9 @@
 import { t as msg } from '../../shared/i18n.ts';
+import { Button } from '../primitives/Button.tsx';
 import { Surface } from './Surface.tsx';
 /** Small stable search surface. Search reveals where content lives; it never leaves the Field. */
-export function FindSurface({ query, count, index, onQuery, onNavigate, onClose }: {
+export function FindSurface({ query, count, index, onQuery, onNavigate, onClose, onReturn }: {
+    onReturn?: () => void;
     query: string;
     count: number;
     index: number;
@@ -11,6 +13,7 @@ export function FindSurface({ query, count, index, onQuery, onNavigate, onClose 
 }) {
     const trimmed = query.trim();
     return <Surface title={msg('Find in Field')} level="bar" className="find-bar" onClose={onClose}>
+        {onReturn && <Button variant="ghost" size="sm" onClick={onReturn}>{msg('Return to previous view')}</Button>}
         <label className="sr-only" htmlFor="field-find">{msg('Find known content')}</label>
         <input id="field-find" data-autofocus="true" autoComplete="off" spellCheck={false} placeholder={msg('A phrase you remember...')} value={query} onChange={event => onQuery(event.target.value)} onKeyDown={event => {
             if (event.nativeEvent.isComposing || event.keyCode === 229)

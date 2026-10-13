@@ -39,7 +39,7 @@ export function useWorkspaceSurfaces({ controller, field, diffuse, runtime, find
             setDiffuseScope(diffuse.getSnapshot().config?.scopeIds ?? [...selection]);
         useUI.getState().patch({
             surface, relationId: null, anchor: origin ?? null,
-            returnPoint: surface === 'thread-focus' && state.returnPoint
+            returnPoint: surface === 'find' ? null : surface === 'thread-focus' && state.returnPoint
                 ? { ...state.returnPoint, camera: field.current?.camera() ?? controller.getSnapshot().project.camera }
                 : state.returnPoint ?? { camera: field.current?.camera() ?? controller.getSnapshot().project.camera, selection: [...state.selection] },
         });
@@ -48,8 +48,12 @@ export function useWorkspaceSurfaces({ controller, field, diffuse, runtime, find
      * immediately and the Field comes back to exactly the camera and selection it left. */
     function closeSurface(cancelRequest = true) {
         const state = useUI.getState();
-        if (state.surface === 'find')
+        if (state.surface === 'find') {
             find.reset();
+            state.patch({ surface: 'none', returnPoint: null, relationId: null });
+            transient.restore();
+            return;
+        }
         if (cancelRequest && !['running', 'paused'].includes(diffuse.getSnapshot().phase))
             runtime.cancel();
         if (state.returnPoint) {

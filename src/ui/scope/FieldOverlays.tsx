@@ -16,6 +16,7 @@ import { clearScopePlacement, unionScopeBounds, type ScopeRect } from './scopePl
 
 export interface FieldOverlaysHandle { layout: (camera?: Camera) => void; }
 interface Props {
+    onReturnView?: () => void;
     viewport: RefObject<HTMLDivElement | null>;
     camera: () => Camera;
     geometry: GeometryCache;
@@ -261,7 +262,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
     const cancelable = Boolean(displayOperation && displayOperation.phase === 'pending' && canCancelThinkingOperation(displayOperation.id));
     return <>
         <div ref={dockElement} className="field-overlay-dock" aria-hidden="true" />
-        <FieldReview ref={review} elementRef={reviewElement} enabled={props.enabled} pending={props.suggestions} thoughts={props.thoughts} roots={props.roots} onReveal={props.onRevealRoot} onAction={props.onSuggestionAction} />
+        <FieldReview onReturnView={props.onReturnView} ref={review} elementRef={reviewElement} enabled={props.enabled} pending={props.suggestions} thoughts={props.thoughts} roots={props.roots} onReveal={props.onRevealRoot} onAction={props.onSuggestionAction} />
         <ConnectionKey elementRef={linesElement} hasHierarchy={props.hasHierarchy} hasRelations={props.hasRelations} local={props.localRelations} />
         {props.scope && <ScopeHub {...props.scope} elementRef={scopeElement} />}
         {displayOperation && <div ref={operationElement} className="spatial-operation-feedback" data-testid="operation-feedback" data-phase={displayOperation.phase} data-operation-id={displayOperation.id} data-origin-scope={displayOperation.scopeIds.join(' ')} data-copy-visible={showCopy || undefined} role="status" aria-live="polite" aria-atomic="true" onPointerDown={event => event.stopPropagation()}>

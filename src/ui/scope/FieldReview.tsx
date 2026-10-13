@@ -1,5 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type RefObject } from 'react';
 import type { Ghost, Thought } from '../../core/model.ts';
+import { Button } from '../primitives/Button.tsx';
+import { t } from '../../shared/i18n.ts';
 import { useUI } from '../store.ts';
 import { RootReview } from './RootReview.tsx';
 import { SuggestionReview } from './SuggestionReview.tsx';
@@ -8,10 +10,11 @@ export interface FieldReviewHandle { refresh(ids: string[]): void; }
 
 /** Only these two reading entries share an open state. Navigation retains its existing owner. */
 export const FieldReview = forwardRef<FieldReviewHandle, {
+    onReturnView?: () => void;
     elementRef: RefObject<HTMLDivElement | null>; enabled: boolean; pending: Ghost[];
     thoughts: Record<string, Thought>; roots: Thought[];
     onAction: (ids: string[], action: 'keep' | 'ignore') => void; onReveal: (id: string) => void;
-}>(function FieldReview({ elementRef, enabled, pending, thoughts, roots, onAction, onReveal }, ref) {
+}>(function FieldReview({ onReturnView, elementRef, enabled, pending, thoughts, roots, onAction, onReveal }, ref) {
     const [needed, setNeeded] = useState<string[]>([]);
     const [active, setActive] = useState<'roots' | 'suggestions' | null>(null);
     const editing = useUI(state => state.editing);
@@ -35,6 +38,7 @@ export const FieldReview = forwardRef<FieldReviewHandle, {
         (field?.querySelector<HTMLElement>('[data-testid="root-review-toggle"]') ?? field)?.focus({ preventScroll: true });
     };
     return <div ref={elementRef} className="field-review-entries" data-testid="field-review-entries" data-surface="true" hidden={!enabled || !!editing}>
+        {onReturnView && <Button variant="ghost" size="sm" data-testid="navigation-return" onPointerDown={event => event.stopPropagation()} onKeyDown={event => event.stopPropagation()} onClick={() => { setActive(null); onReturnView(); }}>{t('Return to previous view')}</Button>}
         <RootReview roots={roots} thoughts={thoughts} onReveal={onReveal} open={active === 'roots'} onOpenChange={open => setActive(open ? 'roots' : null)} />
         <SuggestionReview suggestions={pending.filter(ghost => needed.includes(ghost.id))} pending={pending} thoughts={thoughts} onAction={onAction} open={active === 'suggestions'} onOpenChange={open => setActive(open ? 'suggestions' : null)} onFallbackFocus={fallbackFocus} />
     </div>;

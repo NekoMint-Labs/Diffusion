@@ -2,13 +2,22 @@ import { describe, expect, it } from 'vitest';
 import { searchSnippetPreview } from '../../src/ui/reference/searchSnippetPreview.ts';
 
 describe('search snippets remain short previews rather than evidence or generated answers', () => {
-    it('retains a conservative source excerpt when a definition has no safe leading boundary', () => {
+    it('uses the dictionary heading without cutting the substantive sentence', () => {
         const raw = 'Skip to content Mandarin Temple Beta Come for Knowledge. Stay for Wisdom. Start your Chinese Learning JourneyStart Now 你好 — pronunciations, definitions, and tags | Hanzi | Pinyin | English | Tags | | 你好 | nǐhǎo | hello; hi | HSK 1, l, Easy | nǐhǎo(ni3hao3) T3 1. 1hello; hi Listen to the audio pronunciation 3 times to gain XP May 27, 2026 # 你好nǐhǎo(ni3hao3) 你好 (nǐhǎo) is a common greeting in Mandarin that means \'hello.\' It is used in both formal and informal contexts to acknowledge someone\'s presence.';
         const preview = searchSnippetPreview(raw, '你好');
-        expect(preview).toContain('Start your Chinese Learning JourneyStart Now 你好');
+        expect(preview).toContain('你好 (nǐhǎo) is a common greeting in Mandarin');
+        expect(preview).not.toContain('gain XP');
+        expect(preview).not.toContain('pronunciations, definitions');
         expect(preview).not.toContain('Skip to content');
         expect(Array.from(preview).length).toBeLessThanOrEqual(362);
         expect(raw).toContain('gain XP');
+    });
+    it.each([
+        ['Do not translate e.g. 你好 as goodbye; it means hello.', 'Do not translate e.g. 你好'],
+        ['Only if p < 0.05, translate 你好 as hello.', 'Only if p < 0.05, translate 你好'],
+        ['不要参考版本 1.2 的错误示例把你好翻译成再见。', '不要参考版本 1.2 的错误示例把你好'],
+    ])('keeps abbreviation/decimal/version qualifications: %s', (sentence, prefix) => {
+        expect(searchSnippetPreview('Navigation '.repeat(20) + sentence, '你好')).toContain(prefix);
     });
     it.each([
         'Home | Pricing | Documentation | Do not translate 你好 as goodbye; it means hello.',

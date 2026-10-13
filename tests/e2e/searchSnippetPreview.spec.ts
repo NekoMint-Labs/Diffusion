@@ -1,6 +1,29 @@
 import { test, expect } from '@playwright/test';
 import { wordhippoSnippet } from '../fixtures/wordhippoSnippet.ts';
 
+for (const sentence of [
+    'Do not translate e.g. 你好 as goodbye; it means hello.',
+    'Only if p < 0.05, translate 你好 as hello.',
+    '不要参考版本 1.2 的错误示例把你好翻译成再见。',
+]) test('search preview preserves the complete qualification: ' + sentence, async ({ page }) => {
+    const raw = 'Navigation '.repeat(20) + sentence;
+    await page.addInitScript(() => {
+        localStorage.setItem('diffusion-settings', JSON.stringify({ locale: 'en', provider: 'demo', discovery: { external: true, backend: 'custom', customUrl: 'https://snippet.example' } }));
+        localStorage.setItem('diffusion-first-field-tutorial-v1', JSON.stringify({ status: 'complete' }));
+    });
+    await page.route('https://snippet.example/search', route => route.fulfill({ json: { candidates: [{ id: 'qualified', title: 'Qualified example', url: 'https://example.org/qualified', excerpt: raw, inspected: 'Snippet only' }] } }));
+    await page.goto('/demo?locale=en');
+    await page.locator('[data-thought-id="attention"]').click();
+    await page.getByTestId('thought-more').click();
+    await page.getByRole('menuitem', { name: /^Check evidence/ }).click();
+    await page.locator('#evidence-query').fill('你好'); await page.locator('#evidence-query').press('Enter');
+    await expect(page.getByTestId('search-snippet-preview')).toContainText(sentence);
+    await page.getByText('Show original search snippet', { exact: true }).click();
+    await expect(page.locator('.search-snippet-original p')).toHaveText(raw);
+    await expect(page.locator('[data-evidence-stage="candidate"]')).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Assess against claim' })).toHaveCount(0);
+});
+
 test('reported collapsed table is readable in search and reading while assessment retains the original', async ({ page }, info) => {
     const raw = wordhippoSnippet;
     let assessments = 0;

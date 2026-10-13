@@ -1,18 +1,36 @@
 # Current acceptance map — implementation is not verification
 
+## Integrated candidate checkpoint — October 14, 2026
+
+C now includes main `ae74a2b73cd528f58cef4ef51f85f4651e3baded`: #52–#56 and #60/#61/#65 are merged by the operator, alongside #57/#64/#66. C's #63 source is unchanged from A/B-approved `f77f446` after resolving duplicate squash conflicts: application, native, server, discovery-engine and test trees match byte-for-byte in Git. C recovery, bounded-excerpt validation, approved #49 navigation and conservative source previews are retained. Only merge ancestry and documentation change.
+
+`f77f446` passed 649 unit and 12 focused browser cases locally, and its own full CI/E2E passed; A/B both formally approved it. New integration-head gates/review are recorded separately in #63. A matching 0.3.15 Windows preview is being prepared; it is not installed/live acceptance. The old 0.3.14 remains `2c82f50`. #11/#12 remain open, including real AI/Verify, no-key search quality, physical network/input, persistence and long-session checks. Earlier checkpoint text below retains its original date and is historical.
+
+
 This map separates implemented contracts from executed evidence and physical/operator checks. Product authority lives in the current product, architecture and contract documents — see the [documentation index](README.md); historical phase reports are provenance only. Exact current command results and environment limits are in [`../STATUS.md`](../STATUS.md).
 
 ## Current main checkpoint - October 13, 2026
 
-The integrated main baseline is `337fcc46932fea3018a348118246e39e8a8e8f32`, following the merges of [PR #57](https://github.com/NekoMint-Labs/Diffusion/pull/57) and [PR #64](https://github.com/NekoMint-Labs/Diffusion/pull/64). PR #18, #17 and #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51), including #42–#45. Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
+The integrated main baseline is `bb8de89935a3fff6f13ab13b9ad0c0d88a75d074`, including [PR #57](https://github.com/NekoMint-Labs/Diffusion/pull/57), [PR #64](https://github.com/NekoMint-Labs/Diffusion/pull/64), [PR #66](https://github.com/NekoMint-Labs/Diffusion/pull/66) and A's [PR #52](https://github.com/NekoMint-Labs/Diffusion/pull/52)-[#55](https://github.com/NekoMint-Labs/Diffusion/pull/55) for #42-#45. PR #18, #17 and #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51). Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
 
 Dated records below preserve their original revision, failures, validation scope and then-current PR/Issue status. Earlier instructions to keep #18 Draft or #10 open are historical checkpoint statements, superseded by the merge and milestone closure above. They are not current work instructions. New Round 2 PR evidence belongs to each PR head; it does not retroactively qualify a historical installer or establish integrated-main/native acceptance.
 
-Round 2 PRs #52-#56 are Ready but still require independent review and integration.
+Round 2 PRs #52-#55 are merged; #56 is independent documentation.
+#60/#61/#65 remain unmerged, with current-head A/C approvals and green checks.
+Draft #63 `a63e1d1` passed A's 645 unit / 315 offline and 40 mounted cases,
+plus all six remote gates. B's later quoted-question preview finding still loses negation;
+A independently confirmed it, so delivery remains blocked pending C repair/new-head review.
+Prior findings about abbreviation prefixes, tutorial Return and camera fixtures are resolved.
+These review outcomes are not final installed/live acceptance; current tests lack the quoted-question cases.
+
+The operator [approved #49's navigation interaction](https://github.com/NekoMint-Labs/Diffusion/issues/49#issuecomment-6139794827),
+including a discoverable, keyboard-accessible explicit return after the panel closes.
+C implemented and tested it in #63; B reviewed shared panel/focus compatibility.
+It is not merged-main or installed-product delivery. This approval does not approve #63/#65 for merge or satisfy #11/#12.
 The October 12 shared-transport validation and the limited requester trial of candidate
 `d97eb4be` are recorded in [STATUS.md](../STATUS.md); neither establishes installed-product
 acceptance. The October 13 review queue, including A's completion/probe correction,
-C's newer Draft #63 and B's Draft #65, is maintained in [STATUS.md](../STATUS.md).
+C's newer Draft #63 and B's Ready #65, is maintained in [STATUS.md](../STATUS.md).
 Independent review, live Verify and physical-interruption acceptance remain separate gates.
 
 | Requirement | Current implementation | Executed evidence | Remaining acceptance |

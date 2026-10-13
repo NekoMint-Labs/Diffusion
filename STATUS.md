@@ -1,24 +1,100 @@
 # Diffusion — current status
 
+## Integrated candidate checkpoint — October 14, 2026
+
+C now includes main `ae74a2b73cd528f58cef4ef51f85f4651e3baded`: #52–#56 and #60/#61/#65 are merged by the operator, alongside #57/#64/#66. C's #63 source is unchanged from A/B-approved `f77f446` after resolving duplicate squash conflicts: application, native, server, discovery-engine and test trees match byte-for-byte in Git. C recovery, bounded-excerpt validation, approved #49 navigation and conservative source previews are retained. Only merge ancestry and documentation change.
+
+`f77f446` passed 649 unit and 12 focused browser cases locally, and its own full CI/E2E passed; A/B both formally approved it. New integration-head gates/review are recorded separately in #63. A matching 0.3.15 Windows preview is being prepared; it is not installed/live acceptance. The old 0.3.14 remains `2c82f50`. #11/#12 remain open, including real AI/Verify, no-key search quality, physical network/input, persistence and long-session checks. Earlier checkpoint text below retains its original date and is historical.
+
+
 Diffusion is a quiet thinking medium for ideas before commitment. This file describes the current checkout: what works, which subsystem owns it, what was freshly verified, and what remains incomplete. It is not a changelog. Historical phase reports and prior verification records remain under [`docs/history/`](docs/history/README.md).
-
-## C follow-up — October 13, 2026
-
-C has addressed B's `45fc435` review: conservative Latin-period preview handling, first-field tutorial avoidance for pointer Return, approved explicit-return assertions, and a camera-commit wait in the pending-AI fixture. The original remote E2E failure is recorded, not retried away. Current repair evidence and remaining review gates are at the top of the [follow-up record](docs/ROUND2_FOLLOWUP_20261013.md); the initial combination below retains its original counts.
-
-Current C source includes the approved #49 single-return-point navigation (`9e826fa`), #63 qualifier/dictionary repair (`a238b44`), diagonal submenu travel repair (`efd2ec3`), main `5a47bff`, and current A inputs #54 `3c6f771` / #55 `378a91e` through `aff07b1`. C submitted refreshed Approval for #60 `2aabff6`, #61 `46b30c0` and repaired #65 `4c15485`, based on actual source/test review and each head's successful GitHub CI/E2E. #63 remains Draft pending A's preview re-review and B's navigation compatibility review. See [follow-up evidence and remaining owners](docs/ROUND2_FOLLOWUP_20261013.md).
-
-#49 is now product-approved and implemented; ordinary dismissal stays put and a keyboard-accessible explicit return remains after closing the panel. Search preview keeps full sentence prefixes, conservatively retaining noisy text when no safe cut exists. The web-answer proposal/new search backend remains unimplemented. 642 unit/315 offline and type/build/static checks passed; focused browser results are in the follow-up record. Old 0.3.14 (`2c82f50`) is unchanged and does not contain this follow-up. #11/#12 installed/live acceptance stays open.
-
-The sections below are dated prior checkpoints, not current-head qualification.
 
 ## Current main checkpoint - October 13, 2026
 
-The integrated main baseline is `337fcc46932fea3018a348118246e39e8a8e8f32`, following the merges of [PR #57](https://github.com/NekoMint-Labs/Diffusion/pull/57) (proposal locality) and [PR #64](https://github.com/NekoMint-Labs/Diffusion/pull/64) (suggestion-review IME Escape and focus return). PR #18, #17 and #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51), including #42–#45. Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
+The integrated main baseline is `bb8de89935a3fff6f13ab13b9ad0c0d88a75d074`, including [PR #57](https://github.com/NekoMint-Labs/Diffusion/pull/57) (proposal locality), [PR #64](https://github.com/NekoMint-Labs/Diffusion/pull/64) (suggestion-review IME Escape and focus return), [PR #66](https://github.com/NekoMint-Labs/Diffusion/pull/66) (complete-arrival drag test precondition) and A's [PR #52](https://github.com/NekoMint-Labs/Diffusion/pull/52)-[#55](https://github.com/NekoMint-Labs/Diffusion/pull/55) (#42-#45 provider classification, authored Ask, kept lineage and bounded ancestors). PR #18, #17 and #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51). Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
 
 Dated records below preserve their original revision, failures, validation scope and then-current PR/Issue status. Earlier instructions to keep #18 Draft or #10 open are historical checkpoint statements, superseded by the merge and milestone closure above. They are not current work instructions. New Round 2 PR evidence belongs to each PR head; it does not retroactively qualify a historical installer or establish integrated-main/native acceptance.
 
-## Round 2 review update (2026-10-13)
+## Current Round 2 delivery and review (2026-10-13)
+
+The operator merged #53 as `5a47bff`, #54 as `3afc82a` and #55 as `bb8de89`.
+The final #55 input `2583bb4` had current-head B Approval and all six successful checks
+([CI](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38394811403),
+[complete E2E](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38394811387)).
+Its full tree matched A's tested `01b7247`: 583 unit / 289 offline and six focused browser
+cases passed. The appended-goal repair invalidates obsolete results when supplied direct
+or ancestor wording changes, while preserving unchanged truncated context. These input-head
+results are not new installed-product acceptance or a rerun on the squash commit.
+
+#60 `2aabff62`, #61 `46b30c02` and #65 `4c15485` have A/C current-head approvals and
+green checks but remain unmerged. C's Draft #63 `a63e1d1` implements the approved #49
+single-return interaction and combines A's stale-goal repair with failure recovery.
+A independently passed 645 unit / 315 offline, application types/build and 40 related
+production-browser cases, one worker, zero retries/skips. Its six remote checks passed;
+earlier `45fc435` and `208d20a` failed runs retain their original identities.
+
+B then identified a further source-preview gap on `a63e1d1`: a question mark inside a
+quoted English or Chinese question can remove the containing sentence's negation.
+`Do not answer "Ready?" with Yes without confirmation.` becomes `...with Yes without confirmation.`;
+`不要把“你好吗？”翻译为 Hello；它是问句。` loses `不要把`.
+A independently confirmed both helper outputs. B's [current Request Changes](https://github.com/NekoMint-Labs/Diffusion/pull/63#pullrequestreview-5503741935)
+therefore blocks delivery despite existing green tests. C owns conservative presentation
+repair and quoted-question regressions; no new provider/model call is required.
+B has already verified the previous abbreviation, tutorial/pointer-return and camera
+fixture findings fixed; shared Field review is not awaiting its first pass.
+
+The latest published Windows preview remains `0.3.14` from `2c82f50`; it excludes these
+follow-ups. #49 approval and candidate implementation are not merged-main/native acceptance.
+C prepares the corresponding installer after repaired-head review/gates. #11/#12 remain
+open for live Verify/provider quality, physical input/failure/reopen and final real-task trial.
+The October 12 `d97eb4be` user trial retains its original version.
+
+## Recorded Round 2 review and restack (2026-10-13)
+
+#52 received C's independent shared-transport approval and was merged. After its squash,
+A replayed the feature-only sequence: #53 `b1f1596` on main `12cc0fe`, #54 `87d9fdb`
+on new #53, and #55 `8a58e96` on new #54. Incremental scopes are 11/6/9 files;
+replayed range-diffs are unchanged and exact force-with-lease protected publication.
+The #66 test precondition is preserved. A small #43 correction requires explicit `earlier`
+input before Demo can choose its authored recall shortcut; ordinary Ask retains its answer path.
+
+The exact restacked A sequence passed 577 unit and 289 offline tests, application/Core
+types, locale/source-size checks and production build. Six focused production-browser
+cases passed with one worker, zero retries/skips. Full new-head CI/E2E passed for all three
+PRs; refreshed review remains requested separately from old-head approvals. Historical live
+samples and the requester's October 12 trial retain their recorded versions.
+
+A independently approved #60 `2aabff62` and #61 `46b30c02` after their current-main sync;
+the touched files match the combination that passed eight production-browser cases.
+All six new-head CI/E2E checks have now passed for each PR. C's Draft #63 `2c82f50` passed 21 independently
+run Verify/compact/feedback cases and 75 focused unit tests, but A requested changes:
+mixed navigation plus meaningful sentence prefixes can lose negation in search previews.
+B's Draft #65 advanced from `94db15a` to `4c15485`, adopting C's Keep-receipt repair
+`53403ad` for suggestions arriving while the review panel is already open. A independently
+ran 23 compact/feedback browser cases on the new head and updated its review to Approval;
+C's refreshed formal review remains requested. No PR was merged by these
+reviews. #11/#12 remain open.
+
+The operator explicitly [approved #49's navigation behavior](https://github.com/NekoMint-Labs/Diffusion/issues/49#issuecomment-6139794827)
+on October 13. C owns implementation and focused tests; B reviews compatibility with #65.
+Capture one camera/selection return point only before the first explicit reveal. Further
+reveals share it; ordinary close/Escape, Suggestions and writing preserve the current view,
+drafts and AI request. Explicit return restores the camera and still-valid selected IDs,
+then clears the point; Field switching/reload end its lifetime. The return action must
+remain discoverable and keyboard-accessible even after Overview/Find is dismissed.
+This is an approved interaction to implement, not delivered production behavior or permission
+to merge #63/#65. Their PR heads have not changed since A's last reviews.
+
+Documentation head `e19d83d` also passed all six complete CI/E2E checks; the subsequent
+status-only documentation revision needs its own checks and independent review.
+
+Post-publication readback: all six new-head CI/E2E checks passed for #53 `b1f1596`,
+#54 `87d9fdb` and #55 `8a58e96`. The first #54/#55 workflow groups were superseded/cancelled
+by the sequential upstream updates; their aggregate gates are recorded as failed. The
+subsequent complete runs on these same final heads passed, not a retry of a reproduced
+test failure. New-head independent review remains separate from these automated results.
+
+## Recorded earlier Round 2 review update (2026-10-13)
 
 A's #52-#55 now include main `337fcc46` through normal merges. The #52 source-review
 follow-up rejects non-success Gemini finish reasons even with parseable JSON and makes

@@ -1,5 +1,12 @@
 # Diffusion documentation
 
+## Integrated candidate checkpoint — October 14, 2026
+
+C now includes main `ae74a2b73cd528f58cef4ef51f85f4651e3baded`: #52–#56 and #60/#61/#65 are merged by the operator, alongside #57/#64/#66. C's #63 source is unchanged from A/B-approved `f77f446` after resolving duplicate squash conflicts: application, native, server, discovery-engine and test trees match byte-for-byte in Git. C recovery, bounded-excerpt validation, approved #49 navigation and conservative source previews are retained. Only merge ancestry and documentation change.
+
+`f77f446` passed 649 unit and 12 focused browser cases locally, and its own full CI/E2E passed; A/B both formally approved it. New integration-head gates/review are recorded separately in #63. A matching 0.3.15 Windows preview is being prepared; it is not installed/live acceptance. The old 0.3.14 remains `2c82f50`. #11/#12 remain open, including real AI/Verify, no-key search quality, physical network/input, persistence and long-session checks. Earlier checkpoint text below retains its original date and is historical.
+
+
 The index for this repository's documentation. Start at the top and descend only as far as your
 change requires.
 
@@ -9,12 +16,10 @@ a current document may be cited as a contract. Material under [`history/`](histo
 current document. When a current document and the code disagree, stop and resolve the conflict
 explicitly rather than assuming one of them is right.
 
-**Current checkpoint (October 13, 2026):** main is `5a47bff`, including merged #18, #57, #64, #66, #52 and #53; #10 is closed as its delivered milestone. The [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51) owns the new queue. #11/#12 remain open for Field and installed-product acceptance. Start with [STATUS.md](../STATUS.md) and [ACCEPTANCE_MAP.md](ACCEPTANCE_MAP.md); their dated records preserve original evidence and then-current statuses, not new acceptance claims.
+**Current checkpoint (October 13, 2026):** main is `bb8de89`, including merged #18, #57, #64, #66 and A's #52-#55; #10 is closed as its delivered milestone. #60/#61/#65 remain reviewed Field inputs. Draft #63 implements approved #49 in its candidate but still has a quoted-question source-preview blocker at `a63e1d1`; the old `2c82f50` installer excludes these changes. The [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51) owns the queue. #11/#12 remain open for Field and installed-product acceptance. Start with [STATUS.md](../STATUS.md) and [ACCEPTANCE_MAP.md](ACCEPTANCE_MAP.md); dated records preserve their actual versions and evidence limits.
 
 The live Round 2 review checkpoint and the limited requester trial of candidate `d97eb4be`
 are recorded in [STATUS.md](../STATUS.md); use that entry before relying on older history.
-
-Current C search/navigation changes and review dispositions: [October 13 follow-up](ROUND2_FOLLOWUP_20261013.md).
 
 ## START HERE
 

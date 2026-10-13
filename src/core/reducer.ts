@@ -15,7 +15,7 @@ function validateThought(t: Thought): void {
     const lineageValid = lineage === undefined || Array.isArray(lineage) && lineage.length > 0 && lineage.length <= 32 && lineage.every(parentId => typeof parentId === 'string' && !!parentId && parentId.length <= 200 && parentId !== t.id) && new Set(lineage).size === lineage.length;
     const actionValid = lineage === undefined
         ? t.generationAction === undefined
-        : t.generationAction !== undefined && ['continue', 'angle', 'question'].includes(t.generationAction);
+        : t.generationAction !== undefined && ['continue', 'angle', 'question', 'ask'].includes(t.generationAction);
     if (typeof t.id !== 'string' || !t.id || t.id.length > 200 || ['__proto__', 'constructor', 'prototype'].includes(t.id) || typeof t.text !== 'string' || !finite(t.x) || !finite(t.y) || t.text.length > textLimit || !['thought', 'crystal', 'source'].includes(t.kind) || !['active', 'cooling', 'peripheral', 'memory'].includes(t.life) || typeof t.kept !== 'boolean' || [t.createdAt, t.updatedAt, t.touchedAt].some(n => !Number.isFinite(n) || n < 0) || !lineageValid || !actionValid)
         throw new DomainError('Invalid thought');
 }

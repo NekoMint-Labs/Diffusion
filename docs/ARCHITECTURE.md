@@ -34,8 +34,9 @@ source; arrival changes the count without opening a panel or moving focus. The o
 candidate IDs until close and reads current canonical wording, dropping deleted IDs. Suggestion
 sources retain frozen request IDs; Keep uses the existing action and retains an already-kept receipt
 for that reading session. Normal Escape returns focus, composition Escape stays with the IME, and
-writing or the ReadWindow closes the shared panel without cancelling AI. Explicit reveal retains
-the existing navigation owner. Reading never moves Thought coordinates or the camera. A compact connection
+writing or the ReadWindow closes the shared panel without cancelling AI. Explicit Find/Overview reveal captures a single ephemeral camera/selection return point.
+Ordinary dismissal stays put; only the discoverable Return action restores it, filtering deleted
+selection IDs. Field switch/reload clears it; explicit folds remain unchanged. Reading never moves Thought coordinates or the camera. A compact connection
 key follows the existing Field heading without reserving a permanent bottom lane. Parent arrows retain their depth styles; confirmed semantic
 relations remain neutral and arrowless, with stronger attention contrast. Semantic routes still require
 Local scale and visible endpoints; distant views explain the existing omission instead of changing data.

@@ -2,11 +2,13 @@
 
 Diffusion is a quiet thinking medium for ideas before commitment. This file describes the current checkout: what works, which subsystem owns it, what was freshly verified, and what remains incomplete. It is not a changelog. Historical phase reports and prior verification records remain under [`docs/history/`](docs/history/README.md).
 
-## C review and integration update — October 13, 2026
+## C follow-up — October 13, 2026
 
-C independently reviewed the current #52–#55 and #56 heads and submitted Approval; the shared #27/#42 transport contract is confirmed. The C branch now includes main `337fcc46`, the A sequence, independent #56, compact-review #65 and test-only #66, preserving C's recovery/Verify fixes. #65 received Request Changes for losing the Kept receipt of a suggestion arriving during an already-open review; C fixed that omission in `53403ad`, with a before-failure and after-pass deferred-response regression. #66 received a scoped independent Approval. No PR was merged into main by this work, and #63 still requires another developer's independent review. Exact heads and evidence limits: [review record](docs/ROUND2_REVIEW_20261013.md).
+Current C source includes the approved #49 single-return-point navigation (`9e826fa`), #63 qualifier/dictionary repair (`a238b44`), diagonal submenu travel repair (`efd2ec3`), main `5a47bff`, and current A inputs #54 `3c6f771` / #55 `378a91e` through `aff07b1`. C submitted refreshed Approval for #60 `2aabff6`, #61 `46b30c0` and repaired #65 `4c15485`, based on actual source/test review and each head's successful GitHub CI/E2E. #63 remains Draft pending A's preview re-review and B's navigation compatibility review. See [follow-up evidence and remaining owners](docs/ROUND2_FOLLOWUP_20261013.md).
 
-#48's compact direction is approved; [#49 shared rules and navigation proposal](docs/ISSUE49_NAVIGATION_PROPOSAL.md) distinguish the agreed reading boundaries from the still-unapproved single-return-point behavior. The source combination passed 623 unit/315 offline, application/Core types, 1007 locale keys, syntax/source-size and frontend checks; the receipt repair's 13 compact/IME browser cases passed. Final combined-head browser, packaging and installed/live qualification are separate. Earlier records below remain dated evidence, including the incomplete local full run interrupted for the receipt correction. The web-answer proposal and new navigation remain unimplemented; useful real search/assessment and physical Windows acceptance remain open.
+#49 is now product-approved and implemented; ordinary dismissal stays put and a keyboard-accessible explicit return remains after closing the panel. Search preview keeps full sentence prefixes, conservatively retaining noisy text when no safe cut exists. The web-answer proposal/new search backend remains unimplemented. 642 unit/315 offline and type/build/static checks passed; focused browser results are in the follow-up record. Old 0.3.14 (`2c82f50`) is unchanged and does not contain this follow-up. #11/#12 installed/live acceptance stays open.
+
+The sections below are dated prior checkpoints, not current-head qualification.
 
 ## Current main checkpoint - October 13, 2026
 

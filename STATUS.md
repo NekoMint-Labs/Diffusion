@@ -2,35 +2,59 @@
 
 Diffusion is a quiet thinking medium for ideas before commitment. This file describes the current checkout: what works, which subsystem owns it, what was freshly verified, and what remains incomplete. It is not a changelog. Historical phase reports and prior verification records remain under [`docs/history/`](docs/history/README.md).
 
-## Local 0.3.12 table presentation — October 12, 2026 (not uploaded)
+## Current main checkpoint - October 13, 2026
 
-The operator supplied a second failing example: collapsed WordHippo pipe tables, empty columns, related translations and an advertisement still dominated Verify. Opening pipe tables now receive a bounded literal cell preview, preserving populated cell order and wording and cutting the named related-navigation/ad boundary. Both search snippets and fetched read passages use this presentation. Original text remains expandable; fetch/extract matching, passage IDs, provenance and the raw model-assessment input are unchanged. This does not generate an answer or establish live search relevance. The exact supplied example is covered by unit and browser regression through search, read and explicit assessment. Delivery checks and installed/live acceptance limitations are recorded with the 0.3.12 artifact.
-
-## Previous local 0.3.11 feedback repairs — October 12, 2026 (not uploaded)
-
-The operator's 0.3.10 report exposed missing timeout acknowledgement, non-dismissible notices and missing search-disconnect acknowledgement. Timeout now has its own modal title; transient bottom notices and terminal operation feedback have explicit Close controls. Active operations retain Stop, and ongoing save/startup faults are not dismissed by the transient-notice control. Verify observes known offline state and in-flight offline events, acknowledges network/timeout failures, releases waiting UI even if the engine ignores cancellation, and discards late output. Recovery remains explicit. The supplied dictionary snippet now previews its original definition sentence instead of leading pronunciation/table/XP metadata, while retaining raw expansion and unread-candidate status. Search providers, query and source language are unchanged.
-
-Current repair checks: 572 unit, 315 offline, 22 focused browser cases (one worker, zero retries), application types, 999 locale keys, source size, syntax/imports and production build passed. A preview regression initially selected later FAQ headings instead of a pronunciation-only snippet; it was corrected without changing the existing assertion, and the final complete focused run plus the supplied-snippet case passed. Browser offline events and fixture responses are separate from physical Windows/live-provider acceptance. 0.3.10 evidence below belongs to the earlier combined revision; independent review, readable installed/live Verify, native acceptance and #49/#48 design approval remain open.
-
-## Previous local integration — October 12, 2026
-
-This local 0.3.10 checkout combines A #52 `a022d403`, #53 `593a1060`, #54 `6fd9ddd9`, #55 `d97eb4be`, independent #56 `e9b7b487`, B #57 `aa8d18f2` / #60 `f395e95b` / #61 `edc87780`, and C c948a79 plus local 0.3.9 follow-up. No remote merge or approval has occurred. The combination passed 565 unit, 315 offline and 77 focused production-browser cases, one worker, zero retries; application/Core types, 997 locale keys, syntax/imports, source-size, frontend and Windows NSIS builds passed. The separate authored-Ask browser case is recorded in the delivery ledger. This is not the full browser suite or installed/live-model acceptance. The transport resolves to the exact current #52 implementation, while C's terminal UI/popup remains; the old body AbortError identity assertion now checks normalized provider-unreachable and its safe message, with explicit caller cancellation identity still protected. #49 v3 and #48 remain design proposals pending product approval. Earlier counts and CI observation notes below belong to their named historical inputs, not this current local combination. C's own combined changes still require another developer's independent review.
-
-## Current main checkpoint — October 12, 2026
-
-The integrated main baseline is `edf56d59a8fe35d1c5d8446a223f8d6aa54fc357`, the merge of [PR #18](https://github.com/NekoMint-Labs/Diffusion/pull/18). PR #17 and PR #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51), including #42–#45. Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
+The integrated main baseline is `337fcc46932fea3018a348118246e39e8a8e8f32`, following the merges of [PR #57](https://github.com/NekoMint-Labs/Diffusion/pull/57) (proposal locality) and [PR #64](https://github.com/NekoMint-Labs/Diffusion/pull/64) (suggestion-review IME Escape and focus return). PR #18, #17 and #29 are also merged. [Issue #10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone; follow-up work is tracked separately in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51), including #42–#45. Implementation delivery does not complete [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) or [installed Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12), which remain open.
 
 Dated records below preserve their original revision, failures, validation scope and then-current PR/Issue status. Earlier instructions to keep #18 Draft or #10 open are historical checkpoint statements, superseded by the merge and milestone closure above. They are not current work instructions. New Round 2 PR evidence belongs to each PR head; it does not retroactively qualify a historical installer or establish integrated-main/native acceptance.
 
-## Round 2 review checkpoint (2026-10-12)
+## Round 2 review update (2026-10-13)
 
-Main remains the baseline above. A-owned PRs #52-#56 are Ready for independent review,
+A's #52-#55 now include main `337fcc46` through normal merges. The #52 source-review
+follow-up rejects non-success Gemini finish reasons even with parseable JSON and makes
+connection probes reject declared truncation/refusal. Unknown, missing and unsupported
+Gemini finish reasons are unreadable responses, not assumed refusal. The 38 new regression
+cases failed before the correction. Local #52 validation passed 556 unit and 289 offline
+tests, application/Core typechecking and production build. Current-head remote results
+are maintained in the PR descriptions; October 12 checks below apply to their recorded heads.
+
+C's #63 `7ff0e09` is a newer Draft integration input that incorporates earlier A/B snapshots
+and publishes a Windows prerelease; it is not reviewed main or installed/live acceptance.
+B's #65 `94db15a` is a Draft compact-review implementation on current main; #48's product
+direction is approved, while independent review and C's #49 shared/navigation review remain
+pending. The #64 pre-merge browser failure and successful failed-job rerun are retained in
+the [integration handoff](https://github.com/NekoMint-Labs/Diffusion/pull/65#issuecomment-6136299940).
+#52 still needs C's shared-transport review; #56 needs independent documentation review.
+#11/#12 remain open.
+
+## Recorded Round 2 review checkpoint (2026-10-12)
+
+At this checkpoint main was `edf56d59`. A-owned PRs #52-#56 were Ready for independent review,
 not integrated deliveries. The #42 follow-up at `a022d403c14ba45133446e947223b1d219cc2139`
 normalizes timeout and stream interruptions across browser/native AI transports and
 preserves explicit caller cancellation. It propagates through #53 -> #54 -> #55 without
 rewriting published history. The combined A stack at `d97eb4be0b015d8f95f658ee5b17aa807dddfb58`
 passed 535 unit tests, 289 offline tests, application typechecking and production build.
-These are local candidate results; remote checks must be evaluated on the new PR heads.
+The latest distinct checks observed through the public GitHub check-runs API were green:
+
+| PR | Head | CI | Browser E2E |
+|---|---|---|---|
+| [#52](https://github.com/NekoMint-Labs/Diffusion/pull/52) | `a022d403` | [38225436779](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38225436779) | [38225436839](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38225436839) |
+| [#53](https://github.com/NekoMint-Labs/Diffusion/pull/53) | `593a1060` | [38225435300](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38225435300) | [38225434958](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38225434958) |
+| [#54](https://github.com/NekoMint-Labs/Diffusion/pull/54) | `6fd9ddd9` | [38225439104](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38225439104) | [38225439224 attempt 2](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38225439224) |
+| [#55](https://github.com/NekoMint-Labs/Diffusion/pull/55) | `d97eb4be` | [38225435659](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38225435659) | [38225435754](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38225435754) |
+| [#56](https://github.com/NekoMint-Labs/Diffusion/pull/56) | `7e9bbb6b` | [38248208582](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38248208582) | [38248208504](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38248208504) |
+
+The #54 browser job was retried once after a failed attempt; the retained
+original failure is not erased, and the retry completed successfully. The checks above
+are PR-head evidence, not integrated-main or Windows/native acceptance.
+
+The current A candidate `d97eb4be` was also tried in the browser by the requester on
+October 12, 2026. The reported results were: #42 normal (fault cases were not itemized),
+#43 direct suggestions normal, #44 unkept suggestions disappear after refresh while kept
+answers survive refresh, and #45 multi-hop continuation normal. This is a limited
+user-reported candidate trial; it does not qualify the full provider/fault matrix, the
+complete Issue #10 scenario matrix, or installed Windows/native behavior.
 
 C's draft #63 replaces the withdrawn #58/#59 review input. Its original body-read tests
 still require raw exception identity, contrary to the normalized timeout contract. A
@@ -47,8 +71,24 @@ needs reconciliation with #51's no-provider-expansion scope. It is not accepted 
 
 #11/#12 stay open. C owns reviewed integration and the identifiable Windows candidate;
 the operator owns final acceptance. Historical records below retain their original limits.
-Current-head remote CI was not observed: the checks connector required sign-in and the
-desktop browser-control helper was unavailable. Prior green checks belong to prior heads.
+
+## Historical C local candidate records (October 12, 2026)
+
+These dated records describe the state before the October 13 integration; references to not uploading or unknown remote checks apply only to those recorded snapshots. Source and the 0.3.12 prerelease were subsequently published. Current integration evidence is recorded separately.
+
+## Local 0.3.12 table presentation — October 12, 2026 (not uploaded)
+
+The operator supplied a second failing example: collapsed WordHippo pipe tables, empty columns, related translations and an advertisement still dominated Verify. Opening pipe tables now receive a bounded literal cell preview, preserving populated cell order and wording and cutting the named related-navigation/ad boundary. Both search snippets and fetched read passages use this presentation. Original text remains expandable; fetch/extract matching, passage IDs, provenance and the raw model-assessment input are unchanged. This does not generate an answer or establish live search relevance. The exact supplied example is covered by unit and browser regression through search, read and explicit assessment. Delivery checks and installed/live acceptance limitations are recorded with the 0.3.12 artifact.
+
+## Previous local 0.3.11 feedback repairs — October 12, 2026 (not uploaded)
+
+The operator's 0.3.10 report exposed missing timeout acknowledgement, non-dismissible notices and missing search-disconnect acknowledgement. Timeout now has its own modal title; transient bottom notices and terminal operation feedback have explicit Close controls. Active operations retain Stop, and ongoing save/startup faults are not dismissed by the transient-notice control. Verify observes known offline state and in-flight offline events, acknowledges network/timeout failures, releases waiting UI even if the engine ignores cancellation, and discards late output. Recovery remains explicit. The supplied dictionary snippet now previews its original definition sentence instead of leading pronunciation/table/XP metadata, while retaining raw expansion and unread-candidate status. Search providers, query and source language are unchanged.
+
+Current repair checks: 572 unit, 315 offline, 22 focused browser cases (one worker, zero retries), application types, 999 locale keys, source size, syntax/imports and production build passed. A preview regression initially selected later FAQ headings instead of a pronunciation-only snippet; it was corrected without changing the existing assertion, and the final complete focused run plus the supplied-snippet case passed. Browser offline events and fixture responses are separate from physical Windows/live-provider acceptance. 0.3.10 evidence below belongs to the earlier combined revision; independent review, readable installed/live Verify, native acceptance and #49/#48 design approval remain open.
+
+## Previous local integration — October 12, 2026
+
+This local 0.3.10 checkout combines A #52 `a022d403`, #53 `593a1060`, #54 `6fd9ddd9`, #55 `d97eb4be`, independent #56 `e9b7b487`, B #57 `aa8d18f2` / #60 `f395e95b` / #61 `edc87780`, and C c948a79 plus local 0.3.9 follow-up. No remote merge or approval has occurred. The combination passed 565 unit, 315 offline and 77 focused production-browser cases, one worker, zero retries; application/Core types, 997 locale keys, syntax/imports, source-size, frontend and Windows NSIS builds passed. The separate authored-Ask browser case is recorded in the delivery ledger. This is not the full browser suite or installed/live-model acceptance. The transport resolves to the exact current #52 implementation, while C's terminal UI/popup remains; the old body AbortError identity assertion now checks normalized provider-unreachable and its safe message, with explicit caller cancellation identity still protected. #49 v3 and #48 remain design proposals pending product approval. Earlier counts and CI observation notes below belong to their named historical inputs, not this current local combination. C's own combined changes still require another developer's independent review.
 
 ## C follow-up evidence before current integration
 

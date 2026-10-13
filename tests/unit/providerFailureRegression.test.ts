@@ -23,6 +23,43 @@ const provider = (body: unknown) => new DirectAIProvider({ providerId: 'deepseek
 afterEach(() => vi.unstubAllGlobals());
 
 describe('ordinary and structured provider failures (#42)', () => {
+    for (const reason of ['LANGUAGE', 'OTHER', 'MALFORMED_FUNCTION_CALL', 'UNEXPECTED_TOOL_CALL', 'FINISH_REASON_UNSPECIFIED', 'UNKNOWN_FUTURE_REASON', '', undefined, null, 42]) {
+        for (const channel of ['respond', 'structured', 'testConnection'] as const) {
+            it(`Gemini ${channel} rejects non-success finish reason ${String(reason)} even with parseable JSON`, async () => {
+                const body = { candidates: [{ finishReason: reason, content: { parts: [{ text }] } }] };
+                const send = vi.fn(async () => body);
+                const p = new DirectAIProvider({ providerId: 'gemini', apiKey: 'fixture-only', model: 'fixture', depth: 'standard' }, { kind: 'webview', send });
+                if (channel === 'testConnection') expect(await p.testConnection()).toEqual({ ok: false, effectiveModel: null, failure: 'malformed-provider-response' });
+                else {
+                    const pending = channel === 'respond' ? p.respond(packet(), { kind: 'ask', text: 'Question', requestId: 'r' }) : p.structured({ purpose: 'thought-extraction', instructions: 'Return JSON', input: {} });
+                    await expect(pending).rejects.toMatchObject({ failure: 'malformed-provider-response' });
+                }
+                expect(send).toHaveBeenCalledTimes(1);
+            });
+        }
+    }
+    for (const protocol of ['chat-completions', 'responses', 'anthropic-messages', 'gemini-generate-content'] as const) {
+        it(`${protocol} connection probe rejects parseable truncated output and accepts a complete probe`, async () => {
+            const send = vi.fn().mockResolvedValueOnce(envelope(protocol, true, '{"ok":true}')).mockResolvedValueOnce(envelope(protocol, false, '{"ok":true}'));
+            const id = protocol === 'anthropic-messages' ? 'anthropic' : protocol === 'gemini-generate-content' ? 'gemini' : 'compatible';
+            const p = new DirectAIProvider({ providerId: id, apiKey: 'fixture-only', model: 'fixture', baseUrl: 'https://fixture.example', protocol, depth: 'standard' }, { kind: 'webview', send });
+            expect(await p.testConnection()).toEqual({ ok: false, effectiveModel: null, failure: 'response-truncated' });
+            expect(send).toHaveBeenCalledTimes(1);
+            expect(await p.testConnection()).toEqual({ ok: true, effectiveModel: null });
+            expect(send).toHaveBeenCalledTimes(2);
+        });
+    }
+    it.each([
+        ['compatible', 'chat-completions', { choices: [{ finish_reason: 'content_filter', message: { content: '{"ok":true}' } }] }],
+        ['compatible', 'responses', { status: 'completed', output: [{ type: 'message', content: [{ type: 'refusal', refusal: 'private provider prose' }] }] }],
+        ['anthropic', 'anthropic-messages', { stop_reason: 'refusal', content: [{ type: 'text', text: '{"ok":true}' }] }],
+        ['gemini', 'gemini-generate-content', { candidates: [{ finishReason: 'SAFETY', content: { parts: [{ text: '{"ok":true}' }] } }] }],
+    ] as const)('%s connection probe classifies declared refusal without private prose', async (id, protocol, body) => {
+        const send = vi.fn(async () => body);
+        const p = new DirectAIProvider({ providerId: id, apiKey: 'fixture-only', model: 'fixture', baseUrl: 'https://fixture.example', protocol, depth: 'standard' }, { kind: 'webview', send });
+        expect(await p.testConnection()).toEqual({ ok: false, effectiveModel: null, failure: 'provider-refused' });
+        expect(send).toHaveBeenCalledTimes(1);
+    });
     for (const protocol of ['chat-completions', 'responses', 'anthropic-messages', 'gemini-generate-content'] as const) {
         for (const channel of ['respond', 'structured'] as const) {
             it(`${protocol} ${channel} rejects even parseable JSON marked truncated`, async () => {

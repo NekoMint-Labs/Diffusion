@@ -35,6 +35,8 @@ Model identity is reported, not assumed: `AIResponse.model` is `{ requested, eff
 
 Ordinary and structured direct responses both reject provider-declared truncation before parsing semantic output, even when the partial text happens to be valid JSON. They report `response-truncated`; explicit provider refusal reports `provider-refused`. Cancellation and timeouts remain distinct during response-body reads. No implicit retry is introduced.
 
+The deliberate connection probe applies the same completion/refusal checks. Gemini non-streaming text is accepted only with `STOP`; `MAX_TOKENS` is truncation and explicit safety/blocking reasons are refusal. Other, unknown or missing finish reasons are unreadable provider responses, even when their text is parseable JSON. They cannot establish a successful connection or emit semantic output.
+
 Failures are bounded. `src/ai/errors.ts` maps statuses and provider error *type tokens* onto a fixed vocabulary — `authentication-failed`, `rate-limited`, `model-not-found`, `timeout`, `provider-unreachable`, `malformed-provider-response` and the rest — each with an actionable sentence and one remedy. The provider's own message and body never reach a surface, a log or a diagnostic. Anthropic overloads with 529; that is back-pressure, not a broken deployment.
 
 ## Credentials (Phase 2.8B-1)

@@ -21,6 +21,8 @@ export const THINKING_FAILURES = [
     'provider-server-error',
     'unsupported-capability',
     'malformed-provider-response',
+    'response-truncated',
+    'provider-refused',
     'semantic-validation-failure',
     'cancelled',
     'discovery-unavailable',
@@ -65,6 +67,8 @@ export function failureText(failure: ThinkingFailure, subject = 'The provider'):
         case 'timeout': return t('{subject} did not answer in time.', values);
         case 'provider-server-error': return t('{subject} reported a server error. Nothing about the request was wrong.', values);
         case 'unsupported-capability': return t('{subject} does not support this option.', values);
+        case 'response-truncated': return t('{subject} returned an incomplete answer. Try again or increase the output budget.', values);
+        case 'provider-refused': return t('{subject} declined to answer this request. You can revise the question.', values);
         case 'malformed-provider-response': return t('{subject} returned a response Diffusion could not read.', values);
         case 'semantic-validation-failure': return t('The answer arrived but did not pass Diffusion validation. Nothing was changed.');
         case 'cancelled': return t('Thinking stopped. Only already surfaced possibilities remain.');
@@ -87,6 +91,7 @@ export function failureRemedy(failure: ThinkingFailure): FailureRemedy {
         case 'model-not-found': return 'model';
         case 'discovery-unavailable':
         case 'reader-unavailable': return 'search-settings';
+        case 'provider-refused':
         case 'semantic-validation-failure':
         case 'cancelled': return 'none';
         default: return 'retry';

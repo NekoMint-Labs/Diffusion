@@ -132,6 +132,7 @@ export function readWireText(protocol: WireProtocol, envelope: unknown): WireRes
     }
     else if (protocol === 'anthropic-messages') {
         effectiveModel = bounded(root.model, 200) || null;
+        if (root.stop_reason === 'refusal') throw new WireOutputError('refusal');
         if (root.stop_reason === 'max_tokens') truncated = true;
         if (!Array.isArray(root.content)) throw new WireOutputError('malformed');
         for (const value of root.content.slice(0, 64)) {
@@ -142,9 +143,13 @@ export function readWireText(protocol: WireProtocol, envelope: unknown): WireRes
     }
     else if (protocol === 'gemini-generate-content') {
         effectiveModel = bounded(root.modelVersion, 200) || null;
+        if (root.promptFeedback && object(root.promptFeedback).blockReason) throw new WireOutputError('refusal');
         if (!Array.isArray(root.candidates)) throw new WireOutputError('malformed');
         const candidate = object(root.candidates[0]);
-        if (typeof candidate.finishReason === 'string' && candidate.finishReason.toUpperCase() === 'MAX_TOKENS') truncated = true;
+        const finishReason = typeof candidate.finishReason === 'string' ? candidate.finishReason.toUpperCase() : '';
+        if (finishReason === 'MAX_TOKENS') truncated = true;
+        else if (['SAFETY', 'RECITATION', 'BLOCKLIST', 'PROHIBITED_CONTENT', 'SPII'].includes(finishReason)) throw new WireOutputError('refusal');
+        else if (finishReason !== 'STOP') throw new WireOutputError('malformed');
         const content = candidate.content;
         if (content !== undefined) {
             const parts = object(content).parts;
@@ -156,6 +161,7 @@ export function readWireText(protocol: WireProtocol, envelope: unknown): WireRes
         if (!Array.isArray(root.choices) || !root.choices.length) throw new WireOutputError('malformed');
         const choice = object(root.choices[0]);
         effectiveModel = bounded(root.model, 200) || null;
+        if (choice.finish_reason === 'content_filter') throw new WireOutputError('refusal');
         if (choice.finish_reason === 'length') truncated = true;
         else if (choice.finish_reason && choice.finish_reason !== 'stop') throw new WireOutputError('incomplete');
         const message = object(choice.message);
@@ -163,7 +169,7 @@ export function readWireText(protocol: WireProtocol, envelope: unknown): WireRes
         if (typeof message.content !== 'string') throw new WireOutputError('malformed');
         text = bounded(message.content, 200000);
     }
-    if (!text.trim()) throw new WireOutputError('malformed');
+    if (!text.trim()) throw new WireOutputError(truncated ? 'incomplete' : 'malformed');
     return { text, effectiveModel, truncated };
 }
 

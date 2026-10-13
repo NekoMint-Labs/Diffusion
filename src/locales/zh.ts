@@ -747,6 +747,8 @@ export const zh: Record<string, string> = {
   "{subject} did not answer in time.": "{subject} 未及时响应。",
   "{subject} reported a server error. Nothing about the request was wrong.": "{subject} 报告了服务器错误。请求本身没有问题。",
   "{subject} does not support this option.": "{subject} 不支持此选项。",
+  "{subject} returned an incomplete answer. Try again or increase the output budget.": "{subject} 返回的回答不完整。请重试或增加输出预算。",
+  "{subject} declined to answer this request. You can revise the question.": "{subject} 拒绝回答此请求。你可以调整问题。",
   "{subject} returned a response Diffusion could not read.": "{subject} 返回了 Diffusion 无法读取的响应。",
   "{subject} failed for an unreported reason.": "{subject} 因未报告的原因而失败。",
   "Hide advanced": "收起高级",

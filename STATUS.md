@@ -4,6 +4,8 @@ Diffusion is a quiet thinking medium for ideas before commitment. This file desc
 
 ## C follow-up — October 13, 2026
 
+C has addressed B's `45fc435` review: conservative Latin-period preview handling, first-field tutorial avoidance for pointer Return, approved explicit-return assertions, and a camera-commit wait in the pending-AI fixture. The original remote E2E failure is recorded, not retried away. Current repair evidence and remaining review gates are at the top of the [follow-up record](docs/ROUND2_FOLLOWUP_20261013.md); the initial combination below retains its original counts.
+
 Current C source includes the approved #49 single-return-point navigation (`9e826fa`), #63 qualifier/dictionary repair (`a238b44`), diagonal submenu travel repair (`efd2ec3`), main `5a47bff`, and current A inputs #54 `3c6f771` / #55 `378a91e` through `aff07b1`. C submitted refreshed Approval for #60 `2aabff6`, #61 `46b30c0` and repaired #65 `4c15485`, based on actual source/test review and each head's successful GitHub CI/E2E. #63 remains Draft pending A's preview re-review and B's navigation compatibility review. See [follow-up evidence and remaining owners](docs/ROUND2_FOLLOWUP_20261013.md).
 
 #49 is now product-approved and implemented; ordinary dismissal stays put and a keyboard-accessible explicit return remains after closing the panel. Search preview keeps full sentence prefixes, conservatively retaining noisy text when no safe cut exists. The web-answer proposal/new search backend remains unimplemented. 642 unit/315 offline and type/build/static checks passed; focused browser results are in the follow-up record. Old 0.3.14 (`2c82f50`) is unchanged and does not contain this follow-up. #11/#12 installed/live acceptance stays open.

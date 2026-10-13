@@ -32,16 +32,10 @@ export function searchSnippetPreview(raw: string, query = ''): string {
         // Omit only complete preceding sentences. Never jump directly to a query:
         // a prefix may carry negation or a qualification even after navigation noise.
         const prefix = plain.slice(0, match);
-        const boundaries = [...prefix.matchAll(/[.!?。！？]+["'”’]?\s*/gu)];
-        const boundary = boundaries.reverse().find(boundary => {
-            if (!boundary[0].startsWith('.')) return true;
-            const token = prefix.slice(0, boundary.index).match(/[\p{L}.\d]+$/u)?.[0] ?? '';
-            const next = plain.slice(boundary.index + boundary[0].length);
-            // Decimal/version punctuation and short/dotted abbreviations are unsafe.
-            // A lowercase/non-Latin continuation is ambiguous; retain its prefix.
-            return !/[\d.]/u.test(token) && token.length > 3
-                && /\s/u.test(boundary[0]) && /^\p{Lu}/u.test(next);
-        });
+        // A Latin period may belong to an abbreviation of any length, a version or
+        // a decimal. Capitalization cannot disambiguate it: keep that prefix rather
+        // than maintaining an inevitably incomplete abbreviation allow/deny list.
+        const boundary = [...prefix.matchAll(/[!?。！？]+["'”’]?\s*/gu)].at(-1);
         if (boundary) start = boundary.index + boundary[0].length;
     }
     const characters = Array.from(plain.slice(start));

@@ -2,6 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { searchSnippetPreview } from '../../src/ui/reference/searchSnippetPreview.ts';
 
 describe('search snippets remain short previews rather than evidence or generated answers', () => {
+    it.each([
+        ['Do not send reports to Prof. Smith without consent.', 'Smith'],
+        ['Only send the request to Dept. Alpha after approval.', 'Alpha'],
+        ['Do not use the result from ArbitraryAbbrev. Smith without checking.', 'Smith'],
+    ])('preserves qualifications before ambiguous Latin periods: %s', (sentence, query) => {
+        const raw = 'Navigation '.repeat(20) + sentence;
+        expect(searchSnippetPreview(raw, query)).toBe(raw);
+    });
     it('uses the dictionary heading without cutting the substantive sentence', () => {
         const raw = 'Skip to content Mandarin Temple Beta Come for Knowledge. Stay for Wisdom. Start your Chinese Learning JourneyStart Now 你好 — pronunciations, definitions, and tags | Hanzi | Pinyin | English | Tags | | 你好 | nǐhǎo | hello; hi | HSK 1, l, Easy | nǐhǎo(ni3hao3) T3 1. 1hello; hi Listen to the audio pronunciation 3 times to gain XP May 27, 2026 # 你好nǐhǎo(ni3hao3) 你好 (nǐhǎo) is a common greeting in Mandarin that means \'hello.\' It is used in both formal and informal contexts to acknowledge someone\'s presence.';
         const preview = searchSnippetPreview(raw, '你好');
@@ -38,13 +46,14 @@ describe('search snippets remain short previews rather than evidence or generate
         const raw = 'Site navigation. '.repeat(12) + '你好 — pronunciations | Pinyin | nǐhǎo | hello; hi | ' + '## Frequently Asked Questions 关于你好。'.repeat(30);
         expect(searchSnippetPreview(raw, '你好')).toContain('nǐhǎo');
     });
-    it('keeps Chinese and pinyin readable while skipping a long navigation preamble', () => {
+    it('keeps Chinese and pinyin readable without guessing Latin-period boundaries', () => {
         const raw = 'Skip to content Mandarin Temple Beta Come for Knowledge. Stay for Wisdom. Start your Chinese Learning Journey. '.repeat(2) + '你好 — pronunciations | Hanzi | Pinyin | English | 你好 | nǐhǎo | hello; hi | ' + '网页后续内容。'.repeat(200);
         const preview = searchSnippetPreview(raw, '你好');
         expect(preview).toContain('你好');
         expect(preview).toContain('nǐhǎo');
-        expect(preview).not.toContain('Skip to content');
-        expect(preview).not.toContain('Mandarin Temple');
+        // Preserve ambiguous internal wording, including repeated navigation; only the
+        // initial explicit marker is removed. Safety takes priority over a cleaner excerpt.
+        expect(preview).toBe(raw.slice('Skip to content '.length).replace(/\|/g, ' · ').replace(/\s+/g, ' ').slice(0, 360) + '…');
         expect(Array.from(preview).length).toBeLessThanOrEqual(362);
         expect(raw).toContain('Skip to content');
     });

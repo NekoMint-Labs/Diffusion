@@ -1,5 +1,16 @@
 # C follow-up: reviews, search preview and navigation
 
+## C response to the 45fc435 review
+
+B's [current review](https://github.com/NekoMint-Labs/Diffusion/pull/63#pullrequestreview-5503151584) found two additional product defects and two fixture problems. C reproduced Prof./Dept./an arbitrary long abbreviation as three failing unit cases, and the first-field tutorial intercepting the ordinary pointer Return click until the unchanged 30s timeout. The original remote E2E run [38390888034](https://github.com/NekoMint-Labs/Diffusion/actions/runs/38390888034) failed only the obsolete automatic-Find-return assertion; that failure remains historical evidence.
+
+- Preview trimming no longer treats Latin periods as reliable boundaries, regardless of token length or capitalization. Prof./Dept. retain the full negative/conditional source. Ambiguous navigation prose may remain; the unit and mounted noisy-text fixtures explicitly retain that prefix instead of demanding its speculative deletion. The existing explicit dictionary-heading, table, original expansion and model-passage assertions remain intact. Raw provider snippets and read evidence are unchanged.
+- The first-field tutorial coach participates in measured shared obstacles and ResizeObserver subscriptions, including later mounting/content/size changes. It stays interactive in its existing location; the compact return entry moves clear of it without disabling the tutorial, raising layers or forcing clicks.
+- The sparse Atlas regression now asserts ordinary dismissal preserves the exact revealed style, then performs a normal pointer Return while the tutorial is present, verifies the exact original empty-area camera/culling and Field focus, and clicks the tutorial's own dismiss action. No assertion timeout or retry/skip was increased.
+- The pending-AI fixture waits for persisted reveal camera and rendered matrix agreement before capturing its baseline. Existing pending-operation/Stop, arrival, focus and exact view assertions remain.
+
+Local qualification: 645 unit, 315 offline, application typecheck, static import/syntax, source-size and frontend build passed. The four related browser files passed 40/40, one worker, zero retries/skips. A final conservative change retains repeated internal `Skip to content` wording; the 17 snippet unit and full eight-case mounted snippet suite are rechecked separately against that final source. New-head remote CI/E2E and independent A/B review must be read separately. No new installer, main merge or installed/live acceptance is claimed.
+
 ## GitHub input and executed actions
 
 The operator approved [#49 navigation](https://github.com/NekoMint-Labs/Diffusion/issues/49#issuecomment-6139794827), additionally requiring a discoverable keyboard return after dismissal. A requested #63 changes because a noisy search preview dropped sentence prefixes. B incorporated C's receipt fix and requested refreshed reviews.

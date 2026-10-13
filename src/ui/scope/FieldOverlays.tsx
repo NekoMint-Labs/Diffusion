@@ -97,7 +97,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         const relationOccupied = [...field.querySelectorAll<HTMLElement>('.relation-token-overlay, .relation-token-actions')]
             .filter(element => element.getClientRects().length)
             .map(element => screenRect(element.getBoundingClientRect()));
-        const reserved = [...app.querySelectorAll<HTMLElement>('[data-testid="speak"], .notice, .identity, .global-actions, .field-line-key')]
+        const reserved = [...app.querySelectorAll<HTMLElement>('[data-testid="speak"], .notice, .identity, .global-actions, .field-line-key, .first-field-tutorial .tutorial-coach')]
             .filter(element => element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden')
             .map(element => screenRect(element.getBoundingClientRect()));
         const placed: ScopeRect[] = [];
@@ -243,7 +243,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         const resize = new ResizeObserver(update);
         const observed = new Set<Element>();
         const observe = () => {
-            const elements = new Set<Element>([field, ...app.querySelectorAll('.thought, .thought-local-actions, .relation-token-overlay, .relation-token-actions, .scope-hub, .spatial-operation-feedback, .suggestion-review, .field-line-key, [data-testid="speak"], .notice, .progressive-tutorial-coach')]);
+            const elements = new Set<Element>([field, ...app.querySelectorAll('.thought, .thought-local-actions, .relation-token-overlay, .relation-token-actions, .scope-hub, .spatial-operation-feedback, .suggestion-review, .field-line-key, [data-testid="speak"], .notice, .progressive-tutorial-coach, .first-field-tutorial .tutorial-coach')]);
             for (const element of observed) if (!elements.has(element)) { resize.unobserve(element); observed.delete(element); }
             for (const element of elements) if (!observed.has(element)) { resize.observe(element); observed.add(element); }
         };

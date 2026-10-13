@@ -1,10 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { wordhippoSnippet } from '../fixtures/wordhippoSnippet.ts';
 
-for (const sentence of [
-    'Do not translate e.g. 你好 as goodbye; it means hello.',
-    'Only if p < 0.05, translate 你好 as hello.',
-    '不要参考版本 1.2 的错误示例把你好翻译成再见。',
+for (const [sentence, query] of [
+    ['Do not translate e.g. 你好 as goodbye; it means hello.', '你好'],
+    ['Only if p < 0.05, translate 你好 as hello.', '你好'],
+    ['不要参考版本 1.2 的错误示例把你好翻译成再见。', '你好'],
+    ['Do not send reports to Prof. Smith without consent.', 'Smith'],
+    ['Only send the request to Dept. Alpha after approval.', 'Alpha'],
 ]) test('search preview preserves the complete qualification: ' + sentence, async ({ page }) => {
     const raw = 'Navigation '.repeat(20) + sentence;
     await page.addInitScript(() => {
@@ -16,7 +18,7 @@ for (const sentence of [
     await page.locator('[data-thought-id="attention"]').click();
     await page.getByTestId('thought-more').click();
     await page.getByRole('menuitem', { name: /^Check evidence/ }).click();
-    await page.locator('#evidence-query').fill('你好'); await page.locator('#evidence-query').press('Enter');
+    await page.locator('#evidence-query').fill(query); await page.locator('#evidence-query').press('Enter');
     await expect(page.getByTestId('search-snippet-preview')).toContainText(sentence);
     // Conservative fallback already displays the complete, unmodified source;
     // only transformed/truncated excerpts need a separate original expander.
@@ -108,7 +110,9 @@ test('a noisy Chinese snippet is bounded, expandable and remains unread', async 
     const preview = dialog.getByTestId('search-snippet-preview');
     await expect(preview).toContainText('你好');
     await expect(preview).toContainText('nǐhǎo');
-    await expect(preview).not.toContainText('Skip to content');
+    expect((await preview.textContent())!.startsWith('Skip to content')).toBe(false);
+    // Internal wording is retained when period boundaries are ambiguous, even if noisy.
+    await expect(preview).toContainText('Journey. Skip to content Mandarin Temple');
     await expect(preview).not.toContainText('##');
     expect(Array.from((await preview.textContent())!).length).toBeLessThanOrEqual(362);
     const original = dialog.locator('.search-snippet-original p');

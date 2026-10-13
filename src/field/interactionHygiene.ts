@@ -30,6 +30,16 @@ export function correctSingleDraggedThought(positions: Record<string, Point>, by
 }
 
 
+/** Paint a pointer-frame preview without writing canonical or session positions. */
+export function paintDraggedItems(world: HTMLElement | null, ids: string[], positions: Record<string, Point>, delta: Point): void {
+    for (const key of ids) {
+        const original = positions[key];
+        if (!original) continue;
+        const element = world?.querySelector<HTMLElement>(`[data-thought-id="${CSS.escape(key)}"]`);
+        if (element) element.style.transform = `translate(${original.x + delta.x}px, ${original.y + delta.y}px)`;
+    }
+}
+
 /** Commit one drag without collapsing transient and canonical authority into one path.
  * Canonical Thoughts get one undoable `thought.move`; Ghosts stay in SessionState and are marked
  * detached because the person explicitly repositioned them. */

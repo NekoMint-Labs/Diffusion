@@ -44,6 +44,8 @@ export type SemanticIntent = {
     text: string;
 };
 export interface ScopeThought {
+    /** Observable authored provenance; not agreement or a factual endorsement. */
+    authored?: boolean;
     id: string;
     text: string;
     kind: ThoughtKind;
@@ -56,6 +58,8 @@ export interface ContextPacket {
     local: ScopeThought[];
     /** Direct provenance of selected, committed material; never a confirmed semantic relation. */
     continuations?: { thoughtId: string; sourceIds: string[] }[];
+    /** Bounded paths [selected, direct parent, ..., ancestor], never organizing links. */
+    ancestry?: { thoughtId: string; path: string[] }[];
     relations: {
         a: string;
         b: string;

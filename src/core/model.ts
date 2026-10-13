@@ -145,7 +145,7 @@ export interface ProjectState {
     fork?: ForkOrigin;
 }
 export type AIProposalKind = 'thought' | 'question';
-export type AIProposalAction = 'continue' | 'angle' | 'question';
+export type AIProposalAction = 'continue' | 'angle' | 'question' | 'ask';
 export interface Ghost extends Point {
     id: string;
     text: string;
@@ -185,7 +185,7 @@ export interface Phenomenon {
     runId?: string;
     structureId?: string;
 }
-export type ThinkingOperationKind = 'ingest' | 'probe' | 'ask' | 'bring' | 'verify' | 'diffuse' | 'continue' | 'angle' | 'question' | 'organize';
+export type ThinkingOperationKind = 'ingest' | 'probe' | 'ask' | 'bring' | 'verify' | 'diffuse' | 'continue' | 'angle' | 'question' | 'ask' | 'organize';
 export type ThinkingActivityKind = 'unfold' | 'radiate' | 'bridge' | 'anchor' | 'arrive';
 export type ThinkingOperationPhase = 'pending' | 'completed' | 'failed' | 'cancelled';
 export interface ThinkingOperation {

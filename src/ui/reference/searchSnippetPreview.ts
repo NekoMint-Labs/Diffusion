@@ -18,24 +18,14 @@ export function searchSnippetPreview(raw: string, query = ''): string {
     // A short literal query can skip a site's leading navigation. Do not infer
     // an answer, translate the source, or choose a passage as read evidence.
     const match = term && Array.from(term).length <= 40 ? plain.toLocaleLowerCase().indexOf(term.toLocaleLowerCase()) : -1;
-    let start = match > 100 ? match : 0;
-    if (match >= 0 && Array.from(term).length <= 40) {
-        // Prefer a source sentence over table/navigation fragments. This is literal selection,
-        // not an answer: leave negation/context intact and keep the original available to expand.
-        const needle = term.toLocaleLowerCase();
-        for (const sentence of plain.matchAll(/[^.!?。！？]+[.!?。！？]+["'”’]?/gu)) {
-            const text = sentence[0], at = sentence.index;
-            if (!text.toLocaleLowerCase().includes(needle)) continue;
-            const noise = (text.match(/ · /g)?.length ?? 0) >= 2 || /Listen to the audio pronunciation.*gain XP/i.test(text);
-            const candidate = noise ? text.slice(text.toLocaleLowerCase().lastIndexOf(needle)) : text.trimStart();
-            if (candidate.length < 24 || candidate.length > 360 || / · /.test(candidate)) continue;
-            if (/^(?:Frequently Asked Questions|FAQ\b|Related (?:content|articles)|In other languages|按字母顺序浏览|常见问题)/i.test(candidate)) continue;
-            const offset = noise ? text.toLocaleLowerCase().lastIndexOf(needle) : text.length - text.trimStart().length;
-            // A long leading navigation preamble is safe to omit; an ordinary short snippet
-            // retains its complete sentence, including any words before the query.
-            if (at + offset > 0 && (noise || match > 100)) start = at + offset;
-            break;
-        }
+    let start = 0;
+    if (match > 100) {
+        // Omit only complete preceding sentences. Never jump directly to a query:
+        // a prefix may carry negation or a qualification even after navigation noise.
+        const prefix = plain.slice(0, match);
+        const boundaries = [...prefix.matchAll(/[.!?。！？]+["'”’]?\s*/gu)];
+        const boundary = boundaries.at(-1);
+        if (boundary) start = boundary.index + boundary[0].length;
     }
     const characters = Array.from(plain.slice(start));
     return `${start ? '…' : ''}${characters.slice(0, 360).join('')}${characters.length > 360 ? '…' : ''}`;

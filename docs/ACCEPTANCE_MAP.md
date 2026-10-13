@@ -9,11 +9,16 @@ The integrated main baseline is `12cc0fe36d2668d20ce98498341c52b0118bd965`, foll
 Dated records below preserve their original revision, failures, validation scope and then-current PR/Issue status. Earlier instructions to keep #18 Draft or #10 open are historical checkpoint statements, superseded by the merge and milestone closure above. They are not current work instructions. New Round 2 PR evidence belongs to each PR head; it does not retroactively qualify a historical installer or establish integrated-main/native acceptance.
 
 Round 2 PR #52 is merged. #53-#55 were restacked onto this main and remain Ready,
-requiring refreshed independent review and new-head checks; #56 is independent documentation.
+with all six new-head checks passed and refreshed independent review requested; #56 is independent documentation.
 A approved #60/#61 after current-main compatibility testing. Draft #63 requires changes
 for search-preview meaning preservation. #65 `4c15485` incorporates the late-arrival Keep
 receipt repair and has A's updated approval; C's refreshed review remains requested.
 These review outcomes are not final installed/live acceptance.
+
+The operator [approved #49's navigation interaction](https://github.com/NekoMint-Labs/Diffusion/issues/49#issuecomment-6139794827),
+including a discoverable, keyboard-accessible explicit return after the panel closes.
+C implements and tests it; B reviews the shared panel/focus compatibility. The behavior
+has not yet been delivered. This approval does not approve #63/#65 for merge or satisfy #11/#12.
 The October 12 shared-transport validation and the limited requester trial of candidate
 `d97eb4be` are recorded in [STATUS.md](../STATUS.md); neither establishes installed-product
 acceptance. The October 13 review queue, including A's completion/probe correction,

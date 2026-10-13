@@ -19,19 +19,33 @@ input before Demo can choose its authored recall shortcut; ordinary Ask retains 
 
 The exact restacked A sequence passed 577 unit and 289 offline tests, application/Core
 types, locale/source-size checks and production build. Six focused production-browser
-cases passed with one worker, zero retries/skips. Full new-head CI/E2E and refreshed review
-are tracked in each PR, separately from old-head approvals/green runs. Historical live
+cases passed with one worker, zero retries/skips. Full new-head CI/E2E passed for all three
+PRs; refreshed review remains requested separately from old-head approvals. Historical live
 samples and the requester's October 12 trial retain their recorded versions.
 
-A independently approved #60 `f395e95` and #61 `edc8778`; applying both onto current
-main passed eight production-browser cases. C's Draft #63 `2c82f50` passed 21 independently
+A independently approved #60 `2aabff62` and #61 `46b30c02` after their current-main sync;
+the touched files match the combination that passed eight production-browser cases.
+All six new-head CI/E2E checks have now passed for each PR. C's Draft #63 `2c82f50` passed 21 independently
 run Verify/compact/feedback cases and 75 focused unit tests, but A requested changes:
 mixed navigation plus meaningful sentence prefixes can lose negation in search previews.
 B's Draft #65 advanced from `94db15a` to `4c15485`, adopting C's Keep-receipt repair
 `53403ad` for suggestions arriving while the review panel is already open. A independently
 ran 23 compact/feedback browser cases on the new head and updated its review to Approval;
 C's refreshed formal review remains requested. No PR was merged by these
-reviews. #49's single return point remains proposed. #11/#12 remain open.
+reviews. #11/#12 remain open.
+
+The operator explicitly [approved #49's navigation behavior](https://github.com/NekoMint-Labs/Diffusion/issues/49#issuecomment-6139794827)
+on October 13. C owns implementation and focused tests; B reviews compatibility with #65.
+Capture one camera/selection return point only before the first explicit reveal. Further
+reveals share it; ordinary close/Escape, Suggestions and writing preserve the current view,
+drafts and AI request. Explicit return restores the camera and still-valid selected IDs,
+then clears the point; Field switching/reload end its lifetime. The return action must
+remain discoverable and keyboard-accessible even after Overview/Find is dismissed.
+This is an approved interaction to implement, not delivered production behavior or permission
+to merge #63/#65. Their PR heads have not changed since A's last reviews.
+
+Documentation head `e19d83d` also passed all six complete CI/E2E checks; the subsequent
+status-only documentation revision needs its own checks and independent review.
 
 Post-publication readback: all six new-head CI/E2E checks passed for #53 `b1f1596`,
 #54 `87d9fdb` and #55 `8a58e96`. The first #54/#55 workflow groups were superseded/cancelled

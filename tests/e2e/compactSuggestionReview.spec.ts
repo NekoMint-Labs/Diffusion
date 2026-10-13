@@ -158,6 +158,36 @@ test('reading existing results keeps Stop usable and new arrivals never open or 
     await expect(panel.locator(`section[data-origin-scope="source"]`)).toHaveCount(4); await expect(panel).toContainText(additional);
 });
 
+test('a suggestion arriving during an open review retains its Keep receipt until that review closes', async ({ page }) => {
+    await boot(page, 1, 'dark', 1); await generate(page, 1);
+    const additional = '后来到达的建议：核对新观察与来源问题之间的关系，再决定是否留下。'.repeat(5);
+    let respond: (() => Promise<void>) | undefined;
+    await page.route('**/api/respond', route => new Promise<void>(resolve => {
+        respond = async () => { await route.fulfill({ json: { providerLabel: 'Deferred fixture / not live', mock: true, intents: [{ type: 'surface_possibility', text: additional }] } }); resolve(); };
+    }));
+    await page.locator('[data-thought-id="source"]').click();
+    await page.getByTestId('scope-continue').click(); await page.getByTestId('action-preview-run').click();
+    await expect.poll(() => !!respond).toBe(true);
+    const toggle = page.getByTestId('suggestion-review-toggle'); await toggle.click();
+    const panel = page.getByTestId('suggestion-review-panel'), close = page.getByTestId('suggestion-review-close');
+    await expect(panel.locator('section')).toHaveCount(1); await expect(close).toBeFocused();
+    const camera = await page.locator('.world').getAttribute('style');
+    await respond!(); await expect(panel.locator('section')).toHaveCount(2);
+    await expect(close).toBeFocused();
+    const late = panel.locator('section').filter({ hasText: additional });
+    const id = (await late.getAttribute('data-suggestion-id'))!;
+    await late.getByTestId('suggestion-keep').click();
+    await expect(late).toHaveAttribute('data-kept', 'true');
+    await expect(late).toContainText('已留下'); await expect(late.locator('p')).toHaveText(additional);
+    await expect(late.getByTestId('suggestion-keep')).toHaveCount(0);
+    await expect(close).toBeFocused();
+    await expect.poll(async () => (await saved(page)).thoughts[id]?.text).toBe(additional);
+    await expect(page.locator('.world')).toHaveAttribute('style', camera!);
+    await close.click(); await expect(toggle).toBeFocused();
+    await toggle.click(); await expect(panel.locator('section')).toHaveCount(1);
+    await expect(panel.locator(`[data-suggestion-id="${id}"]`)).toHaveCount(0);
+});
+
 test('larger interface type retains scrollable content and an ordinary Tab route out', async ({ page }) => {
     await boot(page, 5, 'light', 1); await generate(page, 5);
     await page.locator('.app').evaluate(el => (el as HTMLElement).style.setProperty('--type-ui-size', '22px'));

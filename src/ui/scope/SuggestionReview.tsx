@@ -31,7 +31,7 @@ export function SuggestionReview({ suggestions, pending, thoughts, onAction, ope
                 <small>{live.has(ghost.id) ? t('AI suggestion · not kept') : t('Kept')}</small>
                 <p>{thoughts[ghost.id]?.text ?? ghost.text}</p>
                 {ghost.scopeIds.length > 0 && <small>{t('From')}{': '}{ghost.scopeIds.map(id => thoughts[id]?.text ?? t('Missing thought')).join(' / ')}</small>}
-                {live.has(ghost.id) && <div><Button variant="ghost" size="sm" data-testid="suggestion-keep" onClick={() => { closeButton.current?.focus({ preventScroll: true }); onAction([ghost.id], 'keep'); }}>{t('Keep this')}</Button><Button variant="ghost" size="sm" data-testid="suggestion-ignore" onClick={() => { closeButton.current?.focus({ preventScroll: true }); onAction([ghost.id], 'ignore'); }}>{t('Ignore')}</Button></div>}
+                {live.has(ghost.id) && <div><Button variant="ghost" size="sm" data-testid="suggestion-keep" onClick={() => { setSession(entries); closeButton.current?.focus({ preventScroll: true }); onAction([ghost.id], 'keep'); }}>{t('Keep this')}</Button><Button variant="ghost" size="sm" data-testid="suggestion-ignore" onClick={() => { closeButton.current?.focus({ preventScroll: true }); onAction([ghost.id], 'ignore'); }}>{t('Ignore')}</Button></div>}
             </section>)}
             {!entries.length && <p>{t('No pending suggestions.')}</p>}
             </div>

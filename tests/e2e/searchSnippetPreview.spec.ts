@@ -18,8 +18,10 @@ for (const sentence of [
     await page.getByRole('menuitem', { name: /^Check evidence/ }).click();
     await page.locator('#evidence-query').fill('你好'); await page.locator('#evidence-query').press('Enter');
     await expect(page.getByTestId('search-snippet-preview')).toContainText(sentence);
-    await page.getByText('Show original search snippet', { exact: true }).click();
-    await expect(page.locator('.search-snippet-original p')).toHaveText(raw);
+    // Conservative fallback already displays the complete, unmodified source;
+    // only transformed/truncated excerpts need a separate original expander.
+    await expect(page.getByTestId('search-snippet-preview')).toHaveText(raw);
+    await expect(page.getByText('Show original search snippet', { exact: true })).toHaveCount(0);
     await expect(page.locator('[data-evidence-stage="candidate"]')).toHaveCount(1);
     await expect(page.getByRole('button', { name: 'Assess against claim' })).toHaveCount(0);
 });

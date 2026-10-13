@@ -119,7 +119,8 @@ for (const theme of ['light', 'dark']) {
         const initial = await boot(page, theme, .2, dense);
         const world = page.locator('.world'), before = await world.getAttribute('style');
         const toggle = page.getByTestId('root-review-toggle');
-        await expect(toggle).toContainText('Locate');
+        await expect(toggle).toContainText('Overview');
+        await expect(toggle).toHaveAccessibleName(/Locate/);
         await toggle.click();
         const input = page.getByRole('textbox', { name: 'Find anchored thoughts' });
         await expect(input).toBeFocused();

@@ -34,14 +34,14 @@ test('nested folds survive parent reopen and participate in the existing undo or
     await page.keyboard.press('Control+Shift+z'); await expect(child).toBeVisible(); await expect(leaf).toHaveCount(0);
     await page.screenshot({ path: info.outputPath('nested-folds.png') });
 });
-test('Atlas suggestions use a full-row keyboard-operable review without duplicate cards', async ({ page }, info) => {
+test('Atlas suggestions use a compact keyboard-operable review without duplicate cards', async ({ page }, info) => {
     await boot(page); await page.locator('[data-thought-id="root"]').click();
     await page.getByTestId('scope-continue').click(); await page.getByTestId('action-preview-run').click();
     await expect(page.locator('.thought.ghost').first()).toBeVisible();
     await pinch(page, .16); await expect(page.getByTestId('field')).toHaveAttribute('data-level', 'atlas');
     await expect(page.locator('.thought.ghost')).toHaveCount(0);
     const toggle = page.getByTestId('suggestion-review-toggle'), box = await toggle.boundingBox();
-    expect(box!.width).toBeGreaterThan(400); await toggle.click({ position: { x: box!.width - 12, y: box!.height / 2 } });
+    expect(box!.width).toBeLessThanOrEqual(200); expect(box!.height).toBeGreaterThanOrEqual(36); await toggle.click({ position: { x: box!.width - 12, y: box!.height / 2 } });
     await expect(toggle).toHaveAttribute('aria-expanded', 'true'); await toggle.focus(); await page.keyboard.press('Space'); await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await page.keyboard.press('Enter'); await expect(toggle).toHaveAttribute('aria-expanded', 'true');
     await page.screenshot({ path: info.outputPath('atlas-suggestions.png') });

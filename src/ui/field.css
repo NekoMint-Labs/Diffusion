@@ -361,6 +361,18 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .suggestion-review { padding: 0; }
 .suggestion-review .review-toggle { width: 100%; min-height: 36px; padding: 8px 14px; justify-content: flex-start; border-radius: inherit; }
 .suggestion-review-list, .root-review > input { margin: 0 10px 8px; }
+/* Shared reading entries overlay a small area; only explicit opening reveals a bounded panel. */
+.field-review-entries { position: fixed; z-index: var(--layer-scope); display: flex; gap: 8px; width: max-content; }
+.field-review-entries[hidden] { display: none; }
+.field-review-announcement { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.field-review-entries .suggestion-review { position: static; width: auto; border: 0; background: transparent; }
+.field-review-entries .review-toggle { width: auto; min-height: 36px; padding: 6px 10px; background: var(--surface-1); border: 1px solid var(--boundary); }
+.field-review-panel { position: absolute; left: 0; bottom: var(--review-panel-bottom, 48px); width: var(--review-panel-width, 420px); max-height: var(--review-panel-height, 320px); display: flex; flex-direction: column; overflow: hidden; background: var(--surface-1); border: 1px solid var(--boundary); border-radius: var(--radius-control); box-shadow: var(--shadow); }
+.field-review-panel header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; flex-shrink: 0; }
+.field-review-panel .suggestion-review-list { min-height: 0; max-height: none; overflow-y: auto; margin: 0 10px 8px; }
+.field-review-panel > input { flex-shrink: 0; width: calc(100% - 20px); margin: 0 10px 8px; }
+.field-review-panel .root-review-hint { flex-shrink: 0; margin: 0 10px 8px; }
+.field-review-panel section[data-kept] small { color: var(--ink-primary); }
 .hierarchy-disclosure { top: auto; bottom: 16px; left: auto; right: 16px; display: flex; gap: 8px; align-items: center; pointer-events: auto; }
 .hierarchy-disclosure button { color: var(--ink-secondary); background: var(--surface-1); border: 1px solid var(--boundary); border-radius: var(--radius-control); padding: 4px 8px; cursor: pointer; }
 .hierarchy-disclosure span { background: var(--surface-1); padding: 4px 8px; }

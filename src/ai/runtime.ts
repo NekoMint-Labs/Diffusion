@@ -363,7 +363,7 @@ export class AIRuntime {
             case 'surface_evidence': {
                 const key = id('ghost');
                 const text = candidate.type === 'surface_evidence' ? `${candidate.outcome}: ${candidate.text}` : candidate.text;
-                const proposalAction = action === 'continue' || action === 'angle' ? action : undefined;
+                const proposalAction = action === 'continue' || action === 'angle' || action === 'ask' ? action : undefined;
                 const mode = candidate.type === 'surface_evidence' ? 'evidence' : action === 'continue' ? 'continue' : action === 'angle' ? 'branch' : 'default';
                 const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), text, mode, this.hooks.visibleIds?.(), this.hooks.measurements?.());
                 this.controller.addGhost({ id: key, text, ...point, createdAt: Date.now(), scopeIds, runId: options.runId, origin: provenance, proposalKind: 'thought' as const, ...(proposalAction ? { proposalAction } : {}) });

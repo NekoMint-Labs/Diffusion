@@ -132,7 +132,7 @@ describe('readWireText normalizes each protocol and refuses to invent a model', 
     it('reports effectiveModel null when the provider does not say, on every protocol', () => {
         expect(readWireText('responses', { status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: 'x' }] }] }).effectiveModel).toBeNull();
         expect(readWireText('anthropic-messages', { content: [{ type: 'text', text: 'x' }] }).effectiveModel).toBeNull();
-        expect(readWireText('gemini-generate-content', { candidates: [{ content: { parts: [{ text: 'x' }] } }] }).effectiveModel).toBeNull();
+        expect(readWireText('gemini-generate-content', { candidates: [{ finishReason: 'STOP', content: { parts: [{ text: 'x' }] } }] }).effectiveModel).toBeNull();
         expect(readWireText('chat-completions', { choices: [{ message: { content: 'x' } }] }).effectiveModel).toBeNull();
     });
 
@@ -158,7 +158,7 @@ describe('readWireText normalizes each protocol and refuses to invent a model', 
         expect(caught('responses', { status: 'completed', output: [{ type: 'message', content: [{ type: 'refusal', refusal: 'no' }] }] }).kind).toBe('refusal');
         expect(caught('chat-completions', { choices: [{ message: { refusal: 'no', content: 'x' } }] }).kind).toBe('refusal');
         expect(caught('responses', { status: 'in_progress', output: [] }).kind).toBe('incomplete');
-        expect(caught('chat-completions', { choices: [{ finish_reason: 'content_filter', message: { content: 'x' } }] }).kind).toBe('incomplete');
+        expect(caught('chat-completions', { choices: [{ finish_reason: 'content_filter', message: { content: 'x' } }] }).kind).toBe('refusal');
         expect(caught('anthropic-messages', { content: 'nope' }).kind).toBe('malformed');
     });
 });

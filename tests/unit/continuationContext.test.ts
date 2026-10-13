@@ -55,13 +55,14 @@ describe('selected responses retain their direct question as background', () => 
         ]);
     });
 
-    it('takes only direct sources and never follows an ancestor or an organizing parent', () => {
+    it('deliberately follows durable ancestors without following an organizing parent', () => {
         const { controller, response } = setup();
         const project = controller.getSnapshot().project;
         project.thoughts.question.derivedFrom = ['other'];
-        Object.assign(project.thoughts[response.id], { organizingParentId: 'other' });
+        Object.assign(project.thoughts[response.id], { organizingParentId: 'organization' });
         const packet = compileContext(project, [response.id]);
-        expect(packet.local.map(item => item.id)).toEqual(['question']);
+        expect(packet.local.map(item => item.id)).toEqual(['question', 'other']);
+        expect(packet.ancestry).toEqual([{ thoughtId: response.id, path: [response.id, 'question', 'other'] }]);
         expect(packet.continuations![0].sourceIds).toEqual(['question']);
     });
 

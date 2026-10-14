@@ -1,5 +1,22 @@
 # Desktop verification and native boundary
 
+## 2026-10-12 repair candidate: search is not accepted
+
+The Windows repair candidate restores the bundled search process's minimal runtime
+environment and writes UTF-8 JSON independently of the Windows code page. Search
+settings additionally offer an explicit, default-off Tavily keyless mode. When
+enabled for Tavily, native code does not read or forward a saved Tavily credential;
+the child sends the keyless access header without Authorization. Shared-limit
+responses do not trigger automatic repeated requests.
+
+This mode is experimental. The operator has no usable search API key for the
+current key-based configuration and reports that keyless answers are almost
+entirely garbled. A successful three-candidate packaged-engine smoke request does
+not resolve that report or establish usable installed-desktop search. See
+[current candidate status](../STATUS.md#desktop-repair-candidate-and-unresolved-search-acceptance-2026-10-12).
+
+## Desktop setup and boundary
+
 Desktop is a Tauri 2 shell around the exact same React/Vite frontend. There is no second UI, native database, or native AI orchestration layer.
 
 After Web dependencies and the platform's documented Tauri prerequisites are installed:

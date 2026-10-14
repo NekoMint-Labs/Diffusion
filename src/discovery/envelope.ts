@@ -37,6 +37,12 @@ export function envelopeRoot(raw: string, operation: 'search' | 'read'): Record<
     if (root.version !== 1 || root.operation !== operation || !['complete', 'degraded', 'failed'].includes(String(root.status))) throw new DiscoveryError('invalid-contract');
     if (root.status === 'failed') {
         const code = object(root.error).code;
+        // Only closed, unanimous attempt types explain a source failure. Mixed/unknown failures
+        // stay unavailable; neither upstream prose nor an arbitrary token becomes product copy.
+        const known = new Set(['auth_error', 'timeout', 'network_error', 'rate_limited', 'parameter_error', 'provider_error', 'protocol_error', 'parse_error']);
+        const attempts = Array.isArray(root.attempts) ? root.attempts : [];
+        const types = attempts.map(item => item && typeof item === 'object' ? (item as Record<string, unknown>).error_type : undefined);
+        if (code === 'PROVIDER_ERROR' && types.length && types.every(type => type === types[0]) && known.has(String(types[0]))) throw new DiscoveryError(String(types[0]));
         throw new DiscoveryError(code === 'CONFIGURATION_ERROR' ? 'not-configured' : 'provider-failed');
     }
     if (root.error !== null) throw new DiscoveryError('invalid-contract');

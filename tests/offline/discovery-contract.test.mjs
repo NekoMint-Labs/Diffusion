@@ -46,7 +46,7 @@ test('the child environment is built natively, from a credential the webview can
         assert.equal(read(path.relative(root, file)).includes('reveal(searchCredential'), false, `${path.relative(root, file)} reads a discovery credential in the webview`);
     // The launcher takes identifiers, so it cannot be given a secret, and keeps the allowlist.
     const launcher = read('src-tauri/src/discovery.rs');
-    assert.match(launcher, /pub async fn discovery_run\(app: AppHandle, args: Vec<String>, sources: Vec<String>\)/);
+    assert.match(launcher, /pub async fn discovery_run\(app: AppHandle, args: Vec<String>, sources: Vec<String>, tavily_keyless: Option<bool>\)/);
     assert.equal(launcher.includes('env: std::collections::HashMap'), false);
     for (const prefix of ['"EXA_"', '"TAVILY_"', '"BRAVE_"', '"JINA_"']) assert.ok(launcher.includes(prefix), `the native allowlist no longer permits ${prefix}`);
     // The id -> credential slot -> child variable mapping is native and singular.

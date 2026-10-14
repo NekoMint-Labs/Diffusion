@@ -100,6 +100,21 @@ describe('a failure notice offers only remedies that can actually run', () => {
     beforeEach(() => { setWindow(false); clearFeedback(); });
     afterEach(() => clearFeedback());
 
+    it('requests an acknowledgement for a connection failure or timeout, but not user cancellation', () => {
+        useUI.getState().patch({ connectionFailure: null });
+        failureNotice('timeout', 'OpenAI');
+        expect(useUI.getState().connectionFailure).toEqual({ text: 'OpenAI did not answer in time.', timeout: true });
+        useUI.getState().patch({ connectionFailure: null });
+        failureNotice('cancelled', 'OpenAI');
+        expect(useUI.getState().connectionFailure).toBeNull();
+        failureNotice('provider-unreachable', 'OpenAI');
+        expect(useUI.getState().connectionFailure?.text).toBe('OpenAI could not be reached. Check the base URL and your connection.');
+        useUI.getState().patch({ connectionFailure: null });
+        failureNotice('network-unavailable', 'OpenAI');
+        expect(useUI.getState().connectionFailure?.text).toBe('This device appears to be offline.');
+        useUI.getState().patch({ connectionFailure: null });
+    });
+
     it('states the failure in the product\'s words, never the internal code', () => {
         failureNotice('authentication-failed', 'Anthropic');
         const { text, tone } = currentFeedback();

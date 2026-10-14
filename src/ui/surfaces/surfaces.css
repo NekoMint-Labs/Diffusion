@@ -386,6 +386,7 @@ h3.history-day { display: flex; align-items: center; gap: 12px; margin: 30px 0 1
 .evidence-result h3 { margin-top: 0; }
 .evidence-result > a { font: 16px/1.5 var(--thought-font); }
 .evidence-result > p { max-width: 72ch; }
+.search-snippet-original > p { max-height: 240px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
 /* A judgment is a different kind of statement from the candidate it is about — it is the reading of
    the evidence rather than the evidence — so it is set off by one hairline and one inset, never by
    colour. */
@@ -434,6 +435,10 @@ h3.history-day { display: flex; align-items: center; gap: 12px; margin: 30px 0 1
   transition: color var(--motion-instant) ease;
 }
 .notice[data-tone="error"] { color: var(--system-danger); }
+.connection-failure-dialog { width: min(440px, calc(100vw - 48px)); max-height: calc(100dvh - 48px); overflow: auto; box-sizing: border-box; padding: 24px; border: 1px solid var(--boundary); border-radius: 12px; background: var(--surface-1); color: var(--ink-primary); font: var(--type-ui-size)/1.5 var(--ui-font); box-shadow: var(--shadow); }
+.connection-failure-dialog::backdrop { background: #0005; }
+.connection-failure-dialog h2 { margin: 0 0 16px; font-size: 20px; }
+.connection-failure-dialog p { line-height: 1.6; overflow-wrap: anywhere; }
 .notice button { margin-left: 10px; color: var(--ink-secondary); text-decoration: underline; }
 .notice button:hover:not(:disabled) { color: var(--ink-primary); }
 .notice[data-secondary="demo"] { color: var(--ink-tertiary); box-shadow: none; }

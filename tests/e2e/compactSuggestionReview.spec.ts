@@ -145,6 +145,29 @@ test('reading existing results keeps Stop usable and new arrivals never open or 
     await page.getByRole('dialog').getByRole('button', { name: '1', exact: true }).click(); await page.getByTestId('action-preview-run').click();
     await expect.poll(() => !!respond).toBe(true);
     const stop = page.getByTestId('operation-feedback').getByRole('button', { name: '停止', exact: true }); await expect(stop).toBeVisible();
+    const operationId = await page.getByTestId('operation-feedback').getAttribute('data-operation-id');
+    await page.keyboard.press('Control+f');
+    await page.locator('.find-bar input').fill('课程学习要怎样安排');
+    await page.locator('.find-bar input').press('Enter');
+    // Reveal schedules a camera frame; sample only once the persisted target and DOM agree.
+    await expect.poll(async () => {
+        const camera = (await saved(page)).camera;
+        const matrix = await page.locator('.world').evaluate(el => {
+            const value = new DOMMatrix(getComputedStyle(el).transform);
+            return { x: value.m41, y: value.m42, zoom: value.a };
+        });
+        return Math.abs(camera.x - matrix.x) < .01 && Math.abs(camera.y - matrix.y) < .01
+            && Math.abs(camera.zoom - matrix.zoom) < .00001 && (camera.x !== 0 || camera.y !== 0);
+    }).toBe(true);
+    const excursion = await page.locator('.world').getAttribute('style');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.world')).toHaveAttribute('style', excursion!);
+    await expect(page.getByTestId('operation-feedback')).toHaveAttribute('data-operation-id', operationId!);
+    await expect(page.getByTestId('operation-feedback')).toHaveAttribute('data-phase', 'pending');
+    await page.getByTestId('navigation-return').focus(); await page.keyboard.press('Enter');
+    await expect(stop).toBeVisible();
+    await expect(page.getByTestId('operation-feedback')).toHaveAttribute('data-phase', 'pending');
+
     const toggle = page.getByTestId('suggestion-review-toggle'); await toggle.click();
     const panel = page.getByTestId('suggestion-review-panel'); await expect(panel).toBeVisible();
     const panelBox = (await panel.boundingBox())!, stopBox = (await stop.boundingBox())!;

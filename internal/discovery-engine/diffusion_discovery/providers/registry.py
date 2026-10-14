@@ -116,11 +116,12 @@ def _build_exa(config: Any) -> Any | None:
 
 
 def _build_tavily(config: Any) -> Any | None:
-    api_key = config.tavily_api_key
-    if not api_key or not config.tavily_enabled:
+    keyless = getattr(config, "tavily_keyless", False)
+    api_key = "" if keyless else config.tavily_api_key
+    if (not api_key and not keyless) or not config.tavily_enabled:
         return None
     from .tavily import TavilySearchProvider
-    return TavilySearchProvider(config.tavily_api_url, api_key, config.tavily_timeout)
+    return TavilySearchProvider(config.tavily_api_url, api_key, config.tavily_timeout, keyless=keyless)
 
 
 # The order is the product-visible order of sources, and it is the order

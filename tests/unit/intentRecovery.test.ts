@@ -40,7 +40,9 @@ describe('P0-2: a run that did not succeed leaves the composed words in place', 
     });
 
     it('reports cancelled for an aborted run, so the hook keeps the words', async () => {
-        const outcome = await run(withRespond(async () => { throw new DOMException('Cancelled', 'AbortError'); }));
+        const abort = new AbortController();
+        const runtime = new AIRuntime(new ProjectController(demoProject(), async () => { }), async () => withRespond(async () => { abort.abort(); throw abort.signal.reason; }), hooks);
+        const outcome = await runtime.run('ask', words, ['attention'], { signal: abort.signal });
         expect(outcome.status).toBe('cancelled');
     });
 

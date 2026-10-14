@@ -1,5 +1,12 @@
 # Diffusion
 
+## Integrated candidate checkpoint — October 14, 2026
+
+C now includes main `ae74a2b73cd528f58cef4ef51f85f4651e3baded`: #52–#56 and #60/#61/#65 are merged by the operator, alongside #57/#64/#66. C's #63 source is unchanged from A/B-approved `f77f446` after resolving duplicate squash conflicts: application, native, server, discovery-engine and test trees match byte-for-byte in Git. C recovery, bounded-excerpt validation, approved #49 navigation and conservative source previews are retained. Only merge ancestry and documentation change.
+
+`f77f446` passed 649 unit and 12 focused browser cases locally, and its own full CI/E2E passed; A/B both formally approved it. New integration-head gates/review are recorded separately in #63. A matching 0.3.15 Windows preview is being prepared; it is not installed/live acceptance. The old 0.3.14 remains `2c82f50`. #11/#12 remain open, including real AI/Verify, no-key search quality, physical network/input, persistence and long-session checks. Earlier checkpoint text below retains its original date and is historical.
+
+
 Diffusion is a quiet thinking medium for ideas that are not fully formed yet. Thoughts settle into a spatial Field; attention reveals relationships without turning the workspace into a whiteboard or graph editor. AI may suggest possibilities, but only a person can claim a Thought, confirm a relation, or form a Crystal.
 
 This README describes the current `main` branch. The package metadata remains `0.3.0`; that is not a claim that every current feature belongs to a published release.

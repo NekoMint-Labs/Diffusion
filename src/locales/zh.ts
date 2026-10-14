@@ -1,5 +1,18 @@
 /* Product copy only. English source keys are the fallback dictionary. */
 export const zh: Record<string, string> = {
+    "Return to previous view": "返回刚才视图",
+    "Table preview; expand to inspect the original passage.": "表格整理预览；展开可核对原始段落。",
+    "Show original read passage": "展开原始阅读段落",
+    "Request timed out": "请求超时",
+    "Try again manually when you are ready. Closing this message will not retry.": "你可以稍后手动重试。关闭此提示不会自动重试。",
+    "Assessment sends only this claim and the read passages to your configured AI provider.": "评估仅会将当前待查证内容和已读段落发送给你配置的 AI 服务。",
+    "Configure a live AI provider to assess the read passages.": "请配置真实 AI 服务，才能评估已读段落。",
+    "Connection failed": "连接失败",
+    "Check your connection, then start the action again when you are ready.": "请检查网络连接，恢复后可手动重新发起操作。",
+    "Show original search snippet": "展开原始搜索摘要",
+    "settings.search.keyless": "免 Key 搜索试用",
+    "settings.search.keylessHelp": "Tavily 免费试用，有共享限流；此模式不会使用已保存的 Key。",
+    "External search refused these settings. Check the search source and service address.": "外部搜索拒绝了这些设置。请检查搜索来源和服务地址。",
     "settings.ai.gatewayReachable": "网关可连接",
     "settings.ai.gatewayUnverified": "已读取网关配置，尚未验证模型响应。",
     "settings.ai.gatewayUnconfigured": "网关尚未配置模型。",

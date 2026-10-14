@@ -46,7 +46,8 @@ export class BuiltInDiscoveryRuntime implements DiscoveryRuntime {
     private async read(url: string, signal: AbortSignal): Promise<FetchedResource> {
         const resource = mapRead(await this.run(readArguments(url), signal));
         this.prune();
-        this.reads.set(resource.url, { resource, at: this.now() });
+        // Pair extract with the requested URL even when the reader reports a redirected URL.
+        this.reads.set(url, { resource, at: this.now() });
         return resource;
     }
     async search(query: string, limit: number, signal: AbortSignal): Promise<SearchOutcome> {

@@ -173,3 +173,95 @@ for (const theme of ['light', 'dark']) {
         await page.screenshot({ path: info.outputPath('neighborhood-line-hint.png') });
     });
 }
+
+
+test('explicit navigation shares one return point across Find, dismissal, writing and Overview', async ({ page }) => {
+    const initial = await boot(page, 'dark', .2);
+    await page.locator('[data-thought-id="a"]').click();
+    await expect.poll(async () => (await saved(page)).thoughts.a.updatedAt).not.toBe(1);
+    const baseline = await saved(page);
+    const before = await page.locator('.world').getAttribute('style');
+    await page.keyboard.press('Control+f');
+    const query = page.locator('.find-bar input');
+    await query.fill('no matching thought'); await query.press('Enter');
+    await expect(page.getByTestId('navigation-return')).toHaveCount(0);
+    await expect(page.locator('.world')).toHaveAttribute('style', before!);
+    await query.fill('Target anchored child'); await query.press('Enter');
+    await expect.poll(async () => (await saved(page)).camera).not.toEqual(initial.camera);
+    const atB = await page.locator('.world').getAttribute('style');
+    await query.press('Escape');
+    await expect(page.locator('.world')).toHaveAttribute('style', atB!);
+    await expect(page.getByTestId('navigation-return')).toBeVisible();
+    await page.getByTestId('field').focus(); await page.keyboard.press('Escape');
+    // Opening the composer must retain the excursion and the current view.
+    await page.locator('[data-testid="speak"] textarea').fill('保留这份未提交草稿');
+    await expect(page.locator('.world')).toHaveAttribute('style', atB!);
+    await page.locator('[data-testid="speak"] textarea').press('Escape');
+    await page.keyboard.press('Control+f'); await query.fill('Independent semantic endpoint'); await query.press('Enter');
+    await expect(page.locator('[data-thought-id="c"]')).toHaveAttribute('data-selected', 'true');
+    await query.press('Escape');
+    await page.getByTestId('navigation-return').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByTestId('navigation-return')).toHaveCount(0);
+    await expect(page.locator('.world')).toHaveAttribute('style', before!);
+    await expect(page.locator('[data-thought-id="a"]')).toHaveAttribute('data-selected', 'true');
+    await expect(page.getByTestId('field')).toBeFocused();
+    await page.keyboard.press('Escape'); // Reopen the ordinary unscoped composer after restored selection.
+    await expect(page.locator('[data-testid="speak"] textarea')).toHaveValue('保留这份未提交草稿');
+    expect((await saved(page)).thoughts).toEqual(baseline.thoughts);
+    expect((await saved(page)).relations).toEqual(initial.relations);
+});
+
+test('Overview Enter respects IME, shares Find return point, and reload ends it', async ({ page }) => {
+    const initial = await boot(page, 'light', .2);
+    const before = await page.locator('.world').getAttribute('style');
+    await page.getByTestId('root-review-toggle').click();
+    const input = page.getByRole('textbox', { name: 'Find anchored thoughts' });
+    await input.fill('Target anchored child');
+    await input.dispatchEvent('keydown', { key: 'Enter', code: 'Enter', isComposing: true });
+    await expect(page.getByTestId('root-review-panel')).toBeVisible();
+    await expect(page.getByTestId('navigation-return')).toHaveCount(0);
+    await expect(page.locator('.world')).toHaveAttribute('style', before!);
+    await input.press('Enter');
+    await expect(page.getByTestId('navigation-return')).toBeVisible();
+    await expect(page.getByTestId('root-review-panel')).toHaveCount(0);
+    await page.keyboard.press('Control+f');
+    await page.locator('.find-bar input').fill('Independent semantic endpoint');
+    await page.locator('.find-bar input').press('Enter');
+    await page.getByRole('button', { name: 'Return to previous view', exact: true }).click();
+    await expect(page.locator('.world')).toHaveAttribute('style', before!);
+    await expect(page.getByTestId('navigation-return')).toHaveCount(0);
+    await page.keyboard.press('Control+f');
+    await page.locator('.find-bar input').fill('Target anchored child');
+    await page.locator('.find-bar input').press('Enter');
+    await page.keyboard.press('Escape'); await expect(page.getByTestId('navigation-return')).toBeVisible();
+    await page.reload(); await expect(page.getByTestId('field')).toBeVisible();
+    await expect(page.getByTestId('navigation-return')).toHaveCount(0);
+    expect((await saved(page)).thoughts).toEqual(initial.thoughts);
+});
+
+
+test('return filters deleted selection and a Field switch ends the excursion', async ({ page }) => {
+    const initial = await boot(page, 'light', 1);
+    await page.locator('[data-thought-id="a"]').click();
+    const before = await page.locator('.world').getAttribute('style');
+    await page.keyboard.press('Control+f');
+    await page.locator('.find-bar input').fill('Independent semantic endpoint');
+    await page.locator('.find-bar input').press('Enter'); await page.keyboard.press('Escape');
+    await page.keyboard.press('Control+f');
+    await page.locator('.find-bar input').fill('Parent source');
+    await page.locator('.find-bar input').press('Enter'); await page.keyboard.press('Escape');
+    await page.getByTestId('field').focus(); await page.keyboard.press('Delete');
+    await expect.poll(async () => !!(await saved(page)).thoughts.a).toBe(false);
+    await page.getByTestId('navigation-return').click();
+    await expect(page.locator('.world')).toHaveAttribute('style', before!);
+    await expect(page.locator('[data-thought-id][data-selected="true"]')).toHaveCount(0);
+    await page.keyboard.press('Control+f');
+    await page.locator('.find-bar input').fill('Independent semantic endpoint');
+    await page.locator('.find-bar input').press('Enter'); await page.keyboard.press('Escape');
+    await expect(page.getByTestId('navigation-return')).toBeVisible();
+    await page.getByTestId('field-title').click();
+    await page.getByTestId('field-menu').locator('[data-command="new-field"]').click();
+    await expect(page.locator('[data-thought-id="c"]')).toHaveCount(0);
+    await expect(page.getByTestId('navigation-return')).toHaveCount(0);
+});

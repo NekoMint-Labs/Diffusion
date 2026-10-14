@@ -120,10 +120,26 @@ test('sparse Atlas keeps both Thoughts after deselection, Find and reload', asyn
         const box = await second.boundingBox();
         return box ? Math.abs(box.x + box.width / 2 - 720) : Infinity;
     }).toBeLessThan(2);
+    await expect.poll(() => page.getByTestId('field').getAttribute('data-camera-moving')).toBeNull();
+    const revealedView = await page.locator('.world').getAttribute('style');
+    expect(revealedView).not.toBe(beforeFind);
     await page.keyboard.press('Escape');
-    // Closing Find restores its original viewpoint, including an intentionally empty area.
+    // #49: dismissal keeps the revealed view; only explicit return restores the empty area.
+    await expect(page.locator('.find-bar')).toHaveCount(0);
+    await expect(page.locator('.world')).toHaveAttribute('style', revealedView!);
+    await expect(second).toBeVisible();
+    const returnView = page.getByTestId('navigation-return');
+    await expect(returnView).toBeVisible();
+    const coach = page.locator('.first-field-tutorial .tutorial-coach');
+    await expect(coach).toBeVisible();
+    // A new user must be able to use both controls with a pointer, without dismissing coaching.
+    await returnView.click();
     await expect(page.locator('.world')).toHaveAttribute('style', beforeFind!);
     await expect(second).toHaveCount(0);
+    await expect(returnView).toHaveCount(0);
+    await expect(page.getByTestId('field')).toBeFocused();
+    await coach.getByRole('button').click();
+    await expect(coach).toHaveCount(0);
 });
 
 

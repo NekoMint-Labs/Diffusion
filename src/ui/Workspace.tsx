@@ -1,3 +1,4 @@
+import { discoveryUnavailableText } from '../discovery/contracts.ts';
 import { t } from '../shared/i18n.ts';
 import { useLocale } from './useLocale.ts';
 import { CommandMenu } from './focus/CommandMenu.tsx';
@@ -6,6 +7,7 @@ import { APP_MENU, BLANK_MENU, FIELD_MENU, FIELD_MORE_MENU, buildCommands, conte
 import type { CommandContext } from './commands/types.ts';
 import { contextualActionModel } from './commands/contextualActionModel.ts';
 import { detectPlatform } from './commands/shortcuts.ts';
+import { useNavigationReturn } from './find/useNavigationReturn.ts';
 import { useFindInField } from './find/useFindInField.ts';
 import { useFieldRename } from './commands/useFieldRename.ts';
 import { OpenFieldSurface } from './surfaces/OpenFieldSurface.tsx';
@@ -46,6 +48,7 @@ import { ThoughtReader } from './thought/ThoughtReader.tsx';
 import { isQuestion } from './workspace/response.ts';
 import { Speak } from './workspace/Speak.tsx';
 import { FeedbackLine } from './workspace/Feedback.tsx';
+import { ConnectionFailureDialog } from './workspace/ConnectionFailureDialog.tsx';
 import { THINKING_DEFAULTS } from './commands/thinking.ts';
 import { useWorkspaceKeyboard } from './workspace/useWorkspaceKeyboard.ts';
 import { useWorkspaceSettings } from './workspace/useWorkspaceSettings.ts';
@@ -147,7 +150,8 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         runTimes: { builtIn: capabilities.builtIn },
         discovery: capabilities.status,
     });
-    const find = useFindInField({ project, reveal: ids => field.current?.reveal(ids) });
+    const navigation = useNavigationReturn(controller, field);
+    const find = useFindInField({ project, reveal: ids => navigation.reveal(ids) });
     const surfaces = useWorkspaceSurfaces({ controller, field, diffuse, runtime, find });
     const actions = useFieldActions({ controller, field, surfaces, importer });
     const closeMenu = () => { contextPoint.current = null; const menu = useUI.getState().menu; if (menu) surfaces.transient.closeMenu(menu); };
@@ -331,7 +335,8 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         else
             intents.openThread(ids, kind === 'deep', text, provider); },
     };
-    return <main className="app" data-active-surface={ui.surface} ref={root}>
+    return <main className="app" data-active-surface={ui.surface} data-menu-open={ui.menu ? true : undefined} ref={root}>
+    <ConnectionFailureDialog/>
   {/* Atmosphere is presentation state, never semantic state: the Field's material is lit by
       what is transiently happening, not by what the Field means. A selection is a scope, and a
       scope is a fact about attention *right now*, so the place shifts its local illumination
@@ -353,7 +358,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
   </header>
   {arrival && <div className="field-arrival" data-testid="field-arrival" aria-hidden="true"/>}
   <nav className="global-actions"><Button variant="ghost" size="sm" ref={globalMore} data-testid="global-more" aria-label={t('Field menu')} aria-haspopup="menu" aria-expanded={ui.menu?.scope === 'global'} aria-controls={ui.menu?.scope === 'global' ? 'global-command-menu' : undefined} onClick={event => surfaces.transient.deferMenu(event.currentTarget, 'global')}><span aria-hidden="true">{'···'}</span></Button></nav>
-  <Field interfaceScale={settings.interfaceSize / 100} ref={field} fieldStyle={settings.appearance.fieldStyle} connectionStyle={settings.appearance.connectionStyle} controller={controller} onProbeRelation={intents.findRelation} scopeActions={actionModel.primary} onScopeAction={runScopeAction} onKeepAllProposals={intents.keepAllProposals} onKeepOriginalProposal={intents.keepOriginalProposal} onAIProposalAction={handleAIProposalAction} onMore={trigger => surfaces.transient.openMenu(trigger, 'thought', { mode: 'secondary' })} onSource={actions.openSource} onReadThought={key => { setReadingThoughtId(key); surfaces.openSurface('thought-reader', selectionAnchor([key])); }} onRespondThought={key => intents.respond([key])} onRegion={actions.openRegion} onRelation={(relationId, point) => { surfaces.openSurface('relation'); ui.patch({ relationId, anchor: field.current?.screenPoint(point) ?? null }); }} onDropFiles={(files, point) => void importer.files(files.map(asPickedFile), point).catch(error => deviceFailureNotice('import', error))} onDropText={actions.dropText} onObserve={actions.observe} onCreateThought={actions.createThoughtAt} onContextMenu={openContextMenu} onRevealMatch={find.focusMatch} find={findOpen ? { matches: find.matchSet, current: find.current } : null}/>
+  <Field onNavigate={id => navigation.reveal([id], true)} onReturnView={navigation.available ? navigation.restore : undefined} interfaceScale={settings.interfaceSize / 100} ref={field} fieldStyle={settings.appearance.fieldStyle} connectionStyle={settings.appearance.connectionStyle} controller={controller} onProbeRelation={intents.findRelation} scopeActions={actionModel.primary} onScopeAction={runScopeAction} onKeepAllProposals={intents.keepAllProposals} onKeepOriginalProposal={intents.keepOriginalProposal} onAIProposalAction={handleAIProposalAction} onMore={trigger => surfaces.transient.openMenu(trigger, 'thought', { mode: 'secondary' })} onSource={actions.openSource} onReadThought={key => { setReadingThoughtId(key); surfaces.openSurface('thought-reader', selectionAnchor([key])); }} onRespondThought={key => intents.respond([key])} onRegion={actions.openRegion} onRelation={(relationId, point) => { surfaces.openSurface('relation'); ui.patch({ relationId, anchor: field.current?.screenPoint(point) ?? null }); }} onDropFiles={(files, point) => void importer.files(files.map(asPickedFile), point).catch(error => deviceFailureNotice('import', error))} onDropText={actions.dropText} onObserve={actions.observe} onCreateThought={actions.createThoughtAt} onContextMenu={openContextMenu} onRevealMatch={find.focusMatch} find={findOpen ? { matches: find.matchSet, current: find.current } : null}/>
   <LayoutGroup id="global-transient-surfaces">
   <AnimatePresence initial={false}>
   {ui.menu && <CommandMenu key={`menu-${ui.transientEpoch}`} anchor={ui.menu.anchor} point={ui.menu.point} rows={menuItems} moreRows={menuMoreItems} scope={ui.menu.scope} note={ui.menu.scope === 'field' ? t('Saved on this device as you work.') : undefined} placement={ui.menu.mode === 'secondary' ? 'right-start' : ui.menu.point ? 'bottom-start' : 'bottom-end'} onClose={() => surfaces.transient.closeMenu(ui.menu!)}/>}
@@ -374,8 +379,8 @@ export function Workspace({ controller, repository, platform, startupError, onSw
   {ui.surface === 'thought-reader' && readingThought && <ThoughtReader text={'origin' in readingThought && isAuthoredExample(readingThought) ? t(readingThought.text) : readingThought.text} anchor={ui.anchor ?? undefined} responseLabel={readingThoughtId && session.ghosts[readingThoughtId] ? 'Keep and respond' : isQuestion(readingThought) ? 'Respond to this question' : 'Add my thoughts'} onClose={() => surfaces.closeSurface(false)} onRespond={() => { const key = readingThoughtId!; surfaces.closeSurface(false); if (session.ghosts[key]) handleAIProposalAction([key], 'answer'); else intents.respond([key]); }}/>}
   {ui.surface === 'relation' && ui.relationId && <RelationSurface controller={controller} relationId={ui.relationId} anchor={ui.anchor ?? undefined} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'source' && ui.sourceId && project.sources[ui.sourceId] && <SourceSurface source={project.sources[ui.sourceId]} repository={repository} platform={platform} anchor={ui.anchor ?? undefined} onRead={evidence ? signal => importer.read(ui.sourceId!, evidence, '', signal) : undefined} onClose={() => surfaces.closeSurface()}/>}
-  {ui.surface === 'evidence' && <EvidenceSurface onOpen={url => void platform.openExternal(url).catch(error => deviceFailureNotice('link', error))} provider={evidence} initial={activeSelection.map(k => project.thoughts[k]?.text ?? '').join(' ').slice(0, 1000)} scopeIds={[...activeSelection]} onBring={intents.bringEvidence} onConfigure={() => runNoticeAction('search-settings')} onClose={() => surfaces.closeSurface()}/>}
-  {ui.surface === 'find' && <FindSurface key={findEpoch} query={find.query} count={find.matches.length} index={find.index} onQuery={find.search} onNavigate={find.step} onClose={() => surfaces.closeSurface()}/>}
+  {ui.surface === 'evidence' && <EvidenceSurface onOpen={url => void platform.openExternal(url).catch(error => deviceFailureNotice('link', error))} provider={evidence} unavailableReason={discoveryUnavailableText(settings.discovery, capabilities.status)} initial={activeSelection.map(k => project.thoughts[k]?.text ?? '').join(' ').slice(0, 1000)} scopeIds={[...activeSelection]} onBring={intents.bringEvidence} onConfigure={() => runNoticeAction('search-settings')} onConfigureAI={() => runNoticeAction('ai-settings')} onClose={() => surfaces.closeSurface()}/>}
+  {ui.surface === 'find' && <FindSurface onReturn={navigation.available ? () => { surfaces.closeSurface(false); navigation.restore(); } : undefined} key={findEpoch} query={find.query} count={find.matches.length} index={find.index} onQuery={find.search} onNavigate={find.step} onClose={() => surfaces.closeSurface()}/>}
   <AnimatePresence initial={false}>
   {ui.surface === 'history' && <HistorySurface key="history" project={project} scope={surfaces.historyScope} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'shortcuts' && <ShortcutsSurface key="shortcuts" commands={commands} platform={platformKind} onClose={() => surfaces.closeSurface()}/>}
@@ -389,7 +394,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
   <AnimatePresence initial={false}>{ui.surface === 'restore' && <RestoreSurface key="restore" platform={platform} repository={repository} onSwitch={onSwitchProject} onClose={() => surfaces.closeSurface()}/>}</AnimatePresence>
   <DiffuseIndicator session={diffuse} onReview={() => surfaces.openSurface('diffuse')}/>
     <AnimatePresence initial={false}>{(intents.speakScope !== null || !activeSelection.length) && !isGlobalModal(ui.surface) && !ui.menu && <Speak key="speak" textareaRef={speak} words={intents.words} onWords={intents.setWords} onSubmit={() => intents.submit({ localOnly: tutorial.active })} onStop={() => { stopDiffuseForIntent(); runtime.cancel(); }} onCompose={intents.compose} onExit={intents.exitSpeak} composing={intents.speakScope !== null} empty={!Object.keys(project.thoughts).length && !Object.keys(session.ghosts).length && !(ui.operation?.kind === 'ingest' && ui.operation.phase === 'pending')} typography={settings.thoughtTypography} scopeIds={intents.speakScope ?? []} mode={intents.speakMode} draftSaved={intents.draftSaved} references={(intents.speakScope ?? []).map(key => project.thoughts[key]).filter(Boolean).map(thought => ({ id: thought.id, text: isAuthoredExample(thought) ? t(thought.text) : thought.text }))}/>}</AnimatePresence>
-    {(startupError || persistenceError || ui.notice) && <FeedbackLine onBottomHeight={setBottomNoticeHeight} text={persistenceError ? deviceFailureText('save') : t(startupError || ui.notice)} tone={persistenceError || startupError ? 'error' : ui.noticeTone} secondary={ui.notice === t('Demo possibilities / no live model was used.') ? 'demo' : undefined} action={persistenceError ? <Button variant="ghost" size="sm" onClick={() => void fields.exportCanonical()}>{t('Export')}</Button> : ui.noticeAction ? <Button variant="ghost" size="sm" data-testid="notice-action" onClick={() => runNoticeAction(ui.noticeAction!.kind)}>{t(ui.noticeAction.label)}</Button> : undefined}/>}
+    {(startupError || persistenceError || ui.notice) && <FeedbackLine onDismiss={!persistenceError && !startupError ? clearFeedback : undefined} onBottomHeight={setBottomNoticeHeight} text={persistenceError ? deviceFailureText('save') : t(startupError || ui.notice)} tone={persistenceError || startupError ? 'error' : ui.noticeTone} secondary={ui.notice === t('Demo possibilities / no live model was used.') ? 'demo' : undefined} action={persistenceError ? <Button variant="ghost" size="sm" onClick={() => void fields.exportCanonical()}>{t('Export')}</Button> : ui.noticeAction ? <Button variant="ghost" size="sm" data-testid="notice-action" onClick={() => runNoticeAction(ui.noticeAction!.kind)}>{t(ui.noticeAction.label)}</Button> : undefined}/>}
    <FirstFieldTutorialCoach active={tutorial.active} phase={tutorial.phase} settled={tutorial.settled} onSkip={tutorial.skip} onFinish={tutorial.finish}/>
    <ProgressiveTutorialCoach enabled={!tutorial.active}/>
  </main>;

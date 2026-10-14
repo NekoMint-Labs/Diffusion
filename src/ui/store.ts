@@ -29,6 +29,7 @@ interface UIState extends TransientState {
     /** The single action a notice may offer. Stored as a *kind*, never a callback: the surface that
      * renders the line decides what the action does, so no closure is smuggled through state. */
     noticeAction: NoticeAction | null;
+    connectionFailure: { text: string; timeout?: boolean } | null;
     busy: boolean;
     /** The words a person just submitted, held in view while the structure of them is asked for.
      *
@@ -46,7 +47,7 @@ interface UIState extends TransientState {
 }
 export const useUI = create<UIState>((set) => ({
     fieldVisibleIds: null, selection: [], editing: null, surface: 'none', menu: null, transientEpoch: 0, threadId: null, sourceId: null, regionId: null, handoffId: null, relationId: null, returnPoint: null,
-    theme: 'system', dragging: false, speakFocused: false, carry: [], anchor: null, notice: '', noticeTone: 'info', noticeAction: null, busy: false, operation: null, structuring: null, spatialTransition: null,
+    theme: 'system', dragging: false, speakFocused: false, carry: [], anchor: null, notice: '', noticeTone: 'info', noticeAction: null, connectionFailure: null, busy: false, operation: null, structuring: null, spatialTransition: null,
     patch: (p) => set(state => transientPatch(state, p)), select: (key, extend = false) => set(s => ({ selection: extend ? (s.selection.includes(key) ? s.selection.filter(k => k !== key) : [...s.selection, key]) : [key] })),
 }));
 

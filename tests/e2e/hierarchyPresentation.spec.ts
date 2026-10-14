@@ -144,8 +144,9 @@ test('zoom detail and Find preserve explicit folds, current context and coordina
     await expect(page.getByTestId('root-anchors')).toHaveAttribute('data-count', '2');
     const camera = await page.locator('.world').getAttribute('style');
     await page.keyboard.press('Control+f'); await page.locator('.find-bar input').fill('D 层级想法');
-    await expect(node(page, 'd').locator('.thought-preview')).toHaveText('D 层级想法');
-    await expect(node(page, 'd').getByTestId('hierarchy-context')).toContainText('归属：C 层级想法');
+    // #49 approval: Find must not disclose explicitly collapsed descendants.
+    await expect(node(page, 'd')).toHaveCount(0);
+    await expect(node(page, 'c')).toBeVisible();
     await page.screenshot({ path: info.outputPath('find-deep-current-context.png') });
     await page.keyboard.press('Escape'); await expect(node(page, 'd')).toHaveCount(0);
     await expect(page.locator('.world')).toHaveAttribute('style', camera!);
@@ -277,7 +278,11 @@ test('explicitly folded selected children leave no floating controls and Find re
     await notch(page, 'down'); await expect(node(page, 'c-up')).toHaveCount(0);
     const camera = await page.locator('.world').getAttribute('style');
     await page.keyboard.press('Control+f'); await page.locator('.find-bar input').fill('一门课整块收起来之后');
-    await expect(node(page, 'c-up').locator('.thought-preview')).toContainText('不用再拆开分一遍');
+    await expect(node(page, 'c-up')).toHaveCount(0);
+    await page.locator('.find-bar input').press('Enter');
+    await expect(node(page, 'b-up')).toHaveAttribute('data-selected', 'true');
+    await page.getByRole('button', { name: '返回刚才视图', exact: true }).click();
+    await expect(node(page, 'c-up')).toHaveCount(0);
     await page.keyboard.press('Escape'); await expect(node(page, 'c-up')).toHaveCount(0);
     await expect(page.locator('.world')).toHaveAttribute('style', camera!);
     await notch(page, 'up'); await expect(node(page, 'c-up')).toHaveCount(0);

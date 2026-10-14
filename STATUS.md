@@ -1,5 +1,12 @@
 # Diffusion — current status
 
+## Integrated candidate checkpoint — October 14, 2026
+
+C now includes main `ae74a2b73cd528f58cef4ef51f85f4651e3baded`: #52–#56 and #60/#61/#65 are merged by the operator, alongside #57/#64/#66. C's #63 source is unchanged from A/B-approved `f77f446` after resolving duplicate squash conflicts: application, native, server, discovery-engine and test trees match byte-for-byte in Git. C recovery, bounded-excerpt validation, approved #49 navigation and conservative source previews are retained. Only merge ancestry and documentation change.
+
+`f77f446` passed 649 unit and 12 focused browser cases locally, and its own full CI/E2E passed; A/B both formally approved it. New integration-head gates/review are recorded separately in #63. A matching 0.3.15 Windows preview is being prepared; it is not installed/live acceptance. The old 0.3.14 remains `2c82f50`. #11/#12 remain open, including real AI/Verify, no-key search quality, physical network/input, persistence and long-session checks. Earlier checkpoint text below retains its original date and is historical.
+
+
 Diffusion is a quiet thinking medium for ideas before commitment. This file describes the current checkout: what works, which subsystem owns it, what was freshly verified, and what remains incomplete. It is not a changelog. Historical phase reports and prior verification records remain under [`docs/history/`](docs/history/README.md).
 
 ## Current main checkpoint - October 13, 2026
@@ -150,6 +157,122 @@ needs reconciliation with #51's no-provider-expansion scope. It is not accepted 
 
 #11/#12 stay open. C owns reviewed integration and the identifiable Windows candidate;
 the operator owns final acceptance. Historical records below retain their original limits.
+
+## Historical C local candidate records (October 12, 2026)
+
+These dated records describe the state before the October 13 integration; references to not uploading or unknown remote checks apply only to those recorded snapshots. Source and the 0.3.12 prerelease were subsequently published. Current integration evidence is recorded separately.
+
+## Local 0.3.12 table presentation — October 12, 2026 (not uploaded)
+
+The operator supplied a second failing example: collapsed WordHippo pipe tables, empty columns, related translations and an advertisement still dominated Verify. Opening pipe tables now receive a bounded literal cell preview, preserving populated cell order and wording and cutting the named related-navigation/ad boundary. Both search snippets and fetched read passages use this presentation. Original text remains expandable; fetch/extract matching, passage IDs, provenance and the raw model-assessment input are unchanged. This does not generate an answer or establish live search relevance. The exact supplied example is covered by unit and browser regression through search, read and explicit assessment. Delivery checks and installed/live acceptance limitations are recorded with the 0.3.12 artifact.
+
+## Previous local 0.3.11 feedback repairs — October 12, 2026 (not uploaded)
+
+The operator's 0.3.10 report exposed missing timeout acknowledgement, non-dismissible notices and missing search-disconnect acknowledgement. Timeout now has its own modal title; transient bottom notices and terminal operation feedback have explicit Close controls. Active operations retain Stop, and ongoing save/startup faults are not dismissed by the transient-notice control. Verify observes known offline state and in-flight offline events, acknowledges network/timeout failures, releases waiting UI even if the engine ignores cancellation, and discards late output. Recovery remains explicit. The supplied dictionary snippet now previews its original definition sentence instead of leading pronunciation/table/XP metadata, while retaining raw expansion and unread-candidate status. Search providers, query and source language are unchanged.
+
+Current repair checks: 572 unit, 315 offline, 22 focused browser cases (one worker, zero retries), application types, 999 locale keys, source size, syntax/imports and production build passed. A preview regression initially selected later FAQ headings instead of a pronunciation-only snippet; it was corrected without changing the existing assertion, and the final complete focused run plus the supplied-snippet case passed. Browser offline events and fixture responses are separate from physical Windows/live-provider acceptance. 0.3.10 evidence below belongs to the earlier combined revision; independent review, readable installed/live Verify, native acceptance and #49/#48 design approval remain open.
+
+## Previous local integration — October 12, 2026
+
+This local 0.3.10 checkout combines A #52 `a022d403`, #53 `593a1060`, #54 `6fd9ddd9`, #55 `d97eb4be`, independent #56 `e9b7b487`, B #57 `aa8d18f2` / #60 `f395e95b` / #61 `edc87780`, and C c948a79 plus local 0.3.9 follow-up. No remote merge or approval has occurred. The combination passed 565 unit, 315 offline and 77 focused production-browser cases, one worker, zero retries; application/Core types, 997 locale keys, syntax/imports, source-size, frontend and Windows NSIS builds passed. The separate authored-Ask browser case is recorded in the delivery ledger. This is not the full browser suite or installed/live-model acceptance. The transport resolves to the exact current #52 implementation, while C's terminal UI/popup remains; the old body AbortError identity assertion now checks normalized provider-unreachable and its safe message, with explicit caller cancellation identity still protected. #49 v3 and #48 remain design proposals pending product approval. Earlier counts and CI observation notes below belong to their named historical inputs, not this current local combination. C's own combined changes still require another developer's independent review.
+
+## C follow-up evidence before current integration
+
+## Local follow-up after published c948a79 (2026-10-12, not uploaded)
+
+The 0.3.9 local candidate additionally wires the configured live AI provider into
+explicit assessment of read passages. Search/read do not call the model; demo
+responses are rejected, input is bounded to four passages / 6000 characters,
+returned citations are validated, and the actual reasoning provider is recorded.
+Missing AI capability is explained, and assessment credential failures lead to AI
+settings instead of search settings. Redirected fetch/extract pairs reuse the same
+reader body. The existing gateway assessment prompt is shared with this adapter.
+
+For a local integration rehearsal, #52 head `853872e3332782099c114f8fa9897cc5fa26bf11`
+was combined with C's current changes in a detached D-drive worktree. Only transport
+conflicted; the normalized C implementation preserves #52's timeout contract plus
+explicit cancellation and broken-stream handling. 534 unit, 295 offline and 11
+focused browser tests passed there. #52's provider/refusal/truncation changes have
+been carried into this local candidate, with production/test source equality checked.
+This is not a main merge, uploaded revision, remote approval, full E2E gate or
+independent review of C's own changes. #53-#56/#57/#60/#61 remain pending integration.
+
+One explicit actual-engine keyless recheck returned three public candidates and
+read one source; four passages totaling 255 characters matched fetched text. Earlier
+isolated executable startup checks timed out; a later original-path/minimal-env
+check passed in 1.33 seconds. The cause remains unknown, and there is no product
+automatic retry. Source-CLI reading also succeeded. Neither result verifies real
+model assessment or installed UI quality. These observations and the common
+acceptance checklist remain local on D. #49 has an interactive local proposal,
+not a production navigation implementation; its approval gate is unchanged.
+
+The operator now reports that disconnect feedback is visible and requests a popup.
+The 0.3.8 local candidate adds a modal acknowledgement for classified offline or
+unreachable AI failures. It shows the existing bounded failure wording and a manual
+recovery hint. Close/Escape dismiss only the popup; the persistent notice remains.
+Timeouts and user cancellation do not raise a connection popup. There is no timer,
+automatic retry, raw provider error, durable state change or navigation redesign.
+Native top-layer input ownership prevents click-through; keyboard focus stays on
+the close control. Installed Windows popup acceptance still requires operator retest.
+
+The operator has withdrawn permission for further uploads. This follow-up stays
+local. It combines the #52/#58 transport contracts: fetch/body/native deadlines
+become timeout failures, explicit caller cancellation retains its reason, broken
+response streams become unreachable failures, and invalid/oversized JSON remains
+malformed. There is no automatic retry. A real loopback TCP stream-disconnect
+test checks one failed request followed by an explicit successful second request.
+Independent developer review of the combined diff is still pending.
+
+The operator supplied the problematic Chinese search output. The supplied sample
+has readable Chinese and pinyin mixed with site navigation, Markdown, multilingual
+dictionary lists and repeated boilerplate; it does not establish a decoding bug.
+Unread Verify snippets now have a bounded plain-text display preview and an
+expandable, scrollable unchanged original. This does not replace the provider
+snippet, read the page, assess evidence, or prove all reported garbling resolved.
+No search provider or credential bypass was added in this follow-up.
+
+Local validation: 509 unit tests and 295 offline contracts pass. Application/core
+typechecking, locale/source-size checks, sidecar freshness and production build
+are checked locally. Focused browser cases and packaging are recorded in the
+local delivery report. These do not establish physical Wi-Fi interruption,
+configured real-model recovery, complete search quality or installed desktop
+acceptance. Search remains open pending operator retest.
+
+Issue #49's revised navigation proposal and three 1280x720 diagrams remain in
+the D-drive local deliverables. Product-owner design approval is still required
+by the issue comments; no production navigation change is included.
+
+## Desktop repair candidate and unresolved search acceptance (2026-10-12)
+
+This review candidate is based on main `edf56d5`. It includes the local #22/#27
+error/readiness repairs, Windows discovery process startup and UTF-8 JSON output,
+an explicit opt-in Tavily keyless mode, contextual-menu/read-control separation,
+and frame-by-frame read/respond control placement during card dragging and cancellation.
+It is a review candidate, not an accepted change to main. The drag work overlaps
+the separately open #46 / PR #60 and should be reconciled during review.
+
+**Web search remains incomplete and must not be accepted as working.** The operator
+has no usable search API key for the currently configured key-based search path.
+After trying the optional keyless path, the operator reports that the returned
+answers are almost entirely garbled ("免 Key 搜索得出的答案几乎全是乱码").
+The cause and exact failing display/read/assessment stage have not been established.
+Do not treat the UTF-8 pipe fix as proof that this reported problem is resolved.
+
+A real packaged-engine request without a key returned `complete` and three public
+candidates. This proves transport/result-envelope success only; it does not prove
+readable, relevant search results, full-text reading, or useful evidence assessment
+in the installed desktop application. Keyless access remains experimental and
+subject to shared limits. No paid-key or complete desktop search acceptance is claimed.
+
+Local checks for this candidate: 505 unit tests, 286 offline tests, 82 discovery
+engine tests, 10 native environment-mapping tests and three packaged-engine tests
+passed. Focused browser runs passed 12 search/credential cases, 16 menu/reading/response
+cases and seven drag/menu/canonical-position cases. These are separate focused runs,
+not a full E2E suite. Application/core typechecking, locale/source-size checks,
+production build and Windows NSIS packaging were checked locally. The packaged
+component tests do not replace installed Windows/WebView2 or physical disconnect
+acceptance. The operator reports normal progress on the UI repairs; search remains
+an explicit blocker for review and follow-up.
 
 ## PR #18 main synchronization (2026-10-10)
 

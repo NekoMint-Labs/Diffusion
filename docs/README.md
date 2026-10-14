@@ -1,5 +1,12 @@
 # Diffusion documentation
 
+## Integrated candidate checkpoint — October 14, 2026
+
+C now includes main `ae74a2b73cd528f58cef4ef51f85f4651e3baded`: #52–#56 and #60/#61/#65 are merged by the operator, alongside #57/#64/#66. C's #63 source is unchanged from A/B-approved `f77f446` after resolving duplicate squash conflicts: application, native, server, discovery-engine and test trees match byte-for-byte in Git. C recovery, bounded-excerpt validation, approved #49 navigation and conservative source previews are retained. Only merge ancestry and documentation change.
+
+`f77f446` passed 649 unit and 12 focused browser cases locally, and its own full CI/E2E passed; A/B both formally approved it. New integration-head gates/review are recorded separately in #63. A matching 0.3.15 Windows preview is being prepared; it is not installed/live acceptance. The old 0.3.14 remains `2c82f50`. #11/#12 remain open, including real AI/Verify, no-key search quality, physical network/input, persistence and long-session checks. Earlier checkpoint text below retains its original date and is historical.
+
+
 The index for this repository's documentation. Start at the top and descend only as far as your
 change requires.
 
@@ -62,6 +69,17 @@ Current, but scoped to one subsystem or one record.
 | [REFERENCE_AUDIT.md](REFERENCE_AUDIT.md) | Which external projects were actually inspected, reused or rejected. |
 | [third_party/](third_party/MATERIAL_GALLERY.md) | Field-background provenance, retained notices and license texts. |
 | [language/](language/examples.zh.md) | Locale examples and regression fixtures. |
+
+## REVIEW RECORDS AND PROPOSALS
+
+These records do not establish a new product contract or completed native acceptance.
+
+| Document | Status |
+|---|---|
+| [ROUND2_REVIEW_20261013.md](ROUND2_REVIEW_20261013.md) | Independent A/documentation reviews, transport confirmation, B receipt finding and C integration inputs. |
+| [ISSUE49_NAVIGATION_PROPOSAL.md](ISSUE49_NAVIGATION_PROPOSAL.md) | Shared compact-surface rules confirmed; detailed #49 reveal/return behavior proposed, not approved. |
+| [DESKTOP_REVIEW_0312.md](DESKTOP_REVIEW_0312.md) | Draft #63 combined candidate: implemented repairs, exact integration inputs, checks and remaining acceptance work. |
+| [WEB_ANSWER_PROPOSAL.md](WEB_ANSWER_PROPOSAL.md) | Proposed web-answer flow and search-source alternatives; not implemented or approved. |
 
 ## HISTORY
 

@@ -24,7 +24,7 @@ use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 
 use crate::credentials::read_secret;
-use crate::discovery_env::child_environment;
+use crate::discovery_env::child_environment_with_access;
 
 /// One search is bounded by its slowest source; a read is bounded by the slowest page.
 const SEARCH_BUDGET: Duration = Duration::from_secs(30);
@@ -34,7 +34,7 @@ const MAX_OUTPUT_BYTES: u64 = 1024 * 1024;
 const POLL_INTERVAL: Duration = Duration::from_millis(20);
 
 /// Only variables the engine actually reads. A leaked or unexpected name cannot be smuggled in,
-/// and Diffusion never forwards its own process environment to the child.
+/// and no ambient credentials are inherited. Minimal Windows runtime context is added separately.
 const ALLOWED_ENV_PREFIXES: [&str; 4] = ["EXA_", "TAVILY_", "BRAVE_", "JINA_"];
 
 fn env_allowed(key: &str) -> bool {
@@ -89,11 +89,11 @@ fn engine_path(app: &AppHandle) -> Result<std::path::PathBuf, String> {
 /// the child below. An enabled source with no stored secret is written off, so a key that went
 /// missing degrades to the engine's own configuration answer instead of to a provider failure.
 #[tauri::command]
-pub async fn discovery_run(app: AppHandle, args: Vec<String>, sources: Vec<String>) -> Result<String, String> {
+pub async fn discovery_run(app: AppHandle, args: Vec<String>, sources: Vec<String>, tavily_keyless: Option<bool>) -> Result<String, String> {
     if !args_valid(&args) {
         return Err("The discovery engine was asked for an unsupported operation.".into());
     }
-    let environment = child_environment(&sources, read_secret)?;
+    let environment = child_environment_with_access(&sources, tavily_keyless.unwrap_or(false), read_secret)?;
     let program = engine_path(&app)?;
     let operation = args[0].clone();
     tauri::async_runtime::spawn_blocking(move || run(&program, &args, &environment, &operation))
@@ -115,6 +115,7 @@ fn run(program: &std::path::Path, args: &[String], env: &std::collections::HashM
         // allowlist as the last gate before the child: two independent reasons a name outside the
         // engine's own variables cannot reach it.
         .envs(env.iter().filter(|(key, _)| env_allowed(key)));
+    crate::discovery_process_env::configure(&mut command);
     // A child process must not flash a console window in front of the user on Windows.
     #[cfg(windows)]
     {

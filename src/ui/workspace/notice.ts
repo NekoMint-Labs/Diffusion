@@ -1,4 +1,5 @@
 import { report } from './feedback.ts';
+import { useUI } from '../store.ts';
 import { failureRemedy, failureText, type ThinkingFailure } from '../../ai/errors.ts';
 import { t } from '../../shared/i18n.ts';
 
@@ -49,6 +50,13 @@ export function failureNotice(failure: ThinkingFailure, subject = 'The provider'
     // still arrives; only the empty promise is withheld.
     const label = remedy === 'retry' && !canRetry ? '' : REMEDY_LABEL[remedy];
     report(failureText(failure, subject), 'error', remedy === 'none' || !label ? null : { label, kind: remedy });
+    showRequestFailure(failure, failureText(failure, subject));
+}
+
+/** Search and AI requests share acknowledgement, without resending either request. */
+export function showRequestFailure(failure: ThinkingFailure, text: string): void {
+    if (failure === 'network-unavailable' || failure === 'provider-unreachable' || failure === 'timeout')
+        useUI.getState().patch({ connectionFailure: { text, timeout: failure === 'timeout' } });
 }
 
 /** The bounded vocabulary for a failure that happened on this device rather than upstream.

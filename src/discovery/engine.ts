@@ -1,4 +1,4 @@
-import { ThinkingError, type ThinkingFailure } from '../ai/errors.ts';
+import { classifyFailure, ThinkingError, type ThinkingFailure } from '../ai/errors.ts';
 import { DiscoveryError, type SearchOutcome } from './envelope.ts';
 import type { DiscoveryRuntime } from './runtime.ts';
 import type { EvidenceCandidate, EvidencePassage, EvidenceReasoning } from '../core/model.ts';
@@ -7,6 +7,7 @@ import type { EvidenceChunk, EvidenceProvenance, FetchedResource, ResourceMetada
 /** Scoped reasoning over read passages. Separated from discovery because whoever can *read* a page
  * and whoever can *think* about it are different capabilities, and either may be missing. */
 export interface EvidenceReasoner {
+    readonly label?: string;
     reason(claim: string, passages: EvidencePassage[], signal?: AbortSignal): Promise<EvidenceReasoning>;
 }
 
@@ -14,13 +15,24 @@ export interface EvidenceReasoner {
  * installed, not configured, or has no usable source is one honest state: external discovery is
  * unavailable and the Field still works. */
 export function discoveryFailure(error: unknown): ThinkingFailure {
-    if (!(error instanceof DiscoveryError)) return 'discovery-unavailable';
+    if (!(error instanceof DiscoveryError)) {
+        const known = classifyFailure(error);
+        return known === 'unknown' ? 'discovery-unavailable' : known;
+    }
     switch (error.code) {
         case 'not-installed':
         case 'not-configured':
         case 'invalid-executable':
         case 'execution-failed':
         case 'provider-failed': return 'discovery-unavailable';
+        case 'auth_error': return 'authentication-failed';
+        case 'timeout': return 'timeout';
+        case 'network_error': return 'provider-unreachable';
+        case 'rate_limited': return 'rate-limited';
+        case 'parameter_error': return 'invalid-configuration';
+        case 'provider_error': return 'provider-server-error';
+        case 'protocol_error':
+        case 'parse_error': return 'malformed-provider-response';
         case 'invalid-contract':
         case 'output-too-large': return 'malformed-provider-response';
         default: return 'invalid-configuration';
@@ -40,7 +52,8 @@ export class DiscoveryEvidenceProvider implements WebEvidenceProvider {
     reason?: (claim: string, passages: EvidencePassage[], signal?: AbortSignal) => Promise<EvidenceReasoning>;
     private readonly runtime: DiscoveryRuntime;
     private outcome: SearchOutcome | null = null;
-    constructor(runtime: DiscoveryRuntime, reasoner?: EvidenceReasoner) {
+    get reasoningLabel(): string | undefined { return this.reasoner?.label; }
+    constructor(runtime: DiscoveryRuntime, private readonly reasoner?: EvidenceReasoner) {
         this.runtime = runtime;
         if (reasoner) this.reason = (claim, passages, signal) => reasoner.reason(claim, passages, signal);
     }

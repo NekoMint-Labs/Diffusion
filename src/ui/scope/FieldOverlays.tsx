@@ -9,12 +9,14 @@ import { selectionUIBounds } from '../../field/useThoughtMeasurements.ts';
 import { cancelThinkingOperation, canCancelThinkingOperation } from '../../ai/operationControl.ts';
 import { t } from '../../shared/i18n.ts';
 import { Button } from '../primitives/Button.tsx';
+import { useUI } from '../store.ts';
 import { pendingCopy, terminalCopy, useOperationPresentation } from '../motion/operationPresentation.ts';
 import { ScopeHub, type ScopeHubProps } from './ScopeHub.tsx';
 import { clearScopePlacement, unionScopeBounds, type ScopeRect } from './scopePlacement.ts';
 
 export interface FieldOverlaysHandle { layout: (camera?: Camera) => void; }
 interface Props {
+    onReturnView?: () => void;
     viewport: RefObject<HTMLDivElement | null>;
     camera: () => Camera;
     geometry: GeometryCache;
@@ -95,7 +97,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         const relationOccupied = [...field.querySelectorAll<HTMLElement>('.relation-token-overlay, .relation-token-actions')]
             .filter(element => element.getClientRects().length)
             .map(element => screenRect(element.getBoundingClientRect()));
-        const reserved = [...app.querySelectorAll<HTMLElement>('[data-testid="speak"], .notice, .identity, .global-actions, .field-line-key')]
+        const reserved = [...app.querySelectorAll<HTMLElement>('[data-testid="speak"], .notice, .identity, .global-actions, .field-line-key, .first-field-tutorial .tutorial-coach')]
             .filter(element => element.getClientRects().length && getComputedStyle(element).visibility !== 'hidden')
             .map(element => screenRect(element.getBoundingClientRect()));
         const placed: ScopeRect[] = [];
@@ -241,7 +243,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         const resize = new ResizeObserver(update);
         const observed = new Set<Element>();
         const observe = () => {
-            const elements = new Set<Element>([field, ...app.querySelectorAll('.thought, .thought-local-actions, .relation-token-overlay, .relation-token-actions, .scope-hub, .spatial-operation-feedback, .suggestion-review, .field-line-key, [data-testid="speak"], .notice, .progressive-tutorial-coach')]);
+            const elements = new Set<Element>([field, ...app.querySelectorAll('.thought, .thought-local-actions, .relation-token-overlay, .relation-token-actions, .scope-hub, .spatial-operation-feedback, .suggestion-review, .field-line-key, [data-testid="speak"], .notice, .progressive-tutorial-coach, .first-field-tutorial .tutorial-coach')]);
             for (const element of observed) if (!elements.has(element)) { resize.unobserve(element); observed.delete(element); }
             for (const element of elements) if (!observed.has(element)) { resize.observe(element); observed.add(element); }
         };
@@ -260,13 +262,14 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
     const cancelable = Boolean(displayOperation && displayOperation.phase === 'pending' && canCancelThinkingOperation(displayOperation.id));
     return <>
         <div ref={dockElement} className="field-overlay-dock" aria-hidden="true" />
-        <FieldReview ref={review} elementRef={reviewElement} enabled={props.enabled} pending={props.suggestions} thoughts={props.thoughts} roots={props.roots} onReveal={props.onRevealRoot} onAction={props.onSuggestionAction} />
+        <FieldReview onReturnView={props.onReturnView} ref={review} elementRef={reviewElement} enabled={props.enabled} pending={props.suggestions} thoughts={props.thoughts} roots={props.roots} onReveal={props.onRevealRoot} onAction={props.onSuggestionAction} />
         <ConnectionKey elementRef={linesElement} hasHierarchy={props.hasHierarchy} hasRelations={props.hasRelations} local={props.localRelations} />
         {props.scope && <ScopeHub {...props.scope} elementRef={scopeElement} />}
         {displayOperation && <div ref={operationElement} className="spatial-operation-feedback" data-testid="operation-feedback" data-phase={displayOperation.phase} data-operation-id={displayOperation.id} data-origin-scope={displayOperation.scopeIds.join(' ')} data-copy-visible={showCopy || undefined} role="status" aria-live="polite" aria-atomic="true" onPointerDown={event => event.stopPropagation()}>
             <span className="operation-feedback-mark" aria-hidden="true" />
             {showCopy && <span className="operation-feedback-copy">{displayOperation.phase === 'pending' ? t(pendingCopy(displayOperation.kind)) : terminalCopy(displayOperation)}</span>}
             {cancelable && showCopy && <Button variant="ghost" size="sm" className="operation-stop" onClick={() => cancelThinkingOperation(displayOperation.id)}>{t('Stop')}</Button>}
+            {displayOperation.phase !== 'pending' && showCopy && <Button variant="ghost" size="sm" onClick={() => { const ui = useUI.getState(); if (ui.operation?.id === displayOperation.id && ui.operation.phase !== 'pending') ui.patch({ operation: null }); }}>{t('Close')}</Button>}
         </div>}
     </>;
 });

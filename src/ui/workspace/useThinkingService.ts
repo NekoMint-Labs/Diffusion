@@ -9,6 +9,7 @@ import { DiscoveryEvidenceProvider } from '../../discovery/engine.ts';
 import { customDiscoveryURL, discoveryAvailable, type DiscoveryStatus } from '../../discovery/contracts.ts';
 import { SourceParser } from '../../evidence/parser.ts';
 import { SourceImporter } from '../../evidence/importer.ts';
+import { ModelEvidenceReasoner } from '../../evidence/reasoning.ts';
 import type { ProjectController } from '../../core/controller.ts';
 import type { ProjectRepository } from '../../storage/repository.ts';
 import type { Settings } from '../settings.ts';
@@ -76,7 +77,8 @@ export function useThinkingService({ controller, repository, settings, settingsR
         if (discovery.engine === 'custom' && settings.discovery.customUrl) return new CustomDiscoveryRuntime(customDiscoveryURL(settings.discovery.customUrl));
         return null;
     }, [settings.discovery.external, settings.discovery.customUrl, discovery.engine, discovery.ready.length, runTimes.builtIn]);
-    const evidence = useMemo(() => engine ? new DiscoveryEvidenceProvider(engine) : null, [engine]);
+    const evidence = useMemo(() => engine ? new DiscoveryEvidenceProvider(engine,
+        settings.provider === 'off' || settings.provider === 'demo' ? undefined : new ModelEvidenceReasoner(() => createThinkingProvider(selection.current, credentials))) : null, [engine, settings.provider, credentials]);
     const evidenceRef = useRef(evidence);
     evidenceRef.current = evidence;
     const diffuse = useMemo(() => new DiffuseSession(controller, runtime, () => evidenceRef.current), [controller, runtime]);

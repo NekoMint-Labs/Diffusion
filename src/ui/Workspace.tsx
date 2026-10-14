@@ -353,6 +353,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
             event.preventDefault();
             rename.cancel();
         } }}/></h1><p className="identity-rename-hint">{t('Enter to save / Escape to cancel')}</p></div>}
+  {rename.draft === null && <Button variant="ghost" size="sm" className="identity-fields" data-testid="field-management" aria-haspopup="dialog" aria-expanded={ui.surface === 'fields'} onClick={() => surfaces.openSurface('fields')}>{t('Manage Fields')}</Button>}
   {project.fork && <span className="identity-detail">{t('Fork')}</span>}</div>
   {arrival && <span className="identity-arrival" data-testid="field-arrival-hint" data-decoration="arrival">{t('A new Field. Nothing has grown here yet.')}</span>}
   </header>
@@ -384,7 +385,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
   <AnimatePresence initial={false}>
   {ui.surface === 'history' && <HistorySurface key="history" project={project} scope={surfaces.historyScope} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'shortcuts' && <ShortcutsSurface key="shortcuts" commands={commands} platform={platformKind} onClose={() => surfaces.closeSurface()}/>}
-  {ui.surface === 'fields' && <OpenFieldSurface key="fields" repository={repository} currentId={project.id} onSwitch={fields.switchField} onCreate={() => void fields.createField(false)} onClose={() => surfaces.closeSurface()}/>}
+  {ui.surface === 'fields' && <OpenFieldSurface key="fields" repository={repository} currentId={project.id} onSwitch={fields.switchField} onCreate={() => fields.createField(false)} onDuplicate={fields.duplicateField} onClose={() => surfaces.closeSurface()}/>}
   </AnimatePresence>
   {ui.surface === 'region' && ui.regionId && project.regions[ui.regionId] && <RegionSurface region={project.regions[ui.regionId]} anchor={ui.anchor ?? undefined} onRename={name => controller.dispatch({ type: 'region.rename', id: ui.regionId!, name })} onAsk={() => intents.openThread(project.regions[ui.regionId!].members)} onCrystal={() => intents.previewCrystal(project.regions[ui.regionId!].members)} onDiffuse={() => startDiffuse(project.regions[ui.regionId!].members)} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'lineage' && surfaces.lineageId && <LineageSurface key={surfaces.lineageId} controller={controller} project={project} thoughtId={surfaces.lineageId} onClose={() => surfaces.closeSurface(false)}/>}

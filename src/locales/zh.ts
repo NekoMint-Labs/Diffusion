@@ -534,6 +534,9 @@ export const zh: Record<string, string> = {
   /* v0.3 product interaction maturity */
   "Rename Field": "重命名思绪场",
   "New Field": "新建思绪场",
+  "Manage Fields": "管理思绪场",
+  "Duplicate current Field": "复制当前思绪场",
+  "Current Field": "当前思绪场",
   "Open Field": "打开思绪场",
   "Open Field...": "打开思绪场…",
   "Duplicate Field": "复制思绪场",

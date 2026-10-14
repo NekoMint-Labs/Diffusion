@@ -15,7 +15,7 @@
 .app { width: 100%; height: 100%; position: relative; isolation: isolate; }
 
 /* The top-left anchor: field identity. Decorative copy never takes pointer ownership; only the
-   title itself is an interactive element. Identity is a page identity, not app chrome: quiet, but
+   title and its small Field-management entry are interactive. Identity is a page identity: quiet, but
    with a deliberate editorial rhythm and enough contrast to stay legible over both materials.
    The Latin FIELD eyebrow uses wide tracking; Chinese keeps a compact editorial rhythm. */
 .identity { position: absolute; z-index: var(--layer-selection); left: 40px; top: 30px; max-width: min(58vw, 600px); pointer-events: none; display: flex; flex-direction: column; gap: 5px; }
@@ -25,6 +25,7 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .identity-row { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
 .identity h1 { margin: 0; min-width: 0; font: 400 var(--type-identity-size)/var(--type-identity-line) var(--thought-font); letter-spacing: var(--type-identity-track); color: color-mix(in srgb, var(--ink-primary) 92%, var(--ink-secondary)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .identity-detail { margin-top: 1px; font-size: var(--type-helper-size); color: var(--ink-tertiary); }
+.identity .identity-fields { pointer-events: auto; flex: none; color: var(--ink-secondary); font-size: var(--type-helper-size); }
 /* The title rests as identity, not as a bare input: a quiet label that reveals its own affordance on
    hover, focus, or while its own menu is open. Renaming happens where the title is, not in a dialog. */
 .identity button.identity-title { pointer-events: auto; position: relative; max-width: 100%; padding: 1px 4px 2px 0; border-radius: var(--radius-hair); font: inherit; color: inherit; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color var(--motion-micro) var(--ease-out-ui); }

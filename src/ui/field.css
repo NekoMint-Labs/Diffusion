@@ -25,7 +25,8 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .identity-row { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
 .identity h1 { margin: 0; min-width: 0; font: 400 var(--type-identity-size)/var(--type-identity-line) var(--thought-font); letter-spacing: var(--type-identity-track); color: color-mix(in srgb, var(--ink-primary) 92%, var(--ink-secondary)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .identity-detail { margin-top: 1px; font-size: var(--type-helper-size); color: var(--ink-tertiary); }
-.identity .identity-fields { pointer-events: auto; flex: none; color: var(--ink-secondary); font-size: var(--type-helper-size); }
+.identity-heading { display: flex; align-items: baseline; gap: 8px; }
+.identity .identity-fields { pointer-events: auto; flex: none; min-height: 24px; padding: 0 6px; color: var(--ink-secondary); font-size: var(--type-helper-size); }
 /* The title rests as identity, not as a bare input: a quiet label that reveals its own affordance on
    hover, focus, or while its own menu is open. Renaming happens where the title is, not in a dialog. */
 .identity button.identity-title { pointer-events: auto; position: relative; max-width: 100%; padding: 1px 4px 2px 0; border-radius: var(--radius-hair); font: inherit; color: inherit; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color var(--motion-micro) var(--ease-out-ui); }

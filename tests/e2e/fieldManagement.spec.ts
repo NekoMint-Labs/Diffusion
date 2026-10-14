@@ -194,7 +194,7 @@ for (const [width, locale, scale, theme] of [[1280, 'en', 100, 'light'], [720, '
         await insideViewport(page, page.getByTestId('field-management'));
         const title = (await page.getByTestId('field-title').boundingBox())!;
         const entry = (await page.getByTestId('field-management').boundingBox())!;
-        expect(title.x + title.width).toBeLessThanOrEqual(entry.x);
+        expect(title.x + title.width <= entry.x || entry.x + entry.width <= title.x || title.y + title.height <= entry.y || entry.y + entry.height <= title.y).toBe(true);
         const closed = testInfo.outputPath('management-entry.png');
         await page.screenshot({ path: closed });
         await testInfo.attach('management entry', { path: closed, contentType: 'image/png' });

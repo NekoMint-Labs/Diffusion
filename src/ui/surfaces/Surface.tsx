@@ -36,10 +36,13 @@ export function Surface({ title, subtitle, level = 'split', anchor, onClose, chi
     /** While a surface recedes it is a visual echo only: it leaves the accessibility tree and
      * the interaction tree immediately, so two owners can never both claim the same dialog. */
     const present = useIsPresent();
-    // A receding instance keeps the owner/epoch it mounted with. Reading the live owner here let an
+    // A receding instance keeps its last owned epoch. Reading the live owner here let an
     // outgoing Import surface briefly impersonate Restore and dismiss its successor.
     const owner = useRef(useUI.getState().surface).current;
-    const epoch = useRef(useUI.getState().transientEpoch).current;
+    const epoch = useRef(useUI.getState().transientEpoch);
+    // Reopening the same key before its exit finishes revives this instance. Only a present
+    // owner may adopt its new epoch; an exiting echo must still ignore its successor.
+    if (present && useUI.getState().surface === owner) epoch.current = useUI.getState().transientEpoch;
     const modal = isGlobalModal(owner);
     const initialFocus = useRef<HTMLElement | null>(null);
     const { refs, floatingStyles, context, update, placement } = useFloating({
@@ -53,7 +56,7 @@ export function Surface({ title, subtitle, level = 'split', anchor, onClose, chi
             if (open || !present)
                 return;
             const current = useUI.getState();
-            if (current.surface === owner && current.transientEpoch === epoch)
+            if (current.surface === owner && current.transientEpoch === epoch.current)
                 onClose();
         },
         placement: 'right-start', strategy: 'fixed', transform: false,
@@ -70,7 +73,7 @@ export function Surface({ title, subtitle, level = 'split', anchor, onClose, chi
         refs.setFloating(element);
         initialFocus.current = element?.querySelector<HTMLElement>('[data-autofocus], input:not([type="file"]), textarea, select, [role="combobox"]') ?? element;
     }, [refs]);
-    const dismiss = useDismiss(context, { outsidePress: modal, outsidePressEvent: 'click' });
+    const dismiss = useDismiss(context, { enabled: present, outsidePress: modal, outsidePressEvent: 'click' });
     const role = useRole(context, { role: 'dialog' });
     const { getFloatingProps } = useInteractions([dismiss, role]);
     const trapTab = (event: React.KeyboardEvent<HTMLElement>) => {

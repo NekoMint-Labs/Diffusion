@@ -343,7 +343,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
       while one exists — the same transient vocabulary, one source. */}
   <Atmosphere role={atmosphereRole({ busy: ui.busy, diffuse: ui.surface === 'diffuse', scoped: ui.selection.length > 0 })} appearance={settings.appearance}/>
   <header className="identity">
-  <span className="identity-eyebrow">{t('Field')}</span>
+  <div className="identity-heading"><span className="identity-eyebrow">{t('Field')}</span>{rename.draft === null && <Button variant="ghost" size="sm" className="identity-fields" data-testid="field-management" aria-haspopup="dialog" aria-expanded={ui.surface === 'fields'} onClick={() => surfaces.openSurface('fields')}>{t('Manage Fields')}</Button>}</div>
   <div className="identity-row">{rename.draft === null
         ? <h1><button type="button" key={project.id} className="identity-title" data-testid="field-title" aria-haspopup="menu" aria-expanded={scope === 'field'} aria-controls={scope === 'field' ? 'field-command-menu' : undefined} onClick={event => surfaces.transient.deferMenu(event.currentTarget, 'field')}>{project.id === 'demo' ? t(project.title) : project.title}</button></h1>
         : <div className="identity-rename-shell" data-testid="field-rename-shell"><h1><input className="identity-rename" data-testid="field-rename" autoFocus aria-label={t('Rename Field')} value={rename.draft} maxLength={120} onFocus={event => event.currentTarget.select()} onChange={event => rename.change(event.target.value)} onBlur={rename.commit} onKeyDown={event => { if (event.key === 'Enter') {
@@ -384,7 +384,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
   <AnimatePresence initial={false}>
   {ui.surface === 'history' && <HistorySurface key="history" project={project} scope={surfaces.historyScope} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'shortcuts' && <ShortcutsSurface key="shortcuts" commands={commands} platform={platformKind} onClose={() => surfaces.closeSurface()}/>}
-  {ui.surface === 'fields' && <OpenFieldSurface key="fields" repository={repository} currentId={project.id} onSwitch={fields.switchField} onCreate={() => void fields.createField(false)} onClose={() => surfaces.closeSurface()}/>}
+  {ui.surface === 'fields' && <OpenFieldSurface key="fields" repository={repository} currentId={project.id} onSwitch={fields.switchField} onCreate={() => fields.createField(false)} onDuplicate={fields.duplicateField} onClose={() => surfaces.closeSurface()}/>}
   </AnimatePresence>
   {ui.surface === 'region' && ui.regionId && project.regions[ui.regionId] && <RegionSurface region={project.regions[ui.regionId]} anchor={ui.anchor ?? undefined} onRename={name => controller.dispatch({ type: 'region.rename', id: ui.regionId!, name })} onAsk={() => intents.openThread(project.regions[ui.regionId!].members)} onCrystal={() => intents.previewCrystal(project.regions[ui.regionId!].members)} onDiffuse={() => startDiffuse(project.regions[ui.regionId!].members)} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'lineage' && surfaces.lineageId && <LineageSurface key={surfaces.lineageId} controller={controller} project={project} thoughtId={surfaces.lineageId} onClose={() => surfaces.closeSurface(false)}/>}

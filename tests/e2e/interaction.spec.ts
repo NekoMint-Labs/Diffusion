@@ -272,7 +272,8 @@ test('Field ownership covers duplicate and open without rewriting the current Fi
     await page.getByTestId('field-menu').locator('[data-command="open-field"]').click();
     const dialog = page.getByRole('dialog', { name: 'Open Field' });
     await expect(dialog).toBeVisible();
-    await expect(dialog.locator('.field-list button')).toHaveCount(2);
+    await expect(dialog.locator('.field-list li')).toHaveCount(2);
+    await expect(dialog.locator('[aria-current="true"]')).toContainText('(copy)');
     await dialog.locator('.field-list button').filter({ has: page.locator('span', { hasText: /^Quiet, not empty$/ }) }).click();
     await expect(page.locator('.identity h1')).toHaveText('Quiet, not empty');
     await expect(page.locator('[data-thought-id="attention"]')).toBeVisible();

@@ -1,172 +1,95 @@
 # Diffusion
 
-## Integrated candidate checkpoint — October 14, 2026
+**A quiet space to think before ideas become decisions.**
 
-C now includes main `ae74a2b73cd528f58cef4ef51f85f4651e3baded`: #52–#56 and #60/#61/#65 are merged by the operator, alongside #57/#64/#66. C's #63 source is unchanged from A/B-approved `f77f446` after resolving duplicate squash conflicts: application, native, server, discovery-engine and test trees match byte-for-byte in Git. C recovery, bounded-excerpt validation, approved #49 navigation and conservative source previews are retained. Only merge ancestry and documentation change.
+[简体中文](README.zh-CN.md) · [User guide](docs/USER_GUIDE.md) · [Downloads](https://github.com/NekoMint-Labs/Diffusion/releases) · [Documentation](docs/README.md) · [Contributing](CONTRIBUTING.md)
 
-`f77f446` passed 649 unit and 12 focused browser cases locally, and its own full CI/E2E passed; A/B both formally approved it. New integration-head gates/review are recorded separately in #63. A matching 0.3.15 Windows preview is being prepared; it is not installed/live acceptance. The old 0.3.14 remains `2c82f50`. #11/#12 remain open, including real AI/Verify, no-key search quality, physical network/input, persistence and long-session checks. Earlier checkpoint text below retains its original date and is historical.
+[![CI](https://github.com/NekoMint-Labs/Diffusion/actions/workflows/ci.yml/badge.svg)](https://github.com/NekoMint-Labs/Diffusion/actions/workflows/ci.yml) [![License: Apache-2.0](https://img.shields.io/github/license/NekoMint-Labs/Diffusion)](LICENSE)
 
+Diffusion is an open-source, **local-first desktop thinking workspace**. Put unfinished ideas into a spatial **Field**, explore them at your own pace, and decide what deserves to stay. AI can offer possibilities, but it does not silently organize your work or turn suggestions into conclusions.
 
-Diffusion is a quiet thinking medium for ideas that are not fully formed yet. Thoughts settle into a spatial Field; attention reveals relationships without turning the workspace into a whiteboard or graph editor. AI may suggest possibilities, but only a person can claim a Thought, confirm a relation, or form a Crystal.
+It is **not** a chat-first assistant, an automatic mind-map generator, or a task manager. The starting point is your thought—not a prompt asking an AI to do everything.
 
-This README describes the current `main` branch. The package metadata remains `0.3.0`; that is not a claim that every current feature belongs to a published release.
+## From a thought to a direction
 
-As of October 13, 2026, main is `bb8de89`: [PR #18](https://github.com/NekoMint-Labs/Diffusion/pull/18), [#57](https://github.com/NekoMint-Labs/Diffusion/pull/57), [#64](https://github.com/NekoMint-Labs/Diffusion/pull/64), [#66](https://github.com/NekoMint-Labs/Diffusion/pull/66) and A's [#52](https://github.com/NekoMint-Labs/Diffusion/pull/52)-[#55](https://github.com/NekoMint-Labs/Diffusion/pull/55) are merged. [#10](https://github.com/NekoMint-Labs/Diffusion/issues/10) is closed as the previous thinking milestone. Follow-up work is in the [Round 2 Task Index #51](https://github.com/NekoMint-Labs/Diffusion/issues/51). [#11](https://github.com/NekoMint-Labs/Diffusion/issues/11) and [#12](https://github.com/NekoMint-Labs/Diffusion/issues/12) remain open for Field and installed Windows / real-task acceptance; see [current status](STATUS.md) and the [acceptance map](docs/ACCEPTANCE_MAP.md) for revision-specific evidence.
+Imagine starting with: *"I want to learn more, but I can't decide what to focus on."*
 
-The current Round 2 review checkpoint, including green PR-head checks and the limited
-requester trial of candidate `d97eb4be`, is maintained in [STATUS.md](STATUS.md). It is
-version-specific evidence: merged A delivery, queued Field/C reviews and installed Windows
-acceptance have separate statuses. The historical trial does not qualify newer builds.
+1. **Write it down.** A Thought appears in your Field. Move it somewhere that makes sense to you.
+2. **Add what's missing.** Place another Thought: *"I only have a few hours each week."* Select either or both to define a temporary scope.
+3. **Explore.** Use Continue thinking, Another angle, Ask, or Find a relation. With AI configured, the app may return provisional **Ghosts**, not new facts or commitments.
+4. **Decide.** Keep a useful Ghost, Ignore the rest, and confirm a relation only if it reflects your judgment.
+5. **Return later.** Revisit the Field, continue a Thread, or explicitly form a **Crystal** when a direction feels stable enough to act on.
 
-## What is different
+This is the core loop: **your words → a chosen scope → possibilities → your decision**.
 
-- **The Field is state; messages are history.** The spatial Field holds canonical work. Threads and model responses are context and history until the user explicitly brings something into the Field.
-- **Selection defines scope.** Selecting Thoughts changes what an action addresses; it does not silently call AI or rearrange the camera.
-- **AI creates possibility; the user creates commitment.** Provider output remains transient until a user action crosses the Core authority boundary.
-- **The camera stays imperative.** Pointer-frequency pan, zoom, drag, culling, and geometry work do not travel through React state.
-- **Desktop is the same product.** Tauri wraps the React/Vite frontend behind platform adapters; it is not a second UI.
+## What you can do
 
-## Current capabilities
+| Work with your ideas | What Diffusion provides |
+| --- | --- |
+| Capture and arrange | Write, edit, move, select, and spatially organize Thoughts. Zoom between local detail and the larger Field. |
+| Think with context | Select one or several Thoughts before continuing, asking a question, opening a Thread, or going deeper. |
+| Review, don't auto-accept | Ghost suggestions stay provisional until you explicitly Keep them. Ignoring them is a valid outcome. |
+| Notice relationships | Explore a possible relation between two Thoughts; a lasting relation requires your confirmation. |
+| Make a commitment | Create or edit a Crystal through an explicit confirmation step. A Crystal is *your* conclusion, not an AI-certified truth. |
+| Bring in references | Add Sources or deliberately look for outside evidence. A search snippet is not proof that a source was read. |
+| Keep your work portable | Manage several local Fields, use undo/redo, and export JSON archives or readable Markdown. |
 
-Diffusion currently includes:
+You can use the manual Field **without an account, AI provider, or search API key**. The first-Field tutorial uses a deterministic demonstration, not a live model.
 
-- direct spatial creation, editing, selection, lasso, drag, pan, zoom, semantic disclosure, Regions, and Crystals;
-- bounded compact/regular/wide Thought sizing that stays fixed while editing and continues to use rendered DOM geometry;
-- five lazy, viewport-bounded Field materials — Paper Texture, Topography, Threads, Waves, and Silk — while preserving the DOM Thought layer, SVG phenomena, and single camera authority;
-- one command model projected into menus, keyboard shortcuts, command palette, and help;
-- undo/redo, Find in Field, Threads, Deep Dive, Fork, Diffuse, evidence flows, and portable export;
-- bounded local source ingestion for UTF-8 text, Markdown, and common code formats;
-- optional AI providers and optional discovery/evidence services, with explicit credential and authority boundaries;
-- local-first project persistence with in-place migration and portable recovery exports;
-- English and Chinese UI;
-- a device-local Appearance system that changes presentation without entering canonical project state.
+## Get started in five minutes
 
-## Run locally
+1. **Download:** open [GitHub Releases](https://github.com/NekoMint-Labs/Diffusion/releases) and choose the appropriate **Windows x64** preview asset. Check the release notes and the **Pre-release** label; there is no officially announced stable installer yet.
+2. **Open Diffusion:** create a **New Field**, or continue in the empty Field shown at startup. Follow the optional first-Field tutorial.
+3. **Write:** use the writing area or double-click empty Field space to create a Thought. Drag the Thought to move it; drag empty space to pan.
+4. **Choose a scope:** click one Thought, or **Shift-click** additional Thoughts. A selection by itself does not call AI. Open the contextual actions to continue or examine a connection.
+5. **Keep what matters:** when a Ghost appears, inspect it and choose **Keep** or **Ignore**. Your original Thoughts remain yours.
 
-Requirements are declared in [`package.json`](package.json):
+For precise instructions, see the **[complete user guide](docs/USER_GUIDE.md)**, including controls, practical workflows, Field management, AI setup, search, backup, and troubleshooting.
 
-- Node.js 22.12 or newer;
-- pnpm 12.4.2 (the `packageManager` version).
+## AI and external evidence are optional
 
-```sh
-pnpm install
+Open **Settings → AI** to choose **Off**, **Demo** (deterministic fixture), OpenAI, Anthropic, Google Gemini, DeepSeek, an OpenAI-compatible endpoint, or a Diffusion Gateway. For a direct provider, supply its key and model and deliberately run **Test connection**. A real test can make a billable provider request; setting a model name alone does not verify the connection.
+
+External discovery is a **separate** choice under **Settings → Search & Evidence**. It supports configurable Exa, Tavily, and Brave sources in the desktop discovery path, subject to credentials, reachability, and the actual build. Search candidates, read passages, and AI assessments have different trust levels; nothing is silently promoted into verified evidence. An experimental Tavily keyless option exists, but its usefulness on an installed Windows build is not established.
+
+[Read the setup walkthrough](docs/USER_GUIDE.md#5-using-ai-optional) · [Evidence and sources](docs/USER_GUIDE.md#6-references-search-and-evidence)
+
+## Downloads, storage, and preview cautions
+
+- **Official downloads currently advertised:** Windows x64 previews via [Releases](https://github.com/NekoMint-Labs/Diffusion/releases). Source availability does not mean a macOS/Linux installer has been qualified.
+- **Local-first, not cloud sync:** Fields are kept on this device. Moving to another installation requires an explicit export/restore workflow.
+- **Back up before upgrading:** export the Field as **JSON** and retain any original source files separately. The export does **not** include unclaimed Ghosts or original file bytes. Markdown is for reading, **not** a restorable project backup.
+- **Upgrade limitation:** a report of an older Field not appearing after an update remains unresolved. Try previews with nonessential data first; see [desktop notes](docs/DESKTOP.md) and [migrations](docs/MIGRATIONS.md).
+- **Verification limitation:** successful CI and browser tests do not prove all real Windows devices, live providers, migrations, or long-running sessions are accepted.
+
+## Run the web development build
+
+Prerequisites: **Node.js 22.12+** and **pnpm 12.4.2**. From the repository root:
+
+~~~sh
+corepack enable
+pnpm install --frozen-lockfile
 pnpm run dev
-```
+~~~
 
-Open the URL printed by Vite. Manual Field interaction needs no provider or API key. `/demo?locale=en` and `/demo?locale=zh` open a separate example project.
+This starts the **web development environment**, not a packaged desktop installer. Native Tauri development additionally needs Rust and the platform's Tauri prerequisites; desktop packaging also needs the bundled discovery build resources.
 
-## Windows installer
+[Developer setup and contribution workflow](CONTRIBUTING.md) · [Native desktop instructions](docs/DESKTOP.md) · [Testing](docs/TESTING.md)
 
-Open the repository's **Actions** tab, choose **Windows Package**, click **Run workflow**, and select the desired branch or ref. After the workflow finishes, download the `diffusion-windows-<commit SHA>` artifact, extract it, and run the NSIS `.exe` installer.
+## Documentation
 
-The **Windows Package** workflow is **MANUAL ONLY**. It does not run on normal pushes or pull requests.
+| I want to… | Read |
+| --- | --- |
+| Learn the interface and everyday actions | [User guide](docs/USER_GUIDE.md) |
+| See every available document | [Documentation index](docs/README.md) |
+| Understand the product's authority boundaries | [Product architecture](docs/specs/01_PRODUCT_ARCHITECTURE_AND_BOUNDARIES.md) |
+| Configure models or understand provider security | [Provider contract](docs/PROVIDER_CONTRACT.md) |
+| Understand search results and evidence | [Evidence gateway](docs/EVIDENCE_GATEWAY.md) |
+| Develop, test, or verify a change | [Contributing](CONTRIBUTING.md) · [Architecture](docs/ARCHITECTURE.md) · [Testing](docs/TESTING.md) |
+| Inspect known acceptance gaps | [Status](STATUS.md) · [Acceptance map](docs/ACCEPTANCE_MAP.md) |
 
-A historical Issue #11 candidate is available as a [Windows x64 preview release](https://github.com/NekoMint-Labs/Diffusion/releases/tag/issue11-preview-20261002). See the [Chinese experience guide](docs/ISSUE11_PREVIEW.md) for the complete changes, screenshots, installation steps and validation boundaries. [PR #17](https://github.com/NekoMint-Labs/Diffusion/pull/17) has since merged; this earlier preview does not qualify the latest integrated main or complete #12 acceptance.
+## Release and project status
 
-## Basic Field interaction
+As of this documentation update (October 14, 2026), the integrated baseline on `main` was `bd9cc766` and its CI/E2E gates passed. Source manifests still say `0.3.0`, while `0.3.16` is a **Windows preview label**, not an officially published stable `v0.3.16`. A stable release requires coordinated versioning, a matching build, and independent release checks. Always use the [actual Releases page](https://github.com/NekoMint-Labs/Diffusion/releases) for current artifacts.
 
-- Double-click blank Field space to create a Thought, or write through Speak.
-- Click to select; Shift-click or lasso to select several Thoughts.
-- Drag a Thought to move it.
-- Space + drag or middle-button drag pans.
-- The wheel zooms around the pointer.
-- `Ctrl/Cmd+K` opens the command palette.
-- `Ctrl/Cmd+F` finds content in place.
-- `Ctrl/Cmd+Z` and `Ctrl/Cmd+Shift+Z` undo and redo one deliberate action.
-- The Field title owns Field/project operations; the top-right menu owns application and view operations.
-
-Selection wakes only already-known relationships. It does not call AI, create a permanent relation, or move the camera.
-
-## Appearance
-
-Appearance preferences are presentation-only, device-local settings. They do not modify canonical project state, Thought semantics, geometry, or provenance.
-
-- **Theme/Profile:** Editorial Warm, Studio Slate, Quiet Forest, or Graphite Night.
-- **Field Style:** Paper Texture, Topography, Threads, Waves, or Silk.
-- **Accent:** a curated accent or bounded Custom Accent.
-- **Image Atmosphere:** an optional local PNG, JPEG, or WebP layer with adaptive recommendations and explicit manual ownership.
-- **Field Presence:** controls the strength of the Field material.
-- **Ambient Motion:** controls each Field Style's material motion; Motion 0 is static, and Reduced Motion overrides effective motion without changing the saved preference.
-
-Theme, Field Style, Accent, and Image Atmosphere are independent axes. Decorative Field layers remain pointer-inert and do not replace the DOM Thought layer or SVG phenomenon architecture.
-
-## Optional AI gateway
-
-Copy [`.env.example`](.env.example) to a private `.env`, configure the server-side values, and run:
-
-```sh
-pnpm run gateway
-```
-
-Then select the Diffusion Gateway in Settings. Point the client at the gateway, not directly at a secret-bearing upstream provider. Never place API keys in `VITE_` variables. Gateway session tokens are not persisted in local settings.
-
-The Demo provider is a deterministic fixture, not live AI. Direct provider and gateway behavior, protocols, and credential handling are documented in [`docs/PROVIDER_CONTRACT.md`](docs/PROVIDER_CONTRACT.md).
-
-## Discovery and evidence
-
-Search results are candidates, not read evidence:
-
-```text
-Search -> candidate -> explicit fetch/extract -> matched read passages
-       -> optional scoped assessment -> explicit Bring/Update Field reference
-```
-
-The gateway can use a normalized evidence service described in [`docs/EVIDENCE_GATEWAY.md`](docs/EVIDENCE_GATEWAY.md). Desktop uses the Diffusion-owned engine under `internal/discovery-engine/`; its SmartSearch-derived provenance is recorded in [`internal/discovery-engine/PROVENANCE.md`](internal/discovery-engine/PROVENANCE.md).
-
-PDF, image, Office, audio, and video contents are currently metadata-only. No extraction or understanding is claimed for those formats.
-
-## Repository map
-
-| Path | Responsibility |
-|---|---|
-| `src/core/` | Canonical model, events, authority, history, attention, and worlds |
-| `src/field/` | Camera, geometry, culling, pointer/drag interaction, DOM Thoughts, SVG phenomena |
-| `src/ui/` | Product shell, surfaces, commands, settings, motion, and Appearance |
-| `src/ui/fieldBackgrounds/` | Lazy Paper Texture, Topography, Threads, Waves, and Silk production renderers |
-| `src/ai/` | Provider registry, transport, runtime, and semantic intent validation |
-| `src/evidence/`, `src/discovery/` | Evidence stages and discovery transport boundary |
-| `src/storage/` | Repository, Dexie persistence, and migration |
-| `src/platform/`, `src-tauri/` | Browser/native adapters and the Tauri shell |
-| `server/` | Protected Hono gateway and wire adapters |
-| `tests/` | Unit, offline-contract, browser E2E, and fixture tests |
-| `docs/specs/` | Durable product, architecture and performance contracts that still govern implementation |
-| `docs/history/` | Historical provenance, not current authority |
-
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for ownership and shared boundaries,
-[`docs/CONVENTIONS.md`](docs/CONVENTIONS.md) for naming and file conventions, and
-[`docs/README.md`](docs/README.md) for the documentation index.
-
-## Verification
-
-Fast, dependency-backed checks:
-
-```sh
-pnpm run typecheck
-pnpm run check:offline
-pnpm test
-pnpm run build
-git diff --check
-```
-
-Browser E2E:
-
-```sh
-pnpm exec playwright install chromium
-pnpm run test:e2e
-```
-
-The full Playwright suite is a blocking CI gate. The earlier stabilization checkpoint recorded two complete local runs with 148 passed and 8 intentionally skipped tests per run, using one worker and no retries. Those counts describe that historical revision, not the current checkout. See [`STATUS.md`](STATUS.md) and [`docs/TESTING.md`](docs/TESTING.md) for exact claim boundaries.
-
-The production build succeeds and retains Vite's warning that the main minified chunk exceeds 500 kB. The warning is documented rather than suppressed; no speculative split was added without startup or interaction evidence.
-
-## Contributing
-
-Start with [`CONTRIBUTING.md`](CONTRIBUTING.md). Before changing a shared seam, read [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and the relevant contract under [`docs/specs/`](docs/specs/01_PRODUCT_ARCHITECTURE_AND_BOUNDARIES.md). Current documentation is indexed in [`docs/README.md`](docs/README.md); archived phase reports under [`docs/history/`](docs/history/README.md) are provenance only.
-
-## License
-
-Except where otherwise noted, Diffusion-owned source code is licensed under the
-[Apache License 2.0](LICENSE). Third-party, copied, adapted and vendor-derived material remains
-subject to its respective license terms; that root license does not replace or alter them. See
-[`docs/ATTRIBUTION.md`](docs/ATTRIBUTION.md) and [`docs/third_party/`](docs/third_party/MATERIAL_GALLERY.md)
-for the boundary and the retained notices.
+Contributions and reproducible bug reports are welcome: [CONTRIBUTING.md](CONTRIBUTING.md). Diffusion-owned code is licensed under [Apache-2.0](LICENSE); third-party assets and code retain their own terms ([attribution](docs/ATTRIBUTION.md)).

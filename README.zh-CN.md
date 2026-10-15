@@ -52,7 +52,7 @@ Diffusion 是一个开源、**本地优先的桌面思考工作台**。你可以
 
 联网能力在单独的 **设置 → Search & Evidence（搜索与证据）** 中管理。桌面发现引擎支持配置 Exa、Tavily、Brave 等来源，实际使用取决于密钥、网络和当前安装包。搜索候选、真正读取的原文片段、模型判断是不同层级的信息，不能直接混为一谈。Tavily 的免密钥实验模式目前也不等同于可靠可用的正式搜索能力。
 
-[查看 AI 配置步骤](docs/USER_GUIDE.zh-CN.md#配置-ai可选) · [查看资料与证据流程](docs/USER_GUIDE.zh-CN.md#资料搜索与证据)
+[查看 AI 配置步骤](docs/USER_GUIDE.zh-CN.md#五配置-ai可选) · [查看资料与证据流程](docs/USER_GUIDE.zh-CN.md#六资料搜索与证据)
 
 ## 下载、存储与预览版提醒
 

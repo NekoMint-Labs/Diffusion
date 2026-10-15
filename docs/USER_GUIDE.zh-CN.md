@@ -126,7 +126,7 @@ Field 是**本机保存**的。点击界面中的 **Field 标题**，可找到 *
 1. 通过 **Field 标题 → More → Export** 导出 **Diffusion JSON**。
 2. 在应用存储目录之外另存一份副本；重要的原始导入资料也要单独保留。
 3. **Export as Markdown** 适合阅读、整理或分享文字，但 Markdown **不是**可恢复的完整项目备份。
-4. 需要恢复时，选择 **Field 标题 → More → Import / Restore**，选择先前导出的 Diffusion JSON，确认后**作为新 Field 恢复**，不会覆盖当前 Field。
+4. 需要恢复备份时，进入 **Field 标题 → More → 导入 / 恢复（Import / Restore）**。**不要点击「选择文件」（Choose files）**：它只会将文件作为 Source 导入当前 Field，无法恢复原有的 Thought。请改为点击 **「恢复已导出的项目…」→「选择项目导出文件」**，选择之前保存的 Diffusion JSON，并核对显示的 Field 标题和内容摘要，然后点击 **「创建恢复项目并进入」**。系统会创建并打开一个**新的 Field**，不会覆盖当前 Field。
 
 JSON 包含受支持的正式项目状态，但**不包含尚未 Keep 的 Ghost，也不包含原始导入文件的字节内容**。本地保存不是自动云同步。已有旧版 Field 升级后不可见的反馈仍未查明，因此预览版升级前尤其应该备份。
 

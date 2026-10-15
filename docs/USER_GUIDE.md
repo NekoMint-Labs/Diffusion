@@ -117,7 +117,7 @@ More detail: [Evidence adapter and trust contract](EVIDENCE_GATEWAY.md).
 1. Click the **Field title → More → Export** to save a **Diffusion JSON** project export.
 2. Save a second copy somewhere outside the application's local storage. Keep imported original files separately.
 3. Use **Export as Markdown** when you want readable text to review or share. Markdown is **not** a restorable project archive.
-4. To restore, choose **Field title → More → Import / Restore**, select the Diffusion JSON export, review it, and restore it as a **new Field**. The current Field is not overwritten.
+4. To restore a backup, open **Field title → More → Import / Restore**. **Do not use Choose files**: it imports a file as a Source into the current Field, and will not restore archived Thoughts. Instead choose **Restore a project export... → Choose project export**, select your Diffusion JSON backup, and review the preview showing the Field title and contents. Then click **Create restored project and enter it**. This creates and opens a **new Field** without overwriting the current one.
 
 JSON export preserves supported canonical project state, but it **excludes unclaimed Ghosts and original imported file bytes**. Treat local storage as device-specific; there is no automatic cloud synchronization. The older-Field-after-upgrade report remains unresolved, so make a backup *before* opening an important Field in a preview build.
 

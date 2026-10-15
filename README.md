@@ -52,7 +52,7 @@ Open **Settings → AI** to choose **Off**, **Demo** (deterministic fixture), Op
 
 External discovery is a **separate** choice under **Settings → Search & Evidence**. It supports configurable Exa, Tavily, and Brave sources in the desktop discovery path, subject to credentials, reachability, and the actual build. Search candidates, read passages, and AI assessments have different trust levels; nothing is silently promoted into verified evidence. An experimental Tavily keyless option exists, but its usefulness on an installed Windows build is not established.
 
-[Read the setup walkthrough](docs/USER_GUIDE.md#using-ai-optional) · [Evidence and sources](docs/USER_GUIDE.md#references-search-and-evidence)
+[Read the setup walkthrough](docs/USER_GUIDE.md#5-using-ai-optional) · [Evidence and sources](docs/USER_GUIDE.md#6-references-search-and-evidence)
 
 ## Downloads, storage, and preview cautions
 

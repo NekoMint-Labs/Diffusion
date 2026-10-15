@@ -1,39 +1,56 @@
-# Diffusion Documentation
+# Diffusion Documentation / 文档导航
 
-[English README](../README.md) · [简体中文 README](../README.zh-CN.md) · [Downloads](https://github.com/NekoMint-Labs/Diffusion/releases) · [Contributing](../CONTRIBUTING.md)
+[English README](../README.md) · [中文 README](../README.zh-CN.md) · [English User Guide](USER_GUIDE.md) · [中文使用指南](USER_GUIDE.zh-CN.md) · [Downloads / 下载](https://github.com/NekoMint-Labs/Diffusion/releases)
 
-This index separates product usage, active engineering contracts, verification, and historical material. Start with the root README unless you need to work on a specific subsystem.
+**New to Diffusion?** Start with the README and follow the hands-on user guide. Product use, engineering contracts, verification evidence, and historical records are intentionally separated.
 
-## Use Diffusion
+**第一次使用？** 先阅读中文 README，再按中文使用指南进行实际操作。用户教程、开发契约、验收记录和历史方案分开整理，避免误把旧文档当成当前操作说明。
 
-| Topic | Document |
+## 1. Use the application / 使用软件
+
+| I want to… / 我想了解 | English | 简体中文 |
+| --- | --- | --- |
+| Understand the product / 了解产品定位 | [README](../README.md) | [README](../README.zh-CN.md) |
+| Learn controls and a complete workflow / 操作入门与完整示例 | [User Guide](USER_GUIDE.md) | [使用指南](USER_GUIDE.zh-CN.md) |
+| Install the current build / 下载当前版本 | [GitHub Releases](https://github.com/NekoMint-Labs/Diffusion/releases) | [下载页](https://github.com/NekoMint-Labs/Diffusion/releases) |
+| Configure AI and understand credentials / 配置模型与安全 | [User guide: AI](USER_GUIDE.md#5-using-ai-optional) | [中文指南：AI](USER_GUIDE.zh-CN.md#五配置-ai可选) |
+| Import sources or search for evidence / 资料、搜索、证据 | [User guide: Evidence](USER_GUIDE.md#6-references-search-and-evidence) | [中文指南：证据](USER_GUIDE.zh-CN.md#六资料搜索与证据) |
+| Export, restore, and upgrade safely / 导出、恢复、升级 | [User guide: Backup](USER_GUIDE.md#7-back-up-export-and-restore) | [中文指南：备份](USER_GUIDE.zh-CN.md#七导出备份恢复与升级) |
+| Troubleshoot / 常见问题 | [FAQ](USER_GUIDE.md#9-troubleshooting) | [常见问题](USER_GUIDE.zh-CN.md#九常见问题) |
+
+The user guides explain **what to click and why**. Technical documents below explain boundaries and implementation and are not required to use the app.
+
+## 2. Current product and engineering references / 当前规范
+
+| Topic | Source |
 | --- | --- |
-| Product introduction and getting started | [English](../README.md) · [简体中文](../README.zh-CN.md) |
-| Windows desktop and build | [DESKTOP.md](DESKTOP.md) |
-| Provider setup and permissions | [PROVIDER_CONTRACT.md](PROVIDER_CONTRACT.md) |
-| Search and evidence | [EVIDENCE_GATEWAY.md](EVIDENCE_GATEWAY.md) |
-| Data migration | [MIGRATIONS.md](MIGRATIONS.md) |
-| Actual published installers | [GitHub Releases](https://github.com/NekoMint-Labs/Diffusion/releases) |
+| Product authority, Field / Thought / Ghost / Crystal | [Product architecture and boundaries](specs/01_PRODUCT_ARCHITECTURE_AND_BOUNDARIES.md) |
+| Architecture and component ownership | [ARCHITECTURE.md](ARCHITECTURE.md) |
+| Development workflow | [CONTRIBUTING.md](../CONTRIBUTING.md) · [CONVENTIONS.md](CONVENTIONS.md) |
+| Stack and implementation rules | [Tech stack](specs/02_TECH_STACK_AND_IMPLEMENTATION.md) |
+| Desktop runtime, packaging, native boundary | [DESKTOP.md](DESKTOP.md) |
+| Local data and migrations | [MIGRATIONS.md](MIGRATIONS.md) |
+| Provider modes, model transport, secrets | [PROVIDER_CONTRACT.md](PROVIDER_CONTRACT.md) |
+| Search, candidate vs passage vs assessment | [EVIDENCE_GATEWAY.md](EVIDENCE_GATEWAY.md) |
+| Languages and interface wording | [LANGUAGE_CONTRACT.md](LANGUAGE_CONTRACT.md) |
+| Performance and test contracts | [PERFORMANCE.md](PERFORMANCE.md) · [Performance spec](specs/04_PERFORMANCE_CONTRACT.md) |
+| Design reference | [Visual redesign specification](specs/DIFFUSION_EXPLORER_V0_2_REDESIGN_REBUILD_SPEC_EN_REV1.md) |
+| Third-party notices | [ATTRIBUTION.md](ATTRIBUTION.md) · [Materials](third_party/MATERIAL_GALLERY.md) |
 
-## Current product and engineering references
+## 3. Testing, evidence and release status / 验收与发布
 
-| Topic | Document |
-| --- | --- |
-| Field, Thought, Ghost, Crystal and authority | [Product contract](specs/01_PRODUCT_ARCHITECTURE_AND_BOUNDARIES.md) |
-| Code ownership and architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
-| Stack and implementation boundary | [Tech stack](specs/02_TECH_STACK_AND_IMPLEMENTATION.md) |
-| Development conventions | [CONVENTIONS.md](CONVENTIONS.md) |
-| Performance contract | [Performance spec](specs/04_PERFORMANCE_CONTRACT.md) |
-| Localization | [LANGUAGE_CONTRACT.md](LANGUAGE_CONTRACT.md) |
-| Visual / interaction design | [Design specification](specs/DIFFUSION_EXPLORER_V0_2_REDESIGN_REBUILD_SPEC_EN_REV1.md) |
-| Tests and release evidence | [TESTING.md](TESTING.md) · [VERIFICATION.md](VERIFICATION.md) |
-| Attribution and third parties | [ATTRIBUTION.md](ATTRIBUTION.md) · [Materials](third_party/MATERIAL_GALLERY.md) |
+- [TESTING.md](TESTING.md) — verification commands and what each test layer can establish.
+- [VERIFICATION.md](VERIFICATION.md) — how to distinguish portable evidence from local screenshots, logs, and artifacts.
+- [STATUS.md](../STATUS.md) and [ACCEPTANCE_MAP.md](ACCEPTANCE_MAP.md) — dated integration records, requirements, and unresolved acceptance gaps.
+- [GitHub Actions](https://github.com/NekoMint-Labs/Diffusion/actions) — CI results for each **specific commit**.
+- [GitHub Releases](https://github.com/NekoMint-Labs/Diffusion/releases) — the source of truth for **published installers and release labels**. The current 0.3.16 Windows build is a **preview**, not a verified stable release.
 
-## Status and historical evidence
+A passing browser E2E test is not proof of physical Windows acceptance, live-model availability, or safe migration from every old version. Do not turn dated success reports into a blanket claim.
 
-- [STATUS.md](../STATUS.md) and [ACCEPTANCE_MAP.md](ACCEPTANCE_MAP.md) contain detailed version-specific integration and verification records. Older dated statements are historical, even if still present in those files.
-- [History](history/README.md) preserves earlier phases and provenance, not active implementation authority.
-- Dated `ISSUE*`, `ROUND2_*`, `DESKTOP_REVIEW_*`, and exploratory proposals are supporting records, **not** the public getting-started guide and not automatically current behavior.
-- [Releases](https://github.com/NekoMint-Labs/Diffusion/releases) is authoritative for what has actually shipped. The latest available Windows installer is a 0.3.16 **preview** until a verified stable release is published.
+## 4. Historical and exploratory records / 历史材料
 
-**Authority:** follow current code and explicit current product/architecture contracts. If implementation and documentation conflict, investigate the discrepancy instead of treating a superseded dated report as authoritative.
+- [History index](history/README.md) preserves previous project phases.
+- Dated `ISSUE*`, `ROUND2_*`, `DESKTOP_REVIEW_*` and exploratory proposals are background evidence, **not** current end-user instructions.
+- Current source and explicit active contracts take precedence when an old report conflicts with today's behavior. Investigate discrepancies rather than silently guessing.
+
+**Writing new docs:** Put ordinary instructions in the bilingual user guides; put durable semantics in active contracts; put temporary test findings in dated records. Keep English and Chinese entry points in sync without translating internal historical reports by default.

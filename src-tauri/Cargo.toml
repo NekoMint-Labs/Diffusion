@@ -1,6 +1,6 @@
 [package]
 name = "diffusion-explorer"
-version = "0.3.0"
+version = "0.3.16"
 description = "A quiet field for thoughts before commitment"
 authors = ["Diffusion Explorer contributors"]
 edition = "2021"

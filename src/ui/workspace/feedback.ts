@@ -23,8 +23,8 @@ export interface NoticeAction {
     kind: NoticeActionKind;
 }
 
-export type FeedbackEvent =
-    | 'field-created' | 'field-opened' | 'field-duplicated' | 'field-deleted' | 'export-prepared'
+export type FeedbackEvent = 'field-deleted'
+    | 'field-created' | 'field-opened' | 'field-duplicated' | 'export-prepared'
     | 'gateway-connected' | 'reference-imported' | 'possibility-claimed' | 'recall-awakened';
 
 /** Localization keys, never pre-translated: the caller resolves them through `t` at render time,

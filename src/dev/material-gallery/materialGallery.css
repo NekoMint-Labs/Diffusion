@@ -43,7 +43,6 @@
 .material-gallery-identity { position: absolute; z-index: 3; top: 30px; left: 38px; display: grid; gap: 4px; pointer-events: none; }
 .material-gallery-identity span { font: 500 var(--type-eyebrow-size)/1.5 var(--ui-font); letter-spacing: var(--type-eyebrow-track); color: var(--ink-tertiary); }
 .material-gallery-identity strong { font: 400 var(--type-identity-size)/1.35 var(--thought-font); }
-.material-gallery-placeholder { position: absolute; z-index: 2; inset: 50% auto auto 50%; translate: -50% -50%; margin: 0; color: var(--ink-tertiary); font: var(--type-helper-size)/1.5 var(--ui-font); }
 @media (max-width: 760px) {
   .material-gallery { grid-template-columns: 220px minmax(0, 1fr); }
   .material-gallery-controls { padding: 18px 14px; }

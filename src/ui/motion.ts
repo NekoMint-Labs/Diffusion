@@ -14,8 +14,8 @@
  * Every role resolves to a zero-duration transition when the user asks for reduced motion.
  * `signature.ts` reads the same roles for GSAP, so the two technologies cannot drift apart.
  */
-import { MOTION_EASE, MOTION_DURATION, MOTION_PANEL_SPRING, motionDuration, roleTransition } from './motion/tokens.ts';
-export { MOTION_DURATION, MOTION_EASE, MOTION_PANEL_SPRING, motionDuration, roleTransition };
+import { MOTION_EASE, MOTION_DURATION, MOTION_PANEL_SPRING, roleTransition } from './motion/tokens.ts';
+export { MOTION_DURATION, MOTION_EASE, MOTION_PANEL_SPRING, roleTransition };
 export type { DurationRole, EaseRole } from './motion/tokens.ts';
 export const GLOBAL_TRANSIENT_SHELL_LAYOUT_ID = 'diffusion-global-transient-shell';
 export function surfaceTransition(reduced: boolean) {

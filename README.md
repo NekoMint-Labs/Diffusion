@@ -38,7 +38,7 @@ You can use the manual Field **without an account, AI provider, or search API ke
 
 ## Get started in five minutes
 
-1. **Download:** open [GitHub Releases](https://github.com/NekoMint-Labs/Diffusion/releases) and choose the appropriate **Windows x64** preview asset. Check the release notes and the **Pre-release** label; there is no officially announced stable installer yet.
+1. **Download:** open the [v0.3.16 stable release](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16) and choose the **Windows x64** installer. Read its release notes before installing.
 2. **Open Diffusion:** create a **New Field**, or continue in the empty Field shown at startup. Follow the optional first-Field tutorial.
 3. **Write:** use the writing area or double-click empty Field space to create a Thought. Drag the Thought to move it; drag empty space to pan.
 4. **Choose a scope:** click one Thought, or **Shift-click** additional Thoughts. A selection by itself does not call AI. Open the contextual actions to continue or examine a connection.
@@ -54,9 +54,9 @@ External discovery is a **separate** choice under **Settings → Search & Eviden
 
 [Read the setup walkthrough](docs/USER_GUIDE.md#5-using-ai-optional) · [Evidence and sources](docs/USER_GUIDE.md#6-references-search-and-evidence)
 
-## Downloads, storage, and preview cautions
+## Downloads, storage, and upgrade cautions
 
-- **Official downloads currently advertised:** Windows x64 previews via [Releases](https://github.com/NekoMint-Labs/Diffusion/releases). Source availability does not mean a macOS/Linux installer has been qualified.
+- **Official download:** the [v0.3.16 stable release](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16) provides a Windows x64 installer. Source availability does not mean a macOS/Linux installer has been qualified.
 - **Local-first, not cloud sync:** Fields are kept on this device. Moving to another installation requires an explicit export/restore workflow.
 - **Back up before upgrading:** export the Field as **JSON** and retain any original source files separately. The export does **not** include unclaimed Ghosts or original file bytes. Markdown is for reading, **not** a restorable project backup.
 - **Upgrade limitation:** a report of an older Field not appearing after an update remains unresolved. Try previews with nonessential data first; see [desktop notes](docs/DESKTOP.md) and [migrations](docs/MIGRATIONS.md).
@@ -90,6 +90,6 @@ This starts the **web development environment**, not a packaged desktop installe
 
 ## Release and project status
 
-As of this documentation update (October 14, 2026), the integrated baseline on `main` was `bd9cc766` and its CI/E2E gates passed. Source manifests still say `0.3.0`, while `0.3.16` is a **Windows preview label**, not an officially published stable `v0.3.16`. A stable release requires coordinated versioning, a matching build, and independent release checks. Always use the [actual Releases page](https://github.com/NekoMint-Labs/Diffusion/releases) for current artifacts.
+Checked on October 21, 2026: [Diffusion v0.3.16](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16) was published as a **stable release** on October 16, 2026. Source manifests at the `main` baseline `59f1e28` also declare `0.3.16`. Use the [Releases page](https://github.com/NekoMint-Labs/Diffusion/releases) for downloadable artifacts and their release notes.
 
 Contributions and reproducible bug reports are welcome: [CONTRIBUTING.md](CONTRIBUTING.md). Diffusion-owned code is licensed under [Apache-2.0](LICENSE); third-party assets and code retain their own terms ([attribution](docs/ATTRIBUTION.md)).

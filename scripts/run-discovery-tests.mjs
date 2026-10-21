@@ -28,7 +28,10 @@ function usable(command) {
     return !probe.error && probe.status === 0;
 }
 
-const candidates = fs.existsSync(venvPython) ? [venvPython] : (process.platform === 'win32' ? ['py', 'python'] : ['python3', 'python']);
+const candidates = [
+    ...(fs.existsSync(venvPython) ? [venvPython] : []),
+    ...(process.platform === 'win32' ? ['py', 'python'] : ['python3', 'python']),
+];
 const command = candidates.find(usable);
 if (!command) {
     console.error("The discovery engine's tests need Python 3 with httpx and tenacity installed.");

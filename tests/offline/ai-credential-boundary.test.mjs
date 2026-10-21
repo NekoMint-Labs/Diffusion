@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
  *
  * The behaviour itself has real tests in two places: `tests/unit/aiCredentialBoundary.test.ts` proves
  * that no desktop code path reads a stored key and that the native payload carries a scheme rather
- * than a value, and `src-tauri/src/ai_request.rs` carries its own Rust tests for host pinning,
+ * than a value, and `src-tauri/tests/ai_request.rs` tests the Rust module for host pinning,
  * header allowlisting, body bounding and cancellation. What this file adds is the part a Node-only
  * gate otherwise cannot observe: that the native side is wired up, that it pins the hosts a provider
  * key belongs to, and that neither the refusal nor the TLS choice can be quietly undone.

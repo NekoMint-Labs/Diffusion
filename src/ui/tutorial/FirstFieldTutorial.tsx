@@ -19,7 +19,6 @@ function readStored(): Stored | null {
     catch { return null; }
 }
 function writeStored(value: Stored) { if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY, JSON.stringify(value)); }
-export function resetFirstFieldTutorialState() { writeStored({ status: 'in-progress', phase: 'write' }); }
 
 function copyFor(phase: Phase): { title: string; body: string } {
     switch (phase) {

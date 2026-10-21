@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { createProject, makeThought } from '../../src/core/model.ts';
 import { ProjectController } from '../../src/core/controller.ts';
 import { GeometryCache } from '../../src/field/spatial/index.ts';
-import { placePossibility } from '../../src/field/spatial/placement.ts';
 import { correctMeasuredGhost, correctMeasuredProposalBatch } from '../../src/field/interactionHygiene.ts';
 import { overlapArea } from '../../src/field/spatial/collision.ts';
 import { distanceBetween } from '../../src/field/spatial/geometry.ts';

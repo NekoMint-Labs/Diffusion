@@ -67,12 +67,3 @@ export async function probeProvider(selection: ThinkingSelection, credentials: C
     if (!provider.testConnection) return { check: undefined };
     return { check: await provider.testConnection(AbortSignal.timeout(30000)) };
 }
-
-/** Whether the selected provider can answer at all, without making a request. Used to decide what
- * the composer and Settings are allowed to promise before anything is sent. */
-export function providerConfigured(selection: ThinkingSelection): boolean {
-    if (selection.provider === 'demo') return true;
-    if (selection.provider === 'gateway') return selection.gateway.trim().length > 0;
-    if (selection.provider === 'compatible') return selection.baseUrl.trim().length > 0;
-    return isDirectProvider(selection.provider);
-}

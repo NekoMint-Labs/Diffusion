@@ -215,9 +215,6 @@
 .settings-form > [role="tabpanel"] > h3 { margin: 0 0 6px; font: 500 var(--type-section-title-size)/1.5 var(--ui-font); letter-spacing: .01em; }
 .settings-section > p { margin: 0; max-width: 54ch; }
 .settings-note { margin: 0; max-width: 62ch; color: var(--ink-helper); font: var(--type-helper-size)/var(--type-helper-line) var(--ui-font); }
-.settings-source { display: grid; gap: var(--space-3); }
-.settings-source + .settings-source { border-top: 1px solid color-mix(in srgb, var(--boundary) 70%, transparent); }
-.settings-source > p { margin: 0; }
 .settings-key-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .settings-key-row > input { flex: 1 1 auto; min-width: 0; }
 .settings-key-row > button { flex: none; }
@@ -225,8 +222,6 @@
    popup material as the product's one Select — not a second dropdown system, and not a control that
    replaces typing with a menu. */
 .settings-model-row { flex: 1 1 auto; min-width: 0; }
-/* One control alone on its row still belongs on the same edge as the row above it. */
-.setting-row-end { justify-content: flex-end; }
 .settings-error, [role="alert"] {
   margin: 0;
   max-width: 54ch;
@@ -246,8 +241,6 @@
 .settings-form .setting-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin: 0 -10px; padding: 7px 10px; min-height: var(--control-md); color: var(--ink-secondary); font-size: var(--type-label-size); transition: background-color var(--motion-instant) ease; }
 .settings-form .setting-row:hover { background: color-mix(in srgb, var(--surface-2) 50%, transparent); }
 .settings-form .setting-row > span { color: var(--ink-secondary); font-size: var(--type-label-size); }
-.setting-field { display: flex; flex-direction: column; gap: 6px; color: var(--ink-secondary); font-size: var(--type-label-size); }
-.setting-field > label { font-weight: 500; color: var(--ink-secondary); }
 /* Appearance stays compact: ordinary controls, one quiet preview, no dashboard chrome. */
 .appearance-file-input { display: none; }
 .appearance-inline-actions { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
@@ -298,7 +291,6 @@ h3.history-day { display: flex; align-items: center; gap: 12px; margin: 30px 0 1
 .history-event .history-chip-kind { margin: 6px 0 0; background: transparent; border: 1px solid var(--surface-2); color: var(--ink-tertiary); }
 .history-body { min-width: 0; }
 .history-text { margin: 0; font: calc(var(--thought-size) * 14 / 18)/1.65 var(--thought-font); color: var(--ink-primary); overflow-wrap: anywhere; }
-.history-empty { margin: 0; max-width: 48ch; font: var(--type-section-title-size)/1.8 var(--ui-font); color: var(--ink-secondary); }
 
 /* --- Thread: a manuscript place, never a chat box -------------------------
    A Thread states its frozen scope, then the passages in order, then one writing row. The scope is
@@ -358,14 +350,13 @@ h3.history-day { display: flex; align-items: center; gap: 12px; margin: 30px 0 1
 .field-list button:disabled { opacity: .56; background: color-mix(in srgb, var(--surface-2) 48%, transparent); }
 .field-list small { color: var(--ink-tertiary); font: var(--type-helper-size)/1.4 var(--ui-font); }
 .field-list .field-list-button.ui-button { display: grid; justify-content: stretch; align-items: start; min-height: 48px; padding: 8px 10px; white-space: normal; }
-.history-empty, .command-palette-empty {
+.command-palette-empty {
   padding: 18px;
   border: 1px dashed color-mix(in srgb, var(--boundary) 84%, transparent);
   border-radius: var(--radius-surface);
   color: var(--ink-helper);
   text-align: center;
 }
-.history-empty { font: var(--type-section-title-size)/1.8 var(--ui-font); }
 .command-palette-empty { margin: 12px 10px; font-size: var(--type-label-size); color: var(--ink-secondary); }
 .stack-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 .stack-actions button { padding: 0; text-align: left; color: var(--ink-secondary); }
@@ -465,17 +456,6 @@ h3.history-day { display: flex; align-items: center; gap: 12px; margin: 30px 0 1
 .warning { color: var(--system-warning); }
 .warning .ui-button, [role="alert"] .ui-button { margin-left: 8px; vertical-align: middle; }
 
-/* A refusal or a judgment must not be a raw browser checkbox: a 26 × 15 track, because every
-   neighbouring control is 32 px tall. Shared by Search & Evidence and the provider panel. */
-.settings-switch { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-secondary); font-size: var(--type-label-size); cursor: pointer; }
-.settings-switch input[type="checkbox"] { appearance: none; flex: none; position: relative; width: 26px; height: 15px; margin: 0; border: 1px solid var(--boundary); border-radius: 999px; background: color-mix(in srgb, var(--surface-2) 60%, transparent); transition: background-color var(--motion-micro) ease, border-color var(--motion-micro) ease; }
-.settings-switch input[type="checkbox"]::after { content: ""; position: absolute; top: 1px; left: 1px; width: 11px; height: 11px; border-radius: 50%; background: var(--ink-tertiary); transition: transform var(--motion-micro) var(--ease-out-ui), background-color var(--motion-micro) ease; }
-.settings-switch input[type="checkbox"]:checked { border-color: color-mix(in srgb, var(--attention) 55%, transparent); }
-.settings-switch input[type="checkbox"]:checked::after { transform: translateX(11px); background: var(--attention); }
-.settings-switch input[type="checkbox"]:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
-.settings-switch:hover { color: var(--ink-primary); }
-.settings-form label.check-label { display: flex; flex-direction: row; gap: 8px; }
-
 /* --- Action previews and proposal-first organization ---------------------- */
 .action-preview-surface { width: min(340px, calc(100vw - 32px)); }
 .action-preview-question { margin-bottom: 8px; color: var(--ink-secondary); }
@@ -492,11 +472,9 @@ h3.history-day { display: flex; align-items: center; gap: 12px; margin: 30px 0 1
 .structure-note { margin: 2px 0 12px; color: var(--ink-secondary); }
 
 /* --- Primitive composition details used by Settings sections -------------- */
-.ui-group-status { padding: 9px 12px 11px; border-top: 1px solid color-mix(in srgb, var(--boundary) 70%, transparent); }
 .ui-group-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; border-top: 1px solid color-mix(in srgb, var(--boundary) 70%, transparent); }
 .ui-group-footer .status-line { min-width: 0; flex: 1 1 auto; }
 .ui-setting-inset { display: grid; gap: 8px; padding: 0 12px 12px; }
-.ui-disclosure-row { display: flex; justify-content: flex-start; padding: 7px; }
 .ui-disclosure-content { border-top: 1px solid color-mix(in srgb, var(--boundary) 70%, transparent); }
 
 /* --- Responsive: one place, narrower ------------------------------------- */

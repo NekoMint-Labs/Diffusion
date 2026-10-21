@@ -62,9 +62,6 @@ class ExaSearchProvider(BaseSearchProvider):
         super().__init__(api_url, api_key)
         self.timeout = timeout
 
-    def get_provider_name(self) -> str:
-        return "Exa"
-
     async def search(
         self,
         query: str,

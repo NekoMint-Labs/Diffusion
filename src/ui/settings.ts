@@ -100,9 +100,3 @@ export function thinkingServiceChanged(previous: Settings, next: Settings): bool
 export function typeScaleChanged(previous: Settings, next: Settings): boolean {
     return previous.interfaceSize !== next.interfaceSize || previous.thoughtSize !== next.thoughtSize;
 }
-
-/** Whether external discovery settings changed, so the evidence engine can be rebuilt. */
-export function discoveryChanged(previous: Settings, next: Settings): boolean {
-    const a = JSON.stringify(previous.discovery), b = JSON.stringify(next.discovery);
-    return a !== b;
-}

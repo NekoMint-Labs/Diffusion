@@ -141,14 +141,3 @@ export function classifyFailure(error: unknown): ThinkingFailure {
     }
     return 'unknown';
 }
-
-/** Removes user-held secrets from a string before it can reach a log, a notice or a diagnostic.
- * Used by the diagnostics channel and asserted by the redaction tests. */
-export function redact(text: string, secrets: readonly string[]): string {
-    let output = text;
-    for (const secret of secrets) {
-        if (secret && secret.length >= 8)
-            output = output.split(secret).join('[redacted]');
-    }
-    return output;
-}

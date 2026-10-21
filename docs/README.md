@@ -41,9 +41,9 @@ The user guides explain **what to click and why**. Technical documents below exp
 
 - [TESTING.md](TESTING.md) — verification commands and what each test layer can establish.
 - [VERIFICATION.md](VERIFICATION.md) — how to distinguish portable evidence from local screenshots, logs, and artifacts.
-- [STATUS.md](../STATUS.md) and [ACCEPTANCE_MAP.md](ACCEPTANCE_MAP.md) — dated integration records, requirements, and unresolved acceptance gaps.
+- [STATUS.md](../STATUS.md) — current source baseline and verification limits; [ACCEPTANCE_MAP.md](ACCEPTANCE_MAP.md) — which verification layers each contract requires.
 - [GitHub Actions](https://github.com/NekoMint-Labs/Diffusion/actions) — CI results for each **specific commit**.
-- [GitHub Releases](https://github.com/NekoMint-Labs/Diffusion/releases) — the source of truth for **published installers and release labels**. The current 0.3.16 Windows build is a **preview**, not a verified stable release.
+- [GitHub Releases](https://github.com/NekoMint-Labs/Diffusion/releases) — the source of truth for **published installers and release labels**. [v0.3.16 stable](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16) was published October 16, 2026; this records its release label, not new installer verification by this documentation pass.
 
 A passing browser E2E test is not proof of physical Windows acceptance, live-model availability, or safe migration from every old version. Do not turn dated success reports into a blanket claim.
 

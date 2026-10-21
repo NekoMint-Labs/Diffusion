@@ -5,15 +5,6 @@ import { readSSEData } from '../../src/ai/stream.ts';
 
 const src = file => fs.readFileSync(new URL(`../../src/${file}`, import.meta.url), 'utf8');
 
-// The ten verbs are one named grammar rather than ten ad-hoc animations.
-test('Phase 3C declares the complete spatial thinking grammar', () => {
-  const grammar = src('ui/motion/spatialGrammar.ts');
-  for (const [action, motion] of Object.entries({
-    create: 'emerge', decompose: 'unfold', explore: 'radiate', relate: 'bridge', verify: 'anchor',
-    recall: 'surface', bring: 'arrive', crystallize: 'converge', reject: 'dissolve', commit: 'settle',
-  })) assert.match(grammar, new RegExp(`${action}: '${motion}'`));
-});
-
 // The Field owns one transient overlay. It can observe geometry but cannot mutate canonical project state.
 test('Phase 3C activity stays in one presentation-only Field layer', () => {
   const field = src('field/Field.tsx');

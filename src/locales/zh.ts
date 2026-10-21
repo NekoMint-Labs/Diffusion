@@ -1,9 +1,5 @@
 /* Product copy only. English source keys are the fallback dictionary. */
 export const zh: Record<string, string> = {
-    "Undo AI generation": "撤销本轮 AI 生成",
-    "Redo AI generation": "重做本轮 AI 生成",
-    "AI generation undone. Existing Thoughts are unchanged.": "已撤销本轮 AI 生成，已有思绪保持不变。",
-    "AI suggestions restored. No new request was sent.": "已恢复这批 AI 建议，没有重新请求 AI。",
     "Return to previous view": "返回刚才视图",
     "Table preview; expand to inspect the original passage.": "表格整理预览；展开可核对原始段落。",
     "Show original read passage": "展开原始阅读段落",
@@ -550,6 +546,10 @@ export const zh: Record<string, string> = {
   "Delete": "删除",
   "Undo": "撤销",
   "Redo": "重做",
+  "Undo AI generation": "撤销本轮 AI 生成",
+  "Redo AI generation": "重做本轮 AI 生成",
+  "AI generation undone. Existing Thoughts are unchanged.": "已撤销本轮 AI 生成，已有思绪保持不变。",
+  "AI suggestions restored. No new request was sent.": "已恢复这批 AI 建议，没有重新请求 AI。",
   "Command Palette": "命令面板",
   "Type a command...": "输入命令…",
   "Commands": "命令",

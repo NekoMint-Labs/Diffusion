@@ -24,9 +24,9 @@ export interface NoticeAction {
 }
 
 export type FeedbackEvent =
-    | 'generation-undone' | 'generation-restored'
     | 'field-created' | 'field-opened' | 'field-duplicated' | 'export-prepared'
-    | 'gateway-connected' | 'reference-imported' | 'possibility-claimed' | 'recall-awakened';
+    | 'gateway-connected' | 'reference-imported' | 'possibility-claimed' | 'recall-awakened'
+    | 'generation-undone' | 'generation-restored';
 
 /** Localization keys, never pre-translated: the caller resolves them through `t` at render time,
  * so an event can never ship the same string in every language. */

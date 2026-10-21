@@ -24,12 +24,15 @@ export interface NoticeAction {
 }
 
 export type FeedbackEvent =
+    | 'generation-undone' | 'generation-restored'
     | 'field-created' | 'field-opened' | 'field-duplicated' | 'export-prepared'
     | 'gateway-connected' | 'reference-imported' | 'possibility-claimed' | 'recall-awakened';
 
 /** Localization keys, never pre-translated: the caller resolves them through `t` at render time,
  * so an event can never ship the same string in every language. */
 export const FEEDBACK_TEXT: Record<FeedbackEvent, string> = {
+    'generation-undone': 'AI generation undone. Existing Thoughts are unchanged.',
+    'generation-restored': 'AI suggestions restored. No new request was sent.',
     'field-created': 'New Field created.',
     'field-opened': 'Field opened.',
     'field-duplicated': 'Field duplicated.',
@@ -43,6 +46,8 @@ export const FEEDBACK_TEXT: Record<FeedbackEvent, string> = {
 /** Every named event is an acknowledgement, so every tone is quiet. A failure is not an event;
  * it arrives through `report`, which carries its own tone. */
 export const FEEDBACK_TONE: Record<FeedbackEvent, FeedbackTone> = {
+    'generation-undone': 'info',
+    'generation-restored': 'info',
     'field-created': 'info',
     'field-opened': 'info',
     'field-duplicated': 'info',

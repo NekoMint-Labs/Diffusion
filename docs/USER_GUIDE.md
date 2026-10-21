@@ -72,6 +72,14 @@ Action availability changes with the selection and mode. Use the contextual menu
 - A **Crystal** requires an explicit person-made confirmation.
 - Diffusion does not turn an unread search result into verified evidence or silently commit a decision.
 
+After **Continue thinking** finishes, `Ctrl+Z` removes that invocation's remaining unkept suggestions
+as one step. The Command Palette names this **Undo AI generation**. `Ctrl+Shift+Z` or `Ctrl+Y`
+restores the same suggestions without sending another AI request. Earlier content stays intact;
+edits made afterwards are undone first. If you used **Keep**, the first Undo reverses Keep, and a
+subsequent Undo can remove the unkept batch. Suggestions you already Ignored are not restored.
+This applies to completed Continue generations only; use **Stop** for an active request. Text editors
+keep their normal typing Undo, and temporary generations/Undo history are not saved across restarts.
+
 ## 4. Manage Fields and find past work
 
 A Field is stored **on this device**. Click the **Field title** to access **Rename Field**, **New Field**, or **Open Field…**. The Field menu's **More** contains **Duplicate Field**, **Export**, **Export as Markdown**, **Import / Restore**, **How did this form?**, and Fork actions. Switching opens another stored Field rather than replacing the current one.

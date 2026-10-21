@@ -139,6 +139,18 @@ The ProjectRepository boundary is unchanged. Dexie still uses the original datab
 
 Controller saves are single-flight, with only the newest pending snapshot retained. Gesture commits, not individual pointer frames, schedule writes. Flush and visible errors guard project switching. Undo is bounded in-memory semantic state, not durable event-sourced time travel. Portable export excludes local native paths/original keys/bytes and transient Ghosts.
 
+A completed, ordinary **Continue thinking** invocation whose results are still unkept contributes
+one transient generation step to Core's same bounded history. It records the exact emitted IDs,
+not equal scopes, timestamps or autonomous run IDs. Undo removes the batch's remaining Ghosts and
+dependent tentative relations; Redo restores those same objects without a provider call. Older
+Ghosts displaced by the arrival cap return on Undo. Canonical content, camera, raw inputs and
+existing edits are not rolled back by a generation step. Ignore remains respected, and empty or
+expired batches do not swallow Undo. A later Keep is a separate canonical step and must be undone
+first. A Keep during reveal excludes the invocation even if that Keep is undone before completion,
+so completion cannot erase a pending Redo Keep. Active, cancelled, failed, empty, Thread and
+autonomous runs do not create generation steps.
+History and unkept suggestions remain session-only and disappear on reopen.
+
 Attention pressure is produced by recent purposeful activity in an active, sufficiently crowded Field. Closed time is not a cooling trigger. Participants and confirmed neighbors are protected; Keep caps fading before Memory and Crystals are exempt. Explicit Let fade releases an unfinished Thought's Keep protection without deleting it. Re-entry preserves the spatial landscape.
 
 Measured memory/serialization/Find/index costs did not justify replacing snapshots or adding a new index dependency. Actual IndexedDB disk latency remains unmeasured, and multi-tab write coordination is not implemented.

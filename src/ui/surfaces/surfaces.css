@@ -358,6 +358,9 @@ h3.history-day { display: flex; align-items: center; gap: 12px; margin: 30px 0 1
 .field-list button:disabled { opacity: .56; background: color-mix(in srgb, var(--surface-2) 48%, transparent); }
 .field-list small { color: var(--ink-tertiary); font: var(--type-helper-size)/1.4 var(--ui-font); }
 .field-list .field-list-button.ui-button { display: grid; justify-content: stretch; align-items: start; min-height: 48px; padding: 8px 10px; white-space: normal; }
+.field-list-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.field-list .field-delete-button.ui-button { width: auto; color: var(--system-danger); white-space: normal; }
+.field-delete-confirmation h3 { overflow-wrap: anywhere; }
 .history-empty, .command-palette-empty {
   padding: 18px;
   border: 1px dashed color-mix(in srgb, var(--boundary) 84%, transparent);

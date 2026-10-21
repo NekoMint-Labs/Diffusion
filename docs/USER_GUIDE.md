@@ -76,6 +76,14 @@ Action availability changes with the selection and mode. Use the contextual menu
 
 A Field is stored **on this device**. Click the **Field title** to access **Rename Field**, **New Field**, or **Open Field…**. The Field menu's **More** contains **Duplicate Field**, **Export**, **Export as Markdown**, **Import / Restore**, **How did this form?**, and Fork actions. Switching opens another stored Field rather than replacing the current one.
 
+The Field-management button beside the title opens the same **Open Field** list. Use **New Field**
+for an independent empty space, or **Duplicate current Field** to copy its saved Thoughts, Crystals,
+relations and layout; rename the copy from its title menu. Editing the copy does not edit the original.
+Each row also offers **Delete**, followed by a confirmation naming that Field. Deletion is permanent
+and cannot be undone: cancel and export the Field first if you need a backup. Other Fields and shared
+reference files remain intact; a Fork cannot return to a deleted parent. Deleting the current Field
+first enters another stored Field, or creates an empty one if it is the last Field.
+
 Use **Find in Field** (`Ctrl+F`) to locate existing work. If Find or a compact overview has moved the camera to reveal a result, ordinary close stays where you are; use the visible **Return** control when you want the earlier view and selection back. This is not the same as undoing a Thought edit.
 
 If a source, relation, or child is not fully visible at a distant zoom level, use the compact reading or overview controls before assuming the content was deleted. Zoom and branch presentation do not rewrite Thought coordinates.

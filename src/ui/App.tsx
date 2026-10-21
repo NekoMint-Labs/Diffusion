@@ -1,4 +1,4 @@
-import { createProject } from '../core/model.ts';
+import { createProject, id } from '../core/model.ts';
 import { t, setLocale } from '../shared/i18n.ts';
 import { loadSettings } from './settings.ts';
 import { useLocale } from './useLocale.ts';
@@ -40,7 +40,14 @@ export default function App() {
             const adapter = await createPlatform();
             if (active)
                 setPlatform(adapter);
-            const p = perf ? performanceProject([100, 500, 2000, 5000].includes(count) ? count : 100) : demo ? (await repository.loadProject('demo')) ?? demoProject() : (await repository.loadProject(currentWorld())) ?? (await repository.loadProject('main')) ?? createProject('main', t('Untitled'));
+            const recent = async () => {
+                const latest = (await repository.listProjects())[0];
+                return latest ? repository.loadProject(latest.id) : null;
+            };
+            const p = perf ? performanceProject([100, 500, 2000, 5000].includes(count) ? count : 100) : demo
+                ? (await repository.loadProject('demo')) ?? { ...demoProject(), id: await repository.wasProjectDeleted('demo') ? id('example') : 'demo' }
+                : (await repository.loadProject(currentWorld())) ?? (await repository.loadProject('main')) ?? (await recent())
+                    ?? createProject(await repository.wasProjectDeleted('main') ? id('field') : 'main', t('Untitled'));
             const c = new ProjectController(reenterProject(p), perf ? async () => { } : state => repository.saveProject(state));
             if (perf) {
                 c.setSession(performanceSession(p));

@@ -146,7 +146,9 @@ dependent tentative relations; Redo restores those same objects without a provid
 Ghosts displaced by the arrival cap return on Undo. Canonical content, camera, raw inputs and
 existing edits are not rolled back by a generation step. Ignore remains respected, and empty or
 expired batches do not swallow Undo. A later Keep is a separate canonical step and must be undone
-first. Active, cancelled, failed, empty, Thread and autonomous runs do not create generation steps.
+first. A Keep during reveal excludes the invocation even if that Keep is undone before completion,
+so completion cannot erase a pending Redo Keep. Active, cancelled, failed, empty, Thread and
+autonomous runs do not create generation steps.
 History and unkept suggestions remain session-only and disappear on reopen.
 
 Attention pressure is produced by recent purposeful activity in an active, sufficiently crowded Field. Closed time is not a cooling trigger. Participants and confirmed neighbors are protected; Keep caps fading before Memory and Crystals are exempt. Explicit Let fade releases an unfinished Thought's Keep protection without deleting it. Re-entry preserves the spatial landscape.

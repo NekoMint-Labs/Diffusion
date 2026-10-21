@@ -146,6 +146,24 @@ describe('completed unkept Continue generation history', () => {
         c.redo(); expect(Object.keys(c.getSnapshot().session.ghosts)).toEqual(['one']);
         c.redo(); expect(Object.keys(c.getSnapshot().session.ghosts)).toEqual(['one', 'two']);
     });
+    it('preserves Redo Keep when a proposal is kept and undone before generation completes', async () => {
+        const { controller: c, runtime } = setup();
+        let keptId = '';
+        try {
+            await runtime.run('continue', 'Continue', ['source'], { maxCandidates: 3, onEmission: key => {
+                if (keptId) return;
+                keptId = key;
+                c.claim(key);
+                c.undo();
+                expect(c.canRedo).toBe(true);
+            } });
+            expect(c.undoLabel).toBe('Undo');
+            expect(c.canRedo).toBe(true);
+            c.redo();
+            expect(c.getSnapshot().project.thoughts[keptId]).toBeDefined();
+            expect(c.getSnapshot().session.ghosts[keptId]).toBeUndefined();
+        } finally { runtime.dispose(); }
+    });
     it('clears Redo after a new user edit and never carries temporary generation history across reopening', () => {
         const { controller: c } = setup();
         c.addGhost(ghost('one')); c.recordGeneration(['one']); c.undo();

@@ -232,6 +232,12 @@ export class AIRuntime {
         const displaced: Ghost[] = [];
         const undoableGeneration = kind === 'continue' && !options.threadId && !options.runId;
         const emissionOptions = undoableGeneration ? { ...options, onEmission: (key: string) => { generationIds.push(key); options.onEmission?.(key); } } : options;
+        let keptDuringGeneration = false;
+        // Keep can be undone before the last proposal arrives. Remember that commitment so
+        // completion cannot insert a generation step and erase the person's pending Redo Keep.
+        const stopTrackingKeep = undoableGeneration ? this.controller.subscribe(() => {
+            if (generationIds.some(key => this.controller.getSnapshot().project.thoughts[key])) keptDuringGeneration = true;
+        }) : () => {};
         let emitted = 0;
         let relationLabel = '';
         if (kind === 'probe') this.hooks.notice(t('Finding a relation...'));
@@ -354,7 +360,7 @@ export class AIRuntime {
             else if (kind === 'question') this.hooks.notice(t(response.mock ? 'Demo questions / no live model was used.' : 'Questions returned. Nothing was committed.'));
             else if (kind === 'organize') this.hooks.notice(t(response.mock ? 'Demo structure / no live model was used.' : 'A structure proposal is ready. Nothing was changed yet.'));
             else this.hooks.notice(t(response.mock ? 'Demo possibilities / no live model was used.' : 'Possibilities returned. No commitment was made on your behalf.'));
-            if (undoableGeneration && !started.abort.signal.aborted && started.ticket === this.serial)
+            if (undoableGeneration && !keptDuringGeneration && !started.abort.signal.aborted && started.ticket === this.serial)
                 this.controller.recordGeneration(generationIds, displaced);
             this.settle(started, 'completed', emitted);
             return { status: 'completed', emitted };
@@ -386,7 +392,7 @@ export class AIRuntime {
             this.settle(started, 'failed');
             return { status: 'failed', emitted, reason };
         }
-        finally { this.cleanup(started); }
+        finally { stopTrackingKeep(); this.cleanup(started); }
     }
 
     private emit(candidate: SemanticIntent, packet: ContextPacket, provider: string, options: RunOptions, action: UserIntent['kind'], index: number) {

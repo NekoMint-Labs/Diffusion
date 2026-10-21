@@ -1,0 +1,34 @@
+name: Native discovery argument contracts
+
+# Compile only the pure standard-library argument validator. This does not prove
+# that the Tauri desktop application compiles, packages, or works on an installed OS.
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: discovery-contracts-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  arguments:
+    name: Native discovery argument validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Compile standalone argument tests
+        run: rustc --edition=2021 --test src-tauri/src/discovery_args.rs -o "$RUNNER_TEMP/discovery-args-tests"
+
+      - name: Run standalone argument tests
+        run: '"$RUNNER_TEMP/discovery-args-tests"'

@@ -41,6 +41,9 @@ export default function App() {
             if (active)
                 setPlatform(adapter);
             const recent = async () => {
+                // Recover a deleted active Field without turning a first visit to / after
+                // /demo into an implicit switch to the example project.
+                if (!await repository.wasProjectDeleted(currentWorld()) && !await repository.wasProjectDeleted('main')) return null;
                 const latest = (await repository.listProjects())[0];
                 return latest ? repository.loadProject(latest.id) : null;
             };

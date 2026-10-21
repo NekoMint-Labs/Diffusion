@@ -23,7 +23,7 @@ export interface NoticeAction {
     kind: NoticeActionKind;
 }
 
-export type FeedbackEvent =
+export type FeedbackEvent = 'field-deleted'
     | 'field-created' | 'field-opened' | 'field-duplicated' | 'export-prepared'
     | 'gateway-connected' | 'reference-imported' | 'possibility-claimed' | 'recall-awakened';
 
@@ -33,6 +33,7 @@ export const FEEDBACK_TEXT: Record<FeedbackEvent, string> = {
     'field-created': 'New Field created.',
     'field-opened': 'Field opened.',
     'field-duplicated': 'Field duplicated.',
+    'field-deleted': 'Field deleted.',
     'export-prepared': 'Markdown export prepared. Space, relations and Threads are not included.',
     'gateway-connected': 'Gateway connected.',
     'reference-imported': 'Reference imported.',
@@ -46,6 +47,7 @@ export const FEEDBACK_TONE: Record<FeedbackEvent, FeedbackTone> = {
     'field-created': 'info',
     'field-opened': 'info',
     'field-duplicated': 'info',
+    'field-deleted': 'info',
     'export-prepared': 'info',
     'gateway-connected': 'info',
     'reference-imported': 'info',

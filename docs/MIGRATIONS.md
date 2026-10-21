@@ -1,6 +1,14 @@
 # Local storage and migrations
 
-`src/storage/dexie.ts` retains the database name `diffusion-explorer-v1`. Changing it for branding would strand prior projects. The current **Dexie database version is 3**; the existing `projects` and `originals` tables remain. Portable project `schemaVersion: 1` remains compatible; it is not the IndexedDB version.
+`src/storage/dexie.ts` retains the database name `diffusion-explorer-v1`. Changing it for branding would strand prior projects. The current **Dexie database version is 4**; the existing `projects` and `originals` tables remain. Portable project `schemaVersion: 1` remains compatible; it is not the IndexedDB version.
+
+Version 4 adds an initially empty `deletedProjects` table containing only deleted Field IDs. It does
+not rewrite existing projects. An explicitly confirmed deletion atomically removes the project,
+records its deleted ID, and removes its original blobs only when no surviving Field references them.
+The marker prevents late saves from an old controller or another window from resurrecting the Field.
+Restoring a portable export still creates a new ID. Deletion has no Undo; the confirmation offers
+export-before-delete guidance. App startup falls back to a surviving Field when its saved active ID
+has been deleted. Older builds have not been qualified against the version-4 database.
 
 The v1-to-v2 `Version.upgrade` transaction still calls the pure, idempotent `migrateProjectV2` function. Phase 3A adds a v2-to-v3 normalization through `migrateProjectV3`: projects that predate structured ingestion receive an empty `inputs` record, while new projects can durably store exact authored `InputRecord` text before AI decomposition. Loading/importing also normalizes missing `inputs`, so old portable archives remain readable after the database has upgraded. Invalid records must cause an explicit error/rollback, not database deletion or silent replacement. No reset, clean, migration-to-empty or database rename is used.
 
@@ -31,6 +39,6 @@ versions have not been qualified to interpret or preserve the new organization p
 
 ## Verification boundary
 
-Pure migration, idempotence, legacy snippet downgrade, raw-input normalization, geometry preservation, long-downtime and queue tests passed in the offline suite. Two tests in `tests/unit/migrations.test.ts` exercise a real Dexie/fake-IndexedDB v1-to-v3 upgrade and rollback of an invalid upgrade, including raw-input normalization, original blobs and reopen. These two tests passed in the current 44-file / 327-test unit run, alongside the new optional-organization export/import and close/reopen cases. Fake IndexedDB validates behavior; native IndexedDB disk timings are not measured.
+Pure migration, idempotence, legacy snippet downgrade, raw-input normalization, geometry preservation, long-downtime and queue tests are covered by the offline suite. Three tests in `tests/unit/migrations.test.ts` exercise Dexie over fake IndexedDB: v1-to-v4 upgrade and reopen, rollback of an invalid upgrade, and v3-to-v4 preservation of projects and original blobs with an initially empty deletion-marker table. Repository tests also cover shared originals, atomic deletion rollback and rejection of a late save from a second connection after reopen. Browser tests exercise deletion and startup recovery against native IndexedDB in a disposable profile. Native WebView upgrade from a real installed database and disk timings have not been measured.
 
 Before a real upgrade rollout, preserve a portable backup and original files, execute the installed migration tests, then reopen an actual v0.1 database in the target browser/WebView. Do not clear storage to make a failing upgrade appear successful.

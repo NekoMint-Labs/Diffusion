@@ -104,6 +104,18 @@ Phase 3A gives unscoped authored input a separate structured-ingestion contract.
 
 AI work has one request-id-aware `ThinkingOperation` source for pending/completed/failed/cancelled presentation. Action-specific runtime permissions are stricter than global semantic legality: a relation probe, for example, may surface a relation candidate or no result but cannot navigate into Deep Dive, Thread or Crystal.
 
+Answer controls stay in `src/ai/prompt.ts`, `diversity.ts` and `runtime.ts`. Ask defaults to a
+short conditional judgment unless detail is requested; synonymous recommendations should be one
+card. Unsupported durations, thresholds and causal claims must not become established rules;
+a trial value is explicitly an adjustable example. Identical Ask answer wording is filtered
+within one response batch only, preserving requested quotations and later explicit questions.
+Continue varies attempted conditions, consequences and unresolved links within the same goal,
+without resubmitting ignored model text as premises. This guidance is session-local, bounded by
+the existing prompt limit, and resets with its context; an attempted focus proves neither coverage
+nor acceptance. Exhausted guidance allows a different grounded link or no result, without replacement
+calls. These are generation instructions and lexical controls, not a semantic paraphrase detector or
+proof of answer quality. User commitment, evidence permissions and frozen Thread context are unchanged.
+
 Discovery results are stripped to candidates. Read requires bounded fetch + extraction matched to fetched text, with actual locators/time/provider. Assessment requires a claim and actual passages; the gateway re-fetches before reasoning and outcomes cite known IDs. Core validates Source records on add/update/Fork bring. Imported legacy snippets remain discovery text, not evidence. Updates of an explicitly brought candidate preserve the existing Thought's identity and position.
 
 Hono, Zod and the operator-controlled gateway are retained. Chat Completions and Responses are isolated wire adapters. Normalized HTTP evidence remains default; one discovery transport seam (`src/discovery/runtime.ts`) carries either the bundled Diffusion-owned engine or the operator's normalized HTTP endpoint, and nothing above it knows which one answered, so aggregation/normalization/retry/reranking stay in the engine and are never duplicated. The short-lived fetched-body pairing cache is memory-only and bounded. Private bodies and subprocess error text are not telemetry.

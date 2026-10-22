@@ -254,10 +254,13 @@ export class AIRuntime {
             }
             const trackSuggestions = (kind === 'continue' || kind === 'angle' || kind === 'question') && !options.threadId;
             const previousSuggestions = trackSuggestions ? this.suggestions.forContext(packet) : [];
-            // Question is the generated-question action; the user's own Ask and frozen Threads
-            // retain their authored prompt. A batch prefers previously unattempted unknown types.
-            const questionFocus = kind === 'question' && trackSuggestions ? this.suggestions.nextQuestionFocus(packet.maxCandidates, 12000 - text.length - 2) : '';
-            const focusedText = questionFocus ? `${text}\n\n${questionFocus}` : text;
+            // Attempted focuses vary explicit requests without turning rejected model wording
+            // into new premises. Authored Ask and frozen Threads keep their original prompt.
+            const availableCharacters = 12000 - text.length - 2;
+            const focus = !trackSuggestions ? '' : kind === 'question'
+                ? this.suggestions.nextQuestionFocus(packet.maxCandidates, availableCharacters)
+                : kind === 'continue' ? this.suggestions.nextContinuationFocus(packet.maxCandidates, availableCharacters) : '';
+            const focusedText = focus ? `${text}\n\n${focus}` : text;
             const response = await provider.respond(packet, { kind, text: focusedText, requestId: started.requestId }, started.abort.signal);
             if (started.abort.signal.aborted || started.ticket !== this.serial) {
                 if (started.ticket === this.serial && deadline(started.abort.signal)) throw new ThinkingError('timeout', subject);
@@ -308,8 +311,11 @@ export class AIRuntime {
                 .filter(candidate => {
                     const wordingIsProposal = (kind === 'continue' || kind === 'angle' || kind === 'diffuse') && candidate.type === 'surface_possibility'
                         || kind === 'question' && candidate.type === 'surface_question';
-                    if (!wordingIsProposal) return true;
-                    const previous = [...existingWording, ...surfacedWording];
+                    const wordingIsAnswer = kind === 'ask' && candidate.type === 'respond_in_field';
+                    if (!wordingIsProposal && !wordingIsAnswer) return true;
+                    // Ask may legitimately quote a supplied thought or answer a repeated question.
+                    // Only identical answer wording inside this response batch is redundant.
+                    const previous = wordingIsAnswer ? surfacedWording : [...existingWording, ...surfacedWording];
                     if (repeatedWording(candidate.text, previous)) return false;
                     surfacedWording.push(candidate.text);
                     return true;

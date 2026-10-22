@@ -21,15 +21,22 @@ const questionFocuses = [
     'Focus on one criterion for choosing between options actually supplied in the selection. Do not manufacture a choice.',
 ];
 
+const continuationFocuses = [
+    'Focus on one needed condition for the selected direction, tied to a specific detail in its wording. Keep an unstated condition tentative; do not invent a numerical threshold.',
+    'Focus on one possible consequence along the selected direction, rather than restating what it requires. Explain the conditional connection without claiming the outcome already occurs.',
+    'Focus on one unresolved link between a premise and the intended result along this same direction. Name what would have to connect them; do not switch the goal or invent a mechanism as fact.',
+];
+
 /** Session-only rejection history. Never send rejected wording back to the model as context or
  * instructions: the old negative prompt made those suggestions available as fresh premises. */
 export class SuggestionHistory {
     private scope = '';
     private texts: string[] = [];
     private questionIndex = 0;
+    private continuationIndex = 0;
     forContext(packet: ContextPacket): readonly string[] {
         const scope = suggestionContext(packet);
-        if (scope !== this.scope) { this.scope = scope; this.texts = []; this.questionIndex = 0; }
+        if (scope !== this.scope) { this.scope = scope; this.texts = []; this.questionIndex = 0; this.continuationIndex = 0; }
         return this.texts;
     }
     remember(text: string): void { this.texts = [...this.texts, text].slice(-6); }
@@ -43,7 +50,17 @@ export class SuggestionHistory {
         this.questionIndex += focuses.length;
         return guidance;
     }
-    clear(): void { this.scope = ''; this.texts = []; this.questionIndex = 0; }
+    nextContinuationFocus(count: number, availableCharacters: number): string {
+        const focuses = continuationFocuses.slice(this.continuationIndex, this.continuationIndex + count);
+        const guidance = focuses.length
+            ? `For this Continue request, use the following next-link focuses, at most one result per focus. Each must add to the selected reasoning, not reword its conclusion. Skip any focus the context already resolves or does not support; fewer results or an empty intents array are valid.\n${focuses.join('\n')}`
+            : 'Earlier Continue requests were guided toward conditions, consequences and unresolved links. This is not evidence that those points were covered, accepted or exhausted. Stay with the same goal and return only a different grounded next link, or an empty intents array; do not restart those focuses just to fill the count.';
+        // Only the attempted focus advances. Prior generated/ignored text stays local.
+        if (guidance.length > availableCharacters) return '';
+        this.continuationIndex += focuses.length;
+        return guidance;
+    }
+    clear(): void { this.scope = ''; this.texts = []; this.questionIndex = 0; this.continuationIndex = 0; }
 }
 
 /** The run supplies a frame and budget, not past model output. Exclusions remain in the local

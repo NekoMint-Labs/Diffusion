@@ -24,6 +24,10 @@ function setup(responses?: SemanticIntent[], existingText = 'A different uncerta
     return { controller, runtime, requests, provider, notices };
 }
 
+// With the default three-candidate budget, the first Continue attempts all three focuses.
+// Later requests keep the authored words and explicitly allow a new link or an empty result.
+const exhaustedContinuation = 'Earlier Continue requests were guided toward conditions, consequences and unresolved links. This is not evidence that those points were covered, accepted or exhausted. Stay with the same goal and return only a different grounded next link, or an empty intents array; do not restart those focuses just to fill the count.';
+
 describe('repeated explicit thinking requests (fixtures, not semantic-quality evidence)', () => {
     it.each(['continue', 'angle'] as const)('%s remembers ignored wording locally without returning it to the provider and rejects a literal repeat without retry', async action => {
         const fixture = setup();
@@ -34,7 +38,7 @@ describe('repeated explicit thinking requests (fixtures, not semantic-quality ev
             expect((await fixture.runtime.run(action, 'Think further', ['a'])).emitted).toBe(0);
             expect(fixture.requests).toHaveLength(2);
             expect(JSON.stringify(fixture.requests[1])).not.toContain('An already tried frame.');
-            expect(fixture.requests[1].intent.text).toBe('Think further');
+            expect(fixture.requests[1].intent.text).toBe(action === 'continue' ? `Think further\n\n${exhaustedContinuation}` : 'Think further');
             expect(fixture.requests[1].packet).toEqual(fixture.requests[0].packet);
             expect(JSON.stringify(fixture.requests[1].packet)).not.toContain('An already tried frame.');
             expect(fixture.controller.getSnapshot().project).toEqual(before);
@@ -46,10 +50,10 @@ describe('repeated explicit thinking requests (fixtures, not semantic-quality ev
         try {
             await fixture.runtime.run(action, 'Think further', ['a']);
             await fixture.runtime.run(action, 'Think further', ['b']);
-            expect(fixture.requests[1].intent.text).toBe('Think further');
+            expect(fixture.requests[1].intent.text).toBe(fixture.requests[0].intent.text);
             fixture.controller.dispatch({ type: 'thought.edit', id: 'b', text: 'A revised uncertainty' }, 'user');
             await fixture.runtime.run(action, 'Think further', ['b']);
-            expect(fixture.requests[2].intent.text).toBe('Think further');
+            expect(fixture.requests[2].intent.text).toBe(fixture.requests[0].intent.text);
         } finally { fixture.runtime.dispose(); }
     });
     it('shares avoidance across Continue and Angle without changing the requested action', async () => {
@@ -62,7 +66,7 @@ describe('repeated explicit thinking requests (fixtures, not semantic-quality ev
             expect(JSON.stringify(fixture.requests[1])).not.toContain('An already tried frame.');
             expect(fixture.requests[1].intent.text).toBe('Another angle');
             await fixture.runtime.run('continue', 'Continue', ['a']);
-            expect(fixture.requests[2].intent.text).toBe('Continue');
+            expect(fixture.requests[2].intent.text).toBe(`Continue\n\n${exhaustedContinuation}`);
             expect(fixture.requests[2].packet).toEqual(fixture.requests[0].packet);
             expect(fixture.runtime.requestCount).toBe(3);
         } finally { fixture.runtime.dispose(); }
@@ -88,7 +92,7 @@ describe('repeated explicit thinking requests (fixtures, not semantic-quality ev
             fixture.controller.dismissGhost(Object.keys(fixture.controller.getSnapshot().session.ghosts)[0]);
             fixture.controller.dispatch({ type: 'thought.edit', id: 'b', text: 'Revised direct source' }, 'user');
             expect((await fixture.runtime.run('continue', 'Continue', ['a'])).emitted).toBe(1);
-            expect(fixture.requests[1].intent.text).toBe('Continue');
+            expect(fixture.requests[1].intent.text).toBe(fixture.requests[0].intent.text);
             expect(fixture.requests[1].packet.local[0].text).toBe('Revised direct source');
         } finally { fixture.runtime.dispose(); }
     });

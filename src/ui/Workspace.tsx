@@ -40,6 +40,8 @@ import { ForkSurface } from './surfaces/ForkSurface.tsx';
 import { DiffuseSurface, DiffuseIndicator } from './surfaces/DiffuseSurface.tsx';
 import { ActionPreviewSurface, type PreviewAction } from './surfaces/ActionPreviewSurface.tsx';
 import { OrganizeSurface } from './surfaces/OrganizeSurface.tsx';
+import { ClickRipples } from './motion/ClickRipples.tsx';
+import { glassEffectsEnabled } from './motion/cardEffects.ts';
 import { thinkingServiceChanged, type Settings } from './settings.ts';
 import { isGlobalModal } from './transient.ts';
 import { atmosphereRole, Atmosphere } from './atmosphere.tsx';
@@ -336,6 +338,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
             intents.openThread(ids, kind === 'deep', text, provider); },
     };
     return <main className="app" data-active-surface={ui.surface} data-menu-open={ui.menu ? true : undefined} ref={root}>
+    {glassEffectsEnabled() && <ClickRipples/>}
     <ConnectionFailureDialog/>
   {/* Atmosphere is presentation state, never semantic state: the Field's material is lit by
       what is transiently happening, not by what the Field means. A selection is a scope, and a

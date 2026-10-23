@@ -223,6 +223,13 @@ The rule that must hold with more than one animation technology present:
 
 ## UI primitives
 
+The optional `?effects=glass` visual trial changes only presentation. `materials.css` owns
+the translucent card fill and 16px backdrop blur; the pending operation's frozen scope owns the
+4-second masked border indicator. `ScrambleText` keeps selectable canonical text beneath an
+aria-hidden character overlay, and `ClickRipples` ignores drags and never accepts pointer input.
+Both effects honor Reduced Motion. The development-only `/dev/glass-effects` route uses preset
+answers and timers, without AI calls or persisted data. This experiment is not enabled by default.
+
 Interaction primitives are owned by `@base-ui/react`; every pixel is Diffusion's. The package owns behaviour that is easy to get subtly wrong and expensive to maintain: menu and listbox roles, roving highlight, Home/End, typeahead, collision-aware placement, popup lifecycle and focus contracts. Diffusion keeps ownership of *semantics* (which command exists and where it appears), of *transient ownership* (which place currently holds input), and of *focus restoration* (`useTransientFocus` remains the single authority).
 
 | Primitive | Owner | Responsibility |

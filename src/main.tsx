@@ -18,8 +18,14 @@ class ErrorBoundary extends React.Component<{
    unreachable and tree-shaken out of a production bundle; the route never exists in production. */
 const MotionLab = import.meta.env.DEV ? lazy(() => import('./dev/MotionLab.tsx')) : null;
 const MaterialGallery = import.meta.env.DEV ? lazy(() => import('./dev/material-gallery/MaterialGallery.tsx')) : null;
+const GlassEffectsLab = import.meta.env.DEV ? lazy(() => import('./dev/GlassEffectsLab.tsx')) : null;
+if (new URLSearchParams(location.search).get('effects') === 'glass' || (import.meta.env.DEV && location.pathname === '/dev/glass-effects'))
+    document.documentElement.dataset.cardEffects = 'glass';
+else delete document.documentElement.dataset.cardEffects;
 const root = document.getElementById('root')!;
-if (MaterialGallery && location.pathname === '/dev/material-gallery')
+if (GlassEffectsLab && location.pathname === '/dev/glass-effects')
+    createRoot(root).render(<Suspense fallback={null}><GlassEffectsLab /></Suspense>);
+else if (MaterialGallery && location.pathname === '/dev/material-gallery')
     createRoot(root).render(<Suspense fallback={null}><MaterialGallery /></Suspense>);
 else if (MotionLab && location.pathname === '/dev/motion')
     createRoot(root).render(<Suspense fallback={null}><MotionLab /></Suspense>);

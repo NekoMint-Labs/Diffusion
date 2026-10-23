@@ -44,3 +44,36 @@
 .operation-stop { margin-left: 2px; flex: none; }
 @keyframes operation-pulse { 0%, 100% { opacity: .38; transform: scale(.82); } 50% { opacity: 1; transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .spatial-operation-feedback[data-phase="pending"] .operation-feedback-mark { animation: none !important; } }
+
+/* Glass trial: animation owns only a masked inset border, never the card transform. */
+@property --card-glow-angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.card-thinking-border {
+  position: absolute; inset: 0; z-index: 2; border-radius: inherit; padding: 1px;
+  pointer-events: none;
+  background: conic-gradient(from var(--card-glow-angle), transparent 0deg 250deg, var(--selection-accent) 296deg, var(--surface-raised) 324deg, transparent 360deg);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: card-glow-turn 4s linear infinite;
+}
+@keyframes card-glow-turn { to { --card-glow-angle: 360deg; } }
+.scramble-text { position: relative; display: block; cursor: text; }
+.scramble-text[data-scrambling="true"] > .scramble-source { color: transparent; }
+.scramble-display { position: absolute; inset: 0; pointer-events: none; user-select: none; }
+.scramble-char { position: relative; display: inline-block; white-space: pre; }
+.scramble-width { visibility: hidden; }
+.scramble-glyph { position: absolute; inset: 0; text-align: center; color: var(--ink-tertiary); }
+.scramble-glyph[data-locked="true"] { color: var(--ink-primary); }
+.click-ripple-layer { position: fixed; inset: 0; z-index: 10000; pointer-events: none; overflow: hidden; }
+.click-ripple {
+  position: absolute; width: 24px; height: 24px; margin: -12px; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--selection-accent) 42%, transparent);
+  background: color-mix(in srgb, var(--selection-accent) 8%, transparent);
+  animation: click-ripple .6s ease-out both;
+}
+@keyframes click-ripple { from { transform: scale(0); opacity: 1; } to { transform: scale(4); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .card-thinking-border { animation: none; background: var(--selection-accent); }
+  .click-ripple { display: none; }
+}

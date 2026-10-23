@@ -9,6 +9,8 @@ import { hierarchyStyle } from '../../field/spatial/hierarchyDisclosure.ts';
 import type { Bounds } from '../../field/spatial/geometry.ts';
 import { semanticExcerpt } from '../../field/spatial/representation.ts';
 import { isQuestion } from '../workspace/response.ts';
+import { ScrambleText } from '../motion/ScrambleText.tsx';
+import { glassEffectsEnabled } from '../motion/cardEffects.ts';
 import { TransientTextPresence } from '../motion/TransientTextPresence.tsx';
 interface Props {
     item: Thought | Ghost;
@@ -17,6 +19,7 @@ interface Props {
     selected: boolean;
     emphasis: 'normal' | 'selected' | 'direct' | 'nearby' | 'peripheral' | 'receded';
     settling: boolean;
+    thinking?: boolean;
     /** Find in Field emphasis. Presentation only; never changes canonical state. */
     find?: 'current' | 'match' | 'dim';
     editing: boolean;
@@ -37,7 +40,7 @@ interface Props {
     onRead: (id: string) => void;
     onRespond: (id: string) => void;
 }
-export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, selected, emphasis, settling, find, editing, level, depth, root, parentText, hasChildren, collapsedCount = 0, onExpand, geometry, onEdit, onCancel, onReject, onMeasure, onActionsMeasure, onHover, onRead, onRespond }: Props) {
+export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, selected, emphasis, settling, thinking, find, editing, level, depth, root, parentText, hasChildren, collapsedCount = 0, onExpand, geometry, onEdit, onCancel, onReject, onMeasure, onActionsMeasure, onHover, onRead, onRespond }: Props) {
     useLocale();
     const ref = useRef<HTMLElement>(null);
     const input = useRef<HTMLTextAreaElement>(null);
@@ -132,7 +135,8 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
         }
     }, [selected, editing, ghost, item.id, truncated, short, level]);
 
-    return <article ref={ref} data-thought-id={item.id} data-kind={kind} data-depth={depth} data-depth-style={hierarchyStyle(depth ?? 0)} data-original-root={root || undefined} data-size={size} data-life={'life' in item ? item.life : 'active'} data-emphasis={emphasis} data-selected={selected} data-material-settling={settling || undefined} data-recalled={recalled} data-causal={'scopeIds' in item ? item.scopeIds.length ? 'true' : undefined : 'derivedFrom' in item && item.derivedFrom?.length ? 'true' : undefined} data-origin-scope={'scopeIds' in item ? item.scopeIds.join(' ') : 'derivedFrom' in item ? item.derivedFrom?.join(' ') : undefined} data-proposal-kind={proposalKind} data-proposal-action={proposalAction} data-generation-action={'generationAction' in item ? item.generationAction : undefined} className={`thought ${kind} ${editing ? 'editing' : ''} ${ghost ? 'ghost' : ''} ${recalled ? 'recall' : ''}`} data-find={find} style={{ transform: `translate(${item.x}px, ${item.y}px)` }} tabIndex={0} aria-label={`${t(kind)}: ${text || t('New thought')}`} aria-current={selected ? 'true' : undefined} onPointerEnter={() => onHover?.(item.id)} onPointerLeave={() => onHover?.(null)}>
+    return <article ref={ref} data-thought-id={item.id} data-kind={kind} data-depth={depth} data-depth-style={hierarchyStyle(depth ?? 0)} data-original-root={root || undefined} data-size={size} data-life={'life' in item ? item.life : 'active'} data-emphasis={emphasis} data-selected={selected} data-material-settling={settling || undefined} data-thinking={thinking || undefined} data-recalled={recalled} data-causal={'scopeIds' in item ? item.scopeIds.length ? 'true' : undefined : 'derivedFrom' in item && item.derivedFrom?.length ? 'true' : undefined} data-origin-scope={'scopeIds' in item ? item.scopeIds.join(' ') : 'derivedFrom' in item ? item.derivedFrom?.join(' ') : undefined} data-proposal-kind={proposalKind} data-proposal-action={proposalAction} data-generation-action={'generationAction' in item ? item.generationAction : undefined} className={`thought ${kind} ${editing ? 'editing' : ''} ${ghost ? 'ghost' : ''} ${recalled ? 'recall' : ''}`} data-find={find} style={{ transform: `translate(${item.x}px, ${item.y}px)` }} tabIndex={0} aria-label={`${t(kind)}: ${text || t('New thought')}`} aria-current={selected ? 'true' : undefined} onPointerEnter={() => onHover?.(item.id)} onPointerLeave={() => onHover?.(null)}>
+    {thinking && glassEffectsEnabled() && <span className="card-thinking-border" aria-hidden="true"/>}
     {!editing && (level === 'local' || find === 'current' || editing) && (parentText !== undefined || hasChildren) && <div className="hierarchy-context" data-testid="hierarchy-context" title={parentText}>
         <span className="hierarchy-level">{depth ? t('Level {level}', { level: depth + 1 }) : t('Top level')}</span>
         {parentText !== undefined && <span className="hierarchy-parent">{t('Parent: {parent}', { parent: parentText })}</span>}
@@ -151,7 +155,7 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
                 }
             }} rows={1}/>
             : ghost || recalled
-                ? <TransientTextPresence phase={ghost ? 'ghost' : 'recall'}>{short || t('A thought, not yet in words...')}</TransientTextPresence>
+                ? <TransientTextPresence phase={ghost ? 'ghost' : 'recall'}>{ghost && !proposal && glassEffectsEnabled() ? <ScrambleText text={short || t('A thought, not yet in words...')} animationKey={item.id}/> : short || t('A thought, not yet in words...')}</TransientTextPresence>
                 : <p>{short || t('A thought, not yet in words...')}</p>}</div>
     {!editing && hasChildren && (collapsedCount > 0 || selected) && <button type="button" className="branch-expand" data-testid="branch-expand" aria-expanded={collapsedCount === 0} onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); onExpand?.(item.id); }}><span aria-hidden="true">{collapsedCount ? '▸ ' : '▾ '}</span>{collapsedCount ? t('Show {count} children', { count: collapsedCount }) : t('Collapse branch')}</button>}
     {selected && !editing && (!ghost && kind === 'thought' || truncated || short !== text) && <div ref={localActions} className="thought-local-actions" popover={ghost ? undefined : 'manual'} onPointerDown={event => event.stopPropagation()}>

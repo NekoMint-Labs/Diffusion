@@ -25,7 +25,7 @@ export const UNKNOWN_CAPABILITIES: ThinkingCapabilities = {
     depth: { supported: false, mode: 'none', levels: THINKING_DEPTHS },
 };
 
-export type StructuredPurpose = 'thought-extraction' | 'thought-extraction-recheck' | 'relation-inference' | 'ingestion-repair' | 'evidence-assessment';
+export type StructuredPurpose = 'thought-extraction' | 'thought-extraction-recheck' | 'relation-inference' | 'ingestion-repair' | 'evidence-assessment' | 'exploration-step';
 export interface StructuredRequest {
     purpose: StructuredPurpose;
     instructions: string;

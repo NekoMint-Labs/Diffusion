@@ -28,6 +28,7 @@ test('demo is explicit, stops, restores its checkpoint, and leaves the Field rec
     await expect(page.getByTestId('next-status')).toContainText('本轮结束');
     await expect(page.getByTestId('next-note')).toHaveCount(2);
     await expect(page.getByTestId('next-note').first()).toContainText('模拟示例');
+    await page.screenshot({ path: test.info().outputPath('next-demo-desktop.png'), fullPage: true });
     const before = await page.evaluate(key => localStorage.getItem(key), notebookKey);
     await page.reload();
     await expect(page.getByTestId('next-note')).toHaveCount(2);
@@ -124,6 +125,6 @@ test('narrow dark and reduced-motion layouts remain readable and scrollable', as
     await expect(page.getByTestId('next-step')).toBeInViewport();
     expect(await page.locator('.next-trial').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
     await page.getByTestId('next-step').click(); await expect(page.getByTestId('next-note')).toHaveCount(1);
-    await page.screenshot({ path: 'verification/next-mobile-dark.png', fullPage: true });
+    await page.screenshot({ path: test.info().outputPath('next-mobile-dark.png'), fullPage: true });
     expect(errors).toEqual([]);
 });

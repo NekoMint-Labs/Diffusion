@@ -61,7 +61,9 @@ export function useWorkspaceSurfaces({ controller, field, diffuse, runtime }: {
         }
         useUI.getState().patch({ surface: 'none', returnPoint: null, relationId: null });
         setDraft(null);
-        transient.restore(true);
+        // A command may open scoped writing as it closes this place. Its newly focused
+        // textarea owns the next gesture; forced restoration would blur and close it.
+        transient.restore();
     }
     return { transient, draft, setDraft, openSurface, closeSurface, historyScope, lineageId, diffuseScope, setDiffuseScope };
 }

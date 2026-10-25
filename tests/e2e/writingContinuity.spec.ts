@@ -24,6 +24,37 @@ async function coachingLeavesWritingClear(page: Page) {
     });
 }
 
+for (const [entry, command] of [['palette', 'ask'], ['palette', 'respond'], ['reader', 'respond']] as const) {
+    test(`${entry} ${command} hands focus to scoped writing without closing it`, async ({ page }) => {
+        await demo(page);
+        const card = page.locator('[data-thought-id="unfinished"]');
+        await card.click();
+        if (entry === 'reader') {
+            await card.dblclick();
+            const editor = page.getByRole('textbox', { name: 'Edit thought', exact: true });
+            await editor.fill('这段原文需要读完后补充自己的想法。'.repeat(40));
+            await editor.press('Enter');
+        }
+        const camera = await page.locator('.world').getAttribute('style');
+        if (entry === 'reader') {
+            await page.getByRole('button', { name: 'Read full text', exact: true }).click();
+            await page.getByRole('dialog', { name: 'Full thought', exact: true })
+                .getByRole('button', { name: 'Add my thoughts', exact: true }).click();
+        } else {
+            await page.keyboard.press('Control+k');
+            await page.getByTestId('command-palette').locator(`[data-command="${command}"]`).click();
+        }
+        const input = page.getByTestId('speak').locator('textarea');
+        await expect(input).toBeFocused();
+        await input.fill('这份草稿应继续留在我刚打开的写作区。');
+        await expect(input).toBeFocused();
+        await expect(input).toHaveValue('这份草稿应继续留在我刚打开的写作区。');
+        await expect(page.getByTestId('speak')).toHaveAttribute('data-scope-active', 'true');
+        await expect(page.getByTestId('speak')).toHaveAttribute('data-mode', command === 'respond' ? 'respond' : 'think');
+        await expect(page.locator('.world')).toHaveAttribute('style', camera!);
+    });
+}
+
 for (const marker of ['isComposing', 'legacy'] as const) {
     test(`response draft keeps composition Escape and Enter with ${marker}`, async ({ page }) => {
         await demo(page);

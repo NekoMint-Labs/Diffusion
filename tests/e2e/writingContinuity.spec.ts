@@ -120,11 +120,20 @@ for (const [width, height, profile] of [
         await expect(tutorial).toHaveAttribute('data-phase', 'write');
         const coach = tutorial.locator('.tutorial-coach');
         const input = page.getByTestId('speak').locator('textarea');
-        await input.fill('我想在四周内研究同学怎样选择学习空间。');
+        const original = '我想在四周内研究同学怎样选择学习空间。';
+        await input.fill(original);
         await input.press('Enter');
         await expect(tutorial).toHaveAttribute('data-phase', 'move');
+        const target = page.locator('[data-thought-id]').filter({ has: page.locator('p', { hasText: original }) });
+        const targetClear = async () => {
+            const a = (await coach.boundingBox())!, b = (await target.boundingBox())!;
+            return a.x + a.width + 8 <= b.x || b.x + b.width + 8 <= a.x
+                || a.y + a.height + 8 <= b.y || b.y + b.height + 8 <= a.y;
+        };
         const notice = page.locator('.notice');
         await expect(notice).toBeVisible();
+        await expect.poll(targetClear, 'the practice Thought stays reachable beside its coaching').toBe(true);
+        const targetPosition = await target.getAttribute('style');
         await page.screenshot({ path: info.outputPath('tutorial-feedback.png') });
         await expect.poll(async () => {
             const a = (await coach.boundingBox())!, b = (await notice.boundingBox())!;
@@ -146,6 +155,8 @@ for (const [width, height, profile] of [
         // The empty invitation disappeared after the first Thought. Compare the current reading
         // geometry, not the empty Field's earlier pixel offset against a different UI state.
         await expect.poll(() => coachingLeavesWritingClear(page)).toBe(true);
+        await expect.poll(targetClear).toBe(true);
+        await expect(target).toHaveAttribute('style', targetPosition!);
         await expect(coach).toBeInViewport();
         await expect(tutorial.getByRole('button', { name: '跳过教程', exact: true })).toBeInViewport();
         await expect(input).toHaveValue('通知关闭后，写作区和教程仍应各自清晰可用。');

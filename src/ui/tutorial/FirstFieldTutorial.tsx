@@ -175,13 +175,14 @@ export function useFirstFieldTutorial({ project, session, controller, field }: {
         return true;
     }
 
-    return { active, phase, settled, start, skip, finish, interceptThinkingAction, interceptProposalAction };
+    return { active, phase, settled, coachTargetId: phase === 'ghost' || phase === 'keep' ? ghostId : phase === 'move' ? thoughtId : undefined, start, skip, finish, interceptThinkingAction, interceptProposalAction };
 }
 
-export function FirstFieldTutorialCoach({ active, phase, settled, onSkip, onFinish }: {
+export function FirstFieldTutorialCoach({ active, phase, settled, targetId, onSkip, onFinish }: {
     active: boolean;
     phase: Phase;
     settled: { text: string; x: number; y: number } | null;
+    targetId?: string;
     onSkip: () => void;
     onFinish: () => void;
 }) {
@@ -200,6 +201,16 @@ export function FirstFieldTutorialCoach({ active, phase, settled, onSkip, onFini
             if (writing.some(rect => rect.top < box.bottom + 12 && rect.bottom + 12 > box.top)) {
                 element.style.bottom = `${app.getBoundingClientRect().bottom - Math.min(...writing.map(rect => rect.top)) + 12}px`;
             }
+            // Narrow windows can put the practice Thought behind the writing-safe coach.
+            // Leave the object being taught reachable without changing its Field coordinates.
+            const target = targetId && app.querySelector<HTMLElement>(`[data-thought-id="${CSS.escape(targetId)}"]`);
+            const targetBox = target && target.getBoundingClientRect();
+            const placed = element.getBoundingClientRect();
+            if (targetBox && targetBox.width && targetBox.height && targetBox.left < placed.right + 12
+                && targetBox.right + 12 > placed.left && targetBox.top < placed.bottom + 12
+                && targetBox.bottom + 12 > placed.top && targetBox.top - placed.height - 12 >= app.getBoundingClientRect().top + 12) {
+                element.style.bottom = `${app.getBoundingClientRect().bottom - targetBox.top + 12}px`;
+            }
         };
         place();
         // The writing group includes the invitation and grows with multiline input. Its size,
@@ -209,6 +220,8 @@ export function FirstFieldTutorialCoach({ active, phase, settled, onSkip, onFini
         observer.observe(element);
         const writing = app.querySelector('.speak-positioner');
         if (writing) observer.observe(writing);
+        const target = targetId && app.querySelector(`[data-thought-id="${CSS.escape(targetId)}"]`);
+        if (target) observer.observe(target);
         return () => observer.disconnect();
     });
     if (!active) return null;

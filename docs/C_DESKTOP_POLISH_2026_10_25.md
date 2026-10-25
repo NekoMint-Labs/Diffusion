@@ -15,6 +15,8 @@ surface is replaced, and gives the read-only full-text body keyboard scrolling. 
 is checked before use; failed optional reads/writes fall back without blocking writing or dismissal.
 Focus coaching follows a Field-consumed gesture. Guidance measures writing clearance and shares
 the notice reservation. Button/menu feedback and shortcut labels use existing presentation tokens.
+The coach also leaves its current practice Thought/Ghost reachable where there is room above it;
+this closes a 600-pixel-window occlusion found in the remote screenshots without moving Field objects.
 
 Ownership remains in the existing UI modules. Canonical content, Thought positions and connections,
 storage schemas, dependencies and native permissions are unchanged.

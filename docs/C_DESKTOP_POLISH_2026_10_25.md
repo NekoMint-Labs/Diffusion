@@ -1,8 +1,8 @@
 # C desktop writing and tutorial polish
 
 Updated: October 25, 2026. Based on `59f1e28c24d9965b756b3a6988bae7635def0f9b`.
-Status: draft; production-source evidence is recorded below, latest regression results are in PR #78.
-Local production receipts, native acceptance and independent review remain pending.
+Status: draft; local automated evidence is sealed for `14a164c`, and scoped isolated Windows
+smoke checks passed. Independent review and the native boundaries listed below remain open.
 
 ## Problem and behavior
 
@@ -43,8 +43,23 @@ previous local build. Generated packages, logs and recordings are not included i
 
 Local non-runtime checks passed: TypeScript compilation of application and test sources
 (`node node_modules/typescript/lib/tsc.js --noEmit`), locale coverage, source-size policy,
-`git diff --check`, and relative handoff/document links. The requester has authorized GitHub-hosted
-CI while keeping desktop interaction and local runtime tests paused.
+`git diff --check`, and relative handoff/document links. The requester explicitly resumed local
+tests and computer use on October 25, after the earlier pause.
+
+At `14a164c77829b2e030d9592462cd055f36f45054`, local checks passed: 73 unit files / 662 tests,
+315 offline contracts, 92 related browser cases, and a separate 23-case production-frontend
+recheck. Both browser runs used the frozen v5 candidate's real production assets, one worker,
+zero retries, and had no skips, unexpected/flaky results or global runner errors. The sealing
+receipt checks report times, source/test/config hashes, frontend inventory and candidate hash.
+
+A separate Windows debug executable used the same frontend/native source with an isolated
+application identifier and WebView data directory. Observed checks passed for physical Chinese
+composition Escape/Enter in ordinary writing and authored responses, Space candidate selection,
+multiline response saving, keyboard reader scrolling and focus return, Find replacement, Settings
+return, the native Markdown Save As dialog, and two close/reopen cycles restoring text and response
+with its visible source relation. Its executable differs from the normal v5 binary because of
+isolation configuration; these results must not be described as an exact-binary/default-profile
+launch or installer acceptance. Only synthetic content was used; no live provider was called.
 
 Earlier failure evidence is retained: the initial remote run exposed four incorrect test
 assumptions, and intermediate screenshots exposed the narrow-window target occlusion. The final
@@ -69,10 +84,10 @@ Regression coverage:
 The three focused interaction files define 23 cases. Their latest results, including the added
 durable-save precondition, are reported for the exact review head in PR #78.
 Their separate local production-background run and the local candidate's evidence-sealing procedure
-remain paused. After local runtime testing is authorized, use [TESTING.md](TESTING.md) and the
-candidate's handoff; record results for the actual source and build without reusing older reports.
+are now complete for the named test head. Local packages and receipts remain outside the repository;
+the handoff preserves older failures and compile-only candidates separately.
 
-Before promotion, independently review the patch and separately verify real Windows Chinese
-input-method candidate selection, focus return, dialogs, reopen and persistence. Remote tests and
-screenshots do not complete these native acceptance items. Keep the contribution in draft until
-the remaining review and acceptance work is complete.
+Before promotion, independently review the patch. Native import/restore, the normal installed
+profile, installer/upgrade behavior, multiple Windows display scales and live-provider use were
+not checked in this isolated smoke run. Keep the contribution in draft until the remaining review
+and acceptance work is complete. The daily launcher still points to the previous local package.

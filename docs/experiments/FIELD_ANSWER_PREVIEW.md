@@ -83,4 +83,8 @@ Remote CI repair on 2026-10-25:
 - Full local `pnpm run test:e2e`: 440 passed, 12 skipped and 2 failed. Both failures were in
   unrelated, unchanged tests (`diverseExploration.spec.ts` and `fieldManagement.spec.ts`);
   rerunning those exact cases alone passed 2/2. Preserve this as a non-green full-suite result.
-  The new remote CI run remains the release gate for this repair.
+- PR 80 head `ea216f4d83c5ee2f54ea1b97e6e25d624eca88bd` passed all six required checks:
+  typecheck/contracts/tests/build, Interaction 1/3, Interaction 2/3, Interaction 3/3,
+  production backgrounds and E2E gate. Runs: `40202375928` and `40202375936`.
+- This recorded result is for the code-and-test repair commit; this documentation update is a
+  follow-up and will receive its own required PR checks.

@@ -13,6 +13,17 @@ async function demo(page: Page) {
     await expect(page.locator('[data-thought-id="unfinished"]')).toBeVisible();
 }
 
+async function coachingLeavesWritingClear(page: Page) {
+    return page.locator('.tutorial-coach').evaluate(coach => {
+        const a = coach.getBoundingClientRect();
+        return [...document.querySelectorAll('.speak,.empty-invitation')].every(element => {
+            const b = element.getBoundingClientRect();
+            return !b.width || !b.height || a.right + 8 <= b.left || b.right + 8 <= a.left
+                || a.bottom + 8 <= b.top || b.bottom + 8 <= a.top;
+        });
+    });
+}
+
 for (const marker of ['isComposing', 'legacy'] as const) {
     test(`response draft keeps composition Escape and Enter with ${marker}`, async ({ page }) => {
         await demo(page);
@@ -108,7 +119,6 @@ for (const [width, height, profile] of [
         const tutorial = page.getByTestId('first-field-tutorial');
         await expect(tutorial).toHaveAttribute('data-phase', 'write');
         const coach = tutorial.locator('.tutorial-coach');
-        const originalBottom = await coach.evaluate(element => getComputedStyle(element).bottom);
         const input = page.getByTestId('speak').locator('textarea');
         await input.fill('我想在四周内研究同学怎样选择学习空间。');
         await input.press('Enter');
@@ -125,7 +135,21 @@ for (const [width, height, profile] of [
         await page.getByTestId('notice-action').click();
         await expect(page.locator('#setting-ai')).toBeVisible();
         await expect(notice).toHaveCount(0);
-        await expect.poll(() => coach.evaluate(element => getComputedStyle(element).bottom)).toBe(originalBottom);
+        await expect.poll(() => page.locator('.app').evaluate(element =>
+            parseFloat(getComputedStyle(element).getPropertyValue('--bottom-notice-height')) || 0)).toBe(0);
+        await page.keyboard.press('Escape');
+        await expect(page.locator('#setting-ai')).toHaveCount(0);
+        await page.getByTestId('field').click({ position: { x: width - 80, y: 110 } });
+        await expect(input).toBeVisible();
+        await input.click();
+        await input.fill('通知关闭后，写作区和教程仍应各自清晰可用。');
+        // The empty invitation disappeared after the first Thought. Compare the current reading
+        // geometry, not the empty Field's earlier pixel offset against a different UI state.
+        await expect.poll(() => coachingLeavesWritingClear(page)).toBe(true);
+        await expect(coach).toBeInViewport();
+        await expect(tutorial.getByRole('button', { name: '跳过教程', exact: true })).toBeInViewport();
+        await expect(input).toHaveValue('通知关闭后，写作区和教程仍应各自清晰可用。');
+        await page.screenshot({ path: info.outputPath('writing-after-settings.png') });
     });
 }
 

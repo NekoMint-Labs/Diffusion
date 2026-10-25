@@ -140,16 +140,19 @@ for (const key of ['diffusion-first-field-tutorial-v1', 'diffusion-first-field-c
             };
         }, key);
         await page.goto('/demo?locale=en');
-        const thought = page.locator('[data-thought-id="attention"]');
+        const thought = page.locator('[data-thought-id="unfinished"]');
         await expect(thought).toBeVisible();
         await thought.click();
-        await page.getByTestId('thought-more').click();
-        await page.getByTestId('thought-menu').locator('[data-command="ask"]').click();
+        // An authored response saves locally. Ask is a scoped AI request and correctly keeps
+        // its draft when AI is off, so it cannot prove that writing still commits here.
+        await page.getByRole('button', { name: 'Respond to this question', exact: true }).click();
+        await expect(page.getByTestId('speak')).toHaveAttribute('data-mode', 'respond');
         const input = page.getByTestId('speak').locator('textarea');
         const text = 'Writing remains available when an optional tutorial preference cannot be read.';
         await input.fill(text);
         await input.press('Enter');
         await expect(page.locator('[data-thought-id] p', { hasText: text })).toHaveCount(1);
+        await expect(page.locator('[data-thought-id]').filter({ has: page.locator('p', { hasText: text }) })).toHaveAttribute('data-origin-scope', 'unfinished');
         await page.keyboard.press('Control+k');
         await expect(page.getByTestId('command-palette')).toBeVisible();
     });

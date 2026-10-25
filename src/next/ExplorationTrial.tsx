@@ -63,6 +63,7 @@ function Trial({ initial }: { initial: Notebook }) {
             <div><span className="next-eyebrow">{'DIFFUSION / NEXT'}</span><h1>{t('Keep the question in view.')}</h1><p>{t('Exploration trial · isolated from your Fields')}</p></div>
             <div className="next-header-actions"><button type="button" onClick={() => setLocale(document.documentElement.lang === 'zh-CN' ? 'en' : 'zh')}>{t('Switch language')}</button>
                 <button type="button" onClick={() => download('diffusion-next-notebook.json', JSON.stringify({ ...state, phase: running ? 'paused' : state.phase }, null, 2))}>{t('Export notebook')}</button>
+                <button type="button" data-testid="next-reset" onClick={() => { session.dispose(); localStorage.removeItem(TRIAL_STORAGE_KEY); location.reload(); }}>{t('Start a new blank trial')}</button>
                 <a href="/">{t('Return to the Field')}</a></div>
         </header>
         <div className="next-mode" data-testid="next-mode">{t(connection.selection.provider === 'demo'
@@ -98,7 +99,7 @@ function Trial({ initial }: { initial: Notebook }) {
                     <small>{t('Attempts: {count}', { count: state.requests })}</small>
                 </section>
                 {(error || session.error) && <p role="alert" className="next-error">{error || t(session.error === 'citation' ? 'The quoted passage did not match the selected source. The result was rejected.' : 'The step failed or timed out. Earlier checkpoints are preserved; check your connection and try again.')}</p>}
-                <details className="next-context"><summary>{t('Inspect what the next step can see')}</summary><p>{t('The shared brief, this branch, explicitly shared discoveries and selected source texts. Credentials are never included.')}</p><pre data-testid="next-context">{JSON.stringify(context, null, 2)}</pre></details>
+                {import.meta.env.DEV && <details className="next-context"><summary>{t('Inspect what the next step can see')}</summary><p>{t('The shared brief, this branch, explicitly shared discoveries and selected source texts. Credentials are never included.')}</p><pre data-testid="next-context">{JSON.stringify(context, null, 2)}</pre></details>}
             </div>
         </div>
         <footer>{t('Trial only. Notes stay in this browser under a separate key. Your normal Fields and their database are unchanged. No PR has been submitted.')}</footer>

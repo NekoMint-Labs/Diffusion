@@ -8,6 +8,7 @@ import { thoughtSizeClass } from '../../field/spatial/collision.ts';
 import { hierarchyStyle } from '../../field/spatial/hierarchyDisclosure.ts';
 import type { Bounds } from '../../field/spatial/geometry.ts';
 import { semanticExcerpt } from '../../field/spatial/representation.ts';
+import { answerPreview } from '../../shared/answerPreview.ts';
 import { isQuestion } from '../workspace/response.ts';
 import { TransientTextPresence } from '../motion/TransientTextPresence.tsx';
 interface Props {
@@ -124,7 +125,8 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
     // Canonical wording fixes the width class throughout an edit. CSS also owns the semantic-zoom
     // compensation; a cached pre-mount world width must not override it for a new editor.
     const size = kind === 'thought' || kind === 'ghost' ? thoughtSizeClass(text) : undefined;
-    const short = semanticExcerpt(text, editing || find === 'current' ? 'local' : level, kind);
+    const previewText = ghost && !proposal ? answerPreview(text) : text;
+    const short = semanticExcerpt(previewText, editing || find === 'current' ? 'local' : level, kind);
     useLayoutEffect(() => {
         if (!selected || editing || ghost || !localActions.current || !('showPopover' in localActions.current)) return;
         if (!localActions.current.matches(':popover-open')) {

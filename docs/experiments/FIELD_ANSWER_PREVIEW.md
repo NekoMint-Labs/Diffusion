@@ -19,10 +19,15 @@ Thread rather than turning the notebook layout into the product.
 
 ## Integration
 
-The local integration branch starts from PR 77 (`26b6e6c`) and includes C's current desktop/input
+The local preview integration branch starts from PR 77 (`26b6e6c`) and includes C's desktop/input
 fixes through `e810321` via merge. Existing local glass-card and answer-quality branches remain
 untouched. These are local integration choices, not a claim that any of the branches were merged
 into remote main. The previously requested notebook reset button is retained.
+
+The delivery branch `feat/b-field-answer-preview` is stacked directly on
+`feat/next-exploration-trial` (PR 77). Only the B change was cherry-picked onto it; C's PR 78 and
+PR 79 are separate and are not included in this PR's diff. The local integrated preview remains
+available without changing the requester's browser data.
 
 ## Verification
 
@@ -34,7 +39,7 @@ isolation and sharing in actual outgoing fixture requests, rather than exposing 
 Fixtures verify behavior, not live-model judgment. No live request, native package acceptance,
 provider-quality comparison, role personalization or remote publication is claimed here.
 
-Local results on 2026-10-25:
+Integrated preview results on 2026-10-25 (includes C's fixes through `e810321`):
 
 - `pnpm test`: 75 files, 685 tests passed.
 - `pnpm run check:offline`: syntax/import checks, core types, locale coverage, 315 offline tests
@@ -53,3 +58,13 @@ Local results on 2026-10-25:
   `verification/field-answer-preview/first-browser-run/`.
 - The first concurrent offline check encountered a disappearing Playwright output file. Running
   it after the browser runner finished passed without changing the checker.
+
+Standalone delivery results on 2026-10-25 (PR 77 base, without C's tests):
+
+- `pnpm test`: 73 files, 672 tests passed.
+- `pnpm run check:offline`: passed, including 315 offline tests.
+- `pnpm exec playwright test tests/e2e/answerPreview.spec.ts tests/e2e/nextExploration.spec.ts
+  tests/e2e/suggestionReviewKeyboard.spec.ts tests/e2e/surfaceReadability.spec.ts
+  --project=interaction`: 21 passed; setup also passed typecheck and the production build.
+- `git diff --check`: passed. Documentation clarification is the only subsequent change.
+- Neither local browser run is a full browser-suite or live-model quality claim.

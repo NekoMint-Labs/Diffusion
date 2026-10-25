@@ -57,8 +57,26 @@ for (const marker of ['isComposing', 'legacy'] as const) {
         await expect(response).toHaveCount(1);
         await expect(response).toHaveAttribute('data-origin-scope', 'unfinished');
         const id = await response.getAttribute('data-thought-id');
+        expect(id).toBeTruthy();
+        // Painting the response does not await the controller's asynchronous IndexedDB save.
+        // Navigate only after its actual durable wording and lineage are present.
+        await expect.poll(() => page.evaluate(thoughtId => new Promise<{ text: string; derivedFrom?: string[] } | null>((resolve, reject) => {
+            const opening = indexedDB.open('diffusion-explorer-v1');
+            opening.onerror = () => reject(opening.error);
+            opening.onsuccess = () => {
+                const db = opening.result;
+                const read = db.transaction('projects').objectStore('projects').get('demo');
+                read.onerror = () => { db.close(); reject(read.error); };
+                read.onsuccess = () => {
+                    const saved = read.result?.thoughts?.[thoughtId!];
+                    db.close();
+                    resolve(saved ? { text: saved.text, derivedFrom: saved.derivedFrom } : null);
+                };
+            };
+        }), id), 'response wording and lineage are committed before reload').toEqual({ text: draft, derivedFrom: ['unfinished'] });
         await page.reload();
         await expect(page.locator(`[data-thought-id="${id}"] p`)).toHaveText(draft);
+        await expect(page.locator(`[data-thought-id="${id}"]`)).toHaveAttribute('data-origin-scope', 'unfinished');
     });
 }
 

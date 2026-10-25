@@ -86,13 +86,26 @@ export function Speak({ textareaRef, words, onWords, onSubmit, onStop, onCompose
         const input = textareaRef.current;
         if (!input)
             return;
-        const previous = input.style.height;
-        input.style.height = 'auto';
-        const nextHeight = Math.max(SPEAK_MIN_HEIGHT, Math.min(SPEAK_MAX_HEIGHT, input.scrollHeight));
-        const nextOverflow = input.scrollHeight > SPEAK_MAX_HEIGHT;
-        input.style.height = previous;
-        setInputHeight(current => current === nextHeight ? current : nextHeight);
-        setOverflowing(current => current === nextOverflow ? current : nextOverflow);
+        const measure = () => {
+            const previous = input.style.height;
+            input.style.height = 'auto';
+            const nextHeight = Math.max(SPEAK_MIN_HEIGHT, Math.min(SPEAK_MAX_HEIGHT, input.scrollHeight));
+            const nextOverflow = input.scrollHeight > SPEAK_MAX_HEIGHT;
+            input.style.height = previous;
+            setInputHeight(current => current === nextHeight ? current : nextHeight);
+            setOverflowing(current => current === nextOverflow ? current : nextOverflow);
+        };
+        measure();
+        // Focus reveals the shortcut beside the textarea, narrowing an already restored draft.
+        // Observe width only so our own height update cannot create a measurement loop.
+        let width = input.clientWidth;
+        const observer = new ResizeObserver(() => {
+            if (input.clientWidth === width) return;
+            width = input.clientWidth;
+            measure();
+        });
+        observer.observe(input);
+        return () => observer.disconnect();
     }, [words, typography, textareaRef]);
     useEffect(() => { if (!releasing)
         return; const timer = setTimeout(() => setReleasing(false), RELEASE_HOLD); return () => clearTimeout(timer); }, [releasing]);

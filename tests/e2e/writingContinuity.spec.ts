@@ -24,6 +24,26 @@ async function coachingLeavesWritingClear(page: Page) {
     });
 }
 
+test('a restored response draft fits after focus and viewport width changes', async ({ page }) => {
+    const draft = 'FOCUS-READER-RESPONSE-20261025：阅读全文后，这条回应直接接收键盘输入，并保留原文关系。';
+    await page.addInitScript(draft => {
+        localStorage.setItem('diffusion-settings', JSON.stringify({ locale: 'zh', provider: 'off', appearance: { profile: 'graphite-night' } }));
+        localStorage.setItem('diffusion-first-field-tutorial-v1', JSON.stringify({ status: 'complete' }));
+        localStorage.setItem('diffusion-response-draft:demo', JSON.stringify({ text: draft, scope: ['unfinished'], updatedAt: Date.now() }));
+    }, draft);
+    await page.goto('/demo?locale=zh');
+    const input = page.getByTestId('speak').locator('textarea');
+    await expect(input).toBeFocused();
+    await expect(input).toHaveValue(draft);
+    const fits = () => input.evaluate(element => element.clientHeight + 1 >=
+        Math.min(element.scrollHeight, parseFloat(getComputedStyle(element).maxHeight)));
+    await expect.poll(fits, 'the focus-only shortcut must not hide the restored draft final line').toBe(true);
+    await page.setViewportSize({ width: 460, height: 640 });
+    await expect.poll(fits, 'narrowing the writing surface remeasures without editing the draft').toBe(true);
+    await expect(input).toHaveValue(draft);
+    await expect(input).toBeFocused();
+});
+
 for (const [entry, command] of [['palette', 'ask'], ['palette', 'respond'], ['reader', 'respond']] as const) {
     test(`${entry} ${command} hands focus to scoped writing without closing it`, async ({ page }) => {
         await demo(page);

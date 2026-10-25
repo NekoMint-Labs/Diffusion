@@ -98,7 +98,6 @@
   transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease, border-color var(--motion-instant) ease, opacity var(--motion-instant) ease;
 }
 .surface-close:hover:not(:disabled), .surface-close:focus-visible { color: var(--ink-primary); border-color: color-mix(in srgb, var(--boundary) 72%, transparent); background: var(--surface-2); }
-.surface-close:active { opacity: .62; }
 .surface-close:focus-visible { outline: var(--focus-ring); outline-offset: 1px; }
 .surface-close-mark { font-size: 12px; line-height: 1; }
 .surface-close-hint { font: var(--type-meta-size)/1 var(--ui-font); letter-spacing: .04em; color: var(--ink-tertiary); opacity: .72; }
@@ -173,14 +172,13 @@
 .command-menu-secondary { position: relative; min-width: 196px; max-height: calc(100dvh - 48px); overflow: auto; padding: 5px; border: 1px solid var(--boundary); border-radius: var(--radius-surface); background: var(--surface-raised); box-shadow: var(--shadow-float); }
 .command-menu-content[data-primary-panel] { max-height: calc(100dvh - 58px); overflow: auto; }
 .command-menu-item { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 20px; width: 100%; min-height: 32px; text-align: left; padding: 6px 9px; font-size: var(--type-label-size); border-radius: var(--radius-control); color: var(--ink-secondary); cursor: pointer; user-select: none; transition: color var(--motion-instant) ease, background-color var(--motion-instant) ease; }
-.command-menu-item[data-highlighted] { outline: none; background: var(--surface-2); color: var(--ink-primary); }
+.command-menu-item[data-highlighted] { outline: none; background: var(--surface-2); color: var(--ink-primary); box-shadow: inset 2px 0 0 color-mix(in srgb, var(--attention) 58%, transparent); }
 .command-menu-copy { display: flex; flex: 1; min-width: 0; flex-direction: column; align-items: flex-start; gap: 2px; }
 .command-menu-copy > span { color: inherit; }
 .command-menu-copy small { max-width: 34ch; color: var(--ink-tertiary); font: var(--type-hint-size)/1.35 var(--ui-font); white-space: normal; }
 .command-menu-item[data-highlighted] .command-menu-copy small { color: var(--ink-secondary); }
 .command-menu-item[data-separator="true"] { margin-top: 7px; padding-top: 13px; }
 .command-menu-item[data-separator="true"]::before { content: ""; position: absolute; left: 10px; right: 10px; top: 4px; height: 1px; background: var(--boundary); opacity: .68; }
-.command-menu kbd { font: var(--type-hint-size)/1.6 var(--ui-font); color: var(--ink-tertiary); }
 .command-menu-more { margin-top: 6px; padding-top: 10px; }
 .command-menu-more::before { content: ""; position: absolute; left: 10px; right: 10px; top: 3px; height: 1px; background: var(--boundary); opacity: .68; }
 .command-menu-caret { color: var(--ink-tertiary); font-size: 15px; line-height: 1; }
@@ -197,7 +195,8 @@
 .command-palette-heading { margin: 9px 10px 4px; color: var(--ink-tertiary); font: 500 var(--type-meta-size)/1.4 var(--ui-font); letter-spacing: var(--type-meta-track); text-transform: uppercase; }
 .command-palette-list button { display: flex; align-items: center; justify-content: space-between; gap: 20px; width: 100%; min-height: 34px; padding: 9px 10px; border-radius: var(--radius-control); text-align: left; font-size: var(--type-section-title-size); color: var(--ink-secondary); }
 .command-palette-list button[data-active="true"], .command-palette-list button:hover:not(:disabled), .command-palette-list button:focus-visible { background: var(--surface-2); color: var(--ink-primary); outline: none; }
-.command-palette-list kbd { font: var(--type-hint-size)/1.5 var(--ui-font); color: var(--ink-tertiary); }
+/* Keep shortcuts intact in both portal menus and the palette; only command copy wraps. */
+.command-menu-item > kbd, .command-palette-list button > kbd { flex: none; white-space: nowrap; padding: 1px 5px; border: 1px solid color-mix(in srgb, var(--boundary) 64%, transparent); border-radius: var(--radius-hair); background: color-mix(in srgb, var(--surface-2) 60%, transparent); color: var(--ink-helper); font: var(--type-hint-size)/1.5 var(--ui-font); font-variant-numeric: tabular-nums; }
 .command-palette-hint { display: flex; gap: 14px; margin: 10px 10px 2px; padding-top: 10px; border-top: 1px solid var(--surface-2); font: var(--type-hint-size)/1.5 var(--ui-font); color: var(--ink-tertiary); }
 .command-palette-hint span { display: flex; align-items: center; gap: 6px; }
 
@@ -531,13 +530,16 @@ h3.history-day { display: flex; align-items: center; gap: 12px; margin: 30px 0 1
 .thread-scope span { flex: none; }
 .surface-body .thread-focus-context { max-height: calc(100dvh - 180px); overflow: auto; overflow-wrap: anywhere; }
 .command-menu-copy, .command-palette-list button { overflow-wrap: anywhere; }
-.command-menu kbd, .command-menu-caret { flex: none; }
+.command-menu-caret { flex: none; }
 
 .command-menu-positioner { max-width: calc(100vw - 32px); }
 .command-menu-secondary { max-height: var(--available-height, calc(100dvh - 32px)); }
 /* Full wording is read outside the zoomed Field, without entering its editor. */
 .surface.anchored.thought-reader { width: min(460px, calc(100vw - 48px)); max-height: min(620px, calc(100dvh - 64px)); }
+.thought-reader .surface-body { scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: var(--boundary) transparent; }
+.thought-reader .surface-body:focus-visible { outline: var(--focus-ring); outline-offset: -3px; }
 .thought-reader-text { white-space: pre-wrap; color: var(--ink-primary); font: var(--thought-size)/1.75 var(--thought-font); }
+.thought-reader-text::selection { background: color-mix(in srgb, var(--attention) 22%, transparent); }
 
 /* Reading structure keeps authored cards separate from proposed interpretations. */
 .structure-apply-summary { margin: 0; padding: 9px 12px; border-radius: var(--radius-control); background: var(--attention-soft); color: var(--ink-primary); }

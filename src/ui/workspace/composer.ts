@@ -16,6 +16,15 @@ export function composerState({ composing, scoped, words, busy }: { composing: b
     return scoped ? 'scoped' : 'focused';
 }
 
+/** Input-method confirmation and cancellation belong to the input method, not the composer. */
+export function composerKeyAction(event: Pick<KeyboardEvent, 'key' | 'shiftKey' | 'isComposing' | 'keyCode'>): 'exit' | 'submit' | null {
+    if (event.isComposing || event.keyCode === 229)
+        return null;
+    if (event.key === 'Escape')
+        return 'exit';
+    return event.key === 'Enter' && !event.shiftKey ? 'submit' : null;
+}
+
 /** The one tertiary shortcut worth showing beside a focused textarea. Escape still leaves the
  * composer, but remains discoverable through the keyboard reference rather than competing here. */
 export const COMPOSER_SHORTCUT = { keys: ['Shift', 'Enter'], label: 'New line' };

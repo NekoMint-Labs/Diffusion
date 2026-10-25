@@ -27,7 +27,7 @@
 .ui-button-attention.ui-button-solid:hover:not(:disabled) { background: color-mix(in srgb, var(--attention) 15%, var(--surface-1)); border-color: color-mix(in srgb, var(--attention) 48%, var(--boundary)); }
 .ui-button-danger { color: var(--system-danger); }
 .ui-button-danger.ui-button-outline { border-color: color-mix(in srgb, var(--system-danger) 28%, var(--boundary)); }
-.ui-button:active:not(:disabled) { opacity: .7; }
+.ui-button:active:not(:disabled) { opacity: 1; background: color-mix(in srgb, var(--ink-primary) 5%, var(--surface-2)); box-shadow: inset 0 1px 2px color-mix(in srgb, var(--ink-primary) 10%, transparent); }
 .ui-button:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
 
 .ui-switch-wrap { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-secondary); font: var(--type-label-size)/1 var(--ui-font); }

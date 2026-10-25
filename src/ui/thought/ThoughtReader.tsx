@@ -11,7 +11,7 @@ export function ThoughtReader({ text, anchor, responseLabel, onRespond, onClose 
     onRespond: () => void;
     onClose: () => void;
 }) {
-    return <Surface title={t('Full thought')} level="anchored" anchor={anchor} className="thought-reader" onClose={onClose} actions={<Button variant="ghost" size="sm" onClick={onRespond}>{t(responseLabel)}</Button>}>
+    return <Surface title={t('Full thought')} level="anchored" anchor={anchor} className="thought-reader" focusBody onClose={onClose} actions={<Button variant="ghost" size="sm" onClick={onRespond}>{t(responseLabel)}</Button>}>
         <p className="thought-reader-text">{text}</p>
     </Surface>;
 }

@@ -7,7 +7,7 @@ import { contentTransition, layoutTransition } from '../motion.ts';
 import { MOTION_DURATION } from '../motion/tokens.ts';
 import { firstThoughtComposerSequence, invitationContractSequence, invitationIdleSequence, useSequencer, useSignature } from '../motion/signature.ts';
 import { referenceExcerpt } from './response.ts';
-import { COMPOSER_SHORTCUT, composerState } from './composer.ts';
+import { COMPOSER_SHORTCUT, composerKeyAction, composerState } from './composer.ts';
 
 const SPEAK_MAX_HEIGHT = 108;
 const SPEAK_MIN_HEIGHT = 24;
@@ -146,14 +146,15 @@ export function Speak({ textareaRef, words, onWords, onSubmit, onStop, onCompose
                 <motion.div layout="position" className="speak-row" transition={{ layout: layoutTransition(!!reduced) }}>
                     {!composing && <span className="speak-mark" aria-hidden="true"/>}
                     <textarea ref={textareaRef} aria-label={t('Speak')} aria-describedby={composing && scoped ? 'speak-references' : undefined} placeholder={t(composing && mode === 'respond' ? 'Write your response or what is still unclear...' : composing ? 'Write down something not yet clear...' : empty ? 'Write or paste a thought...' : 'Continue thinking...')} value={words} rows={1} maxLength={12000} data-overflowing={overflowing} style={{ height: inputHeight, overflowY: overflowing ? 'auto' : 'hidden' }} onChange={event => onWords(event.target.value)} onKeyDown={event => {
-                        if (event.key === 'Escape') {
+                        const keyAction = composerKeyAction(event.nativeEvent);
+                        if (keyAction === 'exit') {
                             event.preventDefault();
                             event.stopPropagation();
                             onExit();
                             textareaRef.current?.blur();
                             return;
                         }
-                        if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) {
+                        if (keyAction === 'submit') {
                             event.preventDefault();
                             commit();
                         }

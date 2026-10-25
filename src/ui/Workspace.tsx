@@ -152,7 +152,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
     });
     const navigation = useNavigationReturn(controller, field);
     const find = useFindInField({ project, reveal: ids => navigation.reveal(ids) });
-    const surfaces = useWorkspaceSurfaces({ controller, field, diffuse, runtime, find });
+    const surfaces = useWorkspaceSurfaces({ controller, field, diffuse, runtime });
     const actions = useFieldActions({ controller, field, surfaces, importer });
     const closeMenu = () => { contextPoint.current = null; const menu = useUI.getState().menu; if (menu) surfaces.transient.closeMenu(menu); };
     const intents = useThinkingIntents({ controller, field, speak, surfaces, freePoint: actions.freePoint, observe: actions.observe, runtime, importer, settingsRef, stopDiffuseForIntent, closeMenu });

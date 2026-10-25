@@ -196,7 +196,17 @@ export function FirstFieldTutorialCoach({ active, phase, settled, targetId, onSk
             const box = element.getBoundingClientRect();
             const writing = [...app.querySelectorAll<HTMLElement>('.speak,.empty-invitation')]
                 .filter(node => node.getClientRects().length)
-                .map(node => node.getBoundingClientRect())
+                .map(node => {
+                    // Motion projects the writing rectangle while its height changes. Reserve
+                    // the settled layout bounds so the gap survives the end of that animation.
+                    const parent = node.offsetParent;
+                    if (!(parent instanceof HTMLElement)) return node.getBoundingClientRect();
+                    const bounds = parent.getBoundingClientRect();
+                    const left = bounds.left + parent.clientLeft + node.offsetLeft;
+                    const top = bounds.top + parent.clientTop + node.offsetTop;
+                    return { left, top, width: node.offsetWidth, height: node.offsetHeight,
+                        right: left + node.offsetWidth, bottom: top + node.offsetHeight };
+                })
                 .filter(rect => rect.width && rect.height && rect.left < box.right + 12 && rect.right + 12 > box.left);
             if (writing.some(rect => rect.top < box.bottom + 12 && rect.bottom + 12 > box.top)) {
                 element.style.bottom = `${app.getBoundingClientRect().bottom - Math.min(...writing.map(rect => rect.top)) + 12}px`;

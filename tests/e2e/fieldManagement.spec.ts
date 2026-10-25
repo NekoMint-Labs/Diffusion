@@ -118,10 +118,10 @@ test('management shares keyboard focus, IME Escape and unfinished writing owners
 });
 
 test('an exiting management surface does not consume its successor Escape', async ({ page }) => {
+    await page.clock.install({ time: new Date('2026-01-01T08:00:00Z') });
     await boot(page);
-    await page.clock.install();
     const dialog = await open(page);
-    await page.clock.pauseAt(await page.evaluate(() => Date.now()));
+    await page.clock.pauseAt(new Date('2026-01-01T10:00:00Z'));
     await page.keyboard.press('Escape');
     await page.clock.runFor(32);
     await expect(dialog).toHaveCount(0);

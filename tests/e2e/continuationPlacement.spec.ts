@@ -2,6 +2,8 @@ import { test, expect, type Page } from '@playwright/test';
 import { createProject, makeThought, type ProjectState } from '../../src/core/model.ts';
 import { validateProject } from '../../src/core/validation.ts';
 
+const continuationText = (i: number) => '位置验证示例' + (i + 1) + '：闭环采集需要能在下一次拍摄前算出的不确定性，而不是等拍摄结束才出现的重建分数。'.repeat(3);
+
 async function projectRecord(page: Page, write?: ProjectState): Promise<ProjectState> {
     return page.evaluate(project => new Promise<ProjectState>((resolve, reject) => {
         const opening = indexedDB.open('diffusion-explorer-v1');
@@ -32,7 +34,7 @@ for (const [count, theme, zoom] of [[1, 'light', 1], [3, 'light', 1], [1, 'dark'
         await page.route('**/api/respond', async route => {
             requests++;
             await responseReady;
-            await route.fulfill({ json: { providerLabel: 'Placement fixture / not live', mock: true, intents: Array.from({ length: count }, (_, i) => ({ type: 'surface_possibility', text: '位置验证示例' + (i + 1) + '：闭环采集需要能在下一次拍摄前算出的不确定性，而不是等拍摄结束才出现的重建分数。'.repeat(3) })) } });
+            await route.fulfill({ json: { providerLabel: 'Placement fixture / not live', mock: true, intents: Array.from({ length: count }, (_, i) => ({ type: 'surface_possibility', text: continuationText(i) })) } });
         });
         await page.goto('/?locale=zh');
         await expect.poll(async () => (await projectRecord(page))?.id).toBe('main');
@@ -102,10 +104,14 @@ for (const [count, theme, zoom] of [[1, 'light', 1], [3, 'light', 1], [1, 'dark'
         }
         const firstProposal = ghosts.filter({ hasText: '位置验证示例1：' });
         await firstProposal.click();
-        const fullWords = await firstProposal.locator('p').textContent();
+        const fullWords = continuationText(0);
+        const opening = (await firstProposal.locator('p').textContent())!;
+        expect(Array.from(opening).length).toBeLessThanOrEqual(120);
+        expect(opening).not.toBe(fullWords);
+        expect(opening.endsWith('…')).toBe(true);
         await firstProposal.getByRole('button', { name: '阅读全文', exact: true }).click();
         const reader = page.getByRole('dialog', { name: '完整内容', exact: true });
-        await expect(reader.locator('.thought-reader-text')).toHaveText(fullWords!);
+        await expect(reader.locator('.thought-reader-text')).toHaveText(fullWords);
         await reader.getByRole('button', { name: '回到思绪场', exact: true }).click();
         await page.screenshot({ path: testInfo.outputPath('continuation-near-source.png') });
         if (count === 1) {
@@ -114,6 +120,8 @@ for (const [count, theme, zoom] of [[1, 'light', 1], [3, 'light', 1], [1, 'dark'
             await expect(ghosts).toHaveCount(0);
             await expect.poll(async () => Object.keys((await projectRecord(page)).thoughts).length).toBe(3);
             expect((await projectRecord(page)).thoughts.source).toEqual(project.thoughts.source);
+            const kept = Object.values((await projectRecord(page)).thoughts).find(thought => thought.id !== 'source' && thought.id !== 'parent');
+            expect(kept?.text).toBe(fullWords);
         } else {
             for (let i = 0; i < count; i++) {
                 await ghosts.first().click({ button: 'right' });

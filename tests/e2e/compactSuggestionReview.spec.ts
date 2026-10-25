@@ -1,8 +1,20 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page, type Locator } from '@playwright/test';
 import { createProject, makeThought, type ProjectState } from '../../src/core/model.ts';
 
 test.use({ viewport: { width: 1280, height: 720 }, reducedMotion: 'reduce' });
 const texts = Array.from({ length: 5 }, (_, i) => `第${i + 1}项建议：先观察课程学习中真实出现的困难，记录来源和可验证的证据，再比较不同做法。`.repeat(5));
+
+async function readCompleteAnswer(section: Locator, text: string) {
+    const preview = section.getByTestId('answer-preview');
+    await expect(preview).toBeVisible();
+    const opening = (await preview.textContent())!;
+    expect(Array.from(opening).length).toBeLessThanOrEqual(120);
+    expect(opening).not.toBe(text);
+    await expect(section.getByTestId('answer-full-text')).toBeHidden();
+    await section.locator('summary').click();
+    await expect(section.getByTestId('answer-full-text')).toBeVisible();
+    await expect(section.getByTestId('answer-full-text')).toHaveText(text);
+}
 
 async function saved(page: Page): Promise<ProjectState> {
     return page.evaluate(() => new Promise((resolve, reject) => {
@@ -72,7 +84,7 @@ for (const [count, theme, zoom] of [[1, 'light', 1], [3, 'dark', .55], [5, 'ligh
         const size = (await panel.boundingBox())!; expect(size.width).toBeLessThanOrEqual(420); expect(size.height).toBeLessThanOrEqual(320);
         expect(await page.getByTestId('field').boundingBox()).toEqual(before);
         await expect(panel.locator('section')).toHaveCount(count);
-        for (const text of texts.slice(0, count)) await expect(panel).toContainText(text);
+        for (let i = 0; i < count; i++) await readCompleteAnswer(panel.locator('section').nth(i), texts[i]);
         await expect(panel).toContainText(initial.thoughts.source.text);
         const scroll = panel.locator('.suggestion-review-list');
         expect(await scroll.evaluate(el => el.scrollHeight > el.clientHeight)).toBe(true);
@@ -94,10 +106,12 @@ test('Keep retains a receipt for this session, closes to a usable focus target, 
     const id = (await section.getAttribute('data-suggestion-id'))!;
     await section.getByTestId('suggestion-keep').click();
     await expect(section).toHaveAttribute('data-kept', 'true'); await expect(section).toContainText('已留下');
-    await expect(section.locator('p')).toHaveText(texts[0]); await expect(section.getByTestId('suggestion-keep')).toHaveCount(0);
+    await expect(section.getByTestId('suggestion-keep')).toHaveCount(0);
     await expect(page.getByTestId('suggestion-review-close')).toBeFocused();
+    await readCompleteAnswer(section, texts[0]);
     await expect.poll(async () => !!(await saved(page)).thoughts[id]).toBe(true);
     const kept = (await saved(page)).thoughts[id]; expect(kept.derivedFrom).toContain('source');
+    expect(kept.text).toBe(texts[0]);
     for (const [key, thought] of Object.entries(initial.thoughts)) expect((await saved(page)).thoughts[key]).toEqual(thought);
     await page.getByTestId('suggestion-review-close').click();
     await expect(toggle).toHaveCount(0); await expect(page.getByTestId('field')).toBeFocused();
@@ -201,9 +215,10 @@ test('a suggestion arriving during an open review retains its Keep receipt until
     const id = (await late.getAttribute('data-suggestion-id'))!;
     await late.getByTestId('suggestion-keep').click();
     await expect(late).toHaveAttribute('data-kept', 'true');
-    await expect(late).toContainText('已留下'); await expect(late.locator('p')).toHaveText(additional);
+    await expect(late).toContainText('已留下');
     await expect(late.getByTestId('suggestion-keep')).toHaveCount(0);
     await expect(close).toBeFocused();
+    await readCompleteAnswer(late, additional);
     await expect.poll(async () => (await saved(page)).thoughts[id]?.text).toBe(additional);
     await expect(page.locator('.world')).toHaveAttribute('style', camera!);
     await close.click(); await expect(toggle).toBeFocused();
@@ -218,7 +233,15 @@ test('larger interface type retains scrollable content and an ordinary Tab route
     const panel = page.getByTestId('suggestion-review-panel'); const box = (await panel.boundingBox())!;
     expect(box.height).toBeLessThanOrEqual(320); expect(box.width).toBeLessThanOrEqual(420);
     await expect(page.getByTestId('suggestion-review-close')).toBeVisible();
-    await page.getByTestId('suggestion-review-close').press('Tab'); await expect(panel.getByTestId('suggestion-keep').first()).toBeFocused();
+    await page.getByTestId('suggestion-review-close').press('Tab');
+    const disclosure = panel.locator('summary').first();
+    await expect(disclosure).toBeFocused();
+    await expect(panel.getByTestId('answer-full-text').first()).toBeHidden();
+    await disclosure.press('Enter');
+    await expect(panel.getByTestId('answer-full-text').first()).toBeVisible();
+    await expect(panel.getByTestId('answer-full-text').first()).toHaveText(texts[0]);
+    expect(await panel.locator('.suggestion-review-list').evaluate(el => el.scrollHeight > el.clientHeight)).toBe(true);
+    await disclosure.press('Tab'); await expect(panel.getByTestId('suggestion-keep').first()).toBeFocused();
     await panel.getByTestId('suggestion-ignore').last().focus(); await page.keyboard.press('Tab');
     expect(await panel.evaluate(el => el.contains(document.activeElement))).toBe(false);
     expect(await page.getByTestId('field').evaluate(el => el.contains(document.activeElement))).toBe(true);

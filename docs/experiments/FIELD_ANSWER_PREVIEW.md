@@ -68,3 +68,19 @@ Standalone delivery results on 2026-10-25 (PR 77 base, without C's tests):
   --project=interaction`: 21 passed; setup also passed typecheck and the production build.
 - `git diff --check`: passed. Documentation clarification is the only subsequent change.
 - Neither local browser run is a full browser-suite or live-model quality claim.
+Remote CI repair on 2026-10-25:
+
+- PR 80 head `8f589f0fa60fca74dadca372eae117debaad0d1f` passed typecheck, contracts,
+  tests and build, plus Interaction 2/3, Interaction 3/3 and production backgrounds.
+- Interaction 1/3 failed in eight pre-existing assertions because they treated the new
+  bounded preview as the complete answer and expected Tab to skip the native disclosure
+  control. The failures did not indicate data loss or a failed production build.
+- The original remote diagnostics and the pre-fix local reproduction are retained under
+  `verification/ci-40193195999/`.
+- The repaired browser coverage checks the 120-character preview boundary, explicit full-text
+  disclosure, complete wording after Keep, persisted continuation wording and the updated
+  keyboard route. The focused repair run passed 19/19 tests.
+- Full local `pnpm run test:e2e`: 440 passed, 12 skipped and 2 failed. Both failures were in
+  unrelated, unchanged tests (`diverseExploration.spec.ts` and `fieldManagement.spec.ts`);
+  rerunning those exact cases alone passed 2/2. Preserve this as a non-green full-suite result.
+  The new remote CI run remains the release gate for this repair.

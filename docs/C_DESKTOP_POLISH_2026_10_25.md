@@ -31,7 +31,8 @@ sources (`node node_modules/typescript/lib/tsc.js --noEmit`), locale coverage, s
 `git diff --cached --check`, and 55 relative links across five repository/local handoff documents.
 These checks did not invoke a test runner, browser, preview server or desktop application.
 
-The requester has paused desktop interaction and runtime tests. The current source has not received
+The requester has paused desktop interaction and local runtime tests, and has authorized GitHub-hosted
+CI for the draft PR. At preparation time, the current source had not received
 its final regression run. Earlier passing results precede the final tutorial layout/read repairs
 and must not be reported as a pass for this candidate. Generated local packages, logs and recordings
 are not included in the source contribution.

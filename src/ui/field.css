@@ -408,3 +408,8 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .relation-token-wording { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .relation-token-hint { display: block; font-size: var(--type-hint-size); color: var(--ink-tertiary); }
 .relation-label-overlay[data-just-kept="true"] { border-color: var(--attention); background: var(--attention-soft); color: var(--ink-primary); }
+
+/* Reading trial summaries are complete at local zoom; zoomed-out views keep normal budgets. */
+.field[data-level="local"] .thought:is([data-reading-focus="true"], [data-compact-original="true"]):not(.editing) .thought-preview { display: block; -webkit-line-clamp: unset; line-clamp: unset; max-height: none; overflow: visible; }
+
+.reading-focus-card-label { display: block; margin-bottom: 8px; color: var(--ink-helper); font: calc(var(--type-helper-size) * var(--inverse-zoom))/1.4 var(--ui-font); }

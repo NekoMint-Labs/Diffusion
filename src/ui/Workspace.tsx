@@ -131,6 +131,8 @@ export function Workspace({ controller, repository, platform, startupError, onSw
     const [organizeScope, setOrganizeScope] = useState<string[]>([]);
     const [readingThoughtId, setReadingThoughtId] = useState<string | null>(null);
     const readingThought = readingThoughtId ? project.thoughts[readingThoughtId] ?? session.ghosts[readingThoughtId] : undefined;
+    const readingScope = readingThoughtId ? session.ghosts[readingThoughtId]?.scopeIds ?? project.thoughts[readingThoughtId]?.derivedFrom ?? [] : [];
+    const readingContext = readingScope.map(key => project.thoughts[key]?.text).filter(Boolean).map(text => text).join(' / ');
     const platformKind = useMemo(detectPlatform, []);
 
     const { settings, settingsRef, apply } = useWorkspaceSettings();
@@ -144,7 +146,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         keyPresent: capabilities.storedAIKeys[settings.provider] === true,
         credentialRevision: capabilities.credentialRevision,
     });
-    const { runtime, diffuse, evidence, importer, hooks, stopDiffuseForIntent } = useThinkingService({
+    const { runtime, diffuse, evidence, importer, hooks, stopDiffuseForIntent, focusReading } = useThinkingService({
         controller, repository, settings,
         credentials: capabilities.credentials,
         runTimes: { builtIn: capabilities.builtIn },
@@ -376,7 +378,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
   {ui.surface === 'action-preview' && actionPreview && <ActionPreviewSurface action={actionPreview.action} anchor={ui.anchor ?? undefined} allowSources={true} allowWeb={actionPreview.action === 'angle' && !!evidence} onRun={options => void runPreviewAction(actionPreview, options)} onClose={() => { setActionPreview(null); surfaces.closeSurface(false); }}/>}
   {ui.surface === 'organize' && organizeScope.length >= 3 && <OrganizeSurface controller={controller} runtime={runtime} scopeIds={organizeScope} anchor={ui.anchor ?? undefined} onClose={() => { setOrganizeScope([]); surfaces.closeSurface(false); }}/>}
 
-  {ui.surface === 'thought-reader' && readingThought && <ThoughtReader text={'origin' in readingThought && isAuthoredExample(readingThought) ? t(readingThought.text) : readingThought.text} anchor={ui.anchor ?? undefined} responseLabel={readingThoughtId && session.ghosts[readingThoughtId] ? 'Keep and respond' : isQuestion(readingThought) ? 'Respond to this question' : 'Add my thoughts'} onClose={() => surfaces.closeSurface(false)} onRespond={() => { const key = readingThoughtId!; surfaces.closeSurface(false); if (session.ghosts[key]) handleAIProposalAction([key], 'answer'); else intents.respond([key]); }}/>}
+  {ui.surface === 'thought-reader' && readingThought && <ThoughtReader itemId={readingThoughtId ?? undefined} focusReading={focusReading} contextLabel={readingContext} text={'origin' in readingThought && isAuthoredExample(readingThought) ? t(readingThought.text) : readingThought.text} anchor={ui.anchor ?? undefined} responseLabel={readingThoughtId && session.ghosts[readingThoughtId] ? 'Keep and respond' : isQuestion(readingThought) ? 'Respond to this question' : 'Add my thoughts'} onClose={() => surfaces.closeSurface(false)} onRespond={() => { const key = readingThoughtId!; surfaces.closeSurface(false); if (session.ghosts[key]) handleAIProposalAction([key], 'answer'); else intents.respond([key]); }}/>}
   {ui.surface === 'relation' && ui.relationId && <RelationSurface controller={controller} relationId={ui.relationId} anchor={ui.anchor ?? undefined} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'source' && ui.sourceId && project.sources[ui.sourceId] && <SourceSurface source={project.sources[ui.sourceId]} repository={repository} platform={platform} anchor={ui.anchor ?? undefined} onRead={evidence ? signal => importer.read(ui.sourceId!, evidence, '', signal) : undefined} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'evidence' && <EvidenceSurface onOpen={url => void platform.openExternal(url).catch(error => deviceFailureNotice('link', error))} provider={evidence} unavailableReason={discoveryUnavailableText(settings.discovery, capabilities.status)} initial={activeSelection.map(k => project.thoughts[k]?.text ?? '').join(' ').slice(0, 1000)} scopeIds={[...activeSelection]} onBring={intents.bringEvidence} onConfigure={() => runNoticeAction('search-settings')} onConfigureAI={() => runNoticeAction('ai-settings')} onClose={() => surfaces.closeSurface()}/>}

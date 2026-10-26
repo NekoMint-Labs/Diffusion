@@ -39,9 +39,9 @@ export class GatewayAIProvider implements AIProvider {
     }
     async structured(task: StructuredRequest, signal?: AbortSignal): Promise<StructuredResponse> {
         const model = this.config.model ?? '';
-        // The same bound the direct path applies: a bounded structured task never inherits the
-        // deepest setting, whichever end of the connection turns it into a provider parameter.
-        const depth = structuredDepth(this.config.depth ?? 'auto');
+        // Match the direct path: a complete Field answer keeps the selected thinking depth,
+        // while representation-only tasks retain their existing ceiling.
+        const depth = task.purpose === 'field-answer' ? this.config.depth ?? 'auto' : structuredDepth(this.config.depth ?? 'auto');
         const override = model && (await this.capabilities(signal)).allowModelOverride ? model : '';
         const response = await fetch(gatewayURL(this.config, '/api/structured'), { method: 'POST', headers: { 'Content-Type': 'application/json', ...(this.config.token ? { Authorization: `Bearer ${this.config.token}` } : {}) }, body: JSON.stringify({ ...task, depth, ...(override ? { model: override } : {}) }), signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(45000)]) : AbortSignal.timeout(45000) });
         const data = structuredResponseSchema.parse(await boundedJSON(response));

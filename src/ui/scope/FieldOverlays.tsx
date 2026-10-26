@@ -180,8 +180,11 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
         const lanes = waiting.filter(item => item !== companion).map(item => item === scopeRow && companion ? [companion, item] : [item]);
         const laneHeight = lanes.reduce((total, lane) => total + Math.max(...lane.map(item => item.height)) + 8, 0);
         const reservesField = waiting.some(item => !localRows.includes(item.element));
-        const reservedHeight = reservesField ? laneBottom + laneHeight + 12 : 0;
+        // Local-only lanes do not clip the canvas, but writing must still clear their controls.
+        const controlsHeight = waiting.length ? laneBottom + laneHeight + 12 : 0;
+        const reservedHeight = reservesField ? controlsHeight : 0;
         app.style.setProperty('--field-dock-height', `${reservedHeight}px`);
+        app.style.setProperty('--field-controls-height', `${controlsHeight}px`);
         let top = appRect.bottom - laneBottom - laneHeight;
         for (const lane of lanes) {
             const height = Math.max(...lane.map(item => item.height));
@@ -257,6 +260,7 @@ export const FieldOverlays = forwardRef<FieldOverlaysHandle, Props>(function Fie
             if (scheduled.current !== null) cancelAnimationFrame(scheduled.current);
             scheduled.current = null;
             app.style.removeProperty('--field-dock-height');
+            app.style.removeProperty('--field-controls-height');
         };
     }, [layout, props.viewport]);
     const cancelable = Boolean(displayOperation && displayOperation.phase === 'pending' && canCancelThinkingOperation(displayOperation.id));

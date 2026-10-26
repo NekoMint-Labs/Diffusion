@@ -24,6 +24,7 @@ use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 
 use crate::credentials::read_secret;
+use crate::discovery_args::args_valid;
 use crate::discovery_env::child_environment_with_access;
 
 /// One search is bounded by its slowest source; a read is bounded by the slowest page.
@@ -39,31 +40,6 @@ const ALLOWED_ENV_PREFIXES: [&str; 4] = ["EXA_", "TAVILY_", "BRAVE_", "JINA_"];
 
 fn env_allowed(key: &str) -> bool {
     ALLOWED_ENV_PREFIXES.iter().any(|prefix| key.starts_with(prefix))
-}
-
-/// The engine's two machine operations, checked as shapes rather than as loose tokens: every flag
-/// must be one Diffusion itself emits, and the payload must follow the `--` delimiter so user text
-/// can never become an option.
-const ALLOWED_FLAGS: [&str; 8] = ["--mode", "--format", "json", "fast", "balanced", "research", "--max-chars", "--query"];
-
-fn args_valid(args: &[String]) -> bool {
-    if args.len() < 2 || args.len() > 12 {
-        return false;
-    }
-    if args[0] != "search" && args[0] != "read" {
-        return false;
-    }
-    if args.iter().any(|arg| arg.contains('\0') || arg.contains('\n') || arg.contains('\r') || arg.len() > 4096) {
-        return false;
-    }
-    let Some(delimiter) = args.iter().position(|arg| arg == "--") else {
-        return false;
-    };
-    // Exactly one payload argument, and nothing after it.
-    if delimiter + 2 != args.len() {
-        return false;
-    }
-    args[1..delimiter].iter().all(|arg| ALLOWED_FLAGS.contains(&arg.as_str()))
 }
 
 /// Resolves the bundled engine. A missing resource is reported honestly rather than as a crash: an

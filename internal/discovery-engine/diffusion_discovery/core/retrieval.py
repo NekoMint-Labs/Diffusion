@@ -170,8 +170,8 @@ async def search(
 
     query = str(query or "").strip()
     if not query:
-        return RetrievalOutcome(warnings=("query is required",))
-    policy = policy or RetrievalPolicy.balanced()
+        return RetrievalOutcome()
+    policy = policy or RetrievalPolicy()
     registry = registry or default_registry()
     providers = registry.search_providers(policy.providers)
 

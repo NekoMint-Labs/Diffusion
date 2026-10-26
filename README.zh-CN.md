@@ -38,7 +38,7 @@ Diffusion 是一个开源、**本地优先的桌面思考工作台**。你可以
 
 ## 五分钟快速上手
 
-1. **下载安装：** 打开 [GitHub Releases](https://github.com/NekoMint-Labs/Diffusion/releases)，选择对应的 **Windows x64** 预览版资源。先确认发布说明和 **Pre-release** 标记，目前尚未正式公布稳定安装包。
+1. **下载安装：** 打开 [v0.3.16 稳定版](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16)，选择 **Windows x64** 安装包，安装前阅读发布说明。
 2. **进入 Field：** 新建一个 **Field**，也可以直接使用启动时的空白 Field。首次教程可以跟随操作，也可以跳过。
 3. **写入思绪：** 在底部输入区输入内容，或双击 Field 的空白位置创建 Thought。拖动 Thought 可改变位置，拖动空白区域可平移视野。
 4. **选择范围：** 单击选中 Thought，按住 **Shift 再单击** 可多选。仅仅选中不会自动调用 AI；随后可打开上下文操作继续思考或分析联系。
@@ -54,9 +54,9 @@ Diffusion 是一个开源、**本地优先的桌面思考工作台**。你可以
 
 [查看 AI 配置步骤](docs/USER_GUIDE.zh-CN.md#五配置-ai可选) · [查看资料与证据流程](docs/USER_GUIDE.zh-CN.md#六资料搜索与证据)
 
-## 下载、存储与预览版提醒
+## 下载、存储与升级提醒
 
-- **当前官方提供的下载：** [Releases](https://github.com/NekoMint-Labs/Diffusion/releases) 中的 Windows x64 预览版。开源代码可用，不代表 macOS/Linux 安装包已完成官方验收。
+- **官方下载：** [v0.3.16 稳定版](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16) 提供 Windows x64 安装包。开源代码可用，不代表 macOS/Linux 安装包已完成官方验收。
 - **本地优先不等于云同步：** Field 保存在本设备，跨设备使用需要自己导出和恢复。
 - **升级前务必备份：** 将 Field **导出为 JSON**，并另外保存重要的原始资料。JSON 不包含尚未留下的 Ghost，也不包含导入文件的原始字节；Markdown 是阅读导出，**不能当成恢复备份**。
 - **已知升级风险：** 旧版本 Field 在升级后不可见的反馈尚未查清。建议先用非重要数据体验预览版，详见 [桌面说明](docs/DESKTOP.md) 和 [迁移说明](docs/MIGRATIONS.md)。
@@ -90,6 +90,6 @@ pnpm run dev
 
 ## 项目与正式发版状态
 
-截至本次文档修订（2026 年 10 月 14 日），`main` 的整合基线为 `bd9cc766`，相应 CI/E2E 已通过。源码版本字段仍是 `0.3.0`，而 `0.3.16` 是 Windows **预览包标记**，并不代表稳定版 `v0.3.16` 已发布。正式版仍需统一版本号、构建产物并完成独立发布验收。实际可下载内容以 [Releases](https://github.com/NekoMint-Labs/Diffusion/releases) 为准。
+核查日期：2026 年 10 月 21 日。[Diffusion v0.3.16](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16) 已于 2026 年 10 月 16 日作为**稳定版**发布，`main` 基线 `59f1e28` 的源码版本字段也已统一为 `0.3.16`。可下载资源及对应发布说明见 [Releases](https://github.com/NekoMint-Labs/Diffusion/releases)。
 
 欢迎提交可复现的问题和改进建议，参阅 [CONTRIBUTING.md](CONTRIBUTING.md)。Diffusion 自有代码使用 [Apache-2.0](LICENSE)，第三方依赖与素材遵循各自许可，详见 [来源与致谢](docs/ATTRIBUTION.md)。

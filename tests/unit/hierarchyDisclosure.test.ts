@@ -1,7 +1,6 @@
 import { expect, it } from 'vitest';
 import { resolveWheelZoom } from '../../src/field/spatial/gesture.ts';
-import { screenToWorld, zoomCameraAt } from '../../src/field/spatial/geometry.ts';
-import { makeThought, createProject, type Ghost } from '../../src/core/model.ts';
+import { makeThought, createProject } from '../../src/core/model.ts';
 import { thoughtHierarchy } from '../../src/core/hierarchy.ts';
 import { discloseHierarchy } from '../../src/field/spatial/hierarchyDisclosure.ts';
 import { causalEdges, describeCausalTraces } from '../../src/field/phenomena/causalTrace.ts';

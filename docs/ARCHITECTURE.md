@@ -207,7 +207,7 @@ field/phenomena/describe.ts       typed description, world coordinates, no drawi
         +--> a future GPU renderer
 ```
 
-`describeRelations()` resolves endpoints from the geometry cache and returns `RelationPhenomenon[]`; a relation with an unmeasured endpoint is absent rather than drawn at an invented position. Core knows nothing about SVG, canvas, shaders or visual timing, and `field/phenomena/glyph.ts` holds the visible mark for each relation kind instead of `core/model.ts`.
+`describeRelations()` resolves endpoints from the geometry cache and returns `RelationPhenomenon[]`; a relation with an unmeasured endpoint is absent rather than drawn at an invented position. `RelationLayer` draws the paths and `RelationToken` presents their wording and review controls. Core knows nothing about SVG, canvas, shaders or visual timing.
 
 ## Motion ownership contract (Motion, GSAP, and the future GPU layer)
 

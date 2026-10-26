@@ -163,19 +163,6 @@ class ProviderError(Exception):
         self.data = data
         super().__init__(message)
 
-    def to_result(self, *, wire_format: str = "json") -> "ProviderResult":
-        return ProviderResult.from_error(
-            provider=self.provider,
-            capability=self.capability,
-            error_type=self.error_type,
-            error=str(self),
-            retryable=self.retryable,
-            elapsed_ms=self.elapsed_ms,
-            attempts=self.attempts,
-            data=self.data,
-            wire_format=wire_format,
-        )
-
 
 class ProviderResult(str):
     """Structured provider result with a legacy string wire representation."""
@@ -448,53 +435,6 @@ class BaseSearchProvider(ABC):
             allow_empty=allow_empty,
         )
 
-    def content_result(
-        self,
-        content: str,
-        *,
-        capability: str | None = None,
-        elapsed_ms: float = 0.0,
-        attempts: list[dict[str, Any]] | None = None,
-        data: Mapping[str, Any] | None = None,
-    ) -> ProviderResult:
-        return ProviderResult.from_content(
-            content,
-            provider=self.get_provider_id(),
-            capability=capability or self.get_capability(),
-            elapsed_ms=elapsed_ms,
-            attempts=attempts,
-            data=data,
-        )
-
-    def error_result(
-        self,
-        error_type: str,
-        error: str,
-        *,
-        capability: str | None = None,
-        elapsed_ms: float = 0.0,
-        retryable: bool | None = None,
-        attempts: list[dict[str, Any]] | None = None,
-        data: Any = None,
-        wire_format: str = "json",
-    ) -> ProviderResult:
-        error = _mask_secret(error, self.api_key)
-        return ProviderResult.from_error(
-            provider=self.get_provider_id(),
-            capability=capability or self.get_capability(),
-            error_type=error_type,
-            error=error,
-            retryable=retryable,
-            elapsed_ms=elapsed_ms,
-            attempts=attempts,
-            data=data,
-            wire_format=wire_format,
-        )
-
     @abstractmethod
     async def search(self, query: str, max_results: int = 5) -> ProviderResult:
-        pass
-
-    @abstractmethod
-    def get_provider_name(self) -> str:
         pass

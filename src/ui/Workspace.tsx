@@ -145,7 +145,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         credentialRevision: capabilities.credentialRevision,
     });
     const { runtime, diffuse, evidence, importer, hooks, stopDiffuseForIntent } = useThinkingService({
-        controller, repository, settings, settingsRef,
+        controller, repository, settings,
         credentials: capabilities.credentials,
         runTimes: { builtIn: capabilities.builtIn },
         discovery: capabilities.status,

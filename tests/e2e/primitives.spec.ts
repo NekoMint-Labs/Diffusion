@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { choose } from './selects.ts';
 
 /** The interaction primitives Phase 2 adopted are product code now, so the behaviours a native
  * control used to supply for free are asserted here rather than assumed: the trigger states the

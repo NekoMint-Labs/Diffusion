@@ -120,7 +120,7 @@ function SelectDemo({ meta, variant, reduced }: ScenarioProps) {
     </Frame>;
 }
 
-function DialogDemo({ meta, variant, reduced }: ScenarioProps) {
+function DialogDemo({ meta, variant }: ScenarioProps) {
     const [open, setOpen] = useState(false);
     useEffect(() => setOpen(false), [variant.id]);
     const level: 'split' | 'window' | 'anchored' = variant.id === 'split' ? 'split' : variant.id === 'window' ? 'window' : 'anchored';
@@ -235,7 +235,7 @@ function FieldFixture({ idPrefix }: { idPrefix: string }) {
 
 /** Empty state's invitation: `invitationIdleSequence` (the reveal + the breathing mark) and
  * `invitationContractSequence` (writing begins and the invitation contracts). */
-function EmptyState({ meta, variant, reduced }: ScenarioProps) {
+function EmptyState({ meta, variant }: ScenarioProps) {
     const { nonce, play } = useReplay();
     const frame = useRef<HTMLDivElement>(null);
     useSignature(frame, variant.id === 'contract' ? invitationContractSequence : invitationIdleSequence, [variant.id, nonce]);
@@ -249,7 +249,7 @@ function EmptyState({ meta, variant, reduced }: ScenarioProps) {
 
 /** Quiet Composer's yield: the production `firstThoughtComposerSequence` — the invitation withdraws
  * and the writing surface contracts, then returns to identity. */
-function QuietComposer({ meta, variant, reduced }: ScenarioProps) {
+function QuietComposer({ meta, variant }: ScenarioProps) {
     const { nonce, play } = useReplay();
     const frame = useRef<HTMLDivElement>(null);
     useSignature(frame, firstThoughtComposerSequence, [nonce]);
@@ -310,7 +310,7 @@ function SpeakFixture({ composing, words, state, input, height, overflowing }: {
 /** Idle → focused: the composer's two resting states, drawn from the production `composerState`.
  * Focused is composing with no words yet (`focused`, not `writing`), so the material and the action
  * are what the frame shows. */
-function ComposerStates({ meta, variant, reduced }: ScenarioProps) {
+function ComposerStates({ meta, variant }: ScenarioProps) {
     const composing = variant.id === 'focused';
     const words = '';
     const state = composerState({ composing, scoped: false, words, busy: false });
@@ -321,7 +321,7 @@ function ComposerStates({ meta, variant, reduced }: ScenarioProps) {
     </Frame>;
 }
 /** Multiline: writing past the cap the stylesheet declares, so the surface stops growing and scrolls. */
-function ComposerOverflow({ meta, variant, reduced }: ScenarioProps) {
+function ComposerOverflow({ meta, variant }: ScenarioProps) {
     const words = TEXT.speakOverflowWords;
     const state = composerState({ composing: true, scoped: false, words, busy: false });
     const { input, height, overflowing } = useComposerMeasure(words, true);
@@ -415,7 +415,7 @@ function FieldSwitch({ meta, variant, reduced }: ScenarioProps) {
 
 /** History reveal: the production `historyRevealSequence` on real history DOM — overview, then
  * structure (scope + day), then the events. */
-function HistoryTimeline({ meta, variant, reduced }: ScenarioProps) {
+function HistoryTimeline({ meta, variant }: ScenarioProps) {
     const { nonce, play } = useReplay();
     const frame = useRef<HTMLDivElement>(null);
     useSignature(frame, historyRevealSequence, [nonce]);
@@ -437,7 +437,7 @@ function HistoryTimeline({ meta, variant, reduced }: ScenarioProps) {
 }
 
 /** Settings open: `settingsEnterSequence` — the navigation settles first, then the section. */
-function SettingsOpen({ meta, variant, reduced }: ScenarioProps) {
+function SettingsOpen({ meta, variant }: ScenarioProps) {
     const { nonce, play } = useReplay();
     const frame = useRef<HTMLDivElement>(null);
     useSignature(frame, settingsEnterSequence, [nonce]);
@@ -460,7 +460,7 @@ function SettingsOpen({ meta, variant, reduced }: ScenarioProps) {
 
 /** Settings close: `settingsRecedeSequence` — the Field behind pulls back and resolves home, and
  * the atmosphere dips and comes back. */
-function SettingsClose({ meta, variant, reduced }: ScenarioProps) {
+function SettingsClose({ meta, variant }: ScenarioProps) {
     const { nonce, play } = useReplay();
     const frame = useRef<HTMLDivElement>(null);
     useSignature(frame, settingsRecedeSequence, [nonce]);

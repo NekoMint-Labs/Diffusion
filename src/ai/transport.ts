@@ -1,4 +1,3 @@
-import { HTTPResponseError } from '../shared/http.ts';
 import { ThinkingError, failureForStatus } from './errors.ts';
 import { errorTypeFrom, type WireRequest } from './wire.ts';
 
@@ -77,9 +76,6 @@ export function fetchSend(subject: string): HttpSend {
         },
     };
 }
-
-/** Kept so the gateway path's own transport diagnostics stay identical to before this pass. */
-export { HTTPResponseError };
 
 /** One request, as it crosses to the desktop shell.
  *

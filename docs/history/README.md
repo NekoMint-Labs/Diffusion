@@ -15,6 +15,8 @@ Everything historical lives under this one root, grouped by the version it belon
 | v0.4 | `v0.4/` | The Stage A→G redesign journals, the per-phase reports (Phase 1–4, including the motion-contract era), and [STATUS_JOURNAL_V0_4.md](v0.4/STATUS_JOURNAL_V0_4.md), the append-only phase journal moved out of `STATUS.md`. |
 | Checkpoint notes and proofs | `checkpoints/*.md`, `checkpoints/*.proof.json` | Per-pass notes from the v0.1/v0.2 build (`00_`…`09-`, `FINAL.md`) and the external `snapshot.py` proofs (SHA-256 and integrity checks for each archived source ZIP). |
 | Supplied/historical build prompts | `prompts/` | The build/refinement prompts supplied for the v0.2 rebuild and the v0.2.1–v0.2.5 passes. |
+| Status and acceptance journals | [Status](checkpoints/STATUS_BEFORE_BASELINE_2026_10_21.md), [acceptance](checkpoints/ACCEPTANCE_BEFORE_BASELINE_2026_10_21.md) | Unchanged journals archived during the October 21, 2026 baseline cleanup; statements retain their original dates and revision scope. |
+| Retired maintenance tools | [tools/](tools/README.md) | Original source of capture scripts tied to superseded UI and dependencies. |
 
 ## Notes
 

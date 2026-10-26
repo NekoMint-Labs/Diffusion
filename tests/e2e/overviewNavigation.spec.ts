@@ -242,7 +242,7 @@ test('Overview Enter respects IME, shares Find return point, and reload ends it'
 
 
 test('return filters deleted selection and a Field switch ends the excursion', async ({ page }) => {
-    const initial = await boot(page, 'light', 1);
+    await boot(page, 'light', 1);
     await page.locator('[data-thought-id="a"]').click();
     const before = await page.locator('.world').getAttribute('style');
     await page.keyboard.press('Control+f');

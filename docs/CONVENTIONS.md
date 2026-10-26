@@ -2,7 +2,8 @@
 
 These are the conventions the current repository actually uses. They were read out of the code, not
 decided in advance; where the code is **not** uniform, this document says so instead of pretending
-otherwise. Nothing here is enforced by a formatter or linter yet — review enforces it. Do not
+otherwise. Naming and formatting are reviewed; the TypeScript compiler enforces unused-local and
+unused-parameter checks. There is no configured formatter/linter gate. Do not
 mass-rename existing code to create artificial consistency.
 
 For architecture and ownership, see [`ARCHITECTURE.md`](ARCHITECTURE.md). For which verification

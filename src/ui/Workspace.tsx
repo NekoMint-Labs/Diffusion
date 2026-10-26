@@ -384,7 +384,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
   <AnimatePresence initial={false}>
   {ui.surface === 'history' && <HistorySurface key="history" project={project} scope={surfaces.historyScope} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'shortcuts' && <ShortcutsSurface key="shortcuts" commands={commands} platform={platformKind} onClose={() => surfaces.closeSurface()}/>}
-  {ui.surface === 'fields' && <OpenFieldSurface key="fields" repository={repository} currentId={project.id} onSwitch={fields.switchField} onCreate={() => fields.createField(false)} onDuplicate={fields.duplicateField} onClose={() => surfaces.closeSurface()}/>}
+  {ui.surface === 'fields' && <OpenFieldSurface key="fields" repository={repository} currentId={project.id} onSwitch={fields.switchField} onCreate={() => fields.createField(false)} onDuplicate={fields.duplicateField} onDelete={fields.deleteField} onClose={() => surfaces.closeSurface()}/>}
   </AnimatePresence>
   {ui.surface === 'region' && ui.regionId && project.regions[ui.regionId] && <RegionSurface region={project.regions[ui.regionId]} anchor={ui.anchor ?? undefined} onRename={name => controller.dispatch({ type: 'region.rename', id: ui.regionId!, name })} onAsk={() => intents.openThread(project.regions[ui.regionId!].members)} onCrystal={() => intents.previewCrystal(project.regions[ui.regionId!].members)} onDiffuse={() => startDiffuse(project.regions[ui.regionId!].members)} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'lineage' && surfaces.lineageId && <LineageSurface key={surfaces.lineageId} controller={controller} project={project} thoughtId={surfaces.lineageId} onClose={() => surfaces.closeSurface(false)}/>}

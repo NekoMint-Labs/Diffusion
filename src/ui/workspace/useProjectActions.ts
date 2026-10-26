@@ -10,6 +10,7 @@ import type { DiffuseSession } from '../../ai/diffuse.ts';
 import { deviceFailureNotice, notice } from './notice.ts';
 import { feedback, report } from './feedback.ts';
 import { fieldDepartureSequence } from '../motion/signature.ts';
+import { clearResponseDraft } from './responseDraft.ts';
 
 /** How long a departure is allowed to hold the swap back. Presentation never owns a semantic
  * action: the Field leaves deliberately, but the crossing happens whether or not it finished. */
@@ -150,5 +151,31 @@ export function useProjectActions({ controller, repository, platform, diffuse, r
             departure?.kill();
         }
     }
-    return { ensureSaved, exportCanonical, exportMarkdown, duplicateField, switchField, createField };
+    /** Called only after the Field list's explicit confirmation. Leave an active Field before
+     * deleting it, so a refused save/load cannot remove the work still on screen. */
+    async function deleteField(fieldId: string): Promise<boolean> {
+        try {
+            if (fieldId === controller.getSnapshot().project.id) {
+                diffuse.stop('Switching Fields.');
+                runtime.cancel();
+                await ensureSaved();
+                let nextId = (await repository.listProjects()).find(field => field.id !== fieldId)?.id;
+                if (!nextId) {
+                    const next = createProject(id('field'), t('Untitled'));
+                    await repository.saveProject(next);
+                    nextId = next.id;
+                }
+                await onSwitchProject(nextId);
+                await controller.flush();
+            }
+            await repository.deleteProject(fieldId);
+            clearResponseDraft(fieldId);
+            feedback('field-deleted');
+            return true;
+        } catch (error) {
+            deviceFailureNotice('delete', error);
+            return false;
+        }
+    }
+    return { ensureSaved, exportCanonical, exportMarkdown, duplicateField, switchField, createField, deleteField };
 }

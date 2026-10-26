@@ -15,6 +15,8 @@ export interface ProjectRepository {
     }[]>;
     loadProject(id: string): Promise<ProjectState | null>;
     saveProject(project: ProjectState): Promise<void>;
+    deleteProject(id: string): Promise<void>;
+    wasProjectDeleted(id: string): Promise<boolean>;
     applyEvent(projectId: string, event: DomainEvent): Promise<void>;
     getThought(projectId: string, id: string): Promise<Thought | null>;
     getTrajectory(projectId: string, id?: string): Promise<TrajectoryEntry[]>;

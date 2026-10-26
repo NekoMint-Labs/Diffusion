@@ -41,6 +41,15 @@ key follows the existing Field heading without reserving a permanent bottom lane
 relations remain neutral and arrowless, with stronger attention contrast. Semantic routes still require
 Local scale and visible endpoints; distant views explain the existing omission instead of changing data.
 
+AI answer previews share a 120-Unicode-character display budget (`shared/answerPreview.ts`). Pending
+model candidates in the Field and long answers in the Suggestions reader or ordinary Thread show
+the opening first. Explicit full-text reading exposes the complete answer; Deep Dive remains full.
+This is an excerpt, not a generated summary. Authored ingestion proposals and user messages retain
+their existing presentation. Core content, Keep, further thinking and exports always use full text.
+Prompts request a self-contained opening including material conditions and uncertainty, but display
+limits do not prove that a real model selected the right key point. The Next notebook's raw context
+inspector is development-only and absent from production builds.
+
 ## Commands and history
 
 One command model (`src/ui/commands`) defines every semantic action once: id, localized label, aliases, platform-neutral shortcuts, contextual availability and one `run`. Menus, the palette, the keyboard router and the shortcut reference are projections of that registry, so no presentation owns business logic. An action may be reachable from the Field title, right-click, the Scope Hub, the palette and a shortcut while remaining a single definition.

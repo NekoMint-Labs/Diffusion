@@ -10,6 +10,7 @@ import { Surface } from '../surfaces/Surface.tsx';
 import { Button } from '../primitives/Button.tsx';
 import { SurfaceEmpty } from '../primitives/SurfaceEmpty.tsx';
 import { Manuscript } from './Manuscript.tsx';
+import { AnswerText } from '../thought/AnswerText.tsx';
 import { sendThreadMessage, bringThreadTextToField } from './threadFlow.ts';
 
 /** One Thread place, two presentations of the same record.
@@ -51,7 +52,7 @@ export function ThreadSurface({ controller, runtime, threadId, onClose, onFocus,
         ui.patch({ notice: msg('Returned as a possibility. Click it in the Field to make it yours.') });
     };
     const history = thread.messages.map(message => <section key={message.id} className={message.role === 'user' ? 'thread-question' : 'thread-passage'}>
-        <Manuscript text={message.text}/>
+        {message.role === 'assistant' && !focused ? <AnswerText text={message.text} /> : <Manuscript text={message.text}/>}
         {message.role === 'assistant' && <div className="passage-footer"><span>{message.provider}</span><Button variant="ghost" size="sm" onClick={() => bring(message.text)}>{msg('Bring to Field')}</Button></div>}
     </section>);
     const empty = !thread.messages.length && <SurfaceEmpty title={msg('Start with a question')}>{msg('Write below to explore these thoughts. This Thread keeps the scope it opened with.')}</SurfaceEmpty>;

@@ -15,10 +15,14 @@ or `python3 scripts/preview-next.py` on another platform. It opens a loopback-on
 server at `http://127.0.0.1:4175/next/explore?locale=zh`. No Node installation is needed
 for the prebuilt preview. Keep the terminal open while trying it.
 
+For the installable Windows candidate, use the separate **Diffusion Preview**
+package described in [Windows preview](WINDOWS_PREVIEW.md). It opens this route
+from packaged assets and keeps its data and OS credentials separate from stable.
+
 1. Fill in an overall question, priorities, and the current branch question, or use the example.
 2. In the default authored demo, try one step or a maximum of three steps. These are fixed
    workflow examples, not model-generated discoveries or evidence of semantic quality.
-3. Add a correction, create another branch, and inspect the actual next-step context. Other
+3. Add a correction, create another branch, and, in a development build, inspect the actual next-step context. The raw JSON inspector is absent from production previews. Other
    branch questions and notes are excluded until the person shares a kept note explicitly.
 4. Paste source text (12–6000 characters) and select it for this branch. The exact quote must
    match a selected body. A successful text match is not verification that the assessment is true.

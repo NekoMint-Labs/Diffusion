@@ -38,7 +38,8 @@ async function frameBounds(page: Page) {
         resolve({ card: rect(card), row: rect(card.querySelector('.thought-local-actions')!) });
     }))));
 }
-for (const zoom of [1, .55, 1.4]) test('read/respond controls follow every drag frame, cancel and repeated release at zoom ' + zoom, async ({ page }, info) => {
+for (const [zoom, height] of [[1, 720], [.55, 720], [1.4, 720], [1.4, 640]]) test(`read/respond controls follow every drag frame, cancel and repeated release at zoom ${zoom}, height ${height}`, async ({ page }, info) => {
+    await page.setViewportSize({ width: 1280, height });
     const project = await boot(page, zoom);
     const before = await frameBounds(page);
     const other = await page.locator('[data-thought-id="other"]').boundingBox();
@@ -78,7 +79,12 @@ for (const zoom of [1, .55, 1.4]) test('read/respond controls follow every drag 
     await expect.poll(async () => (await frameBounds(page)).card.x).toBeCloseTo(before.card.x + 80, 0);
     await page.keyboard.press('Control+Shift+z');
     await expect.poll(async () => (await frameBounds(page)).card.x).toBeCloseTo(before.card.x + 120, 0);
-    await page.getByTestId('field').click({ position: { x: 80, y: 650 } });
+    // Docked controls can reserve the bottom of the viewport, so a fixed y=650
+    // can land below the actual Field (and be intercepted by main.app).
+    const field = page.getByTestId('field');
+    const fieldHeight = await field.evaluate(element => element.clientHeight);
+    await field.click({ position: { x: 80, y: Math.min(650, fieldHeight - 24) } });
+    await expect(page.locator('[data-thought-id="source"]')).toHaveAttribute('data-selected', 'false');
     await page.locator('[data-thought-id="source"]').click();
     const respond = page.locator('[data-thought-id="source"]').getByTestId('thought-respond');
     await respond.focus(); await respond.press('Enter');

@@ -125,6 +125,10 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .field[data-level] .thought.ghost .ghost-label { display: block; }
 .suggestion-review { position: fixed; z-index: var(--layer-scope); width: min(560px, calc(100vw - 32px)); padding: 4px 10px; border: 1px solid var(--boundary); border-radius: var(--radius-control); background: var(--surface-1); color: var(--ink-primary); font: var(--type-ui-size)/1.5 var(--ui-font); }
 .suggestion-review-list { max-height: min(30vh, 240px); overflow-y: auto; overscroll-behavior: contain; }
+.answer-preview { white-space: pre-wrap; overflow-wrap: anywhere; }
+.answer-disclosure summary { cursor: pointer; color: var(--ink-secondary); font-size: 13px; padding: 6px 0; }
+.answer-disclosure summary:focus-visible { outline: 2px solid var(--ink-primary); outline-offset: 2px; }
+.answer-disclosure [data-testid="answer-full-text"] { overflow-wrap: anywhere; }
 .suggestion-review section { padding: 10px 4px; border-top: 1px solid var(--boundary); }
 .suggestion-review p { white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0; }
 .suggestion-review small { display: block; color: var(--ink-secondary); overflow-wrap: anywhere; }

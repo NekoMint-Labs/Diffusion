@@ -1096,6 +1096,8 @@ export const zh: Record<string, string> = {
   "Exploration trial · isolated from your Fields": "探索试用版 · 与已有 Field 数据分开",
   "Switch language": "切换语言",
   "Export notebook": "导出试用记录",
+  "Answer preview": "回答预览",
+  "Start a new blank trial": "清空并重新开始",
   "Demo mode: fixed examples, no model or web requests. Useful for trying the workflow only.": "演示模式：运行固定示例，不调用模型，也不联网。用于体验流程，不能据此判断模型效果。",
   "Live model mode: only explicit Run actions send requests. Web search is unavailable in this trial.": "真实模型模式：只有你点击运行才会发送请求。本试用版暂不支持联网搜索。",
   "The shared brief": "始终保留的总目标",

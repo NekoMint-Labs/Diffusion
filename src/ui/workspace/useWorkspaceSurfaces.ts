@@ -15,12 +15,11 @@ import { useTransientFocus } from './useTransientFocus.ts';
  * than in the Field, and a Crystal preview draft is presentation state that dies with its
  * surface. Nothing here mutates canonical Field content.
  */
-export function useWorkspaceSurfaces({ controller, field, diffuse, runtime, find }: {
+export function useWorkspaceSurfaces({ controller, field, diffuse, runtime }: {
     controller: ProjectController;
     field: { current: FieldHandle | null };
     diffuse: DiffuseSession;
     runtime: AIRuntime;
-    find: { reset(): void };
 }) {
     const [draft, setDraft] = useState<CrystalDraft | null>(null);
     const [historyScope, setHistoryScope] = useState<string[]>([]);
@@ -49,7 +48,6 @@ export function useWorkspaceSurfaces({ controller, field, diffuse, runtime, find
     function closeSurface(cancelRequest = true) {
         const state = useUI.getState();
         if (state.surface === 'find') {
-            find.reset();
             state.patch({ surface: 'none', returnPoint: null, relationId: null });
             transient.restore();
             return;
@@ -63,7 +61,9 @@ export function useWorkspaceSurfaces({ controller, field, diffuse, runtime, find
         }
         useUI.getState().patch({ surface: 'none', returnPoint: null, relationId: null });
         setDraft(null);
-        transient.restore(true);
+        // A command may open scoped writing as it closes this place. Its newly focused
+        // textarea owns the next gesture; forced restoration would blur and close it.
+        transient.restore();
     }
     return { transient, draft, setDraft, openSurface, closeSurface, historyScope, lineageId, diffuseScope, setDiffuseScope };
 }

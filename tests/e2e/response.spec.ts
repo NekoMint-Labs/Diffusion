@@ -1,17 +1,46 @@
 import { test, expect, type Page } from '@playwright/test';
 import type { ProjectState } from '../../src/core/model.ts';
+import { ProjectController } from '../../src/core/controller.ts';
+import { saveResponse } from '../../src/ui/workspace/response.ts';
 
-async function persistedThoughts(page: Page): Promise<ProjectState['thoughts']> {
-    return page.evaluate(() => new Promise<ProjectState['thoughts']>((resolve, reject) => {
+async function persistedProject(page: Page): Promise<ProjectState> {
+    return page.evaluate(() => new Promise<ProjectState>((resolve, reject) => {
         const opening = indexedDB.open('diffusion-explorer-v1');
         opening.onerror = () => reject(opening.error);
         opening.onsuccess = () => {
             const db = opening.result;
             const read = db.transaction('projects').objectStore('projects').get('demo');
             read.onerror = () => { db.close(); reject(read.error); };
-            read.onsuccess = () => { db.close(); resolve(read.result.thoughts); };
+            read.onsuccess = () => { db.close(); resolve(read.result); };
         };
     }));
+}
+
+async function persistedThoughts(page: Page): Promise<ProjectState['thoughts']> {
+    return (await persistedProject(page)).thoughts;
+}
+
+/** Build the already-saved starting state through the production response writer.
+ * The first test below separately covers creating and reloading a response through the UI. */
+async function persistResponseFixture(page: Page, text: string): Promise<string> {
+    await expect.poll(() => persistedThoughts(page)).toHaveProperty('unfinished');
+    const controller = new ProjectController(await persistedProject(page), async () => {});
+    const response = saveResponse(controller, text, ['unfinished'], { x: 950, y: 265 });
+    if (!response) throw new Error('Could not prepare the persisted response fixture');
+    await controller.flush();
+    await page.evaluate(project => new Promise<void>((resolve, reject) => {
+        const opening = indexedDB.open('diffusion-explorer-v1');
+        opening.onerror = () => reject(opening.error);
+        opening.onsuccess = () => {
+            const db = opening.result;
+            const transaction = db.transaction('projects', 'readwrite');
+            transaction.objectStore('projects').put(project);
+            transaction.oncomplete = () => { db.close(); resolve(); };
+            transaction.onerror = () => { db.close(); reject(transaction.error); };
+            transaction.onabort = () => { db.close(); reject(transaction.error); };
+        };
+    }), controller.getSnapshot().project);
+    return response.id;
 }
 
 const question = 'If the background fades, do we lose the context that made this matter?';
@@ -267,22 +296,22 @@ for (const [name, text, actionCount] of [
 
 for (const decision of ['ignore', 'claim'] as const) {
     test('continuing a persisted response sends its original question as background: ' + decision, async ({ page }) => {
+        // Provider choice is fixture setup, consumed by the persistence reload below.
+        // Keep this lineage workflow independent of the separately tested Settings navigation.
+        await page.addInitScript(() => {
+            const settings = JSON.parse(localStorage.getItem('diffusion-settings') ?? '{}');
+            localStorage.setItem('diffusion-settings', JSON.stringify({ ...settings, provider: 'gateway' }));
+        });
         const packets: import('../../src/core/semantics.ts').ContextPacket[] = [];
         await page.route('**/api/respond', async route => {
             packets.push(route.request().postDataJSON().packet);
             await route.fulfill({ json: { providerLabel: 'Continuation fixture / not live', mock: true, intents: [{ type: 'surface_possibility', text: 'An authored fixture for the continuation workflow.' }] } });
         });
-        await page.locator('[data-thought-id="unfinished"]').click();
-        await page.getByRole('button', { name: 'Respond to this question', exact: true }).click();
         const reply = 'I want to retain the context, but I am unsure which part matters.';
-        await page.getByRole('textbox', { name: 'Speak', exact: true }).fill(reply);
-        await page.getByRole('button', { name: 'Save response', exact: true }).click();
+        const responseId = await persistResponseFixture(page, reply);
         const response = page.locator('[data-thought-id]').filter({ hasText: reply });
-        await expect(response).toBeVisible();
-        const responseId = await response.getAttribute('data-thought-id');
         expect(packets).toHaveLength(0);
-        // This scenario starts from a persisted response; mounting alone does not prove the
-        // asynchronous repository write has committed before a page navigation.
+        // Verify the fixture's actual stored wording before the application reloads it.
         await expect.poll(() => page.evaluate(thoughtId => new Promise(resolve => {
             const opening = indexedDB.open('diffusion-explorer-v1');
             opening.onerror = () => resolve(null);
@@ -294,11 +323,8 @@ for (const decision of ['ignore', 'claim'] as const) {
             };
         }), responseId)).toBe(reply);
         await page.reload();
-        await page.getByTestId('global-more').click();
-        await page.getByTestId('global-menu').getByRole('menuitem', { name: 'Settings', exact: true }).click();
-        const { choose } = await import('./selects.ts');
-        await choose(page, 'provider-select', 'gateway');
-        await page.getByRole('button', { name: 'Return to Field', exact: true }).click();
+        await expect(response).toBeVisible();
+        await expect(response).toHaveAttribute('data-origin-scope', 'unfinished');
         await response.click();
         await page.getByTestId('scope-continue').click();
         await page.getByTestId('action-preview-run').click();

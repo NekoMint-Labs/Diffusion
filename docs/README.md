@@ -50,6 +50,7 @@ A passing browser E2E test is not proof of physical Windows acceptance, live-mod
 ## 4. Historical and exploratory records / 历史材料
 
 - [History index](history/README.md) preserves previous project phases.
+- [C desktop writing and tutorial polish](C_DESKTOP_POLISH_2026_10_25.md) records the October 25 review scope and pending interaction/native acceptance.
 - Dated `ISSUE*`, `ROUND2_*`, `DESKTOP_REVIEW_*` and exploratory proposals are background evidence, **not** current end-user instructions.
 - Current source and explicit active contracts take precedence when an old report conflicts with today's behavior. Investigate discrepancies rather than silently guessing.
 

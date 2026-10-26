@@ -88,3 +88,12 @@ Remote CI repair on 2026-10-25:
   production backgrounds and E2E gate. Runs: `40202375928` and `40202375936`.
 - This recorded result is for the code-and-test repair commit; this documentation update is a
   follow-up and will receive its own required PR checks.
+
+
+## Optional original-reading trial (2026-10-26)
+
+The follow-up `?readingTrial=1` path displays short originals directly and asks for an optional
+key point alongside the complete long answer in one generation. Every selected trial card keeps
+its original-reading action after Keep and reload. Display metadata is bounded, session-only
+and separate from canonical text. See [the trial guide](../../experiments/role-b-focus/IN_FIELD_TRIAL.md)
+and [delivery verification](../../experiments/role-b-focus/COMPACT_SINGLE_CALL_REPORT_20261026.md).

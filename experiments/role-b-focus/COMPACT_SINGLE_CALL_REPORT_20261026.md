@@ -51,3 +51,20 @@
 证据：results/kept-reader-build.log、results/kept-reader-browser.log及results/kept-reader/截图。4175服务所用dist已更新；未操作用户页面刷新和用户存储。
 
 文档更新首次经PowerShell管道调用apply_patch因UTF-8参数要求失败，文件未改变；随后用Node UTF-8读写完成。
+
+
+## PR交付基线复验（2026-10-26）
+
+用户确认修复后授权提交PR。为避免携带本地集成历史，以最新origin/feat/b-field-answer-preview（5ab6b20，PR 80）建立独立交付分支feat/b-compact-reading-single-call，仅移植本轮阅读试用改动。保留上游生成撤销、替换候选恢复逻辑及当前useThinkingService参数；原4175试用目录和用户数据未切换。
+
+- pnpm install --offline --frozen-lockfile：通过。
+- pnpm run build：应用类型检查及生产构建通过；保留既有大包提示。
+- pnpm test -- --maxWorkers=2：79文件729项通过（6.33秒）；此处记录实际命令，不依赖它是否将workers选项传递给runner。
+- pnpm run check:offline：通过。
+- ROLE_B_BASE_URL=http://127.0.0.1:4187，pnpm exec playwright test --config experiments/role-b-focus/playwright.trial.config.ts --reporter=list,json：阅读/预览10项通过（23.3秒）。
+- 同一配置按tests/e2e/generationUndo.spec.ts筛选：生成撤销4项通过（12.7秒）。两次均0 skip/flaky/unexpected，runner errors为空。
+- git diff origin/feat/b-field-answer-preview --check：通过，包含新增文件。
+
+只声称定向浏览器验证；完整浏览器套件交给PR CI。交付浏览器使用独立4187 origin与注入响应，没有读取用户凭据或调用真实模型，没有进行原生打包验收。截图按Playwright标准info.outputPath生成，CI运行后由既有工作流上传到诊断artifact；本地日志、备份及用户反馈图片未提交。当前试用默认关闭，保留readingTrial=1启用方式。
+
+交付过程原始问题：新文件首次进入Git后发现一处行末空格并修正；移植时runtime和Workspace出现两处文本冲突，按最新基线保留撤销及hook签名，完成上述复验。浏览器首次命令误用不存在的--test-match参数，在启动测试前退出，随后使用已有config正常运行，未调整断言或增加重试。应用内managed worktree工具因聊天根目录不在Git仓库而失败，改用仓库内git worktree add建立独立交付目录。

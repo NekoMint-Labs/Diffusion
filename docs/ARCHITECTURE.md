@@ -50,6 +50,17 @@ Prompts request a self-contained opening including material conditions and uncer
 limits do not prove that a real model selected the right key point. The Next notebook's raw context
 inspector is development-only and absent from production builds.
 
+The optional `?readingTrial=1` reader adds session-only display metadata to Field answers.
+Short originals display completely; a valid key point replaces a longer preview. An opt-in runtime
+response strategy requests the full answer and optional point together through `field-answer`,
+keeping the selected thinking depth. Normal semantic, permission, scope, cancellation and quality
+gates still apply; display metadata is stripped before Core and never persisted. A 24-entry cache
+is matched by card ID and full text. Keep, edits, continuation and exports use the full original.
+Every selected trial card retains its explicit original-reading action after Keep and reload.
+The reader shows related current question text, not a frozen request context or verified evidence.
+Manual extraction is explicit, bounded and cancellable. See
+[`experiments/role-b-focus/IN_FIELD_TRIAL.md`](../experiments/role-b-focus/IN_FIELD_TRIAL.md).
+
 ## Commands and history
 
 One command model (`src/ui/commands`) defines every semantic action once: id, localized label, aliases, platform-neutral shortcuts, contextual availability and one `run`. Menus, the palette, the keyboard router and the shortcut reference are projections of that registry, so no presentation owns business logic. An action may be reachable from the Field title, right-click, the Scope Hub, the palette and a shortcut while remaining a single definition.

@@ -1,5 +1,5 @@
 import { t } from '../shared/i18n.ts';
-import { id, type InputRange, type Point, type ThinkingActivityKind, type ThinkingOperation, type ThinkingOperationKind } from '../core/model.ts';
+import { id, type Ghost, type InputRange, type Point, type ThinkingActivityKind, type ThinkingOperation, type ThinkingOperationKind } from '../core/model.ts';
 import { permissionFor, type ContextPacket, type SemanticIntent, type UserIntent } from '../core/semantics.ts';
 import type { ProjectController } from '../core/controller.ts';
 import { compileContext, rebuildCapsule, type CompileOptions } from './context.ts';
@@ -228,6 +228,16 @@ export class AIRuntime {
 
     async run(kind: UserIntent['kind'], text: string, selection: string[], options: RunOptions = {}): Promise<RunResult> {
         const started = this.begin(operationKind(kind), selection, options.signal, options.activity ?? (kind === 'probe' || kind === 'organize' ? 'bridge' : kind === 'diffuse' || kind === 'angle' || kind === 'question' ? 'radiate' : kind === 'continue' ? 'unfold' : undefined));
+        const generationIds: string[] = [];
+        const displaced: Ghost[] = [];
+        const undoableGeneration = kind === 'continue' && !options.threadId && !options.runId;
+        const emissionOptions = undoableGeneration ? { ...options, onEmission: (key: string) => { generationIds.push(key); options.onEmission?.(key); } } : options;
+        let keptDuringGeneration = false;
+        // Keep can be undone before the last proposal arrives. Remember that commitment so
+        // completion cannot insert a generation step and erase the person's pending Redo Keep.
+        const stopTrackingKeep = undoableGeneration ? this.controller.subscribe(() => {
+            if (generationIds.some(key => this.controller.getSnapshot().project.thoughts[key])) keptDuringGeneration = true;
+        }) : () => {};
         let emitted = 0;
         let relationLabel = '';
         if (kind === 'probe') this.hooks.notice(t('Finding a relation...'));
@@ -333,7 +343,12 @@ export class AIRuntime {
                     }
                     if (!validScope() || !validContinuation()) throw new Error(t('The scope changed during reveal. Remaining possibilities were discarded.'));
                     const candidate = accepted[index];
-                    this.emit(candidate, packet, provenance, options, kind, index);
+                    const beforeGhosts = this.controller.getSnapshot().session.ghosts;
+                    this.emit(candidate, packet, provenance, emissionOptions, kind, index);
+                    if (undoableGeneration) {
+                        const after = this.controller.getSnapshot();
+                        displaced.push(...Object.values(beforeGhosts).filter(ghost => !after.session.ghosts[ghost.id] && !after.project.thoughts[ghost.id] && !generationIds.includes(ghost.id)));
+                    }
                     if (candidate.type === 'surface_relation') relationLabel = candidate.label;
                     if (trackSuggestions && (candidate.type === 'surface_possibility' || candidate.type === 'surface_question')) this.suggestions.remember(candidate.text);
                     emitted++;
@@ -345,6 +360,8 @@ export class AIRuntime {
             else if (kind === 'question') this.hooks.notice(t(response.mock ? 'Demo questions / no live model was used.' : 'Questions returned. Nothing was committed.'));
             else if (kind === 'organize') this.hooks.notice(t(response.mock ? 'Demo structure / no live model was used.' : 'A structure proposal is ready. Nothing was changed yet.'));
             else this.hooks.notice(t(response.mock ? 'Demo possibilities / no live model was used.' : 'Possibilities returned. No commitment was made on your behalf.'));
+            if (undoableGeneration && !keptDuringGeneration && !started.abort.signal.aborted && started.ticket === this.serial)
+                this.controller.recordGeneration(generationIds, displaced);
             this.settle(started, 'completed', emitted);
             return { status: 'completed', emitted };
         }
@@ -375,7 +392,7 @@ export class AIRuntime {
             this.settle(started, 'failed');
             return { status: 'failed', emitted, reason };
         }
-        finally { this.cleanup(started); }
+        finally { stopTrackingKeep(); this.cleanup(started); }
     }
 
     private emit(candidate: SemanticIntent, packet: ContextPacket, provider: string, options: RunOptions, action: UserIntent['kind'], index: number) {

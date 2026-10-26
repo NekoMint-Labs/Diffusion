@@ -1,6 +1,7 @@
 import type { ProjectController } from '../../core/controller.ts';
 import type { CommandContext, DiffusionCommand, SurfaceDeps } from './types.ts';
 import { selectedIds, selectedThoughts } from './types.ts';
+import { feedback } from '../workspace/feedback.ts';
 export interface AppDeps extends SurfaceDeps {
     controller: ProjectController;
     newThought(): void;
@@ -9,12 +10,20 @@ export interface AppDeps extends SurfaceDeps {
     deleteThoughts(ids: string[]): void;
     zoomOut(): void;
 }
-/** EDIT, FIND, VIEW and APP. Undo/Redo act on canonical state, never on a UI-local copy. */
+/** EDIT, FIND, VIEW and APP. Core owns both canonical and transient generation history. */
 export function appCommands(deps: AppDeps): DiffusionCommand[] {
     const anySelected = (context: CommandContext) => selectedThoughts(context).length > 0;
     const editCommands: DiffusionCommand[] = [
-        { id: 'undo', group: 'edit', label: 'Undo', keywords: ['revert', '撤销'], shortcuts: [{ key: 'z', mod: true }], available: context => context.canUndo, run: () => deps.controller.undo() },
-        { id: 'redo', group: 'edit', label: 'Redo', keywords: ['again', '重做'], shortcuts: [{ key: 'z', mod: true, shift: true }, { key: 'y', mod: true }], available: context => context.canRedo, run: () => deps.controller.redo() },
+        { id: 'undo', group: 'edit', get label() { return deps.controller.undoLabel; }, keywords: ['revert', '撤销'], shortcuts: [{ key: 'z', mod: true }], available: context => context.canUndo, run: () => {
+            const generation = deps.controller.undoLabel === 'Undo AI generation';
+            deps.controller.undo();
+            if (generation) feedback('generation-undone');
+        } },
+        { id: 'redo', group: 'edit', get label() { return deps.controller.redoLabel; }, keywords: ['again', '重做'], shortcuts: [{ key: 'z', mod: true, shift: true }, { key: 'y', mod: true }], available: context => context.canRedo, run: () => {
+            const generation = deps.controller.redoLabel === 'Redo AI generation';
+            deps.controller.redo();
+            if (generation) feedback('generation-restored');
+        } },
         { id: 'new-thought', group: 'edit', label: 'New thought', keywords: ['place', 'create', '新建思绪'], run: () => deps.newThought() },
         { id: 'duplicate-thought', group: 'edit', label: 'Duplicate Thought', keywords: ['copy', '复制思绪'], available: anySelected, run: context => deps.duplicateThoughts(selectedIds(context)) },
         { id: 'copy-text', group: 'edit', label: 'Copy Text', keywords: ['clipboard', '复制文本'], available: anySelected, run: context => deps.copyText(selectedIds(context)) },

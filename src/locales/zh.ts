@@ -1,5 +1,13 @@
 /* Product copy only. English source keys are the fallback dictionary. */
 export const zh: Record<string, string> = {
+    "Delete “{title}”?": "删除“{title}”？",
+    "Delete Field: {title}": "删除思绪场：{title}",
+    "Delete Field": "删除思绪场",
+    "Field deleted.": "已删除思绪场。",
+    "The Field could not be deleted. It is still stored on this device; try again.": "未能删除思绪场，它仍保存在此设备上。请重试。",
+    "This permanently deletes this Field and its saved content from this device. This cannot be undone. Export it first if you want a backup.": "此操作会永久删除此设备上的这个思绪场及其已保存内容，且无法撤销。如需备份，请先导出。",
+    "Other Fields and their shared references stay intact. Forks will no longer be able to return to this Field.": "其他思绪场及共用的参考文件会保留。分支将无法再返回这个思绪场。",
+    "You will enter another Field first, or a new empty Field if this is the last one.": "将先切换到另一个思绪场。如果这是最后一个，会先新建一个空白思绪场。",
     "Return to previous view": "返回刚才视图",
     "Table preview; expand to inspect the original passage.": "表格整理预览；展开可核对原始段落。",
     "Show original read passage": "展开原始阅读段落",

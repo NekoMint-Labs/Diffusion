@@ -21,7 +21,7 @@ export function SurfaceClose({ onClose }: {
         <kbd aria-hidden="true" className="surface-close-hint">{msg('Esc')}</kbd>
     </Button>;
 }
-export function Surface({ title, subtitle, level = 'split', anchor, onClose, children, actions, className, sharedLayoutId }: {
+export function Surface({ title, subtitle, level = 'split', anchor, onClose, children, actions, className, sharedLayoutId, focusBody = false }: {
     title: string;
     subtitle?: string;
     level?: SurfaceLevel;
@@ -31,6 +31,8 @@ export function Surface({ title, subtitle, level = 'split', anchor, onClose, chi
     actions?: ReactNode;
     className?: string;
     sharedLayoutId?: string;
+    /** Read-only text can receive keyboard scrolling without moving focus to a command. */
+    focusBody?: boolean;
 }) {
     const reduced = useReducedMotion();
     /** While a surface recedes it is a visual echo only: it leaves the accessibility tree and
@@ -96,7 +98,7 @@ export function Surface({ title, subtitle, level = 'split', anchor, onClose, chi
             <SurfaceClose onClose={onClose}/>
         </header>
         {actions && <div className="surface-actions">{actions}</div>}
-        <div className="surface-body">{children}</div>
+        <div className="surface-body" tabIndex={focusBody ? 0 : undefined} data-autofocus={focusBody ? true : undefined} role={focusBody ? 'region' : undefined} aria-label={focusBody ? title : undefined}>{children}</div>
     </>;
     return <FloatingPortal>
         {/* Transparent, temporary input ownership, not a visual Focus overlay.

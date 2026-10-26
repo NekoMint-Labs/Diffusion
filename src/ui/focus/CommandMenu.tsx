@@ -137,7 +137,7 @@ export function CommandMenu({ anchor, point, rows, moreRows = [], scope, note, p
                                 </Menu.SubmenuTrigger>
                                 <Menu.Portal><Menu.Positioner side="right" align="start" sideOffset={3} collisionPadding={16} collisionAvoidance={{ side: 'flip', align: 'shift', fallbackAxisSide: 'end' }} className="command-menu-positioner" positionMethod="fixed">
                                     <Menu.Popup ref={secondaryPopup} className="command-menu-content command-menu-secondary" data-secondary-panel="true" data-testid={`${scope}-more-menu`} aria-label={t(scope === 'field' ? 'Field actions' : 'More thought actions')}>
-                                        {moreRows.map(row => <Menu.Item key={row.id} className="command-menu-item" data-command={row.id} data-separator={row.separator || undefined} label={row.label} onClick={activate(row)}>
+                                        {moreRows.map(row => <Menu.Item key={row.id} className="command-menu-item" data-command={row.id} data-separator={row.separator || undefined} aria-keyshortcuts={row.keyshortcuts} label={row.label} onClick={activate(row)}>
                                             <span className="command-menu-copy"><span>{row.label}</span>{row.description && <small>{row.description}</small>}</span>{row.hint && <kbd aria-hidden="true">{row.hint}</kbd>}
                                         </Menu.Item>)}
                                     </Menu.Popup>

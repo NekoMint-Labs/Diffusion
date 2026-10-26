@@ -121,10 +121,12 @@ test('Ctrl K replaces the menu with the command palette; a delayed menu callback
 
 for (const action of ['palette', 'escape', 'outside'] as const) {
     test(`a pending menu yields to ${action} before its first animation frame`, async ({ page }) => {
+        // Install before application timers exist and use one controlled clock. A host
+        // Date.now() + 1s deadline can already be in the browser clock's past under load.
+        await page.clock.install({ time: new Date('2026-01-01T08:00:00Z') });
         await page.goto('/demo?locale=en');
         await expect(page.locator('[data-thought-id="attention"]')).toBeVisible();
-        await page.clock.install();
-        await page.clock.pauseAt(new Date(Date.now() + 1000));
+        await page.clock.pauseAt(new Date('2026-01-01T10:00:00Z'));
         // Freeze paint to exercise the interval between the click and the deferred menu mount.
         await page.getByTestId('global-more').focus();
         await page.getByTestId('global-more').dispatchEvent('click');

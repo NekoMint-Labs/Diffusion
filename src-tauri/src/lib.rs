@@ -1,6 +1,7 @@
 mod ai_request;
 mod credentials;
 mod discovery;
+mod discovery_args;
 mod discovery_env;
 mod discovery_process_env;
 mod native_ai;

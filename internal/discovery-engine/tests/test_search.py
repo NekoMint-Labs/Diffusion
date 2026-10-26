@@ -24,6 +24,15 @@ STABLE_ERROR_TYPES = {
 
 
 class OneSourceTests(unittest.IsolatedAsyncioTestCase):
+    async def test_core_search_defaults_to_five_results_without_a_policy(self):
+        exa = FakeSearch("exa", ok(*[candidate(f"https://a.example/{index}") for index in range(7)]))
+        outcome = await core_search("  a query  ", registry=registry(exa))
+        self.assertEqual(exa.calls, [("a query", 5)])
+        self.assertEqual(len(outcome.ranked), 5)
+        self.assertEqual(outcome.providers, ("exa",))
+        self.assertFalse(outcome.failed)
+        self.assertFalse(outcome.degraded)
+
     async def test_one_configured_source_is_enough(self):
         exa = FakeSearch("exa", ok(candidate("https://a.example/1", "A"), candidate("https://a.example/2", "B")))
         outcome = await core_search("a query", RetrievalPolicy(), registry=registry(exa))
@@ -102,6 +111,16 @@ class DegradationTests(unittest.IsolatedAsyncioTestCase):
 
 
 class NoSourceTests(unittest.IsolatedAsyncioTestCase):
+    async def test_empty_core_query_returns_no_results_without_calling_a_source(self):
+        exa = FakeSearch("exa", ok(candidate("https://a.example/1")))
+        outcome = await core_search("   ", registry=registry(exa))
+        self.assertEqual(outcome.ranked, ())
+        self.assertEqual(outcome.providers, ())
+        self.assertEqual(outcome.attempts, ())
+        self.assertTrue(outcome.failed)
+        self.assertFalse(outcome.degraded)
+        self.assertEqual(exa.calls, [])
+
     async def test_no_configured_source_is_an_honest_configuration_failure(self):
         payload = await run_search("q", registry=registry())
         self.assertEqual(payload["status"], "failed")

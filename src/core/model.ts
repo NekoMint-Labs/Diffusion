@@ -185,7 +185,7 @@ export interface Phenomenon {
     runId?: string;
     structureId?: string;
 }
-export type ThinkingOperationKind = 'ingest' | 'probe' | 'ask' | 'bring' | 'verify' | 'diffuse' | 'continue' | 'angle' | 'question' | 'ask' | 'organize';
+export type ThinkingOperationKind = 'ingest' | 'probe' | 'ask' | 'bring' | 'verify' | 'diffuse' | 'continue' | 'angle' | 'question' | 'organize';
 export type ThinkingActivityKind = 'unfold' | 'radiate' | 'bridge' | 'anchor' | 'arrive';
 export type ThinkingOperationPhase = 'pending' | 'completed' | 'failed' | 'cancelled';
 export interface ThinkingOperation {

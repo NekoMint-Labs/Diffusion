@@ -48,13 +48,15 @@ git diff --check
 
 ### `pnpm run typecheck`
 
-Runs dependency-backed TypeScript checking for the application. A syntax-only transpile or Core-only check is not a substitute.
+Runs dependency-backed TypeScript checking for the application, including unused locals and
+parameters. Remove unused bindings rather than suppressing the check; a public contract may still
+need an intentionally unused parameter. A syntax-only transpile or Core-only check is not a substitute.
 
 ### `pnpm run check:offline`
 
 Runs the repository's network-free contract gate:
 
-- syntax transpilation and local-import/config validation;
+- syntax transpilation and local-import/config validation (generated build and local evidence directories are excluded);
 - React-independent Core typechecking;
 - EN/ZH locale coverage;
 - independent Node contract tests;
@@ -131,6 +133,19 @@ pnpm run check:discovery
 - `check:discovery` verifies that the generated sidecar matches current source.
 
 These checks stay separate from `check:offline` because the normal JavaScript/TypeScript gate must not require Python or PyInstaller. Contract tests in `tests/offline/` and `tests/unit/` additionally enforce the browser/native discovery credential boundary.
+
+CI has a separate Python job. For local setup, create a Python 3.10+ virtual environment outside
+the source tree, activate it, and install `internal/discovery-engine` with pip. The test runner
+prefers the sidecar build environment when usable, then tries system Python. The Python CI job
+also runs source-export fixtures:
+
+```sh
+python -m unittest discover -s tests/tooling -p 'test_*.py'
+```
+
+These fixtures create temporary Git repositories and verify tracked-file scope, current working
+bytes, version naming and archive restoration. Maintenance commands and optional screenshot
+inputs are described in [scripts/README.md](../scripts/README.md).
 
 ## Native/Tauri verification
 

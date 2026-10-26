@@ -27,7 +27,6 @@ RETRY_MULTIPLIER = 1.0
 RETRY_MAX_WAIT = 10
 
 DEFAULT_MODE = "balanced"
-ALLOWED_MODES = ("fast", "balanced", "research")
 
 # Every variable the engine reads. Used for redaction: whatever the environment
 # holds under these names is a secret that must never reach machine output.
@@ -147,4 +146,4 @@ class Config:
 
 config = Config()
 
-__all__ = ["ALLOWED_MODES", "Config", "DEFAULT_MODE", "RETRY_MAX_ATTEMPTS", "RETRY_MAX_WAIT", "RETRY_MULTIPLIER", "config"]
+__all__ = ["Config", "DEFAULT_MODE", "RETRY_MAX_ATTEMPTS", "RETRY_MAX_WAIT", "RETRY_MULTIPLIER", "config"]

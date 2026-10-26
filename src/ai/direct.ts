@@ -1,6 +1,6 @@
 import { CORE_CONTRACT } from '../core/semantics.ts';
 import type { AIResponse, ContextPacket, UserIntent } from '../core/semantics.ts';
-import { UNKNOWN_CAPABILITIES, THINKING_DEPTHS, type AIProvider, type ConnectionCheck, type ThinkingCapabilities, type ThinkingDepth, type StructuredRequest, type StructuredResponse } from './contracts.ts';
+import { THINKING_DEPTHS, type AIProvider, type ConnectionCheck, type ThinkingCapabilities, type ThinkingDepth, type StructuredRequest, type StructuredResponse } from './contracts.ts';
 import { ThinkingError, classifyFailure } from './errors.ts';
 import { semanticInstructions, parseSemanticText } from './prompt.ts';
 import { DIRECT_PROVIDERS, outputBudget, reasoningEffort, structuredDepth, type DirectProviderId, type ProviderDescriptor, type WireProtocol } from './providers.ts';
@@ -199,6 +199,3 @@ export class DirectAIProvider implements AIProvider {
         return this.send.send(request, this.combine(signal));
     }
 }
-/** Provider-table access for the Settings surface, so a label or a key hint is never duplicated in
- * the UI. */
-export function descriptorFor(id: DirectProviderId): ProviderDescriptor { return DIRECT_PROVIDERS[id]; }

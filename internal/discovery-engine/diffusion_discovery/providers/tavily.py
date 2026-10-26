@@ -60,9 +60,6 @@ class TavilySearchProvider(BaseSearchProvider):
         self.timeout = timeout
         self.keyless = keyless
 
-    def get_provider_name(self) -> str:
-        return "Tavily"
-
     async def search(self, query: str, num_results: int = 5, *, ctx=None) -> ProviderResult:
         ctx = ctx or current_context()
         endpoint = f"{self.api_url.rstrip('/')}/search"

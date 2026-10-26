@@ -49,28 +49,9 @@ export function cubicPoints(ease: EaseRole): Cubic {
     const [a, b, c, d] = MOTION_EASE[ease];
     return [a, b, c, d];
 }
-/** The CSS spelling of a role curve, so a CSS transition and a Motion transition can share one. */
-export function cubicBezierCSS(ease: EaseRole): string {
-    return `cubic-bezier(${MOTION_EASE[ease].join(',')})`;
-}
 export function roleTransition(role: DurationRole, reduced: boolean, ease: EaseRole = 'enter'): RoleTransition {
     return { duration: reduced ? 0 : MOTION_DURATION[role], ease: cubicPoints(reduced ? 'enter' : ease) };
 }
 /** A spring for a place that owns input. Arrival only; it is interruptible and not bouncy,
  * so a window feels placed rather than dropped. */
 export const MOTION_PANEL_SPRING = { type: 'spring', stiffness: 420, damping: 38, mass: 0.9 } as const;
-
-/** The legacy duration names the v0.3 codebase used, kept so call sites do not have to change
- * in the same commit that introduces the roles. Each one now points at a role. */
-export const motionDuration = {
-    instant: MOTION_DURATION.instant,
-    micro: MOTION_DURATION.micro,
-    surface: MOTION_DURATION.surface,
-    recede: MOTION_DURATION.micro,
-    transform: MOTION_DURATION.spatial,
-    attention: MOTION_DURATION.control,
-    representation: MOTION_DURATION.surface,
-    panel: MOTION_DURATION.settle,
-    title: MOTION_DURATION.settle,
-    arrival: MOTION_DURATION.signature,
-} as const;

@@ -66,7 +66,7 @@ export function showRequestFailure(failure: ThinkingFailure, text: string): void
  * what did not succeed, whether the work is still safe, and what to do next. Like `failureText`, the
  * sentence is resolved through the translator at the moment it is shown; the raw cause is kept for a
  * developer in a single log line and never becomes the UI text. */
-export type DeviceFailure = 'save' | 'read' | 'create' | 'duplicate' | 'export' | 'import' | 'storage' | 'link' | 'restore' | 'original';
+export type DeviceFailure = 'save' | 'read' | 'create' | 'duplicate' | 'delete' | 'export' | 'import' | 'storage' | 'link' | 'restore' | 'original';
 
 export function deviceFailureText(kind: DeviceFailure): string {
     switch (kind) {
@@ -74,6 +74,7 @@ export function deviceFailureText(kind: DeviceFailure): string {
         case 'read': return t('That Field could not be read from this device. Nothing was changed and the Field you were in is still open; try again or choose another Field.');
         case 'create': return t('A new Field could not be created. Nothing was changed and the current Field is still open; try again.');
         case 'duplicate': return t('The copy could not be created. The current Field is unchanged; try again.');
+        case 'delete': return t('The Field could not be deleted. It is still stored on this device; try again.');
         case 'export': return t('The export could not be prepared. The Field is unchanged; try again.');
         case 'import': return t('That reference could not be brought into the Field. Nothing in the Field was changed; try again.');
         case 'storage': return t('Local storage is unavailable, so this session is not being saved. The work stays on screen until the window closes; export it to keep it.');

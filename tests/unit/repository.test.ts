@@ -1,5 +1,5 @@
 import 'fake-indexeddb/auto';
-import { afterEach, beforeEach, describe, it, expect } from 'vitest';
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { DexieRepository } from '../../src/storage/dexie.ts';
 import { demoProject } from '../../src/core/demo.ts';
 import { userEvent } from '../../src/core/events.ts';
@@ -8,6 +8,61 @@ let repository: DexieRepository;
 beforeEach(() => { repository = new DexieRepository('diffusion-test-' + crypto.randomUUID()); });
 afterEach(async () => { await repository.deleteDatabase(); repository.close(); });
 describe('actual Dexie repository with fake IndexedDB', () => {
+    it('deletes a Field without changing its duplicate or shared original bytes', async () => {
+        const project = demoProject();
+        project.sources.shared = { id: 'shared', title: 'Reference', mime: 'text/plain', status: 'ready', excerpt: 'read', inspected: 'All', provenance: {}, originalKey: 'shared-bytes' };
+        project.sources.private = { ...project.sources.shared, id: 'private', originalKey: 'private-bytes' };
+        const copy = structuredClone({ ...project, id: 'copy' });
+        delete copy.sources.private;
+        await repository.saveProject(project);
+        await repository.saveProject(copy);
+        await repository.saveOriginal('shared-bytes', new Blob(['shared']));
+        await repository.saveOriginal('private-bytes', new Blob(['private']));
+        await repository.deleteProject(project.id);
+        expect(await repository.loadProject(project.id)).toBeNull();
+        expect(await repository.wasProjectDeleted(project.id)).toBe(true);
+        expect(await repository.loadProject(copy.id)).toEqual(copy);
+        expect(await (await repository.getOriginal('shared-bytes'))?.text()).toBe('shared');
+        expect(await repository.getOriginal('private-bytes')).toBeUndefined();
+        await repository.deleteProject(copy.id);
+        expect(await repository.getOriginal('shared-bytes')).toBeUndefined();
+    });
+    it('rejects a late save from another repository connection after deletion and reopen', async () => {
+        const name = 'diffusion-deletion-' + crypto.randomUUID();
+        const first = new DexieRepository(name);
+        let second = new DexieRepository(name);
+        try {
+            const project = demoProject();
+            await first.saveProject(project);
+            const stale = (await second.loadProject(project.id))!;
+            await first.deleteProject(project.id);
+            second.close(); second = new DexieRepository(name);
+            await expect(second.saveProject(stale)).rejects.toThrow('deleted');
+            expect(await second.loadProject(project.id)).toBeNull();
+            expect(await second.listProjects()).toEqual([]);
+        } finally { second.close(); await first.deleteDatabase(); first.close(); }
+    });
+    it('rolls back the Field, original bytes and deletion marker together on storage failure', async () => {
+        const name = 'diffusion-delete-rollback-' + crypto.randomUUID();
+        const isolated = new DexieRepository(name);
+        const project = demoProject();
+        project.sources.s = { id: 's', title: 'Reference', mime: 'text/plain', status: 'ready', excerpt: '', inspected: '', provenance: {}, originalKey: 'bytes' };
+        try {
+            await isolated.saveProject(project);
+            await isolated.saveOriginal('bytes', new Blob(['original']));
+            // Failure inside the actual deletion transaction, after projects.delete has run.
+            const put = IDBObjectStore.prototype.put;
+            const fault = vi.spyOn(IDBObjectStore.prototype, 'put').mockImplementation(function (this: IDBObjectStore, value, key) {
+                if (this.name === 'deletedProjects') throw new Error('Injected tombstone write failure');
+                return key === undefined ? put.call(this, value) : put.call(this, value, key);
+            });
+            try { await expect(isolated.deleteProject(project.id)).rejects.toThrow(); }
+            finally { fault.mockRestore(); }
+            expect(await isolated.loadProject(project.id)).toEqual(project);
+            expect(await isolated.wasProjectDeleted(project.id)).toBe(false);
+            expect(await (await isolated.getOriginal('bytes'))?.text()).toBe('original');
+        } finally { await isolated.deleteDatabase(); isolated.close(); }
+    });
     it('saves and reloads canonical Thought state', async () => {
         const project = demoProject();
         await repository.saveProject(project);

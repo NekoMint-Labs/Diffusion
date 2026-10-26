@@ -3,12 +3,6 @@ import type { ProjectController } from '../../core/controller.ts';
 import { useUI } from '../store.ts';
 import { MOTION_DURATION } from './tokens.ts';
 
-/** The product vocabulary for motion. These names describe presentation, never semantic truth. */
-export const SPATIAL_GRAMMAR = {
-    create: 'emerge', decompose: 'unfold', explore: 'radiate', relate: 'bridge', verify: 'anchor',
-    recall: 'surface', bring: 'arrive', crystallize: 'converge', reject: 'dissolve', commit: 'settle',
-} as const;
-
 export type SpatialTransitionKind = 'converge' | 'dissolve' | 'settle' | 'arrive';
 
 /** Request-owned local transition. A late timer can only clear the transition it created. */

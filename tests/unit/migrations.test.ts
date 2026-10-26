@@ -5,6 +5,24 @@ import { Database } from '../../src/storage/dexie.ts';
 import { demoProject } from '../../src/core/demo.ts';
 
 describe('actual Dexie v1 -> current upgrade transaction', () => {
+    it('adds deletion markers to a v3 database without rewriting existing content or attachments', async () => {
+        const name = 'diffusion-migrate-v3-' + crypto.randomUUID();
+        const legacy = new Dexie(name);
+        legacy.version(3).stores({ projects: 'id,updatedAt', originals: 'key' });
+        const project = demoProject();
+        project.inputs.raw = { id: 'raw', text: 'Exact authored input', createdAt: 1 };
+        await legacy.table('projects').put(project);
+        await legacy.table('originals').put({ key: 'bytes', data: new Blob(['retained']) });
+        legacy.close();
+        const current = new Database(name);
+        try {
+            await current.open();
+            expect(current.verno).toBe(4);
+            expect(await current.projects.get(project.id)).toEqual(project);
+            expect(await current.deletedProjects.count()).toBe(0);
+            expect(await (await current.originals.get('bytes'))?.data.text()).toBe('retained');
+        } finally { current.close(); await Dexie.delete(name); }
+    });
     it('retains v1 projects, original bytes, positions and scope while adding versioned state', async () => {
         const name = 'diffusion-migrate-' + crypto.randomUUID();
         const legacy = new Dexie(name);
@@ -18,7 +36,8 @@ describe('actual Dexie v1 -> current upgrade transaction', () => {
         const current = new Database(name);
         try {
             await current.open();
-            expect(current.verno).toBe(3);
+            expect(current.verno).toBe(4);
+            expect(await current.deletedProjects.count()).toBe(0);
             const recovered = await current.projects.get(original.id);
             expect(recovered?.thoughts.attention.life).toBe('peripheral');
             expect(recovered?.inputs).toEqual({});

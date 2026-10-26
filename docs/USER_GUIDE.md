@@ -2,13 +2,13 @@
 
 [English README](../README.md) · [简体中文指南](USER_GUIDE.zh-CN.md) · [Documentation index](README.md) · [Downloads](https://github.com/NekoMint-Labs/Diffusion/releases)
 
-This guide follows the **current interface and test-backed interaction paths**. Screens and wording can change between preview builds. Where a feature depends on a real provider, network, or native device, that limitation is stated rather than assumed away.
+This guide follows the **current interface and test-backed interaction paths**. Screens and wording can change between versions. Where a feature depends on a real provider, network, or native device, that limitation is stated rather than assumed away.
 
 ## 1. Your first Field
 
 A **Field** is one local thinking workspace. A **Thought** is something you wrote or explicitly kept. A **Ghost** is a provisional suggestion; selecting or moving it is not acceptance. A **Crystal** is a more settled statement you confirm. A **Source** supplies reference material but is not the center of the workspace.
 
-1. Install a Windows x64 preview from [Releases](https://github.com/NekoMint-Labs/Diffusion/releases), or use the [web development build](../README.md#run-the-web-development-build).
+1. Install the Windows x64 build from the [v0.3.16 stable release](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16), or use the [web development build](../README.md#run-the-web-development-build).
 2. On first entry, follow **First Field Tutorial** if offered. It walks through writing, moving, panning, selecting, exploring a simulated suggestion, and keeping it. **No live model is called during the tutorial.**
 3. Use the writing area to enter one unfinished statement, then press **Enter**. **Shift+Enter** adds a line break instead. You can also **double-click blank Field space** to create a Thought at a chosen position.
 4. Drag the Thought to move it. Drag blank space to pan the camera; scroll to zoom. Spatial location is your choice, not an AI-generated layout.
@@ -84,6 +84,14 @@ keep their normal typing Undo, and temporary generations/Undo history are not sa
 
 A Field is stored **on this device**. Click the **Field title** to access **Rename Field**, **New Field**, or **Open Field…**. The Field menu's **More** contains **Duplicate Field**, **Export**, **Export as Markdown**, **Import / Restore**, **How did this form?**, and Fork actions. Switching opens another stored Field rather than replacing the current one.
 
+The Field-management button beside the title opens the same **Open Field** list. Use **New Field**
+for an independent empty space, or **Duplicate current Field** to copy its saved Thoughts, Crystals,
+relations and layout; rename the copy from its title menu. Editing the copy does not edit the original.
+Each row also offers **Delete**, followed by a confirmation naming that Field. Deletion is permanent
+and cannot be undone: cancel and export the Field first if you need a backup. Other Fields and shared
+reference files remain intact; a Fork cannot return to a deleted parent. Deleting the current Field
+first enters another stored Field, or creates an empty one if it is the last Field.
+
 Use **Find in Field** (`Ctrl+F`) to locate existing work. If Find or a compact overview has moved the camera to reveal a result, ordinary close stays where you are; use the visible **Return** control when you want the earlier view and selection back. This is not the same as undoing a Thought edit.
 
 If a source, relation, or child is not fully visible at a distant zoom level, use the compact reading or overview controls before assuming the content was deleted. Zoom and branch presentation do not rewrite Thought coordinates.
@@ -148,7 +156,7 @@ The user interface supports **English and Simplified Chinese**. If an advanced, 
 | I can't find a Thought | Use **Find in Field** or the compact overview; content may simply be hidden at the current scale or behind a folded branch. |
 | An old Field appears missing after upgrading | **Do not clear app data.** Preserve the installation/storage first and use a prior JSON export if available. The cause of the reported migration issue has not been confirmed. |
 | Do I need the AI/API key to start? | No. Manual Field operations work with **AI Off**. |
-| Is 0.3.16 a stable release? | No: the available 0.3.16 build is a **preview**. Check the [Releases page](https://github.com/NekoMint-Labs/Diffusion/releases) for the actual state. |
+| Is 0.3.16 a stable release? | **Yes.** Checked on October 21, 2026: [v0.3.16](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16) was published as a stable release on October 16, 2026. The backup and verification limitations in this guide still apply. |
 
 For a reproducible bug, include the app/release version, platform, steps, expected/actual behavior, and relevant non-sensitive logs or screenshots in an [issue](https://github.com/NekoMint-Labs/Diffusion/issues). **Never share provider keys or private content.**
 

@@ -187,6 +187,91 @@ async function insideViewport(page: Page, locator: Locator) {
     expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
 }
 
+for (const locale of ['en', 'zh']) {
+    test(`deleting the last Field requires confirmation and reopens an independent empty Field: ${locale}`, async ({ page }, testInfo) => {
+        await page.setViewportSize({ width: 720, height: 720 });
+        await boot(page, locale, 110, locale === 'zh' ? 'dark' : 'light');
+        const [original] = await stored(page);
+        let dialog = await open(page);
+        const remove = dialog.locator(`[data-delete-field="${original.id}"]`);
+        await remove.click();
+        const confirmation = page.getByTestId('field-delete-confirmation');
+        const cancel = confirmation.getByRole('button', { name: locale === 'zh' ? '取消' : 'Cancel', exact: true });
+        await expect(cancel).toBeFocused();
+        expect(await stored(page)).toEqual([original]);
+        await cancel.click();
+        await expect(remove).toBeFocused();
+        await remove.click();
+        await page.keyboard.press('Escape');
+        await expect(page.getByRole('dialog')).toHaveCount(0);
+        expect(await stored(page)).toEqual([original]);
+        dialog = await open(page);
+        await dialog.locator(`[data-delete-field="${original.id}"]`).click();
+        await insideViewport(page, confirmation);
+        const screenshot = testInfo.outputPath('field-delete-confirmation.png');
+        await page.screenshot({ path: screenshot });
+        await testInfo.attach('Delete confirmation', { path: screenshot, contentType: 'image/png' });
+        await confirmation.getByRole('button', { name: locale === 'zh' ? '删除思绪场' : 'Delete Field', exact: true }).click();
+        await expect(page.getByRole('dialog')).toHaveCount(0);
+        await expect.poll(async () => (await stored(page)).map(p => p.id)).not.toContain(original.id);
+        const [empty] = await stored(page);
+        expect(empty.id).not.toBe(original.id);
+        expect(empty.thoughts).toEqual({});
+        expect(await page.evaluate(() => localStorage.getItem('diffusion-active-project'))).toBe(empty.id);
+        await page.goto(`/?locale=${locale}`);
+        await expect(page.getByTestId('field')).toBeVisible();
+        expect((await stored(page)).map(p => p.id)).toEqual([empty.id]);
+    });
+}
+
+test('deleting an inactive Field preserves the current duplicate and falls back from a stale startup ID', async ({ page }) => {
+    await boot(page);
+    const [original] = await stored(page);
+    let dialog = await open(page);
+    await dialog.getByRole('button', { name: 'Duplicate current Field', exact: true }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    const copyId = (await page.evaluate(() => localStorage.getItem('diffusion-active-project')))!;
+    const copy = (await stored(page)).find(p => p.id === copyId)!;
+    dialog = await open(page);
+    await dialog.locator(`[data-delete-field="${original.id}"]`).click();
+    await page.getByTestId('field-delete-confirmation').getByRole('button', { name: 'Delete Field', exact: true }).click();
+    await expect(dialog.locator('.field-list li')).toHaveCount(1);
+    await expect(dialog.locator('[aria-current="true"]')).toContainText(copy.title);
+    expect((await stored(page))[0]).toEqual(copy);
+    await page.evaluate(oldId => localStorage.setItem('diffusion-active-project', oldId), original.id);
+    await page.goto('/?locale=en');
+    await expect(page.getByTestId('field-title')).toHaveText(copy.title);
+    expect((await stored(page))[0]).toEqual(copy);
+});
+
+for (const failure of ['replacement-save', 'delete']) {
+    test(`a ${failure} failure does not delete the original Field`, async ({ page }) => {
+        await boot(page);
+        const [original] = await stored(page);
+        await page.evaluate(failure => {
+            if (failure === 'replacement-save') {
+                const put = IDBObjectStore.prototype.put;
+                IDBObjectStore.prototype.put = function (value, key) {
+                    if (this.name === 'projects' && value.id !== 'demo') throw new Error('Injected replacement save failure');
+                    return key === undefined ? put.call(this, value) : put.call(this, value, key);
+                };
+            } else {
+                const remove = IDBObjectStore.prototype.delete;
+                IDBObjectStore.prototype.delete = function (key) {
+                    if (this.name === 'projects' && key === 'demo') throw new Error('Injected deletion failure');
+                    return remove.call(this, key);
+                };
+            }
+        }, failure);
+        const dialog = await open(page);
+        await dialog.locator(`[data-delete-field="${original.id}"]`).click();
+        await page.getByTestId('field-delete-confirmation').getByRole('button', { name: 'Delete Field', exact: true }).click();
+        await expect(page.locator('.notice[data-tone="error"]')).toContainText('could not be deleted');
+        expect((await stored(page)).find(p => p.id === original.id)).toEqual(original);
+        if (failure === 'replacement-save') await expect(page.getByTestId('field-title')).toHaveText(original.title);
+    });
+}
+
 for (const [width, locale, scale, theme] of [[1280, 'en', 100, 'light'], [720, 'zh', 110, 'dark'], [360, 'zh', 120, 'light']] as const) {
     test(`entry and existing surface fit ${width}px / ${locale} / ${scale}%`, async ({ page }, testInfo) => {
         await page.setViewportSize({ width, height: 720 });

@@ -2,7 +2,7 @@
 
 [中文 README](../README.zh-CN.md) · [English guide](USER_GUIDE.md) · [文档索引](README.md) · [下载地址](https://github.com/NekoMint-Labs/Diffusion/releases)
 
-这份指南按照**当前界面与已有交互测试**整理。不同预览包的界面和文案可能有所不同；需要真实模型、联网或原生 Windows 环境的功能，会明确说明限制，不把测试模拟当成正式能力。
+这份指南按照**当前界面与已有交互测试**整理。不同版本的界面和文案可能有所不同；需要真实模型、联网或原生 Windows 环境的功能，会明确说明限制，不把测试模拟当成正式能力。
 
 ## 一、从第一个 Field 开始
 
@@ -15,7 +15,7 @@
 
 第一遍可以这样操作：
 
-1. 从 [Releases](https://github.com/NekoMint-Labs/Diffusion/releases) 下载 Windows x64 预览包；开发者也可以使用 [Web 开发环境](../README.zh-CN.md#从源码运行-web-开发环境)。
+1. 从 [v0.3.16 稳定版](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16) 下载 Windows x64 安装包；开发者也可以使用 [Web 开发环境](../README.zh-CN.md#从源码运行-web-开发环境)。
 2. 首次进入时，按提示完成 **First Field Tutorial（新手教程）**：写下想法、移动、平移视野、选择、查看模拟建议并确认留下。**教程不会调用真实模型。**
 3. 在输入区写一句尚未想明白的话，按 **Enter** 提交；**Shift+Enter** 用于换行。也可以**双击 Field 空白处**在指定位置创建 Thought。
 4. 拖动 Thought 改变位置；拖动空白区域平移整个视野；滚轮用于缩放。软件不会未经允许自动整理你的布局。
@@ -149,9 +149,9 @@ JSON 包含受支持的正式项目状态，但**不包含尚未 Keep 的 Ghost�
 | 缩放后找不到某个 Thought | 使用 Field 查找、概览或分支展开，内容可能只是暂时未完整显示。 |
 | 升级后旧 Field 看不见 | **先不要清空应用数据。** 保存现有环境，并尝试用之前的 JSON 备份恢复；升级异常原因尚未确认。 |
 | 开始使用必须有 API Key 吗？ | **不需要。** 手动 Field 功能在 AI Off 下也能用。 |
-| 0.3.16 已经是稳定版吗？ | **不是。** 当前 0.3.16 是预览包，实际状态以 [Releases](https://github.com/NekoMint-Labs/Diffusion/releases) 为准。 |
+| 0.3.16 已经是稳定版吗？ | **是。** 2026 年 10 月 21 日核查：[v0.3.16](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16) 已于 10 月 16 日作为稳定版发布。本指南中的备份要求和验收边界仍然适用。 |
 
-如果要反馈问题，请在 [GitHub Issues](https://github.com/NekoMint-Labs/Diffusion/issues) 中写明软件/预览版版本、操作系统、复现步骤、预期与实际表现，并附上**不含隐私和密钥**的必要截图或日志。
+如果要反馈问题，请在 [GitHub Issues](https://github.com/NekoMint-Labs/Diffusion/issues) 中写明软件版本、操作系统、复现步骤、预期与实际表现，并附上**不含隐私和密钥**的必要截图或日志。
 
 ---
 

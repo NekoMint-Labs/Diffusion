@@ -1,6 +1,6 @@
 import { AttentionTracker } from './attention.ts';
 import { type ProjectState, type SessionState, type Ghost, type Phenomenon, type StructureProposal, type Thought, type InputRecord, type Point, emptySession, id } from './model.ts';
-import { type Command, type DomainEvent, userEvent } from './events.ts';
+import { type Command, type DomainEvent } from './events.ts';
 import { reduceProject } from './reducer.ts';
 export interface CoreSnapshot {
     project: ProjectState;

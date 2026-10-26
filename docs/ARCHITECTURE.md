@@ -144,7 +144,14 @@ The provider may return possibilities. It never moves, deletes or edits a Though
 
 ## Persistence and attention
 
-The ProjectRepository boundary is unchanged. Dexie still uses the original database name and snapshot/original tables, now with a version-3 in-place migration that adds durable raw-input records without changing portable project `schemaVersion: 1`. Pure migration runs on load too, covering imported legacy exports after a database is already upgraded. Invalid legacy data is reported rather than silently discarded.
+ProjectRepository owns explicit whole-Field deletion as well as loading and saving. Dexie retains
+the original database name and snapshot/original tables. Version 4 adds deletion markers without
+rewriting existing projects or changing portable project `schemaVersion: 1`. Deleting an active
+Field first flushes it and enters a surviving Field (or a newly saved blank Field). The repository
+then atomically removes its snapshot and unshared original blobs and records the deleted ID so late
+saves cannot resurrect it. Other Fields, including duplicates and Forks, remain unchanged. Pure
+migration runs on load too, covering imported legacy exports after a database is already upgraded.
+Invalid legacy data is reported rather than silently discarded.
 
 Controller saves are single-flight, with only the newest pending snapshot retained. Gesture commits, not individual pointer frames, schedule writes. Flush and visible errors guard project switching. Undo is bounded in-memory semantic state, not durable event-sourced time travel. Portable export excludes local native paths/original keys/bytes and transient Ghosts.
 
@@ -209,7 +216,7 @@ field/phenomena/describe.ts       typed description, world coordinates, no drawi
         +--> a future GPU renderer
 ```
 
-`describeRelations()` resolves endpoints from the geometry cache and returns `RelationPhenomenon[]`; a relation with an unmeasured endpoint is absent rather than drawn at an invented position. Core knows nothing about SVG, canvas, shaders or visual timing, and `field/phenomena/glyph.ts` holds the visible mark for each relation kind instead of `core/model.ts`.
+`describeRelations()` resolves endpoints from the geometry cache and returns `RelationPhenomenon[]`; a relation with an unmeasured endpoint is absent rather than drawn at an invented position. `RelationLayer` draws the paths and `RelationToken` presents their wording and review controls. Core knows nothing about SVG, canvas, shaders or visual timing.
 
 ## Motion ownership contract (Motion, GSAP, and the future GPU layer)
 

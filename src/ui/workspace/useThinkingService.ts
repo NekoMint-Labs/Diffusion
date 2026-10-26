@@ -32,11 +32,10 @@ const FALLBACK_BOUNDS = { x: 0, y: 0, width: 1440, height: 900 };
  * missing and the product stays usable: with no discovery the model still explores the Field, and
  * with no AI the Field is still manual. Nothing here builds a dependency between them.
  */
-export function useThinkingService({ controller, repository, settings, settingsRef, credentials, runTimes, discovery }: {
+export function useThinkingService({ controller, repository, settings, credentials, runTimes, discovery }: {
     controller: ProjectController;
     repository: ProjectRepository;
     settings: Settings;
-    settingsRef: { current: Settings };
     credentials: CredentialStore;
     /** How the bundled discovery engine is launched, when this platform has one. */
     runTimes: { builtIn: import('../../discovery/runtime.ts').EngineRunner | null };

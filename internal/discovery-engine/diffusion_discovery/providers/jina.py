@@ -19,11 +19,6 @@ def _elapsed_ms(start: float) -> float:
     return round((time.time() - start) * 1000, 2)
 
 
-def _error_payload(exc: Exception) -> dict[str, str]:
-    error_type, error, _retryable = classify_provider_exception(exc)
-    return {"error_type": error_type, "error": error}
-
-
 def _mask_secret(text: str, secret: str) -> str:
     return text.replace(secret, "***") if secret else text
 

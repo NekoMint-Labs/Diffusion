@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import gsap from 'gsap';
-import { MOTION_DURATION, MOTION_EASE, cubicPoints, motionDuration, roleTransition, type DurationRole, type EaseRole } from '../../src/ui/motion/tokens.ts';
+import { MOTION_DURATION, MOTION_EASE, cubicPoints, roleTransition, type DurationRole, type EaseRole } from '../../src/ui/motion/tokens.ts';
 
 const ROLES = Object.keys(MOTION_DURATION) as DurationRole[];
 const EASES = Object.keys(MOTION_EASE) as EaseRole[];
@@ -67,12 +67,6 @@ describe('motion roles', () => {
             expect(declared, `--ease-${role} is missing from theme.css`).toBeTruthy();
             expect(numbers(declared!)).toEqual([...cubicPoints(role)]);
         }
-    });
-
-    it('keeps the pre-role duration names resolving to a role, so call sites cannot drift', () => {
-        for (const value of Object.values(motionDuration)) expect(ROLES).toContain(Object.keys(MOTION_DURATION).find(role => MOTION_DURATION[role as DurationRole] === value));
-        expect(motionDuration.instant).toBe(MOTION_DURATION.instant);
-        expect(motionDuration.transform).toBe(MOTION_DURATION.spatial);
     });
 
     /** The API shape that made a whole class of motion invisible, pinned so it cannot come back.

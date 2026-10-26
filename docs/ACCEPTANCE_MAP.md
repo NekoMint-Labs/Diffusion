@@ -4,7 +4,7 @@ This map identifies where a current change must be verified. It is not a cumulat
 passes from older versions. Exact revision-specific outcomes belong in the pull request and
 [STATUS.md](../STATUS.md); commands and evidence limits are in [TESTING.md](TESTING.md).
 
-As checked on October 21, 2026, [#11](https://github.com/NekoMint-Labs/Diffusion/issues/11) and
+As checked on October 26, 2026, [#11](https://github.com/NekoMint-Labs/Diffusion/issues/11) and
 [#12](https://github.com/NekoMint-Labs/Diffusion/issues/12) are closed as completed, and
 [v0.3.16](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16) is published as stable.
 The earlier acceptance journal is preserved [unchanged](history/checkpoints/ACCEPTANCE_BEFORE_BASELINE_2026_10_21.md).

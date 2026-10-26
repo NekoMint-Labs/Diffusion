@@ -1,12 +1,16 @@
 # Diffusion — current status
 
-## Repository baseline — October 21, 2026
+## Repository baseline — October 26, 2026
 
-The cleanup branch starts from main `59f1e28c24d9965b756b3a6988bae7635def0f9b`.
+The cleanup was originally based on main `59f1e28c24d9965b756b3a6988bae7635def0f9b` and is now
+synchronized with `184d47b9eee593c296ed8ff2a1c4fa3d244be3a9`, including merged #72, #73, #78 and #79.
 Source manifests declare `0.3.16`. GitHub published
 [v0.3.16 stable](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16)
 on October 16, 2026, without a pre-release flag. This records publication status; this cleanup
-does not rebuild or requalify that installer.
+does not rebuild or requalify that installer. The newer
+[#78/#79 Windows preview](https://github.com/NekoMint-Labs/Diffusion/releases/tag/pr78-79-preview-20261026-882a1a7)
+was published on October 26 from `882a1a7`; it does not contain the subsequent #72/#73 changes.
+Those merged changes still need a newly built and qualified installation package.
 
 [Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) and
 [Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12)
@@ -46,9 +50,12 @@ size warning remains visible.
 ## Separate changes and acceptance limits
 
 At this checkpoint, [PR #71](https://github.com/NekoMint-Labs/Diffusion/pull/71) (Field deletion)
-and [PR #72](https://github.com/NekoMint-Labs/Diffusion/pull/72) (Undo for an unkept generation)
-are open and are not part of this cleanup branch. The audit's native discovery-argument and
-Python retrieval-default fixes are delivered separately so their behavior changes can be reviewed.
+remains a separate, open feature PR. [PR #72](https://github.com/NekoMint-Labs/Diffusion/pull/72)
+(Undo for an unkept generation) and [PR #73](https://github.com/NekoMint-Labs/Diffusion/pull/73)
+(native discovery arguments and Python retrieval defaults) are merged into main and inherited
+through this synchronization; their behavior changes are not introduced by the cleanup diff.
+[PR #77](https://github.com/NekoMint-Labs/Diffusion/pull/77) and its stacked answer-preview
+[PR #80](https://github.com/NekoMint-Labs/Diffusion/pull/80) remain separate review work.
 
 This pass uses fixture data and does not exercise stored credentials, live providers, a packaged
 sidecar, installation/upgrade, physical input, or long-session native use. Issue closure and a

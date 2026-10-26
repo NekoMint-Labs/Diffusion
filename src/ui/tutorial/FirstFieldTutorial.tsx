@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { id, type ProjectState, type SessionState } from '../../core/model.ts';
 import type { ProjectController } from '../../core/controller.ts';
 import type { FieldHandle } from '../../field/Field.tsx';
@@ -7,6 +7,7 @@ import { t } from '../../shared/i18n.ts';
 import { useUI } from '../store.ts';
 import { presentSpatialTransition } from '../motion/spatialGrammar.ts';
 import { Button } from '../primitives/Button.tsx';
+import { isComposing } from '../commands/shortcuts.ts';
 
 const STORAGE_KEY = 'diffusion-first-field-tutorial-v1';
 const TUTORIAL_ORIGIN = 'First Field Tutorial / deterministic demonstration';
@@ -14,11 +15,24 @@ type Phase = 'write' | 'move' | 'pan' | 'select' | 'generate' | 'ghost' | 'keep'
 type Stored = { status: 'in-progress' | 'complete' | 'skipped'; projectId?: string; phase?: Phase; thoughtId?: string };
 
 function readStored(): Stored | null {
-    if (typeof localStorage === 'undefined') return null;
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null') as Stored | null; }
+    try {
+        if (typeof localStorage === 'undefined') return null;
+        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null') as Partial<Stored> | null;
+        if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return null;
+        if (!['in-progress', 'complete', 'skipped'].includes(stored.status ?? '')) return null;
+        if (stored.projectId !== undefined && typeof stored.projectId !== 'string') return null;
+        if (stored.thoughtId !== undefined && typeof stored.thoughtId !== 'string') return null;
+        if (stored.phase !== undefined && !['write', 'move', 'pan', 'select', 'generate', 'ghost', 'keep', 'done'].includes(stored.phase)) return null;
+        // Optional device preferences can be stale or damaged; never pass an unknown phase to copyFor.
+        return stored as Stored;
+    }
     catch { return null; }
 }
-function writeStored(value: Stored) { if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY, JSON.stringify(value)); }
+function writeStored(value: Stored) {
+    try { if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY, JSON.stringify(value)); }
+    catch { /* Optional tutorial progress must not interrupt writing when preferences cannot be saved. */ }
+}
+export function resetFirstFieldTutorialState() { writeStored({ status: 'in-progress', phase: 'write' }); }
 
 function copyFor(phase: Phase): { title: string; body: string } {
     switch (phase) {
@@ -161,20 +175,69 @@ export function useFirstFieldTutorial({ project, session, controller, field }: {
         return true;
     }
 
-    return { active, phase, settled, start, skip, finish, interceptThinkingAction, interceptProposalAction };
+    return { active, phase, settled, coachTargetId: phase === 'ghost' || phase === 'keep' ? ghostId : phase === 'move' ? thoughtId : undefined, start, skip, finish, interceptThinkingAction, interceptProposalAction };
 }
 
-export function FirstFieldTutorialCoach({ active, phase, settled, onSkip, onFinish }: {
+export function FirstFieldTutorialCoach({ active, phase, settled, targetId, onSkip, onFinish }: {
     active: boolean;
     phase: Phase;
     settled: { text: string; x: number; y: number } | null;
+    targetId?: string;
     onSkip: () => void;
     onFinish: () => void;
 }) {
+    const coach = useRef<HTMLDivElement>(null);
+    useLayoutEffect(() => {
+        const element = coach.current;
+        const app = element?.closest<HTMLElement>('.app');
+        if (!active || !element || !app) return;
+        const place = () => {
+            element.style.removeProperty('bottom');
+            const box = element.getBoundingClientRect();
+            const writing = [...app.querySelectorAll<HTMLElement>('.speak,.empty-invitation')]
+                .filter(node => node.getClientRects().length)
+                .map(node => {
+                    // Motion projects the writing rectangle while its height changes. Reserve
+                    // the settled layout bounds so the gap survives the end of that animation.
+                    const parent = node.offsetParent;
+                    if (!(parent instanceof HTMLElement)) return node.getBoundingClientRect();
+                    const bounds = parent.getBoundingClientRect();
+                    const left = bounds.left + parent.clientLeft + node.offsetLeft;
+                    const top = bounds.top + parent.clientTop + node.offsetTop;
+                    return { left, top, width: node.offsetWidth, height: node.offsetHeight,
+                        right: left + node.offsetWidth, bottom: top + node.offsetHeight };
+                })
+                .filter(rect => rect.width && rect.height && rect.left < box.right + 12 && rect.right + 12 > box.left);
+            if (writing.some(rect => rect.top < box.bottom + 12 && rect.bottom + 12 > box.top)) {
+                element.style.bottom = `${app.getBoundingClientRect().bottom - Math.min(...writing.map(rect => rect.top)) + 12}px`;
+            }
+            // Narrow windows can put the practice Thought behind the writing-safe coach.
+            // Leave the object being taught reachable without changing its Field coordinates.
+            const target = targetId && app.querySelector<HTMLElement>(`[data-thought-id="${CSS.escape(targetId)}"]`);
+            const targetBox = target && target.getBoundingClientRect();
+            const placed = element.getBoundingClientRect();
+            if (targetBox && targetBox.width && targetBox.height && targetBox.left < placed.right + 12
+                && targetBox.right + 12 > placed.left && targetBox.top < placed.bottom + 12
+                && targetBox.bottom + 12 > placed.top && targetBox.top - placed.height - 12 >= app.getBoundingClientRect().top + 12) {
+                element.style.bottom = `${app.getBoundingClientRect().bottom - targetBox.top + 12}px`;
+            }
+        };
+        place();
+        // The writing group includes the invitation and grows with multiline input. Its size,
+        // not the camera or Thought geometry, owns this temporary coaching clearance.
+        const observer = new ResizeObserver(place);
+        observer.observe(app);
+        observer.observe(element);
+        const writing = app.querySelector('.speak-positioner');
+        if (writing) observer.observe(writing);
+        const target = targetId && app.querySelector(`[data-thought-id="${CSS.escape(targetId)}"]`);
+        if (target) observer.observe(target);
+        return () => observer.disconnect();
+    });
     if (!active) return null;
     const copy = copyFor(phase);
     return <aside className="first-field-tutorial" data-testid="first-field-tutorial" data-phase={phase} aria-live="polite">
-        <div className="tutorial-coach">
+        <div ref={coach} className="tutorial-coach">
             <span className="tutorial-kicker">{t('First Field / practice')}</span>
             <strong>{t(copy.title)}</strong>
             <p>{t(copy.body)}</p>
@@ -187,8 +250,12 @@ export function FirstFieldTutorialCoach({ active, phase, settled, onSkip, onFini
 const COACHING_KEY = 'diffusion-first-field-coaching-v1';
 type CoachingKind = 'relation' | 'verify' | 'crystal' | 'multi' | 'focus';
 function readCoaching(): Set<CoachingKind> {
-    if (typeof localStorage === 'undefined') return new Set();
-    try { return new Set(JSON.parse(localStorage.getItem(COACHING_KEY) ?? '[]') as CoachingKind[]); }
+    try {
+        if (typeof localStorage === 'undefined') return new Set();
+        const stored: unknown = JSON.parse(localStorage.getItem(COACHING_KEY) ?? '[]');
+        if (!Array.isArray(stored)) return new Set();
+        return new Set(stored.filter((kind): kind is CoachingKind => ['relation', 'verify', 'crystal', 'multi', 'focus'].includes(kind)));
+    }
     catch { return new Set(); }
 }
 function coachingCopy(kind: CoachingKind): { title: string; body: string } {
@@ -218,7 +285,10 @@ export function ProgressiveTutorialCoach({ enabled }: { enabled: boolean }) {
     useEffect(() => {
         if (!enabled) return;
         const onKey = (event: KeyboardEvent) => {
-            if (event.key.toLowerCase() === 'f' && !event.metaKey && !event.ctrlKey && !event.altKey && ui.selection.length) offer('focus');
+            // Observe the gesture after the Field has consumed it, preserving each text owner's input.
+            if (event.defaultPrevented && !isComposing(event) && event.target instanceof HTMLElement
+                && event.target.closest('.field') && event.key.toLowerCase() === 'f'
+                && !event.metaKey && !event.ctrlKey && !event.altKey && ui.selection.length) offer('focus');
         };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
@@ -227,7 +297,8 @@ export function ProgressiveTutorialCoach({ enabled }: { enabled: boolean }) {
     const copy = coachingCopy(current);
     const dismiss = () => {
         seen.current.add(current);
-        if (typeof localStorage !== 'undefined') localStorage.setItem(COACHING_KEY, JSON.stringify([...seen.current]));
+        try { if (typeof localStorage !== 'undefined') localStorage.setItem(COACHING_KEY, JSON.stringify([...seen.current])); }
+        catch { /* The dismissal still applies for this window when its preference cannot be saved. */ }
         setCurrent(null);
     };
     return <aside className="progressive-tutorial-coach" data-testid="progressive-tutorial-coach" data-kind={current} aria-live="polite"><strong>{t(copy.title)}</strong><p>{t(copy.body)}</p><Button variant="ghost" size="sm" onClick={dismiss}>{t('Got it')}</Button></aside>;

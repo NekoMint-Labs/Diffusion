@@ -152,7 +152,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
     });
     const navigation = useNavigationReturn(controller, field);
     const find = useFindInField({ project, reveal: ids => navigation.reveal(ids) });
-    const surfaces = useWorkspaceSurfaces({ controller, field, diffuse, runtime, find });
+    const surfaces = useWorkspaceSurfaces({ controller, field, diffuse, runtime });
     const actions = useFieldActions({ controller, field, surfaces, importer });
     const closeMenu = () => { contextPoint.current = null; const menu = useUI.getState().menu; if (menu) surfaces.transient.closeMenu(menu); };
     const intents = useThinkingIntents({ controller, field, speak, surfaces, freePoint: actions.freePoint, observe: actions.observe, runtime, importer, settingsRef, stopDiffuseForIntent, closeMenu });
@@ -395,7 +395,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
   <DiffuseIndicator session={diffuse} onReview={() => surfaces.openSurface('diffuse')}/>
     <AnimatePresence initial={false}>{(intents.speakScope !== null || !activeSelection.length) && !isGlobalModal(ui.surface) && !ui.menu && <Speak key="speak" textareaRef={speak} words={intents.words} onWords={intents.setWords} onSubmit={() => intents.submit({ localOnly: tutorial.active })} onStop={() => { stopDiffuseForIntent(); runtime.cancel(); }} onCompose={intents.compose} onExit={intents.exitSpeak} composing={intents.speakScope !== null} empty={!Object.keys(project.thoughts).length && !Object.keys(session.ghosts).length && !(ui.operation?.kind === 'ingest' && ui.operation.phase === 'pending')} typography={settings.thoughtTypography} scopeIds={intents.speakScope ?? []} mode={intents.speakMode} draftSaved={intents.draftSaved} references={(intents.speakScope ?? []).map(key => project.thoughts[key]).filter(Boolean).map(thought => ({ id: thought.id, text: isAuthoredExample(thought) ? t(thought.text) : thought.text }))}/>}</AnimatePresence>
     {(startupError || persistenceError || ui.notice) && <FeedbackLine onDismiss={!persistenceError && !startupError ? clearFeedback : undefined} onBottomHeight={setBottomNoticeHeight} text={persistenceError ? deviceFailureText('save') : t(startupError || ui.notice)} tone={persistenceError || startupError ? 'error' : ui.noticeTone} secondary={ui.notice === t('Demo possibilities / no live model was used.') ? 'demo' : undefined} action={persistenceError ? <Button variant="ghost" size="sm" onClick={() => void fields.exportCanonical()}>{t('Export')}</Button> : ui.noticeAction ? <Button variant="ghost" size="sm" data-testid="notice-action" onClick={() => runNoticeAction(ui.noticeAction!.kind)}>{t(ui.noticeAction.label)}</Button> : undefined}/>}
-   <FirstFieldTutorialCoach active={tutorial.active} phase={tutorial.phase} settled={tutorial.settled} onSkip={tutorial.skip} onFinish={tutorial.finish}/>
+   <FirstFieldTutorialCoach active={tutorial.active} phase={tutorial.phase} settled={tutorial.settled} targetId={tutorial.coachTargetId} onSkip={tutorial.skip} onFinish={tutorial.finish}/>
    <ProgressiveTutorialCoach enabled={!tutorial.active}/>
  </main>;
 }

@@ -16,6 +16,12 @@ interface HistoryStep {
     project?: ProjectState;
     disclosure?: Record<string, boolean>;
     ghosts?: Ghost[];
+    generation?: {
+        ids: string[];
+        displaced: Ghost[];
+        ghosts?: Ghost[];
+        phenomena?: Phenomenon[];
+    };
 }
 export class ProjectController {
     private current: CoreSnapshot;
@@ -282,10 +288,49 @@ export class ProjectController {
         this.redoStack = [];
         this.setSession({ ...this.current.session, branchDisclosure: { ...this.current.session.branchDisclosure, [id]: expanded } });
     }
+    /** Completion, not request start, enters history. Only this invocation's IDs participate;
+     * equal scopes, timestamps and autonomous run IDs are not batch identities. */
+    recordGeneration(ids: string[], displaced: Ghost[] = []): void {
+        const unique = [...new Set(ids)];
+        if (!unique.length || unique.some(key => this.current.project.thoughts[key])
+            || !unique.some(key => this.current.session.ghosts[key])) return;
+        this.undoStack.push({ generation: { ids: unique, displaced } });
+        if (this.undoStack.length > 60) this.undoStack.shift();
+        this.redoStack = [];
+        this.emit();
+    }
+    private nextUndoStep(): HistoryStep | undefined {
+        // Ignore/expiry can remove a complete batch after it entered history. Such an empty
+        // entry must not swallow Ctrl+Z or revive dismissed suggestions. Keep remains a later
+        // canonical step: undoing Keep first returns its Ghost before this check runs.
+        while (this.undoStack.at(-1)?.generation) {
+            const { ids } = this.undoStack.at(-1)!.generation!;
+            if (!ids.some(key => this.current.project.thoughts[key]) && ids.some(key => this.current.session.ghosts[key])) break;
+            this.undoStack.pop();
+        }
+        return this.undoStack.at(-1);
+    }
+    get undoLabel() { return this.nextUndoStep()?.generation ? 'Undo AI generation' : 'Undo'; }
+    get redoLabel() { return this.redoStack.at(-1)?.generation ? 'Redo AI generation' : 'Redo'; }
     undo() {
+        this.nextUndoStep();
         const step = this.undoStack.pop();
         if (!step)
             return;
+        if (step.generation) {
+            const batch = step.generation;
+            const session = this.current.session;
+            const ghosts = batch.ids.flatMap(key => session.ghosts[key] ? [session.ghosts[key]] : []);
+            const removed = new Set(ghosts.map(ghost => ghost.id));
+            const phenomena = Object.values(session.phenomena).filter(item => removed.has(item.a) || removed.has(item.b));
+            const displaced = batch.displaced.filter(ghost => !session.ghosts[ghost.id] && !this.current.project.thoughts[ghost.id]);
+            this.redoStack.push({ generation: { ...batch, ghosts, phenomena, displaced } });
+            this.setSession({ ...session,
+                ghosts: { ...Object.fromEntries(Object.entries(session.ghosts).filter(([key]) => !removed.has(key))), ...Object.fromEntries(displaced.map(ghost => [ghost.id, ghost])) },
+                phenomena: Object.fromEntries(Object.entries(session.phenomena).filter(([, item]) => !removed.has(item.a) && !removed.has(item.b))),
+            });
+            return;
+        }
         if (step.disclosure) {
             this.redoStack.push({ disclosure: { ...this.current.session.branchDisclosure } });
             this.setSession({ ...this.current.session, branchDisclosure: step.disclosure });
@@ -293,14 +338,31 @@ export class ProjectController {
         }
         if (!step.project) return;
         this.redoStack.push({ project: this.current.project, ghosts: step.ghosts });
-        this.restore(step.project, 'Reconsidered the last deliberate change');
+        // Publish Undo Keep and the returned Ghosts together, so subscribers never see an
+        // apparently empty generation step between canonical restoration and session restoration.
         if (step.ghosts?.length)
-            this.setSession({ ...this.current.session, ghosts: { ...this.current.session.ghosts, ...Object.fromEntries(step.ghosts.map(ghost => [ghost.id, ghost])) } });
+            this.current = { ...this.current, session: { ...this.current.session, ghosts: { ...this.current.session.ghosts, ...Object.fromEntries(step.ghosts.map(ghost => [ghost.id, ghost])) } } };
+        this.restore(step.project, 'Reconsidered the last deliberate change');
     }
     redo() {
         const step = this.redoStack.pop();
         if (!step)
             return;
+        if (step.generation) {
+            const batch = step.generation;
+            const session = this.current.session;
+            // A person may have moved an older restored proposal since Undo. Redo does not
+            // erase that interaction merely to reapply the arrival capacity limit.
+            const displaced = batch.displaced.filter(ghost => session.ghosts[ghost.id] === ghost);
+            const removed = new Set(displaced.map(ghost => ghost.id));
+            const restored = (batch.ghosts ?? []).filter(ghost => !this.current.project.thoughts[ghost.id] && !session.ghosts[ghost.id]);
+            const ghosts = { ...Object.fromEntries(Object.entries(session.ghosts).filter(([key]) => !removed.has(key))), ...Object.fromEntries(restored.map(ghost => [ghost.id, ghost])) };
+            const items = { ...this.current.project.thoughts, ...ghosts };
+            const phenomena = (batch.phenomena ?? []).filter(item => items[item.a] && items[item.b] && !this.current.project.relations[item.id] && !session.phenomena[item.id]);
+            this.undoStack.push({ generation: { ids: restored.map(ghost => ghost.id), displaced } });
+            this.setSession({ ...session, ghosts, phenomena: { ...session.phenomena, ...Object.fromEntries(phenomena.map(item => [item.id, item])) } });
+            return;
+        }
         if (step.disclosure) {
             this.undoStack.push({ disclosure: { ...this.current.session.branchDisclosure } });
             this.setSession({ ...this.current.session, branchDisclosure: step.disclosure });
@@ -315,6 +377,6 @@ export class ProjectController {
         }
         this.restore(step.project, 'Restored the reconsidered change');
     }
-    get canUndo() { return this.undoStack.length > 0; }
+    get canUndo() { return !!this.nextUndoStep(); }
     get canRedo() { return this.redoStack.length > 0; }
 }

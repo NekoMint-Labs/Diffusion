@@ -88,6 +88,9 @@ export function useThinkingService({ controller, repository, settings, credentia
         if (['running', 'paused'].includes(diffuse.getSnapshot().phase))
             diffuse.stop('A new explicit user intent replaced this exploration.');
     }
-    useEffect(() => () => { diffuse.dispose(); parser.dispose(); runtime.dispose(); }, [controller, runtime, diffuse, parser]);
+    useEffect(() => () => { diffuse.dispose(); runtime.dispose(); }, [controller, runtime, diffuse]);
+    // Resolving/refreshed native credentials replaces the runtime, not the shared file parser.
+    // Its extraction worker must live until this parser itself leaves the workspace.
+    useEffect(() => () => parser.dispose(), [parser]);
     return { runtime, diffuse, evidence, importer, hooks, stopDiffuseForIntent };
 }

@@ -7,7 +7,7 @@ import { contentTransition, layoutTransition } from '../motion.ts';
 import { MOTION_DURATION } from '../motion/tokens.ts';
 import { firstThoughtComposerSequence, invitationContractSequence, invitationIdleSequence, useSequencer, useSignature } from '../motion/signature.ts';
 import { referenceExcerpt } from './response.ts';
-import { COMPOSER_SHORTCUT, composerState } from './composer.ts';
+import { COMPOSER_SHORTCUT, composerKeyAction, composerState } from './composer.ts';
 
 const SPEAK_MAX_HEIGHT = 108;
 const SPEAK_MIN_HEIGHT = 24;
@@ -86,13 +86,26 @@ export function Speak({ textareaRef, words, onWords, onSubmit, onStop, onCompose
         const input = textareaRef.current;
         if (!input)
             return;
-        const previous = input.style.height;
-        input.style.height = 'auto';
-        const nextHeight = Math.max(SPEAK_MIN_HEIGHT, Math.min(SPEAK_MAX_HEIGHT, input.scrollHeight));
-        const nextOverflow = input.scrollHeight > SPEAK_MAX_HEIGHT;
-        input.style.height = previous;
-        setInputHeight(current => current === nextHeight ? current : nextHeight);
-        setOverflowing(current => current === nextOverflow ? current : nextOverflow);
+        const measure = () => {
+            const previous = input.style.height;
+            input.style.height = 'auto';
+            const nextHeight = Math.max(SPEAK_MIN_HEIGHT, Math.min(SPEAK_MAX_HEIGHT, input.scrollHeight));
+            const nextOverflow = input.scrollHeight > SPEAK_MAX_HEIGHT;
+            input.style.height = previous;
+            setInputHeight(current => current === nextHeight ? current : nextHeight);
+            setOverflowing(current => current === nextOverflow ? current : nextOverflow);
+        };
+        measure();
+        // Focus reveals the shortcut beside the textarea, narrowing an already restored draft.
+        // Observe width only so our own height update cannot create a measurement loop.
+        let width = input.clientWidth;
+        const observer = new ResizeObserver(() => {
+            if (input.clientWidth === width) return;
+            width = input.clientWidth;
+            measure();
+        });
+        observer.observe(input);
+        return () => observer.disconnect();
     }, [words, typography, textareaRef]);
     useEffect(() => { if (!releasing)
         return; const timer = setTimeout(() => setReleasing(false), RELEASE_HOLD); return () => clearTimeout(timer); }, [releasing]);
@@ -146,14 +159,15 @@ export function Speak({ textareaRef, words, onWords, onSubmit, onStop, onCompose
                 <motion.div layout="position" className="speak-row" transition={{ layout: layoutTransition(!!reduced) }}>
                     {!composing && <span className="speak-mark" aria-hidden="true"/>}
                     <textarea ref={textareaRef} aria-label={t('Speak')} aria-describedby={composing && scoped ? 'speak-references' : undefined} placeholder={t(composing && mode === 'respond' ? 'Write your response or what is still unclear...' : composing ? 'Write down something not yet clear...' : empty ? 'Write or paste a thought...' : 'Continue thinking...')} value={words} rows={1} maxLength={12000} data-overflowing={overflowing} style={{ height: inputHeight, overflowY: overflowing ? 'auto' : 'hidden' }} onChange={event => onWords(event.target.value)} onKeyDown={event => {
-                        if (event.key === 'Escape') {
+                        const keyAction = composerKeyAction(event.nativeEvent);
+                        if (keyAction === 'exit') {
                             event.preventDefault();
                             event.stopPropagation();
                             onExit();
                             textareaRef.current?.blur();
                             return;
                         }
-                        if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) {
+                        if (keyAction === 'submit') {
                             event.preventDefault();
                             commit();
                         }

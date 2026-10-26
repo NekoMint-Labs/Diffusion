@@ -26,6 +26,7 @@ use crate::credentials::read_secret;
 /// this boundary as one of a few fixed sentences and nothing else.
 #[tauri::command]
 pub async fn native_ai_request(
+    app: tauri::AppHandle,
     request_id: String,
     provider: String,
     url: String,
@@ -46,7 +47,7 @@ pub async fn native_ai_request(
             credential_prefix,
             body,
         },
-        read_secret,
+        |id| read_secret(&app, id),
     )
     .await
     .map_err(|failure: Failure| failure.message())

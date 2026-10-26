@@ -15,6 +15,10 @@ or `python3 scripts/preview-next.py` on another platform. It opens a loopback-on
 server at `http://127.0.0.1:4175/next/explore?locale=zh`. No Node installation is needed
 for the prebuilt preview. Keep the terminal open while trying it.
 
+For the installable Windows candidate, use the separate **Diffusion Preview**
+package described in [Windows preview](WINDOWS_PREVIEW.md). It opens this route
+from packaged assets and keeps its data and OS credentials separate from stable.
+
 1. Fill in an overall question, priorities, and the current branch question, or use the example.
 2. In the default authored demo, try one step or a maximum of three steps. These are fixed
    workflow examples, not model-generated discoveries or evidence of semantic quality.

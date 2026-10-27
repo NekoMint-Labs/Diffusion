@@ -53,3 +53,16 @@
 用户截图显示：已保存的用户纠正从作业辅助转到考前复习、四小时改两小时、隐私限制保留；可见新候选仅一条，正文预览提到每周两小时、考前复习和不碰私人资料。旧建议仍在。这是一次真实交互的正向样例；截图没有展开新候选全文，不能据此验收完整内容、语义忠实性或长期可靠性。“正文预览 · 尚未提炼”可能来自缺失/非法重点或保守限定语检查，仅凭图片无法确定是哪一种。
 
 用户授权提交，由本对话决定追加原PR或新开。当前PR 81仍OPEN、未有review，本轮属于相同readingTrial的后续完善，决定追加PR 81并更新其标题与说明。提交前在独立交付工作树复验；原4175用户页面及持久化数据保持原位。后续可选试验是再补充“尚未确认学生有这个问题”，观察是否避免将假设当事实；不要求重复本次已成功例子才能提交。
+
+
+## PR 81交付分支复验（2026-10-27）
+
+从原试用提交8055feb移植到原PR 81分支，产生0581b74。无冲突，保留上游generation Undo和既有PR文档。
+
+- pnpm run build：typecheck及生产构建PASS，既有大包提示保留。
+- pnpm exec vitest run --maxWorkers=2：80文件750项PASS（27.08秒）。数量高于本地736是交付分支含上游generation Undo等既有检查，不能混作同一套件。
+- pnpm run check:offline：PASS。
+- ROLE_B_BASE_URL=http://127.0.0.1:4187，ROLE_B_CHROMIUM为本地Chromium，ROLE_B_BROWSER_OUTPUT为交付树下绝对results/correction-delivery目录；pnpm exec playwright test --config experiments/role-b-focus/playwright.trial.config.ts --reporter=list,json：18/18 PASS（39.1秒），0 skip/flaky/unexpected，runner errors=[]。包括14项阅读/纠正检查及4项上游generation Undo。
+- git diff origin/feat/b-field-answer-preview --check：PASS。
+
+本地完整E2E未重跑；新提交完整CI由GitHub触发。原PR的全绿结论只对应此前94cb595，不能沿用为新头结论。当前用户试用页面4175仍来自原集成目录，未操作刷新和存储。本轮发布只追加原PR 81，不合并。日志保存D:/DiffusionWork/b-correction-delivery-{build,unit,offline,browser}.log；浏览器截图在ignored results/correction-delivery下，CI亦会生成并上传诊断artifact。

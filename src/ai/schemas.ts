@@ -53,7 +53,7 @@ export const capabilitiesSchema = z.object({
     depth: z.object({ supported: z.boolean(), mode: z.enum(['output-budget', 'none']), levels: z.array(thinkingDepthSchema).max(8) }).strict(),
 }).strict();
 
-const structuredPurpose = z.enum(['thought-extraction', 'thought-extraction-recheck', 'relation-inference', 'ingestion-repair', 'evidence-assessment', 'exploration-step']);
+const structuredPurpose = z.enum(['thought-extraction', 'thought-extraction-recheck', 'relation-inference', 'ingestion-repair', 'evidence-assessment', 'exploration-step', 'field-answer']);
 export const structuredRequestSchema = z.object({
     purpose: structuredPurpose,
     instructions: z.string().min(1).max(16000),

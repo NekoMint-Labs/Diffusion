@@ -1,4 +1,7 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { readingTrialEnabled, rememberReadingFocus } from '../thought/readingFocusStore.ts';
+import { summarizeReading } from '../../ai/readingFocus.ts';
+import { respondWithReading } from '../../ai/readingResponse.ts';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { AIRuntime, type RuntimeHooks } from '../../ai/runtime.ts';
 import { DiffuseSession } from '../../ai/diffuse.ts';
 import { createThinkingProvider, type ThinkingSelection } from '../../ai/registry.ts';
@@ -46,6 +49,13 @@ export function useThinkingService({ controller, repository, settings, credentia
     // Read through a ref so a settings change never rebuilds the runtime: the runtime is one
     // long-lived object that reads the current selection when a request is made.
     const runtime = useMemo(() => new AIRuntime(controller, () => createThinkingProvider(selection.current, credentials), {
+        ...(readingTrialEnabled() ? { respondWithPresentation: async (provider, packet, intent, signal) => {
+            const { response, readings, emptyReason } = await respondWithReading(provider, packet, intent, signal);
+            return { response, emptyReason, presentText: (text: string, key: string) => {
+                const result = readings.get(text);
+                if (result) rememberReadingFocus(key, text, result);
+            } };
+        } } satisfies Pick<RuntimeHooks, 'respondWithPresentation'> : {}),
         pending: value => hooks.current.pending(value),
         operation: value => hooks.current.operation?.(value),
         notice: value => hooks.current.notice(value),
@@ -84,6 +94,13 @@ export function useThinkingService({ controller, repository, settings, credentia
     const parser = useMemo(() => new SourceParser(), []);
     const importer = useMemo(() => new SourceImporter(controller, repository, parser, text => useUI.getState().patch({ notice: text })), [controller, repository, parser]);
 
+    const focusReading = useCallback(async (text: string, signal: AbortSignal) => {
+        signal.throwIfAborted();
+        const provider = await createThinkingProvider(selection.current, credentials);
+        signal.throwIfAborted();
+        return summarizeReading(provider, text, signal);
+    }, [credentials, settings.provider, settings.model, settings.thinkingDepth, settings.gateway, settings.token, settings.baseUrl, settings.protocol]);
+
     function stopDiffuseForIntent() {
         if (['running', 'paused'].includes(diffuse.getSnapshot().phase))
             diffuse.stop('A new explicit user intent replaced this exploration.');
@@ -92,5 +109,5 @@ export function useThinkingService({ controller, repository, settings, credentia
     // Resolving/refreshed native credentials replaces the runtime, not the shared file parser.
     // Its extraction worker must live until this parser itself leaves the workspace.
     useEffect(() => () => parser.dispose(), [parser]);
-    return { runtime, diffuse, evidence, importer, hooks, stopDiffuseForIntent };
+    return { runtime, diffuse, evidence, importer, hooks, stopDiffuseForIntent, focusReading };
 }

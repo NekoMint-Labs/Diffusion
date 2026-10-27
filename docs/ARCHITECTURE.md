@@ -50,6 +50,17 @@ Prompts request a self-contained opening including material conditions and uncer
 limits do not prove that a real model selected the right key point. The Next notebook's raw context
 inspector is development-only and absent from production builds.
 
+The optional `?readingTrial=1` reader adds session-only display metadata to Field answers.
+Short originals display completely; a valid key point replaces a longer preview. An opt-in runtime
+response strategy requests the full answer and optional point together through `field-answer`,
+keeping the selected thinking depth. Normal semantic, permission, scope, cancellation and quality
+gates still apply; display metadata is stripped before Core and never persisted. A 24-entry cache
+is matched by card ID and full text. Keep, edits, continuation and exports use the full original.
+Every selected trial card retains its explicit original-reading action after Keep and reload.
+The reader shows related current question text, not a frozen request context or verified evidence.
+Manual extraction is explicit, bounded and cancellable. See
+[`experiments/role-b-focus/IN_FIELD_TRIAL.md`](../experiments/role-b-focus/IN_FIELD_TRIAL.md).
+
 ## Commands and history
 
 One command model (`src/ui/commands`) defines every semantic action once: id, localized label, aliases, platform-neutral shortcuts, contextual availability and one `run`. Menus, the palette, the keyboard router and the shortcut reference are projections of that registry, so no presentation owns business logic. An action may be reachable from the Field title, right-click, the Scope Hub, the palette and a shortcut while remaining a single definition.
@@ -86,6 +97,14 @@ Explicit Field Continue and Angle share a `SuggestionHistory` in `src/ai/diversi
 `src/ai/prompt.ts` owns the action/output policy used by narrow action instructions, direct and gateway response parsing, and runtime validation. Continue/Angle expose possibility shapes; Question exposes a question; Relation and Organize expose their own shapes. Diffuse creation steps request a possibility while retaining authorized evidence/recall output compatibility. Continue/Angle/Diffuse surface_possibility cards and Question surface_question cards are bounded at 480 characters; longer cards are rejected rather than truncated. Diffuse evidence and field responses keep their existing text budget. Ordinary Ask/Thread/Deep replies retain their previous text budget. The wire envelope, provider protocols and canonical model remain compatible.
 
 Explicit Field selection keeps selected text primary. Supporting local context has at most six thoughts and 6400 text characters; up to four direct lineage sources take priority and retain their existing 1600-character excerpts. Remaining space comes from directly related committed thoughts. Only relations whose endpoints are actually supplied are included. Unselected Field and frozen Thread context budgets are preserved. Runtime owns timeout/cancellation/request safety and asks the semantic policy to validate proposals before emission. No UI, camera, hierarchy or persistence ownership changes are introduced.
+
+The opt-in `readingTrial=1` response strategy additionally supplies bounded authored-lineage
+references and distances from already compiled context. These guide nearer corrections without
+loading siblings or other Fields. Recognised direct candidate-count requests impose a lower
+ceiling after normal semantic validation. Optional empty-result reasons are presentation-only;
+missing uncertainty wording discards only display metadata. These are limited trial checks,
+not semantic truth or real-model quality guarantees. See
+[`CORRECTION_TRIAL_20261027.md`](../experiments/role-b-focus/CORRECTION_TRIAL_20261027.md).
 
 ## Threads and depth
 

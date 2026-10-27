@@ -27,7 +27,7 @@ export interface RuntimeHooks {
     /** An opt-in response strategy may return display metadata in the same generation.
      * Metadata is attached only after the normal scope, permission and cancellation gates. */
     respondWithPresentation?: (provider: AIProvider, packet: ContextPacket, intent: UserIntent, signal: AbortSignal) => Promise<{
-        response: AIResponse; presentText?: (text: string, id: string) => void;
+        response: AIResponse; emptyReason?: string; presentText?: (text: string, id: string) => void;
     }>;
     /** Compatibility projection for controls that only need disabled/enabled. The operation below is
      * the source of truth; this boolean must never be used to identify a request. */
@@ -373,7 +373,8 @@ export class AIRuntime {
                 }
             }
             if (kind === 'probe') this.hooks.notice(emitted && relationLabel ? t('Found a candidate relation: {label}. You decide whether to keep it.', { label: relationLabel }) : t(emitted ? 'A relation candidate is ready. Nothing was confirmed.' : 'No clear relation found.'));
-            else if (!emitted) this.hooks.notice(t('No new suggestion was surfaced this time.'));
+            else if (!emitted) this.hooks.notice(!response.intents.length && answered.emptyReason
+                ? t('No new suggestion: {reason}', { reason: answered.emptyReason }) : t('No new suggestion was surfaced this time.'));
             else if (kind === 'question') this.hooks.notice(t(response.mock ? 'Demo questions / no live model was used.' : 'Questions returned. Nothing was committed.'));
             else if (kind === 'organize') this.hooks.notice(t(response.mock ? 'Demo structure / no live model was used.' : 'A structure proposal is ready. Nothing was changed yet.'));
             else this.hooks.notice(t(response.mock ? 'Demo possibilities / no live model was used.' : 'Possibilities returned. No commitment was made on your behalf.'));

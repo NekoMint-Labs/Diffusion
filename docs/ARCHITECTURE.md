@@ -98,6 +98,14 @@ Explicit Field Continue and Angle share a `SuggestionHistory` in `src/ai/diversi
 
 Explicit Field selection keeps selected text primary. Supporting local context has at most six thoughts and 6400 text characters; up to four direct lineage sources take priority and retain their existing 1600-character excerpts. Remaining space comes from directly related committed thoughts. Only relations whose endpoints are actually supplied are included. Unselected Field and frozen Thread context budgets are preserved. Runtime owns timeout/cancellation/request safety and asks the semantic policy to validate proposals before emission. No UI, camera, hierarchy or persistence ownership changes are introduced.
 
+The opt-in `readingTrial=1` response strategy additionally supplies bounded authored-lineage
+references and distances from already compiled context. These guide nearer corrections without
+loading siblings or other Fields. Recognised direct candidate-count requests impose a lower
+ceiling after normal semantic validation. Optional empty-result reasons are presentation-only;
+missing uncertainty wording discards only display metadata. These are limited trial checks,
+not semantic truth or real-model quality guarantees. See
+[`CORRECTION_TRIAL_20261027.md`](../experiments/role-b-focus/CORRECTION_TRIAL_20261027.md).
+
 ## Threads and depth
 
 Thread stores frozen scope IDs plus text/kind/source references captured on creation. Explicit Add selection extends snapshots but does not silently refresh earlier wording. Field remains usable beside its split manuscript. Deep Dive has its own context rail and structured manuscript component, not the Thread rendered wider. The Field remains mounted but visually recedes completely in focus mode; exact return camera/selection is preserved.

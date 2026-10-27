@@ -1141,5 +1141,6 @@ export const zh: Record<string, string> = {
     "Related questions": "关联问题",
     "Card key point": "卡片重点",
     "Read original": "阅读原文",
+    "No new suggestion: {reason}": "本轮没有新增建议：{reason}",
     "Original preview · not summarized": "正文预览 · 尚未提炼",
 };

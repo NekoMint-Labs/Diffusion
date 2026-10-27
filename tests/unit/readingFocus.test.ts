@@ -26,6 +26,12 @@ describe('read-only focus extraction', () => {
         await expect(summarizeReading(provider, text, new AbortController().signal)).rejects.toMatchObject({ failure: 'semantic-validation-failure' });
         expect(structured).toHaveBeenCalledTimes(1);
     });
+    it('rejects explicit loss of uncertainty during manual extraction, keeping the original untouched', async () => {
+        const original = '这更像是尚未找到问题，而不是已经证明没有需求。';
+        const { provider, structured } = fixture({ point: '说明没有找到问题。', conditions: [], highlights: ['尚未找到问题'] });
+        await expect(summarizeReading(provider, original, new AbortController().signal)).rejects.toMatchObject({ failure: 'semantic-validation-failure' });
+        expect(structured).toHaveBeenCalledTimes(1);
+    });
     it('counts Unicode characters and preserves exact source wording', () => {
         expect(parseReadingFocus({ ...focus, point: '🧪'.repeat(120) }, text).point).toBe('🧪'.repeat(120));
         expect(parseReadingFocus(focus, text).highlights[0]).toBe(focus.highlights[0]);

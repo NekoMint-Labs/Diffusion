@@ -15,16 +15,17 @@ function setup(value: unknown = { intents: [{ type: 'surface_possibility', text:
     const respond = vi.fn(async () => ({ mock: false, providerLabel: 'Injected demo', intents: [] }));
     const provider = { label: 'Fixture, no real model', mock: false, structured, respond } as unknown as AIProvider;
     const attached = new Map<string, string>();
-    const hooks: RuntimeHooks = { pending: () => {}, notice: () => {}, route: () => {}, anchor: () => ({ x: 500, y: 200 }),
+    const notices: string[] = [];
+    const hooks: RuntimeHooks = { pending: () => {}, notice: text => notices.push(text), route: () => {}, anchor: () => ({ x: 500, y: 200 }),
         respondWithPresentation: async (selected, packet, intent, signal) => {
-            const { response, readings } = await respondWithReading(selected, packet, intent, signal);
-            return { response, presentText: (text, id) => {
+            const { response, readings, emptyReason } = await respondWithReading(selected, packet, intent, signal);
+            return { response, emptyReason, presentText: (text, id) => {
                 expect(controller.getSnapshot().session.ghosts[id]).toBeUndefined();
                 const reading = readings.get(text); if (reading) attached.set(id, reading.focus.point);
             } };
         } };
     const runtime = new AIRuntime(controller, async () => provider, hooks);
-    return { controller, provider, structured, respond, attached, runtime };
+    return { controller, provider, structured, respond, attached, runtime, notices };
 }
 describe('one generation returns original and optional card point', () => {
     it('counts one request, keeps the entire original and strips display metadata before Core', async () => {
@@ -81,6 +82,18 @@ describe('one generation returns original and optional card point', () => {
             expect(await fixture.runtime.run('continue', 'Continue', ['a'])).toMatchObject({ status: 'failed', emitted: 0 });
             expect(fixture.structured).toHaveBeenCalledTimes(1); expect(fixture.respond).not.toHaveBeenCalled();
             expect(fixture.attached.size).toBe(0);
+        } finally { fixture.runtime.dispose(); }
+    });
+    it('shows a no-progress reason without creating a card or committing model metadata', async () => {
+        const reason = '还缺少实际观察，继续展开会重复。';
+        const fixture = setup({ intents: [], pause: { reason } });
+        try {
+            const before = JSON.stringify(fixture.controller.getSnapshot().project);
+            expect(await fixture.runtime.run('continue', 'Continue', ['a'])).toMatchObject({ status: 'completed', emitted: 0 });
+            expect(fixture.notices.at(-1)).toContain(reason);
+            expect(fixture.structured).toHaveBeenCalledTimes(1);
+            expect(Object.keys(fixture.controller.getSnapshot().session.ghosts)).toHaveLength(0);
+            expect(JSON.stringify(fixture.controller.getSnapshot().project)).toBe(before);
         } finally { fixture.runtime.dispose(); }
     });
     it('uses the existing provider path for demo and question/relation actions', async () => {

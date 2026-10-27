@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import type { ContextPacket } from '../../src/core/semantics.ts';
 import { createProject, makeThought, type ProjectState } from '../../src/core/model.ts';
 const question = '我想做一个面向大学生的 AI 学习工具，请先找出最值得验证的问题，不要给完整开发方案。';
 const condition = '如果学生不愿参与，也可能是隐私顾虑，不能直接说明没有需求。';
@@ -14,7 +15,7 @@ async function saved(page: Page): Promise<ProjectState> {
 }
 async function boot(page: Page, theme: 'light' | 'dark' = 'light', text = answer, reading: unknown = { point }) {
     const calls = { primary: 0, manual: 0, respond: 0 };
-    const contexts: { scope: { id: string; text: string }[] }[] = [];
+    const contexts: ContextPacket[] = [];
     await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: theme });
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.addInitScript(theme => {
@@ -143,4 +144,66 @@ test('closing the reader discards a late manual result', async ({ page }) => {
     const reopened = await read(page); await expect(reopened.getByTestId('reading-focus-point')).toHaveCount(0);
     await expect(reopened.getByTestId('reading-original')).toHaveText(answer);
     await expect(ghost).not.toHaveAttribute('data-reading-focus', 'true'); expect(calls.primary).toBe(1);
+});
+
+for (const theme of ['light', 'dark'] as const) test('saved correction survives reload and constrains the next response without rewriting kept history: ' + theme, async ({ page }, info) => {
+    const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+    const { ghost } = await boot(page, theme);
+    const keptId = (await ghost.getAttribute('data-thought-id'))!;
+    await ghost.click(); await page.getByTestId('ai-proposal-keep').click();
+    const kept = page.locator('[data-thought-id="' + keptId + '"]');
+    await kept.click(); await kept.getByTestId('thought-respond').click();
+    const correction = '我改变主意了，改成考前复习，每周只有两小时；仍不接触学生私人资料。请给我一个方向。';
+    await page.getByRole('textbox', { name: '说点什么', exact: true }).fill(correction);
+    await page.getByRole('button', { name: '保存回应', exact: true }).click();
+    const correctionCard = page.locator('article.thought:not(.ghost)').filter({ hasText: correction });
+    await expect(correctionCard).toBeVisible();
+    const correctionId = (await correctionCard.getAttribute('data-thought-id'))!;
+    await expect.poll(async () => (await saved(page)).thoughts[correctionId]?.text).toBe(correction);
+    await page.reload();
+    let calls = 0;
+    const requests: { context: ContextPacket; guidance: { candidateLimit: number; branches: { selectedId: string; authored: { id: string; distance: number }[] }[] } }[] = [];
+    await page.unroute('**/api/structured');
+    const revised = '改为两小时的考前复习后，可以先观察一道练习的复盘过程；这仍需学生同意，不接触私人资料，原先的真实作业观察建议需重新考虑。';
+    await page.route('**/api/structured', route => {
+        calls++; requests.push(route.request().postDataJSON().input);
+        return route.fulfill({ json: { value: { intents: [revised, '备用方向二。', '备用方向三。'].map(text => ({ type: 'surface_possibility', text })) }, mock: false, providerLabel: 'Correction fixture, not live' } });
+    });
+    await page.locator('[data-thought-id="' + correctionId + '"]').click();
+    await page.getByTestId('scope-continue').click(); await page.getByTestId('action-preview-run').click();
+    await expect(page.locator('article.ghost')).toHaveCount(1);
+    await expect(page.locator('article.ghost .thought-preview')).toHaveText(revised);
+    expect(requests[0].context.scope.map(item => item.id)).toEqual([correctionId]);
+    expect(requests[0].guidance.candidateLimit).toBe(1);
+    expect(requests[0].guidance.branches[0].authored[0]).toEqual({ id: correctionId, distance: 0 });
+    expect(requests[0].context.local.find(item => item.id === keptId)?.text).toBe(answer);
+    expect(requests[0].context.local.find(item => item.id === 'question')?.text).toBe(question);
+    expect((await saved(page)).thoughts[keptId].text).toBe(answer);
+    expect((await saved(page)).thoughts.question.text).toBe(question);
+    expect(calls).toBe(1); expect(errors).toEqual([]);
+    await page.screenshot({ path: info.outputPath('correction-one-direction-' + theme + '.png') });
+});
+test('a strengthened key point falls back to the original, without another request', async ({ page }) => {
+    const original = '这更像是尚未找到值得验证的问题，不能直接说明没有需求。' + '这是一条待验证的判断，要保留学生没有参与的其他可能原因。'.repeat(4);
+    const { ghost, calls } = await boot(page, 'light', original, { point: '说明真正的问题还没找到。' });
+    await expect(ghost).not.toHaveAttribute('data-reading-focus', 'true');
+    await expect(ghost.locator('.reading-focus-card-label')).toHaveText('正文预览 · 尚未提炼');
+    await ghost.click(); await ghost.getByRole('button', { name: '阅读原文', exact: true }).click();
+    await expect(page.getByTestId('reading-original')).toHaveText(original);
+    expect(calls).toEqual({ primary: 1, manual: 0, respond: 0 });
+});
+test('an empty next step explains why it stopped and preserves kept material', async ({ page }) => {
+    const { ghost } = await boot(page);
+    const keptId = (await ghost.getAttribute('data-thought-id'))!;
+    await ghost.click(); await page.getByTestId('ai-proposal-keep').click();
+    let calls = 0; const reason = '还缺少学生实际遇到的问题，继续展开会重复当前建议。';
+    await page.unroute('**/api/structured');
+    await page.route('**/api/structured', route => { calls++; return route.fulfill({ json: { value: { intents: [], pause: { reason } }, mock: false, providerLabel: 'Empty fixture, not live' } }); });
+    await page.locator('[data-thought-id="' + keptId + '"]').click();
+    await page.getByTestId('scope-continue').click(); await page.getByTestId('action-preview-run').click();
+    const notice = page.locator('.notice[role="status"]');
+    await expect(notice).toBeVisible();
+    await expect(notice).toContainText('本轮没有新增建议：' + reason);
+    await expect(page.locator('article.ghost')).toHaveCount(0);
+    expect((await saved(page)).thoughts[keptId].text).toBe(answer); expect(calls).toBe(1);
 });

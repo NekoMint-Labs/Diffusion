@@ -50,8 +50,8 @@ export function useThinkingService({ controller, repository, settings, credentia
     // long-lived object that reads the current selection when a request is made.
     const runtime = useMemo(() => new AIRuntime(controller, () => createThinkingProvider(selection.current, credentials), {
         ...(readingTrialEnabled() ? { respondWithPresentation: async (provider, packet, intent, signal) => {
-            const { response, readings } = await respondWithReading(provider, packet, intent, signal);
-            return { response, presentText: (text: string, key: string) => {
+            const { response, readings, emptyReason } = await respondWithReading(provider, packet, intent, signal);
+            return { response, emptyReason, presentText: (text: string, key: string) => {
                 const result = readings.get(text);
                 if (result) rememberReadingFocus(key, text, result);
             } };

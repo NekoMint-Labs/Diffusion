@@ -209,7 +209,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         stopDiffuseForIntent();
         const action = preview.action === 'continue' ? 'continue' : 'question';
         const prompt = preview.action === 'continue'
-            ? `Continue this line of thought. Return ${options.count} distinct continuation proposal${options.count === 1 ? '' : 's'}.`
+            ? `Continue this line of thought. Return up to ${options.count} distinct continuation proposal${options.count === 1 ? '' : 's'}. Fewer or none are valid when no useful new contribution remains; an explicit request in the selected authored wording may set a lower count.`
             : `Ask up to ${options.count} distinct question${options.count === 1 ? '' : 's'} that could move this thinking. Fewer questions or no questions are valid when no useful new unknown remains.`;
         await runtime.run(action, prompt, preview.ids, { maxCandidates: options.count, projectSources: options.fieldSources, activity: preview.action === 'continue' ? 'unfold' : 'radiate' });
     };

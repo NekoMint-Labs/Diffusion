@@ -1,14 +1,22 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { chromium, expect } from '@playwright/test';
-import { createProject, makeThought } from '../../src/core/model.ts';
-import { validateProject } from '../../src/core/validation.ts';
+import { parseCaptureOptions, capturePlan, captureUsage, assertNativeExecutionAllowed, createRunDirectory } from './capture-options.mjs';
 
-const version = process.argv[2] || 'candidate';
-const port = Number(process.argv[3] || 9224);
-const out = path.resolve('../../outputs/A-first-round-20261028/live-v3');
-fs.mkdirSync(out, { recursive: true });
+const options = parseCaptureOptions(process.argv.slice(2), 'native');
+if (options.help) { console.log(captureUsage); process.exit(0); }
+const plan = capturePlan(options);
+console.log(JSON.stringify(plan, null, 2));
+if (!options.execute) process.exit(0);
+assertNativeExecutionAllowed(options);
+createRunDirectory(options.output, plan);
+// The dry-run above does not import Playwright or application code, connect, or mutate data.
+const { chromium, expect } = await import('@playwright/test');
+const { createProject, makeThought } = await import('../../src/core/model.ts');
+const { validateProject } = await import('../../src/core/validation.ts');
+const version = options.role;
+const port = options.port;
+const out = options.output;
 const common = '我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。';
 const ask = '在这些条件下，先做什么？请给我一个方向。';
 const browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`);
@@ -41,13 +49,14 @@ await page.addInitScript(() => {
     localStorage.setItem('diffusion-first-field-tutorial-v1', JSON.stringify({status:'complete'}));
     localStorage.setItem('diffusion-active-project', 'main');
 });
-for(const name of (process.argv[4]?.split(',') ?? ['ask','continue','angle','diffuse','correction','uncertainty'])) {
-    const record: any={version,case:name,date:new Date().toISOString(),source:version==='candidate'?'86b072bba153526350d0c4f1d481d21ef727b65a':'5ab6b209924828127b10528044d05debc9dcceda',
-        flags:version==='candidate'?'readingTrial=1&propositionTrial=1':'none',provider:'deepseek',requestedModel:'deepseek-v4-pro',thinkingDepth:'standard',
-        harness:'Isolated native WebView, genuine provider transport, no response mocks, public synthetic Field fixtures; not a human usability study',results:[]};
+for(const name of options.scenarios) {
+    const record: any={version,case:name,date:new Date().toISOString(),declaredSource:options.declaredSource,
+        sourceVerification:plan.sourceVerification,singleStepVerified:false,
+        flags:options.flags||'none',provider:'deepseek',requestedModel:'deepseek-v4-pro',thinkingDepth:'standard',
+        harness:'Operator-selected native WebView, provider transport without response mocks, public synthetic Field fixtures; isolation and build identity require operator verification; not a human usability study',results:[]};
     const file=path.join(out,`${version}-${name}.json`);
     try {
-        await page.goto('http://tauri.localhost/'+(version==='candidate'?'?readingTrial=1&propositionTrial=1':''));
+        await page.goto(plan.url);
         await expect(page.getByTestId('field')).toBeVisible();
         const project=createProject('main','A public comparison'); project.createdAt=1;project.updatedAt=1;
         project.thoughts.question=makeThought(common,{x:300,y:200},1,'question');

@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import type { ContextPacket } from '../../src/core/semantics.ts';
 import { createProject, makeThought, type ProjectState } from '../../src/core/model.ts';
+import { parseProjectExport, recoveredProject } from '../../src/core/validation.ts';
 const question = '我想做一个面向大学生的 AI 学习工具，请先找出最值得验证的问题，不要给完整开发方案。';
 const condition = '如果学生不愿参与，也可能是隐私顾虑，不能直接说明没有需求。';
 const answer = '先验证学生会不会为这个工具改变现在的做法。\n\n在每周只有四小时、先做小范围验证的条件下，可以围绕一次真实作业观察对方是否愿意尝试。暂时不开发完整产品。' + condition + '保留每次反应的具体原因，再判断是否值得进入下一步。';
@@ -13,7 +14,7 @@ async function saved(page: Page): Promise<ProjectState> {
         opening.onsuccess = () => { const db = opening.result; const read = db.transaction('projects').objectStore('projects').get('main'); read.onsuccess = () => { db.close(); resolve(read.result); }; read.onerror = () => { db.close(); reject(read.error); }; };
     }));
 }
-async function boot(page: Page, theme: 'light' | 'dark' = 'light', text = answer, reading: unknown = { point }, propositions = false) {
+async function boot(page: Page, theme: 'light' | 'dark' = 'light', text = answer, reading: unknown = { point }, propositions = false, action: 'continue' | 'diffuse' = 'continue') {
     const calls = { primary: 0, manual: 0, respond: 0 };
     const contexts: ContextPacket[] = [];
     await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: theme });
@@ -26,6 +27,11 @@ async function boot(page: Page, theme: 'light' | 'dark' = 'light', text = answer
         const input = route.request().postDataJSON().input;
         if (input.context) {
             calls.primary++; contexts.push(input.context);
+            if (action === 'diffuse') {
+                // Enter the ordinary Run settings path after one explicitly empty Angle fixture.
+                if (input.intent.kind === 'angle') return route.fulfill({ json: { value: { intents: [] }, mock: false, providerLabel: 'Injected warmup fixture, not live' } });
+                expect(input.intent.kind).toBe('diffuse');
+            }
             return route.fulfill({ json: { value: { intents: [{ type: 'surface_possibility', text, ...(reading === null ? {} : { reading }) }] }, mock: false, providerLabel: 'Injected generation fixture, not live' } });
         }
         calls.manual++;
@@ -40,7 +46,17 @@ async function boot(page: Page, theme: 'light' | 'dark' = 'light', text = answer
         opening.onsuccess = () => { const db = opening.result; const tx = db.transaction('projects', 'readwrite'); tx.objectStore('projects').put(project); tx.oncomplete = () => { db.close(); resolve(); }; tx.onerror = () => { db.close(); reject(tx.error); }; };
     }), project);
     await page.reload(); await page.locator('[data-thought-id="question"]').click();
-    await page.getByTestId('scope-continue').click(); await page.getByTestId('action-preview-run').click();
+    if (action === 'continue') {
+        await page.getByTestId('scope-continue').click(); await page.getByTestId('action-preview-run').click();
+    } else {
+        await page.keyboard.press('Control+k');
+        const command = page.getByTestId('command-palette').locator('[data-command="diffuse"]');
+        await command.scrollIntoViewIfNeeded(); await command.click();
+        await page.getByRole('dialog', { name: '换个角度', exact: true }).getByRole('button', { name: '1', exact: true }).click();
+        await page.getByTestId('action-preview-run').click();
+        await page.locator('.diffuse-indicator').getByRole('button', { name: '详情', exact: true }).click();
+        await page.getByRole('dialog', { name: '本次设置', exact: true }).getByRole('button', { name: '运行', exact: true }).click();
+    }
     const ghost = page.locator('article.ghost'); await expect(ghost).toHaveCount(1);
     return { ghost, calls, contexts };
 }
@@ -294,6 +310,41 @@ test('manual point survives Keep and reload, while a later user edit removes it'
     await expect.poll(async () => (await saved(page)).thoughts[id]?.proposition).toBeUndefined();
     await expect(kept.locator('.thought-preview')).toHaveText('我还没有确认这个问题存在，先保留为假设。');
     expect(calls).toEqual({ primary: 1, manual: 1, respond: 0 });
+});
+
+for (const suppliedPoint of [true, false]) test('ordinary Diffuse keeps reading eligibility through Keep and JSON recovery: point=' + suppliedPoint, async ({ page }) => {
+    const { ghost, calls } = await boot(page, 'light', answer, suppliedPoint ? { point } : null, true, 'diffuse');
+    const id = (await ghost.getAttribute('data-thought-id'))!;
+    await ghost.click(); await page.getByTestId('ai-proposal-keep').click();
+    const kept = page.locator('[data-thought-id="' + id + '"]');
+    await expect.poll(async () => (await saved(page)).thoughts[id]?.text).toBe(answer);
+    const canonical = await saved(page);
+    expect(canonical.thoughts[id].generationAction).toBeUndefined();
+    expect(canonical.thoughts[id].derivedFrom).toBeUndefined();
+    if (suppliedPoint) await expect(kept.locator('.thought-preview')).toHaveText(point);
+    else await expect(kept.locator('.reading-focus-card-label')).toHaveText('正文预览 · 尚未提炼');
+    const restored = recoveredProject(parseProjectExport(JSON.stringify({ format: 'diffusion-project', version: 1, project: canonical })));
+    restored.id = 'main';
+    await page.evaluate(project => new Promise<void>((resolve, reject) => {
+        const opening = indexedDB.open('diffusion-explorer-v1');
+        opening.onsuccess = () => { const db = opening.result; const tx = db.transaction('projects', 'readwrite'); tx.objectStore('projects').put(project); tx.oncomplete = () => { db.close(); resolve(); }; tx.onerror = () => { db.close(); reject(tx.error); }; };
+    }), restored);
+    await page.reload();
+    if (suppliedPoint) await expect(kept.locator('.thought-preview')).toHaveText(point);
+    await kept.click(); await kept.getByRole('button', { name: '阅读原文', exact: true }).click();
+    const reader = page.getByTestId('proposition-reader');
+    await expect(reader.getByTestId('reading-original')).toHaveText(answer);
+    if (suppliedPoint) await expect(reader.getByTestId('reading-focus-run')).toHaveCount(0);
+    else {
+        await expect(reader.getByTestId('reading-focus-run')).toBeVisible();
+        await reader.getByTestId('reading-focus-run').click();
+        await expect.poll(async () => (await saved(page)).thoughts[id]?.proposition?.text).toBe(point);
+        await reader.locator('.surface-close').click();
+        await page.reload(); await expect(kept.locator('.thought-preview')).toHaveText(point);
+    }
+    expect(calls.manual).toBe(suppliedPoint ? 0 : 1); expect(calls.respond).toBe(0);
+    expect(calls.primary).toBe(2); // One empty Angle fixture, then one ordinary Diffuse generation.
+    expect((await saved(page)).thoughts[id].text).toBe(answer);
 });
 
 test('selecting another card yields the reader without stealing the new selection or starting another request', async ({ page }) => {

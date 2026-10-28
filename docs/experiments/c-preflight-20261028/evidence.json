@@ -1,0 +1,310 @@
+{
+  "capturedAt": "2026-10-28 12:35:46 UTC",
+  "repository": "NekoMint-Labs/Diffusion",
+  "candidateSource": "8f9d62130516201b0b6a471edb3312728cd1981f",
+  "baseSource": "827fb65bc926fc1eca25827ffe9abbc944632864",
+  "testedMerge": "5effb5948285f93bbc1c56602b586c2d06d6c333",
+  "sourceAndMergeTree": "7d9240b8efff134e1baf95d5c32b511e87044aa9",
+  "checks": [
+    {
+      "name": "E2E gate",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "8f9d62130516201b0b6a471edb3312728cd1981f",
+      "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643224/job/122796210618"
+    },
+    {
+      "name": "Typecheck, contracts, tests, and build",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "8f9d62130516201b0b6a471edb3312728cd1981f",
+      "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643037/job/122793565311"
+    },
+    {
+      "name": "Offline discovery engine tests",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "8f9d62130516201b0b6a471edb3312728cd1981f",
+      "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643037/job/122793564948"
+    },
+    {
+      "name": "Interaction 1/3",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "8f9d62130516201b0b6a471edb3312728cd1981f",
+      "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643224/job/122793557748"
+    },
+    {
+      "name": "Interaction 2/3",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "8f9d62130516201b0b6a471edb3312728cd1981f",
+      "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643224/job/122793557720"
+    },
+    {
+      "name": "Interaction 3/3",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "8f9d62130516201b0b6a471edb3312728cd1981f",
+      "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643224/job/122793557658"
+    },
+    {
+      "name": "Production backgrounds",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "8f9d62130516201b0b6a471edb3312728cd1981f",
+      "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643224/job/122793557536"
+    },
+    {
+      "name": "Native discovery argument validation",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "8f9d62130516201b0b6a471edb3312728cd1981f",
+      "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643039/job/122793556466"
+    }
+  ],
+  "reviewThreads": [
+    {
+      "path": "src/ui/thought/ThoughtView.tsx",
+      "resolved": true,
+      "outdated": true,
+      "commentIds": [
+        4397015747,
+        4399710899
+      ]
+    },
+    {
+      "path": "src/ui/thought/generatedReading.ts",
+      "resolved": false,
+      "outdated": true,
+      "commentIds": [
+        4399667874,
+        4400118157
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "id": 40681643224,
+      "name": "Playwright E2E",
+      "head": "8f9d62130516201b0b6a471edb3312728cd1981f",
+      "status": "completed",
+      "conclusion": "success",
+      "attempt": 1,
+      "event": "pull_request",
+      "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643224"
+    },
+    {
+      "id": 40681643037,
+      "name": "CI",
+      "head": "8f9d62130516201b0b6a471edb3312728cd1981f",
+      "status": "completed",
+      "conclusion": "success",
+      "attempt": 1,
+      "event": "pull_request",
+      "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643037"
+    },
+    {
+      "id": 40681643039,
+      "name": "Native discovery argument contracts",
+      "head": "8f9d62130516201b0b6a471edb3312728cd1981f",
+      "status": "completed",
+      "conclusion": "success",
+      "attempt": 1,
+      "event": "pull_request",
+      "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643039"
+    }
+  ],
+  "windowsPackageRunFound": false,
+  "reviewApproved": false,
+  "localApplicationLaunched": false,
+  "realModelInvoked": false,
+  "physicalAcceptancePerformed": false,
+  "e2eAudit": {
+    "schema_version": 1,
+    "audited_at_utc": "2026-10-28T12:35:52.205Z",
+    "scope": "Read-only audit of existing GitHub Actions evidence and downloaded ZIP archives; no application, browser, test framework, or desktop was run locally by this audit.",
+    "repository": "NekoMint-Labs/Diffusion",
+    "pull_request_url": "https://github.com/NekoMint-Labs/Diffusion/pull/83",
+    "source_provenance": {
+      "run_head_sha": "8f9d62130516201b0b6a471edb3312728cd1981f",
+      "actual_checkout_sha": "5effb5948285f93bbc1c56602b586c2d06d6c333",
+      "base_sha": "827fb65bc926fc1eca25827ffe9abbc944632864",
+      "head_tree_sha": "7d9240b8efff134e1baf95d5c32b511e87044aa9",
+      "checkout_tree_sha": "7d9240b8efff134e1baf95d5c32b511e87044aa9",
+      "trees_identical": true,
+      "note": "All four execution logs name the synthetic PR merge checkout. The GitHub Git commit API independently confirms that checkout and the PR head have identical complete Git trees.",
+      "sources": [
+        "https://api.github.com/repos/NekoMint-Labs/Diffusion/git/commits/8f9d62130516201b0b6a471edb3312728cd1981f",
+        "https://api.github.com/repos/NekoMint-Labs/Diffusion/git/commits/5effb5948285f93bbc1c56602b586c2d06d6c333"
+      ]
+    },
+    "workflow_run": {
+      "id": 40681643224,
+      "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643224",
+      "attempt": 1,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "jobs": [
+      {
+        "id": 122793557536,
+        "name": "Production backgrounds",
+        "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643224/job/122793557536",
+        "status": "completed",
+        "conclusion": "success",
+        "log_summary": {
+          "passed": 31,
+          "skipped_explicitly_reported": null
+        },
+        "summary_lines": [
+          "2026-10-28T11:40:01.3439636Z ##[group]Run pnpm exec playwright test --project=production-backgrounds",
+          "2026-10-28T11:40:01.3440603Z pnpm exec playwright test --project=production-backgrounds",
+          "2026-10-28T11:43:17.3402689Z   31 passed (3.3m)"
+        ]
+      },
+      {
+        "id": 122793557658,
+        "name": "Interaction 3/3",
+        "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643224/job/122793557658",
+        "status": "completed",
+        "conclusion": "success",
+        "log_summary": {
+          "passed": 154,
+          "skipped_explicitly_reported": null
+        },
+        "summary_lines": [
+          "2026-10-28T11:39:59.8163802Z ##[group]Run pnpm exec playwright test --project=interaction --shard=3/3",
+          "2026-10-28T11:39:59.8164420Z pnpm exec playwright test --project=interaction --shard=3/3",
+          "2026-10-28T11:44:02.2327848Z   154 passed (4.0m)"
+        ]
+      },
+      {
+        "id": 122793557720,
+        "name": "Interaction 2/3",
+        "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643224/job/122793557720",
+        "status": "completed",
+        "conclusion": "success",
+        "log_summary": {
+          "passed": 151,
+          "skipped_explicitly_reported": 12
+        },
+        "summary_lines": [
+          "2026-10-28T11:39:54.2209906Z ##[group]Run pnpm exec playwright test --project=interaction --shard=2/3",
+          "2026-10-28T11:39:54.2210372Z pnpm exec playwright test --project=interaction --shard=2/3",
+          "2026-10-28T11:44:22.8638966Z   12 skipped",
+          "2026-10-28T11:44:22.8639190Z   151 passed (4.5m)"
+        ]
+      },
+      {
+        "id": 122793557748,
+        "name": "Interaction 1/3",
+        "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643224/job/122793557748",
+        "status": "completed",
+        "conclusion": "success",
+        "log_summary": {
+          "passed": 168,
+          "skipped_explicitly_reported": null
+        },
+        "summary_lines": [
+          "2026-10-28T11:39:57.9774081Z ##[group]Run pnpm exec playwright test --project=interaction --shard=1/3",
+          "2026-10-28T11:39:57.9774609Z pnpm exec playwright test --project=interaction --shard=1/3",
+          "2026-10-28T11:45:27.4843997Z   168 passed (5.5m)"
+        ]
+      },
+      {
+        "id": 122796210618,
+        "name": "E2E gate",
+        "url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643224/job/122796210618",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "test_summary": {
+      "passed": 504,
+      "skipped_reported": 12,
+      "failed": null,
+      "flaky": null,
+      "interrupted": null,
+      "retry_count": null,
+      "configured_retries": 0,
+      "configured_workers": 1,
+      "count_source": "Final job-log summaries: interaction 168 + 151 + 154, production backgrounds 31; interaction shard 2 explicitly reports 12 skipped. No failed/flaky/interrupted or retry-count JSON was available.",
+      "config_source": "https://github.com/NekoMint-Labs/Diffusion/blob/8f9d62130516201b0b6a471edb3312728cd1981f/playwright.config.ts"
+    },
+    "report_json": {
+      "available": false,
+      "errors": null,
+      "errors_array_verified": false,
+      "reason": "All four valid artifact ZIPs contain PNG screenshots only. No HTML, JSON, blob report, or report.json exists in the archives. Success conclusions and passed counts do not establish errors == []."
+    },
+    "artifacts": [
+      {
+        "id": 12813610536,
+        "name": "playwright-interaction-3-40681643224",
+        "source_url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643224/artifacts/12813610536",
+        "local_file": "interaction-3.zip",
+        "bytes": 56244340,
+        "github_sha256": "bba0b6b8a8e1324f2989e9fa73a8373b02294acafddc8a50fec1aca94ecf2c2a",
+        "local_sha256": "bba0b6b8a8e1324f2989e9fa73a8373b02294acafddc8a50fec1aca94ecf2c2a",
+        "sha256_match": true,
+        "png_entry_count": 120,
+        "contains_report_json": false,
+        "contains_html": false,
+        "archive_crc_verified": true,
+        "expires_at_utc": "2026-11-11T11:44:02Z"
+      },
+      {
+        "id": 12813455885,
+        "name": "playwright-interaction-2-40681643224",
+        "source_url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643224/artifacts/12813455885",
+        "local_file": "interaction-2.zip",
+        "bytes": 70796028,
+        "github_sha256": "8b50549acf3b2ea26a506bb86af58ea7275d1141368cbdc1b0e2faec293acf5a",
+        "local_sha256": "8b50549acf3b2ea26a506bb86af58ea7275d1141368cbdc1b0e2faec293acf5a",
+        "sha256_match": true,
+        "png_entry_count": 100,
+        "contains_report_json": false,
+        "contains_html": false,
+        "archive_crc_verified": true,
+        "expires_at_utc": "2026-11-11T11:44:23Z"
+      },
+      {
+        "id": 12813366209,
+        "name": "playwright-production-backgrounds-40681643224",
+        "source_url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643224/artifacts/12813366209",
+        "local_file": "backgrounds-complete.zip",
+        "bytes": 10612668,
+        "github_sha256": "4abf5414495423c9b338fe68914fe18f39e89961c40054f00378a24343191ed5",
+        "local_sha256": "4abf5414495423c9b338fe68914fe18f39e89961c40054f00378a24343191ed5",
+        "sha256_match": true,
+        "png_entry_count": 20,
+        "contains_report_json": false,
+        "contains_html": false,
+        "archive_crc_verified": true,
+        "expires_at_utc": "2026-11-11T11:43:17Z"
+      },
+      {
+        "id": 12813003116,
+        "name": "playwright-interaction-1-40681643224",
+        "source_url": "https://github.com/NekoMint-Labs/Diffusion/actions/runs/40681643224/artifacts/12813003116",
+        "local_file": "interaction-1-complete.zip",
+        "bytes": 46336787,
+        "github_sha256": "88d4b339e7f0eac1fb8baa03b5c1d6d5cd1a977f5acdce2089cc6717fe73e847",
+        "local_sha256": "88d4b339e7f0eac1fb8baa03b5c1d6d5cd1a977f5acdce2089cc6717fe73e847",
+        "sha256_match": true,
+        "png_entry_count": 89,
+        "contains_report_json": false,
+        "contains_html": false,
+        "archive_crc_verified": true,
+        "expires_at_utc": "2026-11-11T11:45:27Z"
+      }
+    ],
+    "limitations": [
+      "No new test execution, mounted-application interaction, native Windows acceptance, or installed-package acceptance was performed by this audit.",
+      "The audit records the existing remote workflow outcome and exact source-tree provenance; it is not independent native or user acceptance.",
+      "Two initial artifact downloads were truncated. Only the four complete archives listed above are accepted evidence.",
+      "Failure, flake, interruption, actual retry counts, and the global report errors array remain null because no structured report was published."
+    ]
+  }
+}

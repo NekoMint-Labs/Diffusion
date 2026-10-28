@@ -105,6 +105,15 @@ Until a complete run fails and is classified, full Playwright is a blocking CI g
 
 On failure, preserve `playwright-report/` and `test-results/`; both are ignored locally and uploaded by the E2E GitHub Actions workflow.
 
+Every CI shard and the production-background job also write
+`playwright-report/results.json` using Playwright's JSON reporter. Their existing
+diagnostic artifacts upload it on success or failure alongside screenshots. When
+qualifying a candidate, inspect each job's `errors` array, `stats`, test outcomes
+and retries, and record the workflow's checked-out commit. A missing report is a
+missing evidence item; a successful job or screenshot collection must not be
+reported as an inspected `errors: []`. If the workflow checks out GitHub's merge
+ref, compare its tree with the candidate tree before reusing that evidence.
+
 ## Visual and Appearance verification
 
 For changes to Theme/Profile, Field Style, Accent, Image Atmosphere, Field Presence, Ambient Motion, Field materials, or motion:

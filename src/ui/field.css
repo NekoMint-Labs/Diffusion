@@ -413,3 +413,14 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .field[data-level="local"] .thought:is([data-reading-focus="true"], [data-compact-original="true"]):not(.editing) .thought-preview { display: block; -webkit-line-clamp: unset; line-clamp: unset; max-height: none; overflow: visible; }
 
 .reading-focus-card-label { display: block; margin-bottom: 8px; color: var(--ink-helper); font: calc(var(--type-helper-size) * var(--inverse-zoom))/1.4 var(--ui-font); }
+
+/* Fixed reader only changes the right edge; world origin and camera stay owned by Field. */
+.app[data-proposition-reader="true"] > .field { right: 360px; }
+.app[data-proposition-reader="true"] > .global-actions { right: 384px; }
+.app[data-proposition-reader="true"] .speak-positioner { right: 360px; }
+@media (max-width: 760px) {
+  .app[data-proposition-reader="true"] > .field,
+  .app[data-proposition-reader="true"] > .identity,
+  .app[data-proposition-reader="true"] > .global-actions,
+  .app[data-proposition-reader="true"] .speak-positioner { visibility: hidden; pointer-events: none; }
+}

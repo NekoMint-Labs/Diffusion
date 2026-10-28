@@ -1,5 +1,20 @@
 # Local storage and migrations
 
+## Optional AI generation origin (PR #83 review fix)
+
+`Thought.generatedBy?: 'ai'` records the explicit Keep of a non-ingestion AI candidate.
+It is separate from `origin.projectId/note`: Fork and Bring write those fields for hand-written
+content too. Keep creates the marker; Fork, Bring, undo/redo, JSON and Dexie carry it without
+inferring new authorship. It is display eligibility, not a factual endorsement or permission.
+The optional value is validated as `ai`; malformed values fail normal Thought/project validation.
+No database/table/index or portable schema version changes, data rewrite, or model backfill occurs.
+Unmarked legacy generated records remain readable in full, but cannot reliably regain generation
+eligibility from provenance prose, even when a saved proposition is present. Both records remain
+stored; no text or proposition is discarded. Causal actions alone do not establish AI origin:
+hand-written continuations from Crystals also carry them.
+Older clients may drop this optional marker on rewriting a project; preservation by old clients is
+not guaranteed. See [Fork review acceptance](experiments/FIELD_FORK_READING_REVIEW_20261028.md).
+
 `src/storage/dexie.ts` retains the database name `diffusion-explorer-v1`. Changing it for branding would strand prior projects. The current **Dexie database version is 4**; the existing `projects` and `originals` tables remain. Portable project `schemaVersion: 1` remains compatible; it is not the IndexedDB version.
 
 Version 4 adds an initially empty `deletedProjects` table containing only deleted Field IDs. It does
@@ -42,3 +57,15 @@ versions have not been qualified to interpret or preserve the new organization p
 Pure migration, idempotence, legacy snippet downgrade, raw-input normalization, geometry preservation, long-downtime and queue tests are covered by the offline suite. Three tests in `tests/unit/migrations.test.ts` exercise Dexie over fake IndexedDB: v1-to-v4 upgrade and reopen, rollback of an invalid upgrade, and v3-to-v4 preservation of projects and original blobs with an initially empty deletion-marker table. Repository tests also cover shared originals, atomic deletion rollback and rejection of a late save from a second connection after reopen. Browser tests exercise deletion and startup recovery against native IndexedDB in a disposable profile. Native WebView upgrade from a real installed database and disk timings have not been measured.
 
 Before a real upgrade rollout, preserve a portable backup and original files, execute the installed migration tests, then reopen an actual v0.1 database in the target browser/WebView. Do not clear storage to make a failing upgrade appear successful.
+
+## Optional proposition prototype metadata
+
+The opt-in `propositionTrial=1` prototype adds no table or index. Optional Thought display
+metadata retains a bounded point and its exact original text. Old records need no backfill.
+Import/recovery discards invalid/mismatched optional metadata while retaining all normal
+project validation and the original wording; there is no automatic model request. Editing
+invalidates the point, and existing snapshot Undo/Redo restores matching records together.
+Full text remains export authority. The schemaVersion stays 1 for this optional field; this is
+not a guarantee older clients preserve it. Duplicating the bound original increases export size
+and does not increase the existing 10 MiB recovery budget. See the
+[prototype report](experiments/FIELD_PROPOSITION_READER_TRIAL_20261027.md).

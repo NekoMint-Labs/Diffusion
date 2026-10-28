@@ -1,18 +1,20 @@
 import { useIsPresent } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '../../shared/i18n.ts';
 import { isCompactReading, type FocusReadingResult } from '../../ai/readingFocus.ts';
 import { ThinkingError, failureText } from '../../ai/errors.ts';
-import { rememberReadingFocus, useReadingFocus } from './readingFocusStore.ts';
+import { validProposition, type Proposition } from '../../core/proposition.ts';
+import { propositionTrialEnabled, rememberReadingFocus, useReadingFocus } from './readingFocusStore.ts';
 import { Button } from '../primitives/Button.tsx';
 
 export type FocusReading = (text: string, signal: AbortSignal) => Promise<FocusReadingResult>;
-export function FocusReadingPanel({ id, text, generate, contextLabel, showOriginal = true }: { id: string; text: string; generate: FocusReading; contextLabel?: string; showOriginal?: boolean }) {
+export function FocusReadingPanel({ id, text, generate, contextLabel, showOriginal = true, proposition, providerLabel = '', onExtracted, allowExtraction = true }: { allowExtraction?: boolean; proposition?: Proposition; providerLabel?: string; onExtracted?: (result: FocusReadingResult) => void; id: string; text: string; generate: FocusReading; contextLabel?: string; showOriginal?: boolean }) {
     const present = useIsPresent();
     const shown = useRef(present); shown.current = present;
     const cached = useReadingFocus(id, text);
     const compact = isCompactReading(text);
-    const result = compact ? undefined : cached;
+    const stored = useMemo(() => validProposition(proposition, text) ? { focus: { point: proposition.text, conditions: [], highlights: [] }, provider: providerLabel, mock: false } : undefined, [proposition, text, providerLabel]);
+    const result = compact ? undefined : propositionTrialEnabled() ? stored : cached;
     const [pending, setPending] = useState(false);
     const [error, setError] = useState('');
     const active = useRef<AbortController | null>(null);
@@ -35,6 +37,7 @@ export function FocusReadingPanel({ id, text, generate, contextLabel, showOrigin
         try {
             const next = await Promise.race([generate(text, abort.signal), interrupted]);
             if (abort.signal.aborted || active.current !== abort || !shown.current) return;
+            onExtracted?.(next);
             rememberReadingFocus(id, text, next);
         } catch (failure) {
             if (active.current !== abort) return;
@@ -54,7 +57,7 @@ export function FocusReadingPanel({ id, text, generate, contextLabel, showOrigin
         {result && <details className="focus-reading-summary"><summary>{t('Card key point')}</summary>
             <p className="focus-reading-point" data-testid="reading-focus-point">{result.focus.point}</p>
         </details>}
-        {!compact && !result && <div className="focus-reading-controls">
+        {allowExtraction && !compact && !result && <div className="focus-reading-controls">
             <Button size="sm" disabled={pending} onClick={() => void run()} data-testid="reading-focus-run">{t(result ? 'Summarize again' : 'Extract this key point')}</Button>
             {pending && <Button size="sm" variant="ghost" onClick={() => { active.current?.abort(); active.current = null; setPending(false); }}>{t('Stop')}</Button>}
             <span role="status">{pending ? t('Extracting key point...') : ''}</span>

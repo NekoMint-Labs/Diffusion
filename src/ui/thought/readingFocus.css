@@ -16,3 +16,16 @@
 @media (max-width: 620px) {
   .surface.anchored.thought-reader.reading-trial { inset: 16px 16px auto !important; width: calc(100vw - 32px); max-width: none; max-height: calc(100dvh - 32px); }
 }
+
+/* Opt-in fixed reading region: a sibling of Field, never anchored to card geometry. */
+.surface.proposition-reader { inset: 0 0 0 auto; width: 360px; max-height: 100dvh; border-radius: 0; border-width: 0 0 0 1px; box-shadow: none; }
+.proposition-reader .surface-header { padding: 18px 16px; }
+.proposition-reader .surface-header h2 { margin: 0; font: 500 var(--type-label-size)/1.6 var(--ui-font); }
+.proposition-reader .surface-body { overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+.proposition-reader .thought-reader-text { font-size: var(--thought-size); line-height: 1.8; }
+@media (max-width: 760px) {
+  .surface.proposition-reader { width: 100%; border: 0; }
+}
+
+.proposition-reader .reader-return { display: none; }
+@media (max-width: 760px) { .proposition-reader .reader-return { display: inline-flex; } }

@@ -1139,6 +1139,7 @@ export const zh: Record<string, string> = {
     "The card uses this session summary. Keep and Continue use the full original. Reload removes the summary.": "本次提炼会显示在画布卡片上；留下和继续想仍使用完整原文。刷新后提炼结果清除。",
     "Summary · original preserved": "模型提炼 · 原文保留",
     "Related questions": "关联问题",
+    "Proposition · original preserved": "观点 · 原文保留",
     "Card key point": "卡片重点",
     "Read original": "阅读原文",
     "No new suggestion: {reason}": "本轮没有新增建议：{reason}",

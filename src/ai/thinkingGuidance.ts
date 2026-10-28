@@ -6,7 +6,7 @@ export function requestedCandidateLimit(text: string): number | undefined {
     let requested: number | undefined;
     for (const clause of text.normalize('NFKC').split(/[。！？!?；;\n]/u)) {
         const value = clause.trim();
-        const zh = /^(?:请)?(?:先|只|仅)?(?:给我|给出|提供|提出|列出|选出|保留|生成|要)(?:最多|至多)?([一二两三四五1-5])(?:个|条|种|项)(?:值得继续思考的|值得验证的|最值得验证的|不同的|独立的)?(?:方向|建议|候选|思路|回答|要点|问题)(?:[，,：:].*|$)/u.exec(value);
+        const zh = /^(?:请)?(?:先|只|仅)?(?:给我|给出|提供|提出|列出|选出|保留|生成|要)(?:最多|至多)?([一二两三四五1-5])(?:个|条|种|项)(?:值得继续思考的|值得验证的|最值得验证的|不同的(?:新(?:的)?)?|独立的|新(?:的)?)?(?:方向|建议|候选|思路|回答|要点|问题)(?:[，,：:].*|$)/u.exec(value);
         const en = /^(?:please\s+)?(?:give|return|provide|offer|suggest|choose)\s+(?:me\s+)?(?:only\s+|at most\s+|up to\s+)?(one|two|three|four|five|[1-5])\s+(?:distinct\s+|different\s+)?(?:directions?|suggestions?|candidates?|answers?|ideas?|questions?)(?:[,.:].*|$)/iu.exec(value);
         const match = zh ?? en;
         if (match) requested = counts[match[1].toLowerCase()] ?? Number(match[1]);

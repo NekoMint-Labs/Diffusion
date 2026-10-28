@@ -1,8 +1,9 @@
+import { validProposition } from '../../core/proposition.ts';
 import { isCompactReading } from '../../ai/readingFocus.ts';
-import { readingTrialEnabled, useReadingFocus } from './readingFocusStore.ts';
+import { propositionTrialEnabled, readingTrialEnabled, useReadingFocus } from './readingFocusStore.ts';
 import { t } from '../../shared/i18n.ts';
 import { useLocale } from '../useLocale.ts';
-import { memo, useLayoutEffect, useRef, useState } from 'react';
+import { memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Ghost, Thought } from '../../core/model.ts';
 import { isAuthoredExample } from '../../core/demo.ts';
 import type { GeometryCache } from '../../field/spatial/index.ts';
@@ -51,7 +52,10 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
     const wasEditing = useRef(false);
     const focusOnDraft = useRef(false);
     const [draft, setDraft] = useState(item.text);
-    const readingFocus = useReadingFocus(item.id, item.text);
+    const cachedFocus = useReadingFocus(item.id, item.text);
+    const readingFocus = useMemo(() => propositionTrialEnabled()
+        ? (!('kind' in item) && !item.proposal || 'generationAction' in item && !item.origin?.inputId) && validProposition(item.proposition, item.text) ? { focus: { point: item.proposition.text } } : undefined
+        : cachedFocus, [item, cachedFocus]);
     const readingTrial = readingTrialEnabled();
     const kind = 'kind' in item ? item.kind : 'ghost';
     const proposal = ghost && 'proposal' in item ? item.proposal : undefined;
@@ -131,7 +135,7 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
     const size = kind === 'thought' || kind === 'ghost' ? thoughtSizeClass(text) : undefined;
     const compactOriginal = readingTrial && isCompactReading(text);
     const focused = !compactOriginal && !!readingFocus;
-    const previewText = focused ? readingFocus.focus.point : ghost && !proposal && !compactOriginal ? answerPreview(text) : text;
+    const previewText = focused ? readingFocus.focus.point : (ghost && !proposal || propositionTrialEnabled() && 'generationAction' in item && !item.origin?.inputId) && !compactOriginal ? answerPreview(text) : text;
     const short = (focused || compactOriginal) && level === 'local' ? previewText : semanticExcerpt(previewText, editing || find === 'current' ? 'local' : level, kind);
     // Reading is an explicit action, including a short original after Keep or a cache-clearing reload.
     const canRead = readingTrial || !!readingFocus || truncated || short !== text;
@@ -147,7 +151,7 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
         <span className="hierarchy-level">{depth ? t('Level {level}', { level: depth + 1 }) : t('Top level')}</span>
         {parentText !== undefined && <span className="hierarchy-parent">{t('Parent: {parent}', { parent: parentText })}</span>}
     </div>}
-   {readingTrial && !compactOriginal && level === 'local' && !editing && (focused || ghost && !proposal) && <span className="reading-focus-card-label">{t(focused ? 'Summary · original preserved' : 'Original preview · not summarized')}</span>}
+   {readingTrial && !compactOriginal && level === 'local' && !editing && (focused || ghost && !proposal || propositionTrialEnabled() && 'generationAction' in item && !item.origin?.inputId) && <span className="reading-focus-card-label">{t(focused ? propositionTrialEnabled() ? 'Proposition · original preserved' : 'Summary · original preserved' : 'Original preview · not summarized')}</span>}
    <div ref={preview} className="thought-preview">{editing ? <textarea ref={input} aria-label={t('Edit thought')} value={draft} maxLength={20000} onChange={e => setDraft(e.target.value)} onBlur={save} onKeyDown={e => {
                 e.stopPropagation();
                 if (e.nativeEvent.isComposing || e.keyCode === 229)

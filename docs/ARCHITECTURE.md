@@ -303,3 +303,22 @@ Historical material is kept, never mixed into current truth: `docs/history/READM
 ## Continuation rule
 
 Consult the current product and architecture contracts under [`docs/specs/`](specs/01_PRODUCT_ARCHITECTURE_AND_BOUNDARIES.md) — indexed in [`docs/README.md`](README.md) — before changing a shared seam. Historical material in `docs/history/` never overrides them. Preserve the imperative hot path, semantic ownership, evidence honesty and verified source checkpoints. Generic library behavior may be reused; whiteboard, graph, file-desk, task-manager or chatbot semantics must not replace Diffusion's model.
+
+## Optional proposition reader prototype
+
+`propositionTrial=1` extends the opt-in reading trial with exact-original-bound optional
+`proposition` records on generated Ghosts/kept Thoughts. Full `text` remains authoritative.
+Keep transfers only valid records, edits/crystallisation invalidate them, and user-selected
+manual extraction uses `thought.proposition` through the existing user-only command/history
+boundary. Project validation drops only malformed optional records on a copy; normal project
+validation remains strict. No table/index migration or schemaVersion increment is introduced;
+old clients may lose the optional value on rewrites. Exact body copies cost storage and remain
+subject to the existing JSON import budget.
+
+The new reader is a fixed Workspace sibling. Field's right edge changes; its instance, origin,
+camera and pointer capture remain. A one-shot gesture-start callback yields the reader at the
+existing threshold; wheel navigation yields it too. Yield never restores focus/camera/selection
+or cancels AI. Explicit close delegates focus to the existing coordinator. The narrow form hides
+the mounted Field and offers Return to Field. It is an optional local prototype, not proof of
+real-model quality or native Windows acceptance. See
+[the prototype report](experiments/FIELD_PROPOSITION_READER_TRIAL_20261027.md).

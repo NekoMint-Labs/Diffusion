@@ -1,4 +1,5 @@
 import { AttentionTracker } from './attention.ts';
+import { validProposition } from './proposition.ts';
 import { type ProjectState, type SessionState, type Ghost, type Phenomenon, type StructureProposal, type Thought, type InputRecord, type Point, emptySession, id } from './model.ts';
 import { type Command, type DomainEvent } from './events.ts';
 import { reduceProject } from './reducer.ts';
@@ -10,7 +11,7 @@ export interface CoreSnapshot {
 }
 export type SaveProject = (state: ProjectState) => Promise<void>;
 
-const undoable = new Set(['thought.create', 'thought.edit', 'thought.move', 'thought.delete', 'thought.keep', 'thought.release', 'thought.reparent', 'ghost.claim', 'crystal.form', 'crystal.create', 'crystal.continue', 'relation.confirm', 'relation.remove', 'source.add', 'fork.bring', 'field.rename']);
+const undoable = new Set(['thought.create', 'thought.edit', 'thought.proposition', 'thought.move', 'thought.delete', 'thought.keep', 'thought.release', 'thought.reparent', 'ghost.claim', 'crystal.form', 'crystal.create', 'crystal.continue', 'relation.confirm', 'relation.remove', 'source.add', 'fork.bring', 'field.rename']);
 /** One user-level history step: the Field before the action, plus transient objects it consumed. */
 interface HistoryStep {
     project?: ProjectState;
@@ -113,7 +114,7 @@ export class ProjectController {
             if (step) step.ghosts = [...(step.ghosts ?? []), this.claimedGhost];
         }
         this.current = { ...this.current, project: next };
-        if (actor === 'user' && ['thought.create', 'thought.edit', 'thought.move', 'thought.keep', 'thought.wake', 'ghost.claim'].includes(command.type)) {
+        if (actor === 'user' && ['thought.create', 'thought.edit', 'thought.proposition', 'thought.move', 'thought.keep', 'thought.wake', 'ghost.claim'].includes(command.type)) {
             const keys = 'thought' in command ? [command.thought.id] : 'positions' in command ? Object.keys(command.positions) : 'ids' in command ? command.ids : 'id' in command ? [command.id] : [];
             this.attention.note(keys.filter(key => !!next.thoughts[key]));
         }
@@ -132,6 +133,11 @@ export class ProjectController {
         const existing = Object.values(this.current.session.ghosts).sort((a, b) => a.createdAt - b.createdAt);
         const ghosts = Object.fromEntries(existing.slice(-9).map(g => [g.id, g]));
         this.setSession({ ...this.current.session, ghosts: { ...ghosts, [ghost.id]: ghost } });
+    }
+    setGhostProposition(key: string, proposition: import('./proposition.ts').Proposition) {
+        const ghost = this.current.session.ghosts[key];
+        if (!ghost || ghost.proposal || !validProposition(proposition, ghost.text)) return;
+        this.setSession({ ...this.current.session, ghosts: { ...this.current.session.ghosts, [key]: { ...ghost, proposition } } });
     }
     moveGhost(key: string, point: Point, options: { detach?: boolean } = {}) {
         const ghost = this.current.session.ghosts[key];
@@ -196,6 +202,7 @@ export class ProjectController {
         const thought: Thought = {
             id: ghost.id, text: ghost.text, x: ghost.x, y: ghost.y, kind: 'thought', life: 'active', kept: false,
             createdAt: now, updatedAt: now, touchedAt: now, origin: ghost.origin,
+            ...(!ghost.proposal && validProposition(ghost.proposition, ghost.text) ? { proposition: ghost.proposition } : {}),
             ...(derivedFrom.length ? { derivedFrom, generationAction: ghost.proposalAction } : {}),
         };
         // Remove the transient object first; no frame contains two instances of its identity.

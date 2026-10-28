@@ -1,3 +1,5 @@
+import type { Proposition } from '../core/proposition.ts';
+import { validProposition } from '../core/proposition.ts';
 import { t } from '../shared/i18n.ts';
 import { id, type Ghost, type InputRange, type Point, type ThinkingActivityKind, type ThinkingOperation, type ThinkingOperationKind } from '../core/model.ts';
 import { permissionFor, type AIResponse, type ContextPacket, type SemanticIntent, type UserIntent } from '../core/semantics.ts';
@@ -27,7 +29,7 @@ export interface RuntimeHooks {
     /** An opt-in response strategy may return display metadata in the same generation.
      * Metadata is attached only after the normal scope, permission and cancellation gates. */
     respondWithPresentation?: (provider: AIProvider, packet: ContextPacket, intent: UserIntent, signal: AbortSignal) => Promise<{
-        response: AIResponse; emptyReason?: string; presentText?: (text: string, id: string) => void;
+        response: AIResponse; emptyReason?: string; presentText?: (text: string, id: string) => Proposition | void;
     }>;
     /** Compatibility projection for controls that only need disabled/enabled. The operation below is
      * the source of truth; this boolean must never be used to identify a request. */
@@ -413,7 +415,7 @@ export class AIRuntime {
         finally { stopTrackingKeep(); this.cleanup(started); }
     }
 
-    private emit(candidate: SemanticIntent, packet: ContextPacket, provider: string, options: RunOptions, action: UserIntent['kind'], index: number, present?: (id: string) => void) {
+    private emit(candidate: SemanticIntent, packet: ContextPacket, provider: string, options: RunOptions, action: UserIntent['kind'], index: number, present?: (id: string) => Proposition | void) {
         const { project, session } = this.controller.getSnapshot();
         const scopeIds = packet.scope.map(item => item.id);
         const source = 'sourceId' in candidate ? packet.retrieved.sources.find(item => item.id === candidate.sourceId) : undefined;
@@ -427,8 +429,8 @@ export class AIRuntime {
                 const proposalAction = action === 'continue' || action === 'angle' || action === 'ask' ? action : undefined;
                 const mode = candidate.type === 'surface_evidence' ? 'evidence' : action === 'continue' ? 'continue' : action === 'angle' ? 'branch' : 'default';
                 const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), text, mode, this.hooks.visibleIds?.(), this.hooks.measurements?.());
-                present?.(key);
-                this.controller.addGhost({ id: key, text, ...point, createdAt: Date.now(), scopeIds, runId: options.runId, origin: provenance, proposalKind: 'thought' as const, ...(proposalAction ? { proposalAction } : {}) });
+                const proposition = present?.(key);
+                this.controller.addGhost({ id: key, text, ...(validProposition(proposition, text) ? { proposition } : {}), ...point, createdAt: Date.now(), scopeIds, runId: options.runId, origin: provenance, proposalKind: 'thought' as const, ...(proposalAction ? { proposalAction } : {}) });
                 options.onEmission?.(key);
                 break;
             }

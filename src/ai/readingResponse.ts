@@ -15,7 +15,7 @@ const trialActions = new Set(['ask', 'continue', 'angle', 'diffuse']);
 
 /** Trial-only generation strategy. The extra field never enters Core or persistence.
  * The normal semantic policy and runtime gates still decide which candidates may surface. */
-export async function respondWithReading(provider: AIProvider, packet: ContextPacket, intent: UserIntent, signal: AbortSignal) {
+export async function respondWithReading(provider: AIProvider, packet: ContextPacket, intent: UserIntent, signal: AbortSignal, options: { propositions?: boolean } = {}) {
     signal.throwIfAborted();
     const readings = new Map<string, FocusReadingResult>();
     if (provider.mock || packet.thread || !trialActions.has(intent.kind))
@@ -23,6 +23,7 @@ export async function respondWithReading(provider: AIProvider, packet: ContextPa
     const guidance = thinkingGuidance(packet, intent);
     const instructions = CORE_CONTRACT + '\n' + semanticInstructions(intent, guidance.candidateLimit)
         + '\n' + THINKING_GUIDANCE_INSTRUCTIONS
+        + (options.propositions ? '\nProposition-card trial: the card must express one independently meaningful idea, observation, question or hypothesis in natural language, not a heading or a mechanically shortened article. The complete text explains that same proposition, including its reasoning, conditions and limitations. The proposition must not become stronger than that explanation. Keep directly answered questions direct; Continue adds an implication; Another Angle changes the lens; Diffuse may stop without padding. When an independent faithful proposition cannot fit, omit reading rather than inventing certainty or claiming the preview is a complete proposition.' : '')
         + `\nReading-trial extension: the semantic shapes above still apply, with ONE optional display field: reading: {"point":"one complete card key point"} on respond_in_field or surface_possibility only. Keep text as the complete original answer. For text of at most ${COMPACT_READING_LIMIT} Unicode characters, omit reading: the card shows the complete text. For longer text, also return reading.point, at most ${COMPACT_READING_LIMIT} Unicode characters, significantly shorter than text. Incorporate every premise, negation and uncertainty essential to its meaning in this one sentence. Retain qualifying language such as 更像是, 可能, 尚不能 or may; never turn 更像是 into 说明, proves or a categorical verdict. Do not append a separate conditions list. If a faithful short point cannot be given, omit reading. Never shorten requested code, exact quotations or a document in text to meet the card budget. This display field grants no permission to mutate a Field. Return {"intents":[...]} as JSON only; an empty intents array may also carry the optional pause object described above.`;
     const raw = await provider.structured({ purpose: 'field-answer', instructions,
         input: { intent, context: { ...packet, contract: CORE_CONTRACT, maxCandidates: guidance.candidateLimit }, guidance } }, signal);

@@ -13,7 +13,7 @@ async function saved(page: Page): Promise<ProjectState> {
         opening.onsuccess = () => { const db = opening.result; const read = db.transaction('projects').objectStore('projects').get('main'); read.onsuccess = () => { db.close(); resolve(read.result); }; read.onerror = () => { db.close(); reject(read.error); }; };
     }));
 }
-async function boot(page: Page, theme: 'light' | 'dark' = 'light', text = answer, reading: unknown = { point }) {
+async function boot(page: Page, theme: 'light' | 'dark' = 'light', text = answer, reading: unknown = { point }, propositions = false) {
     const calls = { primary: 0, manual: 0, respond: 0 };
     const contexts: ContextPacket[] = [];
     await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: theme });
@@ -32,7 +32,7 @@ async function boot(page: Page, theme: 'light' | 'dark' = 'light', text = answer
         return route.fulfill({ json: { value: focus, mock: false, providerLabel: 'Injected manual fixture, not live' } });
     });
     await page.route('**/api/respond', route => { calls.respond++; return route.fulfill({ json: { providerLabel: 'Unexpected respond fixture', mock: false, intents: [] } }); });
-    await page.goto('/?locale=zh&readingTrial=1'); await expect(page.getByTestId('field')).toBeVisible();
+    await page.goto('/?locale=zh&readingTrial=1' + (propositions ? '&propositionTrial=1' : '')); await expect(page.getByTestId('field')).toBeVisible();
     const project = createProject('main', '重点原界面试用，人工注入模型响应');
     project.thoughts.question = makeThought(question, { x: 300, y: 180 }, 1, 'question');
     await page.evaluate(project => new Promise<void>((resolve, reject) => {
@@ -206,4 +206,121 @@ test('an empty next step explains why it stopped and preserves kept material', a
     await expect(notice).toContainText('本轮没有新增建议：' + reason);
     await expect(page.locator('article.ghost')).toHaveCount(0);
     expect((await saved(page)).thoughts[keptId].text).toBe(answer); expect(calls).toBe(1);
+});
+
+for (const theme of ['light', 'dark'] as const) test('proposition trial persists the original/point pair and yields its fixed reader to a drag: ' + theme, async ({ page }, info) => {
+    const { ghost, calls } = await boot(page, theme, answer, { point }, true);
+    const id = (await ghost.getAttribute('data-thought-id'))!;
+    await ghost.click(); await page.getByTestId('ai-proposal-keep').click();
+    await expect.poll(async () => (await saved(page)).thoughts[id]?.proposition?.text).toBe(point);
+    await page.reload();
+    const kept = page.locator('[data-thought-id="' + id + '"]');
+    await expect(kept.locator('.thought-preview')).toHaveText(point);
+    await kept.click(); await expect(page.getByTestId('proposition-reader')).toHaveCount(0);
+    const beforeCamera = await page.locator('.world').evaluate(el => (el as HTMLElement).style.transform);
+    const beforeBox = (await kept.boundingBox())!;
+    await kept.getByRole('button', { name: '阅读原文', exact: true }).click();
+    const reader = page.getByTestId('proposition-reader');
+    await expect(reader).toBeVisible();
+    await expect(reader.getByTestId('reading-original')).toHaveText(answer);
+    expect((await reader.boundingBox())!.width).toBe(360);
+    expect(await page.locator('.world').evaluate(el => (el as HTMLElement).style.transform)).toBe(beforeCamera);
+    expect((await kept.boundingBox())!.x).toBe(beforeBox.x);
+    const field = (await page.getByTestId('field').boundingBox())!;
+    const box = (await kept.boundingBox())!;
+    const x = Math.min(box.x + 35, field.x + field.width - 35), y = box.y + 75;
+    await page.mouse.move(x, y); await page.mouse.down();
+    await page.mouse.move(x + 2, y + 1); await expect(reader).toBeVisible();
+    await page.mouse.move(x + 52, y + 64, { steps: 6 });
+    await expect(reader).toHaveCount(0); await page.mouse.up();
+    await expect(reader).toHaveCount(0);
+    expect(await page.locator('.world').evaluate(el => (el as HTMLElement).style.transform)).toBe(beforeCamera);
+    await expect.poll(async () => (await saved(page)).thoughts[id]?.y).toBeCloseTo(box.y + 64, 0);
+    await expect(kept.getByRole('button', { name: '阅读原文', exact: true })).toBeVisible();
+    await kept.click(); await kept.getByRole('button', { name: '阅读原文', exact: true }).click();
+    await expect(reader).toBeVisible();
+    await page.keyboard.press('Escape'); await expect(reader).toHaveCount(0);
+    expect(await page.locator('.world').evaluate(el => (el as HTMLElement).style.transform)).toBe(beforeCamera);
+    expect((await saved(page)).thoughts[id].text).toBe(answer);
+    expect(calls).toEqual({ primary: 1, manual: 0, respond: 0 });
+    await kept.click(); await kept.getByRole('button', { name: '阅读原文', exact: true }).click();
+    await page.screenshot({ path: info.outputPath('fixed-proposition-reader-' + theme + '.png') });
+});
+test('reader pan/wheel dismissal preserves the new view and does not reopen on release', async ({ page }) => {
+    const { ghost } = await boot(page, 'light', answer, { point }, true);
+    await read(page);
+    const reader = page.getByTestId('proposition-reader');
+    const world = page.locator('.world'); const before = await world.getAttribute('style');
+    await page.mouse.move(200, 650); await page.mouse.down(); await page.mouse.move(245, 695, { steps: 6 }); await page.mouse.up();
+    await expect(reader).toHaveCount(0); await expect(world).not.toHaveAttribute('style', before!);
+    const moved = await world.getAttribute('style');
+    await ghost.click(); await ghost.getByRole('button', { name: '阅读原文', exact: true }).click();
+    expect(await world.getAttribute('style')).toBe(moved);
+    await reader.locator('.surface-close').click(); expect(await world.getAttribute('style')).toBe(moved);
+    await ghost.click(); await ghost.getByRole('button', { name: '阅读原文', exact: true }).click();
+    await page.mouse.move(200, 650); await page.mouse.wheel(0, 100);
+    await expect(reader).toHaveCount(0); await expect(world).not.toHaveAttribute('style', moved!);
+});
+test('narrow fixed reader scrolls internally and returns to the same view; IME Escape does not close it', async ({ page }, info) => {
+    const { calls } = await boot(page, 'dark', answer, { point }, true);
+    await read(page); const reader = page.getByTestId('proposition-reader');
+    await page.setViewportSize({ width: 390, height: 844 });
+    const camera = await page.locator('.world').getAttribute('style');
+    await expect(reader).toBeVisible(); await expect(page.getByTestId('field')).toBeHidden();
+    expect((await reader.boundingBox())!.width).toBe(390);
+    expect(await reader.locator('.surface-body').evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+    await reader.locator('.surface-body').evaluate(el => { el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', isComposing: true, bubbles: true })); });
+    await expect(reader).toBeVisible();
+    await reader.locator('.surface-body').hover(); await page.mouse.wheel(0, 200);
+    expect(await page.locator('.world').getAttribute('style')).toBe(camera);
+    await page.screenshot({ path: info.outputPath('fixed-proposition-reader-narrow.png') });
+    await reader.locator('.surface-close').click(); await expect(page.getByTestId('field')).toBeVisible();
+    expect(await page.locator('.world').getAttribute('style')).toBe(camera);
+    await expect(page.getByTestId('proposition-reader')).toHaveCount(0);
+    expect(calls).toEqual({ primary: 1, manual: 0, respond: 0 });
+});
+test('manual point survives Keep and reload, while a later user edit removes it', async ({ page }) => {
+    const { ghost, calls } = await boot(page, 'light', answer, null, true);
+    const id = (await ghost.getAttribute('data-thought-id'))!;
+    const reader = await read(page);
+    await reader.getByTestId('reading-focus-run').click();
+    await expect(ghost.locator('.thought-preview')).toHaveText(point);
+    await reader.locator('.surface-close').click(); await ghost.click(); await page.getByTestId('ai-proposal-keep').click();
+    await expect.poll(async () => (await saved(page)).thoughts[id]?.proposition?.text).toBe(point);
+    await page.reload(); const kept = page.locator('[data-thought-id="' + id + '"]');
+    await expect(kept.locator('.thought-preview')).toHaveText(point);
+    await kept.dblclick(); const editor = kept.getByRole('textbox'); await expect(editor).toHaveValue(answer);
+    await editor.fill('我还没有确认这个问题存在，先保留为假设。'); await editor.press('Enter');
+    await expect.poll(async () => (await saved(page)).thoughts[id]?.proposition).toBeUndefined();
+    await expect(kept.locator('.thought-preview')).toHaveText('我还没有确认这个问题存在，先保留为假设。');
+    expect(calls).toEqual({ primary: 1, manual: 1, respond: 0 });
+});
+
+test('selecting another card yields the reader without stealing the new selection or starting another request', async ({ page }) => {
+    const { ghost, calls } = await boot(page, 'light', answer, { point }, true);
+    await read(page);
+    await page.locator('[data-thought-id="question"]').click();
+    await expect(page.getByTestId('proposition-reader')).toHaveCount(0);
+    await expect(page.locator('[data-thought-id="question"]')).toHaveAttribute('data-selected', 'true');
+    await ghost.click(); await ghost.getByRole('button', { name: '阅读原文', exact: true }).click();
+    await page.keyboard.press('Escape');
+    await expect(ghost.getByRole('button', { name: '阅读原文', exact: true })).toBeFocused();
+    expect(calls).toEqual({ primary: 1, manual: 0, respond: 0 });
+});
+
+test('a pending Ghost can be dragged out of reading without accepting it or losing its original', async ({ page }) => {
+    const { ghost, calls } = await boot(page, 'light', answer, { point }, true);
+    const id = (await ghost.getAttribute('data-thought-id'))!;
+    const before = (await ghost.boundingBox())!; const camera = await page.locator('.world').getAttribute('style');
+    await read(page);
+    const field = (await page.getByTestId('field').boundingBox())!;
+    const x = Math.min(before.x + 30, field.x + field.width - 30), y = before.y + 80;
+    await page.mouse.move(x, y); await page.mouse.down(); await page.mouse.move(x - 60, y + 60, { steps: 6 }); await page.mouse.up();
+    await expect(page.getByTestId('proposition-reader')).toHaveCount(0);
+    await expect(ghost).toHaveAttribute('data-thought-id', id);
+    expect((await saved(page)).thoughts[id]).toBeUndefined();
+    expect(await page.locator('.world').getAttribute('style')).toBe(camera);
+    await ghost.click(); await ghost.getByRole('button', { name: '阅读原文', exact: true }).click();
+    await expect(page.getByTestId('reading-original')).toHaveText(answer);
+    expect(calls).toEqual({ primary: 1, manual: 0, respond: 0 });
 });

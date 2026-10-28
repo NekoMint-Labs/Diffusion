@@ -44,11 +44,12 @@ describe('bounded correction guidance', () => {
         expect(thinkingGuidance(packet, intent).candidateLimit).toBe(3);
         expect(thinkingGuidance(packet, intent).branches[1]).toEqual({ selectedId: 'separate', authored: [{ id: 'separate', distance: 0 }] });
     });
-    it.each([['请给我一个值得继续思考的方向。', 1], ['给我三个方向。只给我一个方向。', 1], ['请只给出两个不同的建议。', 2], ['Please give me only one direction.', 1], ['Return up to 3 distinct ideas.', 3], ['如果有一个方向，我再决定。', undefined], ['不要只给我一个方向。', undefined], ['原文说“请给我一个方向”。', undefined]])('recognises direct requests without treating quoted/negated prose as a count: %s', (text, expected) => {
+    it.each([['请给我一个值得继续思考的方向。', 1], ['请给我一个不同的新方向，并说明哪些部分仍是假设。', 1], ['给我三个新的方向。', 3], ['给我三个方向。只给我一个方向。', 1], ['请只给出两个不同的建议。', 2], ['Please give me only one direction.', 1], ['Return up to 3 distinct ideas.', 3], ['如果有一个方向，我再决定。', undefined], ['不要只给我一个方向。', undefined], ['原文说“请给我一个方向”。', undefined]])('recognises direct requests without treating quoted/negated prose as a count: %s', (text, expected) => {
         expect(requestedCandidateLimit(text)).toBe(expected);
     });
     it('limits even a noncompliant provider to the explicit count, in one call, without rewriting text', async () => {
         const { packet } = setup();
+        packet.scope[0].text = '我自己知道做到什么程度算完成，当前更想弄清楚的是先复习哪一章。不要再围绕完成标准展开。时间不设上限；不做工具、不安排学生试用、不接触私人资料这些要求保留。请给我一个不同的新方向，并说明哪些部分仍是假设。';
         const fixture = provider({ intents: [1, 2, 3].map(n => ({ type: 'surface_possibility', text: '条件成立时，考前复习的可能方向' + n })) });
         const result = await respondWithReading(fixture.instance, packet, intent, new AbortController().signal);
         expect(result.response.intents).toHaveLength(1);

@@ -1,0 +1,10 @@
+[
+  {
+    "build": "isolated-baseline",
+    "sha256": "11794D43815D1E08A9FB928CE53B0B55D15CCC6306567592CB56E0A0323DBB5D"
+  },
+  {
+    "build": "isolated-candidate",
+    "sha256": "563DF669706F317D55C9C06296E3CF41CC59438F68514E2456671765EFB75556"
+  }
+]

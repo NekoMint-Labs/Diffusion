@@ -1,0 +1,140 @@
+{
+  "version": "baseline",
+  "case": "diffuse",
+  "date": "2026-10-28T09:03:35.038Z",
+  "source": "5ab6b209924828127b10528044d05debc9dcceda",
+  "flags": "none",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "harness": "Isolated native WebView, genuine provider transport, no response mocks, public synthetic Field fixtures; not a human usability study",
+  "results": [],
+  "budget": "Region entry configures 3 steps; explicitly stop after first surfaced candidate; record actual calls, not a claim of a one-step configuration",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 2400,
+        "y": 2400,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {
+      "audit": {
+        "id": "audit",
+        "name": "Audit scope",
+        "members": [
+          "question"
+        ],
+        "x": 1900,
+        "y": 1900,
+        "activity": 10
+      }
+    },
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 100,
+      "y": 100,
+      "zoom": 0.12
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "f1423c8ea3199dbbe3e9833a9773b21c36411c5f07a13e2c793e5f829679396b",
+  "notices": [
+    "StoppedDetailsDismiss",
+    "Thinking stopped. Only already surfaced possibilities remain.Close"
+  ],
+  "requests": [
+    {
+      "requestedModel": "deepseek-v4-pro",
+      "started": "2026-10-28T09:03:38.751Z",
+      "done": true,
+      "status": 200,
+      "actualModel": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 1366,
+        "completion_tokens": 994,
+        "total_tokens": 2360,
+        "prompt_tokens_details": {
+          "cached_tokens": 256
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 932
+        },
+        "prompt_cache_hit_tokens": 256,
+        "prompt_cache_miss_tokens": 1110
+      },
+      "finishReasons": [
+        "stop"
+      ],
+      "responseContent": [
+        "{\"intents\":[{\"type\":\"surface_possibility\",\"text\":\"还没被问的问题：学生自报需要这个工具，和他们在无监督的考前两周里会主动使用，可能是两件事；在还没有访谈或试用结果前，这条区分会决定你接受哪种证据。\"}]}"
+      ],
+      "finished": "2026-10-28T09:04:05.608Z"
+    },
+    {
+      "requestedModel": "deepseek-v4-pro",
+      "started": "2026-10-28T09:04:06.081Z",
+      "done": true,
+      "finished": "2026-10-28T09:04:11.628Z"
+    }
+  ],
+  "status": "empty-or-failed",
+  "savedProject": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 2400,
+        "y": 2400,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {
+      "audit": {
+        "id": "audit",
+        "name": "Audit scope",
+        "members": [
+          "question"
+        ],
+        "x": 1900,
+        "y": 1900,
+        "activity": 10
+      }
+    },
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 100,
+      "y": 100,
+      "zoom": 0.12
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  }
+}

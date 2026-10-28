@@ -149,6 +149,7 @@ export function validateProject(value: unknown): ProjectState {
         if (t.id !== k)
             fail('thought identity mismatch');
         text(t.text, 'thought text');
+        if (t.generatedBy !== undefined) choices(t.generatedBy, ['ai'], 'generation origin');
         number(t.x, 'thought x');
         number(t.y, 'thought y');
         choices(t.kind, ['thought', 'crystal', 'source'], 'thought kind');

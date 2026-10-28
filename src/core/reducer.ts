@@ -13,6 +13,7 @@ function finite(n: number): boolean { return Number.isFinite(n) && Math.abs(n) <
 function validateThought(t: Thought): void {
     if (t.organizingParentId !== undefined && t.organizingParentId !== null && (typeof t.organizingParentId !== 'string' || !t.organizingParentId || t.organizingParentId.length > 200 || t.organizingParentId === t.id || ['__proto__', 'constructor', 'prototype'].includes(t.organizingParentId))) throw new DomainError('Invalid organizing parent');
     if (t.proposition !== undefined && !validProposition(t.proposition, t.text)) throw new DomainError('Invalid proposition');
+    if (t.generatedBy !== undefined && t.generatedBy !== 'ai') throw new DomainError('Invalid generation origin');
     const lineage = t.derivedFrom;
     const lineageValid = lineage === undefined || Array.isArray(lineage) && lineage.length > 0 && lineage.length <= 32 && lineage.every(parentId => typeof parentId === 'string' && !!parentId && parentId.length <= 200 && parentId !== t.id) && new Set(lineage).size === lineage.length;
     const actionValid = lineage === undefined

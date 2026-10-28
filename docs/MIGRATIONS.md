@@ -1,5 +1,20 @@
 # Local storage and migrations
 
+## Optional AI generation origin (PR #83 review fix)
+
+`Thought.generatedBy?: 'ai'` records the explicit Keep of a non-ingestion AI candidate.
+It is separate from `origin.projectId/note`: Fork and Bring write those fields for hand-written
+content too. Keep creates the marker; Fork, Bring, undo/redo, JSON and Dexie carry it without
+inferring new authorship. It is display eligibility, not a factual endorsement or permission.
+The optional value is validated as `ai`; malformed values fail normal Thought/project validation.
+No database/table/index or portable schema version changes, data rewrite, or model backfill occurs.
+Unmarked legacy generated records remain readable in full, but cannot reliably regain generation
+eligibility from provenance prose, even when a saved proposition is present. Both records remain
+stored; no text or proposition is discarded. Causal actions alone do not establish AI origin:
+hand-written continuations from Crystals also carry them.
+Older clients may drop this optional marker on rewriting a project; preservation by old clients is
+not guaranteed. See [Fork review acceptance](experiments/FIELD_FORK_READING_REVIEW_20261028.md).
+
 `src/storage/dexie.ts` retains the database name `diffusion-explorer-v1`. Changing it for branding would strand prior projects. The current **Dexie database version is 4**; the existing `projects` and `originals` tables remain. Portable project `schemaVersion: 1` remains compatible; it is not the IndexedDB version.
 
 Version 4 adds an initially empty `deletedProjects` table containing only deleted Field IDs. It does

@@ -359,6 +359,53 @@ test('selecting another card yields the reader without stealing the new selectio
     expect(calls).toEqual({ primary: 1, manual: 0, respond: 0 });
 });
 
+test('hand-written canvas text stays original through Fork, reload, Bring and JSON recovery', async ({ page }) => {
+    const { ghost, calls } = await boot(page, 'light', answer, { point }, true);
+    await ghost.click(); await page.getByTestId('ai-proposal-ignore').click();
+    const manualText = '这是我在画布上亲手写的长想法，必须保留我的全部措辞，不应被当成模型建议。'.repeat(5);
+    await page.getByTestId('field').dblclick({ position: { x: 120, y: 540 } });
+    const editor = page.locator('article.thought.editing textarea');
+    await editor.fill(manualText); await editor.press('Enter');
+    const manual = page.locator('article.thought').filter({ hasText: manualText });
+    const id = (await manual.getAttribute('data-thought-id'))!;
+    await expect.poll(async () => (await saved(page)).thoughts[id]?.text).toBe(manualText);
+    async function command(name: string) {
+        await page.keyboard.press('Control+k');
+        const option = page.getByTestId('command-palette').locator('[data-command="' + name + '"]');
+        await option.scrollIntoViewIfNeeded(); await option.click();
+    }
+    await command('fork');
+    await page.getByRole('button', { name: '创建并进入分支', exact: true }).click();
+    async function checkManual(text: string) {
+        const card = page.locator('article.thought').filter({ hasText: text });
+        await expect(card.locator('.thought-preview')).toHaveText(text);
+        await expect(card.locator('.reading-focus-card-label')).toHaveCount(0);
+        await card.click(); await card.getByRole('button', { name: '阅读原文', exact: true }).click();
+        await expect(page.getByTestId('reading-original')).toHaveText(text);
+        await expect(page.getByTestId('reading-focus-run')).toHaveCount(0);
+        await page.getByTestId('proposition-reader').locator('.surface-close').click();
+        return card;
+    }
+    await checkManual(manualText); await page.reload();
+    const forkCard = await checkManual(manualText);
+    const revised = manualText + ' 我又在分支中亲手补充了一句。';
+    await forkCard.dblclick(); await forkCard.getByRole('textbox').fill(revised); await forkCard.getByRole('textbox').press('Enter');
+    await command('compare-fork');
+    await page.getByRole('checkbox', { name: /^在这个分叉中已改变/ }).check();
+    await page.getByRole('button', { name: '将选中内容带回主线', exact: true }).click();
+    await expect.poll(async () => Object.values((await saved(page)).thoughts).some(t => t.text === revised)).toBe(true);
+    await page.getByRole('button', { name: '回到主线', exact: true }).click();
+    await checkManual(revised);
+    const restored = recoveredProject(parseProjectExport(JSON.stringify({ format: 'diffusion-project', version: 1, project: await saved(page) })));
+    restored.id = 'main';
+    await page.evaluate(project => new Promise<void>((resolve, reject) => {
+        const opening = indexedDB.open('diffusion-explorer-v1');
+        opening.onsuccess = () => { const db = opening.result; const tx = db.transaction('projects', 'readwrite'); tx.objectStore('projects').put(project); tx.oncomplete = () => { db.close(); resolve(); }; tx.onerror = () => { db.close(); reject(tx.error); }; };
+    }), restored);
+    await page.reload(); await checkManual(revised);
+    expect(calls).toEqual({ primary: 1, manual: 0, respond: 0 });
+});
+
 test('a pending Ghost can be dragged out of reading without accepting it or losing its original', async ({ page }) => {
     const { ghost, calls } = await boot(page, 'light', answer, { point }, true);
     const id = (await ghost.getAttribute('data-thought-id'))!;

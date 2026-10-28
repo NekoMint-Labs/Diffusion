@@ -202,6 +202,7 @@ export class ProjectController {
         const thought: Thought = {
             id: ghost.id, text: ghost.text, x: ghost.x, y: ghost.y, kind: 'thought', life: 'active', kept: false,
             createdAt: now, updatedAt: now, touchedAt: now, origin: ghost.origin,
+            ...(!ghost.proposal && ghost.proposalKind && !ghost.origin?.inputId && !ghost.origin?.sourceId && !ghost.origin?.url ? { generatedBy: 'ai' as const } : {}),
             ...(!ghost.proposal && validProposition(ghost.proposition, ghost.text) ? { proposition: ghost.proposition } : {}),
             ...(derivedFrom.length ? { derivedFrom, generationAction: ghost.proposalAction } : {}),
         };

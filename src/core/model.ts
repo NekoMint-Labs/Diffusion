@@ -33,6 +33,8 @@ export interface Thought extends Point {
     id: string;
     text: string;
     proposition?: Proposition;
+    /** Explicit origin of a claimed AI candidate; Fork/Bring provenance never creates it. */
+    generatedBy?: 'ai';
     kind: ThoughtKind;
     life: Life;
     kept: boolean;

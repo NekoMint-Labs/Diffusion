@@ -1,0 +1,92 @@
+{
+  "version": "candidate",
+  "case": "angle",
+  "date": "2026-10-28T08:52:41.145Z",
+  "source": "86b072bba153526350d0c4f1d481d21ef727b65a",
+  "flags": "readingTrial=1&propositionTrial=1",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "harness": "Isolated native WebView, genuine provider transport, no response mocks, public synthetic Field fixtures; not a human usability study",
+  "results": [],
+  "budget": "One requested candidate; no search or Field sources",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "6ff5ccce2901506973e5a9f1074314844aa5d7e1fea4ac3441cd4e6b2c20545c",
+  "notices": [
+    "StoppedDetailsDismiss",
+    "DeepSeek did not answer in time.Close"
+  ],
+  "requests": [
+    {
+      "requestedModel": "deepseek-v4-pro",
+      "started": "2026-10-28T08:52:44.229Z",
+      "done": true,
+      "finished": "2026-10-28T08:53:29.251Z"
+    }
+  ],
+  "status": "empty-or-failed",
+  "savedProject": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1793177563305,
+        "touchedAt": 1793177563305,
+        "attentionDebt": 0
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1793177563305
+  }
+}

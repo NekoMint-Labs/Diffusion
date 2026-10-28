@@ -1,0 +1,221 @@
+{
+  "version": "candidate",
+  "case": "uncertainty",
+  "date": "2026-10-28T08:59:08.328Z",
+  "source": "86b072bba153526350d0c4f1d481d21ef727b65a",
+  "flags": "readingTrial=1&propositionTrial=1",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "harness": "Isolated native WebView, genuine provider transport, no response mocks, public synthetic Field fixtures; not a human usability study",
+  "results": [
+    {
+      "id": "ghost_6b7a5227-c626-4a5c-90ad-d7efb8809d8a",
+      "fullText": "在未确认前，可把这个问题拆成两层去验证：学生是缺少考前复习工具，还是已有工具但不顺手。在保护隐私的前提下，下一步可先收集匿名的“考前是否已有可用复习方式”，把回答只当作需求信号，不当成结论。",
+      "cardText": "在未确认前，可把这个问题拆成两层去验证：学生是缺少考前复习工具，还是已有工具但不顺手。在保护隐私的前提下，下一步可先收集匿名的“考前是否已有可用复习方式”，把回答只当作需求信号，不当成结论。",
+      "focus": null,
+      "label": [],
+      "afterKeepCard": "在未确认前，可把这个问题拆成两层去验证：学生是缺少考前复习工具，还是已有工具但不顺手。在保护隐私的前提下，下一步可先收集匿名的“考前是否已有可用复习方式”，把回答只当作需求信号，不当成结论。",
+      "afterKeepFocus": null
+    }
+  ],
+  "correctionFixture": "Synthetic persisted authored-response ancestry, not a recorded real-user session",
+  "budget": "One requested candidate; no search or Field sources",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我刚才只是设想，还没有确认学生存在这个问题。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 2,
+        "updatedAt": 2,
+        "touchedAt": 2,
+        "derivedFrom": [
+          "prior"
+        ],
+        "generationAction": "continue",
+        "origin": {
+          "projectId": "main",
+          "thoughtId": "prior",
+          "inputId": "correction",
+          "ranges": [
+            {
+              "inputId": "correction",
+              "start": 0,
+              "end": 22
+            }
+          ]
+        }
+      },
+      "prior": {
+        "id": "prior",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 40,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {
+      "correction": {
+        "id": "correction",
+        "text": "我刚才只是设想，还没有确认学生存在这个问题。",
+        "createdAt": 2
+      }
+    },
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "f374e4c98ddb4551a62dbe78c8730ddba5b9393cc41bd65b55446361a39febba",
+  "notices": [
+    "Possibilities returned. No commitment was made on your behalf.Close"
+  ],
+  "requests": [
+    {
+      "requestedModel": "deepseek-v4-pro",
+      "started": "2026-10-28T08:59:13.234Z",
+      "done": true,
+      "status": 200,
+      "actualModel": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 2025,
+        "completion_tokens": 1466,
+        "total_tokens": 3491,
+        "prompt_tokens_details": {
+          "cached_tokens": 1536
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1392
+        },
+        "prompt_cache_hit_tokens": 1536,
+        "prompt_cache_miss_tokens": 489
+      },
+      "finishReasons": [
+        "stop"
+      ],
+      "responseContent": [
+        "{\"intents\":[{\"type\":\"surface_possibility\",\"text\":\"在未确认前，可把这个问题拆成两层去验证：学生是缺少考前复习工具，还是已有工具但不顺手。在保护隐私的前提下，下一步可先收集匿名的“考前是否已有可用复习方式”，把回答只当作需求信号，不当成结论。\"}]}"
+      ],
+      "finished": "2026-10-28T08:59:47.269Z"
+    }
+  ],
+  "status": "observed-output",
+  "savedProject": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我刚才只是设想，还没有确认学生存在这个问题。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 2,
+        "updatedAt": 1793177952145,
+        "touchedAt": 1793177952145,
+        "derivedFrom": [
+          "prior"
+        ],
+        "generationAction": "continue",
+        "origin": {
+          "projectId": "main",
+          "thoughtId": "prior",
+          "inputId": "correction",
+          "ranges": [
+            {
+              "inputId": "correction",
+              "start": 0,
+              "end": 22
+            }
+          ]
+        },
+        "attentionDebt": 0
+      },
+      "prior": {
+        "id": "prior",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 40,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      },
+      "ghost_6b7a5227-c626-4a5c-90ad-d7efb8809d8a": {
+        "id": "ghost_6b7a5227-c626-4a5c-90ad-d7efb8809d8a",
+        "text": "在未确认前，可把这个问题拆成两层去验证：学生是缺少考前复习工具，还是已有工具但不顺手。在保护隐私的前提下，下一步可先收集匿名的“考前是否已有可用复习方式”，把回答只当作需求信号，不当成结论。",
+        "x": 300,
+        "y": 442,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1793177992109,
+        "updatedAt": 1793177992109,
+        "touchedAt": 1793177992109,
+        "origin": {
+          "projectId": "main",
+          "note": "DeepSeek - deepseek-v4-pro"
+        },
+        "derivedFrom": [
+          "question"
+        ],
+        "generationAction": "continue"
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {
+      "correction": {
+        "id": "correction",
+        "text": "我刚才只是设想，还没有确认学生存在这个问题。",
+        "createdAt": 2
+      }
+    },
+    "threads": {},
+    "history": [
+      {
+        "id": "h_e33124a9-9a2f-41a2-a92d-4d184ff6b8e4",
+        "kind": "ghost.claim",
+        "summary": "Made a possibility my own: 在未确认前，可把这个问题拆成两层去验证：学生是缺少考前复习工具，还是已有工具但不顺手。在保护隐私的前提下，下一步可先收集匿名的“考前是否已有可用复习方式”，把回答只当作需求信号，不当成结论。",
+        "thoughtIds": [
+          "ghost_6b7a5227-c626-4a5c-90ad-d7efb8809d8a"
+        ],
+        "at": 1793177992109
+      }
+    ],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1793177992109
+  }
+}

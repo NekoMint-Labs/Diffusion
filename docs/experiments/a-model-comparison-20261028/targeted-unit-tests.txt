@@ -1,0 +1,13 @@
+
+ RUN  v3.2.7 <workspace>
+
+ ✓ tests/unit/readingFocus.test.ts (13 tests) 44ms
+ ✓ tests/unit/proposition.test.ts (10 tests) 62ms
+ ✓ tests/unit/readingFocusRuntime.test.ts (14 tests) 70ms
+ ✓ tests/unit/readingFocusWire.test.ts (5 tests) 57ms
+
+ Test Files  4 passed (4)
+      Tests  42 passed (42)
+   Start at  16:52:56
+   Duration  7.31s (transform 2.34s, setup 0ms, collect 4.69s, tests 232ms, environment 2ms, prepare 2.27s)
+

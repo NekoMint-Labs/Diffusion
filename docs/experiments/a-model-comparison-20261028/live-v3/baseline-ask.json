@@ -1,0 +1,153 @@
+{
+  "version": "baseline",
+  "case": "ask",
+  "date": "2026-10-28T09:01:06.262Z",
+  "source": "5ab6b209924828127b10528044d05debc9dcceda",
+  "flags": "none",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "harness": "Isolated native WebView, genuine provider transport, no response mocks, public synthetic Field fixtures; not a human usability study",
+  "results": [
+    {
+      "id": "ghost_68230219-3d46-4c06-beaa-c7fe2aa4692f",
+      "fullText": "在还没有访谈或试用结果时，先用第1周把“学生需要考前复习工具”改写成一个可证伪的假设，并选一个不涉及作业、成绩或身份资料的公开信号来检验它。\n\n这能在每周2小时内先判断需求方向；如果找不到可接受的公开信号，就先缩小验证范围，而不是先做工具或直接设计访谈。",
+      "cardText": "在还没有访谈或试用结果时，先用第1周把“学生需要考前复习工具”改写成一个可证伪的假设，并选一个不涉及作业、成绩或身份资料的公开信号来检验它。…",
+      "focus": null,
+      "label": [],
+      "afterKeepCard": "在还没有访谈或试用结果时，先用第1周把“学生需要考前复习工具”改写成一个可证伪的假设，并选一个不涉及作业、成绩或身份资料的公开信号来检验它。\n\n这能在每周2小时内先判断需求方向；如果找不到可接受的公开信号，就先缩小验证范围，而不是先做工具或直接设计访谈。",
+      "afterKeepFocus": null
+    }
+  ],
+  "budget": "One requested candidate; no search or Field sources",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "6ff5ccce2901506973e5a9f1074314844aa5d7e1fea4ac3441cd4e6b2c20545c",
+  "explicitInput": "在这些条件下，先做什么？请给我一个方向。",
+  "notices": [
+    "Possibilities returned. No commitment was made on your behalf.Close"
+  ],
+  "requests": [
+    {
+      "requestedModel": "deepseek-v4-pro",
+      "started": "2026-10-28T09:01:11.005Z",
+      "done": true,
+      "status": 200,
+      "actualModel": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 1319,
+        "completion_tokens": 1366,
+        "total_tokens": 2685,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1271
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1319
+      },
+      "finishReasons": [
+        "stop"
+      ],
+      "responseContent": [
+        "{\"intents\":[{\"type\":\"respond_in_field\",\"text\":\"在还没有访谈或试用结果时，先用第1周把“学生需要考前复习工具”改写成一个可证伪的假设，并选一个不涉及作业、成绩或身份资料的公开信号来检验它。\\n\\n这能在每周2小时内先判断需求方向；如果找不到可接受的公开信号，就先缩小验证范围，而不是先做工具或直接设计访谈。\"}]}"
+      ],
+      "finished": "2026-10-28T09:01:47.610Z"
+    }
+  ],
+  "status": "observed-output",
+  "savedProject": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1793178069975,
+        "touchedAt": 1793178069975,
+        "attentionDebt": 0
+      },
+      "ghost_68230219-3d46-4c06-beaa-c7fe2aa4692f": {
+        "id": "ghost_68230219-3d46-4c06-beaa-c7fe2aa4692f",
+        "text": "在还没有访谈或试用结果时，先用第1周把“学生需要考前复习工具”改写成一个可证伪的假设，并选一个不涉及作业、成绩或身份资料的公开信号来检验它。\n\n这能在每周2小时内先判断需求方向；如果找不到可接受的公开信号，就先缩小验证范围，而不是先做工具或直接设计访谈。",
+        "x": 300,
+        "y": 456,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1793178114311,
+        "updatedAt": 1793178114311,
+        "touchedAt": 1793178114311,
+        "origin": {
+          "projectId": "main",
+          "note": "DeepSeek - deepseek-v4-pro"
+        },
+        "derivedFrom": [
+          "question"
+        ],
+        "generationAction": "ask"
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [
+      {
+        "id": "h_5d16906f-2367-4954-b3ac-941919aa60fe",
+        "kind": "ghost.claim",
+        "summary": "Made a possibility my own: 在还没有访谈或试用结果时，先用第1周把“学生需要考前复习工具”改写成一个可证伪的假设，并选一个不涉及作业、成绩或身份资料的公开信号来检验它。\n\n这能在每周2小时内先判断需求方向；如果找不到可接受的公开信号，就先缩小验证范围，而不是先做工具或直接设计访谈。",
+        "thoughtIds": [
+          "ghost_68230219-3d46-4c06-beaa-c7fe2aa4692f"
+        ],
+        "at": 1793178114311
+      }
+    ],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1793178114311
+  }
+}

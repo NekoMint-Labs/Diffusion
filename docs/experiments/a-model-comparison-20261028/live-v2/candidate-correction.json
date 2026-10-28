@@ -1,0 +1,75 @@
+{
+  "version": "candidate",
+  "case": "correction",
+  "date": "2026-10-28T08:54:17.475Z",
+  "source": "86b072bba153526350d0c4f1d481d21ef727b65a",
+  "flags": "readingTrial=1&propositionTrial=1",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "harness": "Isolated native WebView, genuine provider transport, no response mocks, public synthetic Field fixtures; not a human usability study",
+  "results": [],
+  "correctionFixture": "Synthetic persisted authored-response ancestry, not a recorded real-user session",
+  "budget": "One requested candidate; no search or Field sources",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "更正：现在每周只有两小时，改为考前复习，不做作业辅助；不接触学生私人作业、成绩或身份资料的限制保持不变。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 2,
+        "updatedAt": 2,
+        "touchedAt": 2,
+        "derivedFrom": [
+          "prior"
+        ],
+        "origin": {
+          "projectId": "main",
+          "inputId": "correction"
+        }
+      },
+      "prior": {
+        "id": "prior",
+        "text": "我想验证学生是否需要一个作业辅助工具。每周只有四小时，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 40,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {
+      "correction": {
+        "id": "correction",
+        "text": "更正：现在每周只有两小时，改为考前复习，不做作业辅助；不接触学生私人作业、成绩或身份资料的限制保持不变。",
+        "createdAt": 2
+      }
+    },
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "35bf070143ba65df7eae0ed36287e18cde8accf8b7197f4bef8b05b2f2e2241d",
+  "status": "execution-failed",
+  "failure": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-thought-id=\"question\"]')\u001b[22m\n",
+  "requests": []
+}

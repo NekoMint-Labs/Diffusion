@@ -1,0 +1,152 @@
+{
+  "version": "baseline",
+  "case": "continue",
+  "date": "2026-10-28T09:01:54.857Z",
+  "source": "5ab6b209924828127b10528044d05debc9dcceda",
+  "flags": "none",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "harness": "Isolated native WebView, genuine provider transport, no response mocks, public synthetic Field fixtures; not a human usability study",
+  "results": [
+    {
+      "id": "ghost_ddf78382-ef56-492f-9a81-c489762469ff",
+      "fullText": "假设考前复习需求会表现为公开求助（尚未验证），每周两小时可先只统计校园论坛/学习群里“求复习资料”类帖子的周频次，看它是否随考试周上升；这不需要接触私人作业、成绩或身份，但只能说明存在找材料行为，还不等于需要专用工具。",
+      "cardText": "假设考前复习需求会表现为公开求助（尚未验证），每周两小时可先只统计校园论坛/学习群里“求复习资料”类帖子的周频次，看它是否随考试周上升；这不需要接触私人作业、成绩或身份，但只能说明存在找材料行为，还不等于需要专用工具。",
+      "focus": null,
+      "label": [],
+      "afterKeepCard": "假设考前复习需求会表现为公开求助（尚未验证），每周两小时可先只统计校园论坛/学习群里“求复习资料”类帖子的周频次，看它是否随考试周上升；这不需要接触私人作业、成绩或身份，但只能说明存在找材料行为，还不等于需要专用工具。",
+      "afterKeepFocus": null
+    }
+  ],
+  "budget": "One requested candidate; no search or Field sources",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "6ff5ccce2901506973e5a9f1074314844aa5d7e1fea4ac3441cd4e6b2c20545c",
+  "notices": [
+    "Possibilities returned. No commitment was made on your behalf.Close"
+  ],
+  "requests": [
+    {
+      "requestedModel": "deepseek-v4-pro",
+      "started": "2026-10-28T09:01:59.431Z",
+      "done": true,
+      "status": 200,
+      "actualModel": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 1294,
+        "completion_tokens": 1197,
+        "total_tokens": 2491,
+        "prompt_tokens_details": {
+          "cached_tokens": 640
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1112
+        },
+        "prompt_cache_hit_tokens": 640,
+        "prompt_cache_miss_tokens": 654
+      },
+      "finishReasons": [
+        "stop"
+      ],
+      "responseContent": [
+        "{\"intents\":[{\"type\":\"surface_possibility\",\"text\":\"假设考前复习需求会表现为公开求助（尚未验证），每周两小时可先只统计校园论坛/学习群里“求复习资料”类帖子的周频次，看它是否随考试周上升；这不需要接触私人作业、成绩或身份，但只能说明存在找材料行为，还不等于需要专用工具。\"}]}"
+      ],
+      "finished": "2026-10-28T09:02:32.908Z"
+    }
+  ],
+  "status": "observed-output",
+  "savedProject": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1793178118278,
+        "touchedAt": 1793178118278,
+        "attentionDebt": 0
+      },
+      "ghost_ddf78382-ef56-492f-9a81-c489762469ff": {
+        "id": "ghost_ddf78382-ef56-492f-9a81-c489762469ff",
+        "text": "假设考前复习需求会表现为公开求助（尚未验证），每周两小时可先只统计校园论坛/学习群里“求复习资料”类帖子的周频次，看它是否随考试周上升；这不需要接触私人作业、成绩或身份，但只能说明存在找材料行为，还不等于需要专用工具。",
+        "x": 756,
+        "y": 191,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1793178159372,
+        "updatedAt": 1793178159372,
+        "touchedAt": 1793178159372,
+        "origin": {
+          "projectId": "main",
+          "note": "DeepSeek - deepseek-v4-pro"
+        },
+        "derivedFrom": [
+          "question"
+        ],
+        "generationAction": "continue"
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [
+      {
+        "id": "h_8e06962b-e526-4dbb-84ff-f68331721235",
+        "kind": "ghost.claim",
+        "summary": "Made a possibility my own: 假设考前复习需求会表现为公开求助（尚未验证），每周两小时可先只统计校园论坛/学习群里“求复习资料”类帖子的周频次，看它是否随考试周上升；这不需要接触私人作业、成绩或身份，但只能说明存在找材料行为，还不等于需要专用工具。",
+        "thoughtIds": [
+          "ghost_ddf78382-ef56-492f-9a81-c489762469ff"
+        ],
+        "at": 1793178159372
+      }
+    ],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1793178159372
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-28",
+  "baseline": "5ab6b209924828127b10528044d05debc9dcceda",
+  "candidate": "86b072bba153526350d0c4f1d481d21ef727b65a",
+  "provider": "deepseek",
+  "modelRequested": "deepseek-v4-pro",
+  "depth": "standard",
+  "pairs": [
+    {
+      "case": "ask",
+      "baseline": "live-v3/baseline-ask.json",
+      "candidate": "live-v2/candidate-ask.json",
+      "sameFixture": true,
+      "baselineRequests": 1,
+      "candidateRequests": 1,
+      "baselineStatus": "observed-output",
+      "candidateStatus": "observed-output"
+    },
+    {
+      "case": "continue",
+      "baseline": "live-v3/baseline-continue.json",
+      "candidate": "live-v2/candidate-continue.json",
+      "sameFixture": true,
+      "baselineRequests": 1,
+      "candidateRequests": 1,
+      "baselineStatus": "observed-output",
+      "candidateStatus": "observed-output"
+    },
+    {
+      "case": "angle",
+      "baseline": "live-v3/baseline-angle.json",
+      "candidate": "live-v2/candidate-angle.json",
+      "sameFixture": true,
+      "baselineRequests": 1,
+      "candidateRequests": 1,
+      "baselineStatus": "empty-or-failed",
+      "candidateStatus": "empty-or-failed"
+    },
+    {
+      "case": "diffuse",
+      "baseline": "live-v3/baseline-diffuse.json",
+      "candidate": "live-v3/candidate-diffuse.json",
+      "sameFixture": true,
+      "baselineRequests": 2,
+      "candidateRequests": 2,
+      "baselineStatus": "empty-or-failed",
+      "candidateStatus": "empty-or-failed"
+    },
+    {
+      "case": "correction",
+      "baseline": "live-v3/baseline-correction.json",
+      "candidate": "live-v3/candidate-correction.json",
+      "sameFixture": true,
+      "baselineRequests": 1,
+      "candidateRequests": 1,
+      "baselineStatus": "observed-output",
+      "candidateStatus": "empty-or-failed"
+    },
+    {
+      "case": "uncertainty",
+      "baseline": "live-v3/baseline-uncertainty.json",
+      "candidate": "live-v3/candidate-uncertainty.json",
+      "sameFixture": true,
+      "baselineRequests": 1,
+      "candidateRequests": 1,
+      "baselineStatus": "observed-output",
+      "candidateStatus": "observed-output"
+    }
+  ],
+  "limits": [
+    "Selected pairs contain 14 native generation requests rather than 12: each ordinary Diffuse run started a second request before explicit stop.",
+    "Model outcomes are single samples, not controlled causal proof.",
+    "Earlier v1 instrumentation failures have incomplete request counts; zero in those files must not be interpreted as no billed calls.",
+    "v2 invalid correction fixtures were rejected without generation; v3 fixtures pass the production validator.",
+    "Diffuse returned a provider candidate but the harness did not capture a mounted card. Do not classify this as an empty model answer.",
+    "Authored correction chains are synthetic fixtures, not a real user usability session.",
+    "Some isolated native runs overlapped in wall-clock time; latency comparisons are not valid."
+  ]
+}

@@ -1,0 +1,154 @@
+{
+  "version": "candidate",
+  "case": "continue",
+  "date": "2026-10-28T08:52:01.705Z",
+  "source": "86b072bba153526350d0c4f1d481d21ef727b65a",
+  "flags": "readingTrial=1&propositionTrial=1",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "harness": "Isolated native WebView, genuine provider transport, no response mocks, public synthetic Field fixtures; not a human usability study",
+  "results": [
+    {
+      "id": "ghost_51d2d5fd-345e-4c6a-85bd-f5ee3d284958",
+      "fullText": "如果继续验证，需要先找一个不接触私人资料的替代线索：学生是否在考前主动复习、用什么材料，并把它当作需求信号而非证明。\n\n两小时可用来做一页匿名问卷或课间短问，只问复习频率和主观需要，不收集作业、成绩或身份；结果最多说明“有人自报需要”，还不能证明他们会真的使用这个工具。",
+      "cardText": "如果继续验证，需要先找一个不接触私人资料的替代线索：学生是否在考前主动复习、用什么材料，并把它当作需求信号而非证明。…",
+      "focus": null,
+      "label": [
+        "Original preview · not summarized"
+      ],
+      "afterKeepCard": "如果继续验证，需要先找一个不接触私人资料的替代线索：学生是否在考前主动复习、用什么材料，并把它当作需求信号而非证明。…",
+      "afterKeepFocus": null
+    }
+  ],
+  "budget": "One requested candidate; no search or Field sources",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "6ff5ccce2901506973e5a9f1074314844aa5d7e1fea4ac3441cd4e6b2c20545c",
+  "notices": [
+    "Possibilities returned. No commitment was made on your behalf.Close"
+  ],
+  "requests": [
+    {
+      "requestedModel": "deepseek-v4-pro",
+      "started": "2026-10-28T08:52:04.952Z",
+      "done": true,
+      "status": 200,
+      "actualModel": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 1974,
+        "completion_tokens": 1049,
+        "total_tokens": 3023,
+        "prompt_tokens_details": {
+          "cached_tokens": 640
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 949
+        },
+        "prompt_cache_hit_tokens": 640,
+        "prompt_cache_miss_tokens": 1334
+      },
+      "finishReasons": [
+        "stop"
+      ],
+      "responseContent": [
+        "{\"intents\":[{\"type\":\"surface_possibility\",\"text\":\"如果继续验证，需要先找一个不接触私人资料的替代线索：学生是否在考前主动复习、用什么材料，并把它当作需求信号而非证明。\\n\\n两小时可用来做一页匿名问卷或课间短问，只问复习频率和主观需要，不收集作业、成绩或身份；结果最多说明“有人自报需要”，还不能证明他们会真的使用这个工具。\"}]}"
+      ],
+      "finished": "2026-10-28T08:52:34.082Z"
+    }
+  ],
+  "status": "observed-output",
+  "savedProject": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1793177524113,
+        "touchedAt": 1793177524113,
+        "attentionDebt": 0
+      },
+      "ghost_51d2d5fd-345e-4c6a-85bd-f5ee3d284958": {
+        "id": "ghost_51d2d5fd-345e-4c6a-85bd-f5ee3d284958",
+        "text": "如果继续验证，需要先找一个不接触私人资料的替代线索：学生是否在考前主动复习、用什么材料，并把它当作需求信号而非证明。\n\n两小时可用来做一页匿名问卷或课间短问，只问复习频率和主观需要，不收集作业、成绩或身份；结果最多说明“有人自报需要”，还不能证明他们会真的使用这个工具。",
+        "x": 756,
+        "y": 193,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1793177560572,
+        "updatedAt": 1793177560572,
+        "touchedAt": 1793177560572,
+        "origin": {
+          "projectId": "main",
+          "note": "DeepSeek - deepseek-v4-pro"
+        },
+        "derivedFrom": [
+          "question"
+        ],
+        "generationAction": "continue"
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [
+      {
+        "id": "h_09e9f288-379c-4064-9779-e083e95021ac",
+        "kind": "ghost.claim",
+        "summary": "Made a possibility my own: 如果继续验证，需要先找一个不接触私人资料的替代线索：学生是否在考前主动复习、用什么材料，并把它当作需求信号而非证明。\n\n两小时可用来做一页匿名问卷或课间短问，只问复习频率和主观需要，不收集作业、成绩或身份；结果最多说明“有人自报需要”，还不能证明他们会真的使用这个工具。",
+        "thoughtIds": [
+          "ghost_51d2d5fd-345e-4c6a-85bd-f5ee3d284958"
+        ],
+        "at": 1793177560572
+      }
+    ],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1793177560572
+  }
+}

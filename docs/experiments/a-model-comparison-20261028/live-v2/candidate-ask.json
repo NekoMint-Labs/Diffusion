@@ -1,0 +1,160 @@
+{
+  "version": "candidate",
+  "case": "ask",
+  "date": "2026-10-28T08:51:19.312Z",
+  "source": "86b072bba153526350d0c4f1d481d21ef727b65a",
+  "flags": "readingTrial=1&propositionTrial=1",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "harness": "Isolated native WebView, genuine provider transport, no response mocks, public synthetic Field fixtures; not a human usability study",
+  "results": [
+    {
+      "id": "ghost_5265b0d1-6182-42f1-90ad-f9aaa0f5bf76",
+      "fullText": "先做匿名、不涉及个人资料的学生访谈，验证考前复习的痛点是否存在；默认你能接触到愿意聊的学生。\n\n把每周两小时用在 3–5 次 20–30 分钟的半结构访谈：只记“复习时最卡在哪、现在用什么办法、希望有什么不同”，不记录姓名、班级、成绩或作业内容。第一周先问 3 个学生，若反复出现同一痛点，再决定是否值得做最小原型。",
+      "cardText": "先做匿名、不涉及个人资料的学生访谈，验证考前复习的痛点是否存在；默认你能接触到愿意聊的学生。",
+      "focus": "true",
+      "label": [
+        "Proposition · original preserved"
+      ],
+      "afterKeepCard": "先做匿名、不涉及个人资料的学生访谈，验证考前复习的痛点是否存在；默认你能接触到愿意聊的学生。",
+      "afterKeepFocus": "true"
+    }
+  ],
+  "budget": "One requested candidate; no search or Field sources",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "6ff5ccce2901506973e5a9f1074314844aa5d7e1fea4ac3441cd4e6b2c20545c",
+  "explicitInput": "在这些条件下，先做什么？请给我一个方向。",
+  "notices": [
+    "Possibilities returned. No commitment was made on your behalf.Close"
+  ],
+  "requests": [
+    {
+      "requestedModel": "deepseek-v4-pro",
+      "started": "2026-10-28T08:51:22.350Z",
+      "done": true,
+      "status": 200,
+      "actualModel": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 1973,
+        "completion_tokens": 1187,
+        "total_tokens": 3160,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1040
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1973
+      },
+      "finishReasons": [
+        "stop"
+      ],
+      "responseContent": [
+        "{\"intents\":[{\"type\":\"respond_in_field\",\"text\":\"先做匿名、不涉及个人资料的学生访谈，验证考前复习的痛点是否存在；默认你能接触到愿意聊的学生。\\n\\n把每周两小时用在 3–5 次 20–30 分钟的半结构访谈：只记“复习时最卡在哪、现在用什么办法、希望有什么不同”，不记录姓名、班级、成绩或作业内容。第一周先问 3 个学生，若反复出现同一痛点，再决定是否值得做最小原型。\",\"reading\":{\"point\":\"先做匿名、不涉及个人资料的学生访谈，验证考前复习的痛点是否存在；默认你能接触到愿意聊的学生。\"}}]}"
+      ],
+      "finished": "2026-10-28T08:51:55.176Z"
+    }
+  ],
+  "status": "observed-output",
+  "savedProject": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1793177481639,
+        "touchedAt": 1793177481639,
+        "attentionDebt": 0
+      },
+      "ghost_5265b0d1-6182-42f1-90ad-f9aaa0f5bf76": {
+        "id": "ghost_5265b0d1-6182-42f1-90ad-f9aaa0f5bf76",
+        "text": "先做匿名、不涉及个人资料的学生访谈，验证考前复习的痛点是否存在；默认你能接触到愿意聊的学生。\n\n把每周两小时用在 3–5 次 20–30 分钟的半结构访谈：只记“复习时最卡在哪、现在用什么办法、希望有什么不同”，不记录姓名、班级、成绩或作业内容。第一周先问 3 个学生，若反复出现同一痛点，再决定是否值得做最小原型。",
+        "x": 764,
+        "y": 177,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1793177521139,
+        "updatedAt": 1793177521139,
+        "touchedAt": 1793177521139,
+        "origin": {
+          "projectId": "main",
+          "note": "DeepSeek - deepseek-v4-pro"
+        },
+        "proposition": {
+          "version": 1,
+          "text": "先做匿名、不涉及个人资料的学生访谈，验证考前复习的痛点是否存在；默认你能接触到愿意聊的学生。",
+          "original": "先做匿名、不涉及个人资料的学生访谈，验证考前复习的痛点是否存在；默认你能接触到愿意聊的学生。\n\n把每周两小时用在 3–5 次 20–30 分钟的半结构访谈：只记“复习时最卡在哪、现在用什么办法、希望有什么不同”，不记录姓名、班级、成绩或作业内容。第一周先问 3 个学生，若反复出现同一痛点，再决定是否值得做最小原型。"
+        },
+        "derivedFrom": [
+          "question"
+        ],
+        "generationAction": "ask"
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [
+      {
+        "id": "h_0bbebabb-8fec-4199-923c-65e3f13b264b",
+        "kind": "ghost.claim",
+        "summary": "Made a possibility my own: 先做匿名、不涉及个人资料的学生访谈，验证考前复习的痛点是否存在；默认你能接触到愿意聊的学生。\n\n把每周两小时用在 3–5 次 20–30 分钟的半结构访谈：只记“复习时最卡在哪、现在用什么办法、希望有什么不同”，不记录姓名、班级、成绩或作业内容。第一周先问 3 个学生，若反复出现同一痛点，再决定是否值得做最小原型。",
+        "thoughtIds": [
+          "ghost_5265b0d1-6182-42f1-90ad-f9aaa0f5bf76"
+        ],
+        "at": 1793177521139
+      }
+    ],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1793177521139
+  }
+}

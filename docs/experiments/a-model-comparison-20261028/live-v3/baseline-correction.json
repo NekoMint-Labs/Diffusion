@@ -1,0 +1,221 @@
+{
+  "version": "baseline",
+  "case": "correction",
+  "date": "2026-10-28T09:04:17.803Z",
+  "source": "5ab6b209924828127b10528044d05debc9dcceda",
+  "flags": "none",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "harness": "Isolated native WebView, genuine provider transport, no response mocks, public synthetic Field fixtures; not a human usability study",
+  "results": [
+    {
+      "id": "ghost_13f1ed45-6b2e-4d36-a1ef-8c11d894dd78",
+      "fullText": "以“每周两小时只做考前复习、不接触私人作业/成绩/身份”为条件，下一步可检验的是：学生是否会在有限时间内主动提出自己认为重要的考点；若没有学生主动提供的题目，系统就无法判断复习需求是否真实。",
+      "cardText": "以“每周两小时只做考前复习、不接触私人作业/成绩/身份”为条件，下一步可检验的是：学生是否会在有限时间内主动提出自己认为重要的考点；若没有学生主动提供的题目，系统就无法判断复习需求是否真实。",
+      "focus": null,
+      "label": [],
+      "afterKeepCard": "以“每周两小时只做考前复习、不接触私人作业/成绩/身份”为条件，下一步可检验的是：学生是否会在有限时间内主动提出自己认为重要的考点；若没有学生主动提供的题目，系统就无法判断复习需求是否真实。",
+      "afterKeepFocus": null
+    }
+  ],
+  "correctionFixture": "Synthetic persisted authored-response ancestry, not a recorded real-user session",
+  "budget": "One requested candidate; no search or Field sources",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "更正：现在每周只有两小时，改为考前复习，不做作业辅助；不接触学生私人作业、成绩或身份资料的限制保持不变。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 2,
+        "updatedAt": 2,
+        "touchedAt": 2,
+        "derivedFrom": [
+          "prior"
+        ],
+        "generationAction": "continue",
+        "origin": {
+          "projectId": "main",
+          "thoughtId": "prior",
+          "inputId": "correction",
+          "ranges": [
+            {
+              "inputId": "correction",
+              "start": 0,
+              "end": 52
+            }
+          ]
+        }
+      },
+      "prior": {
+        "id": "prior",
+        "text": "我想验证学生是否需要一个作业辅助工具。每周只有四小时，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 40,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {
+      "correction": {
+        "id": "correction",
+        "text": "更正：现在每周只有两小时，改为考前复习，不做作业辅助；不接触学生私人作业、成绩或身份资料的限制保持不变。",
+        "createdAt": 2
+      }
+    },
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "4a54d24e063b12de07b5a188b69ab9d942425b6a511483ee3ee7bc0fd9e64e1c",
+  "notices": [
+    "Possibilities returned. No commitment was made on your behalf.Close"
+  ],
+  "requests": [
+    {
+      "requestedModel": "deepseek-v4-pro",
+      "started": "2026-10-28T09:04:22.237Z",
+      "done": true,
+      "status": 200,
+      "actualModel": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 1353,
+        "completion_tokens": 1336,
+        "total_tokens": 2689,
+        "prompt_tokens_details": {
+          "cached_tokens": 896
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1265
+        },
+        "prompt_cache_hit_tokens": 896,
+        "prompt_cache_miss_tokens": 457
+      },
+      "finishReasons": [
+        "stop"
+      ],
+      "responseContent": [
+        "{\"intents\":[{\"type\":\"surface_possibility\",\"text\":\"以“每周两小时只做考前复习、不接触私人作业/成绩/身份”为条件，下一步可检验的是：学生是否会在有限时间内主动提出自己认为重要的考点；若没有学生主动提供的题目，系统就无法判断复习需求是否真实。\"}]}"
+      ],
+      "finished": "2026-10-28T09:04:59.328Z"
+    }
+  ],
+  "status": "observed-output",
+  "savedProject": {
+    "schemaVersion": 1,
+    "id": "main",
+    "title": "A public comparison",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "更正：现在每周只有两小时，改为考前复习，不做作业辅助；不接触学生私人作业、成绩或身份资料的限制保持不变。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 2,
+        "updatedAt": 1793178261303,
+        "touchedAt": 1793178261303,
+        "derivedFrom": [
+          "prior"
+        ],
+        "generationAction": "continue",
+        "origin": {
+          "projectId": "main",
+          "thoughtId": "prior",
+          "inputId": "correction",
+          "ranges": [
+            {
+              "inputId": "correction",
+              "start": 0,
+              "end": 52
+            }
+          ]
+        },
+        "attentionDebt": 0
+      },
+      "prior": {
+        "id": "prior",
+        "text": "我想验证学生是否需要一个作业辅助工具。每周只有四小时，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 40,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      },
+      "ghost_13f1ed45-6b2e-4d36-a1ef-8c11d894dd78": {
+        "id": "ghost_13f1ed45-6b2e-4d36-a1ef-8c11d894dd78",
+        "text": "以“每周两小时只做考前复习、不接触私人作业/成绩/身份”为条件，下一步可检验的是：学生是否会在有限时间内主动提出自己认为重要的考点；若没有学生主动提供的题目，系统就无法判断复习需求是否真实。",
+        "x": 300,
+        "y": 492,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1793178305667,
+        "updatedAt": 1793178305667,
+        "touchedAt": 1793178305667,
+        "origin": {
+          "projectId": "main",
+          "note": "DeepSeek - deepseek-v4-pro"
+        },
+        "derivedFrom": [
+          "question"
+        ],
+        "generationAction": "continue"
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {
+      "correction": {
+        "id": "correction",
+        "text": "更正：现在每周只有两小时，改为考前复习，不做作业辅助；不接触学生私人作业、成绩或身份资料的限制保持不变。",
+        "createdAt": 2
+      }
+    },
+    "threads": {},
+    "history": [
+      {
+        "id": "h_e8e363fb-22d5-467d-8d16-ac9baa6039bd",
+        "kind": "ghost.claim",
+        "summary": "Made a possibility my own: 以“每周两小时只做考前复习、不接触私人作业/成绩/身份”为条件，下一步可检验的是：学生是否会在有限时间内主动提出自己认为重要的考点；若没有学生主动提供的题目，系统就无法判断复习需求是否真实。",
+        "thoughtIds": [
+          "ghost_13f1ed45-6b2e-4d36-a1ef-8c11d894dd78"
+        ],
+        "at": 1793178305667
+      }
+    ],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1793178305667
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "source": "86b072bba153526350d0c4f1d481d21ef727b65a",
+  "evidence": "Controller Keep plus actual ThoughtView server rendering; not mounted browser or real model evidence",
+  "beforeKeepShowsPoint": true,
+  "afterKeepShowsPoint": false,
+  "originalPreserved": true,
+  "propositionPreserved": true,
+  "keptGenerationAction": null
+}

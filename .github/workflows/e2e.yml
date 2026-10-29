@@ -47,7 +47,9 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run interaction shard
-        run: pnpm exec playwright test --project=interaction --shard=${{ matrix.shard }}/3
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report/results.json
+        run: pnpm exec playwright test --project=interaction --shard=${{ matrix.shard }}/3 --reporter=dot,json
 
       - name: Upload Playwright diagnostics
         if: always()
@@ -86,7 +88,9 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run production backgrounds
-        run: pnpm exec playwright test --project=production-backgrounds
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report/results.json
+        run: pnpm exec playwright test --project=production-backgrounds --reporter=dot,json
 
       - name: Upload Playwright diagnostics
         if: always()

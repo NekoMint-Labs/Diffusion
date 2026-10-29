@@ -1,0 +1,198 @@
+{
+  "format": "diffusion-project",
+  "version": 1,
+  "exportedAt": "2026-10-28T15:10:19.586Z",
+  "note": "Canonical project only. Original file bytes, native paths, API keys, UI sessions and unclaimed Ghosts are not included.",
+  "project": {
+    "schemaVersion": 1,
+    "id": "recovered_6f4e0a15-3f06-45ab-93c7-531b4d753cb1",
+    "title": "C实机验收（公开合成数据） (restored)",
+    "thoughts": {
+      "ai": {
+        "id": "ai",
+        "text": "验收用合成原文，非真实模型输出。我们准备研究大学生如何安排一周的学习任务。第一步是列出课程、作业和截止日期，再给每项任务估计需要的时间。第二步是把需要集中思考的内容放在精力较好的时段，同时保留休息与机动时间。第三步是在每天结束时记录实际进度，解释计划和现实之间的差异，并据此调整下一天安排。不能因为某一天没有完成全部目标就推断整个计划无效，也不能只看任务数量而忽略任务难度。验收时需要确认这一整段原文在阅读、编辑、导出和恢复后仍然完整。 实机编辑追加：每周复盘一次。",
+        "x": 126.66667175292969,
+        "y": 326.66668701171875,
+        "kind": "thought",
+        "life": "active",
+        "kept": true,
+        "createdAt": 1793198332016,
+        "updatedAt": 1793199716463,
+        "touchedAt": 1793199716463,
+        "generatedBy": "ai",
+        "attentionDebt": 0
+      },
+      "fallback": {
+        "id": "fallback",
+        "text": "验收用无观点合成原文。一个可用的学习工具应该帮助使用者看清问题，记录证据，并且允许保留不确定性。我们先把观察到的情况写下来，再提出可能的解释，然后寻找能够区分这些解释的例子。若证据不足，就把结论标记为待验证，而不把猜测当作事实。工具中的长卡片可能不带任何提炼观点，这时仍然应该能够阅读完整内容。切换主题、缩放窗口或者关闭软件后重新打开，都不应该改变原来的措辞。文件导出和恢复也需要保留这里每一个句子，确保没有把摘要误当成全文。",
+        "x": 410,
+        "y": 120,
+        "kind": "thought",
+        "life": "active",
+        "kept": true,
+        "createdAt": 1793198332016,
+        "updatedAt": 1793198332016,
+        "touchedAt": 1793198332016,
+        "generatedBy": "ai"
+      },
+      "manual": {
+        "id": "manual",
+        "text": "验收用手写长文。我的原话必须保持完整，分支功能只负责复制和比较，不应该因为内容较长就把它自动当成模型写作。我会在分支里补充一个想法，再把选中的内容带回主线。整个过程中，所有改动都应该可理解，也可以通过撤销恢复。我希望检查的不是华丽效果，而是普通使用者能否始终知道自己在哪里、哪些内容已经留下、哪些内容只是临时建议，以及下一步按钮究竟会做什么。这里的每一句话都是公开合成测试数据，不来自私人课程记录，也不来自用户已有项目。",
+        "x": 740,
+        "y": 120,
+        "kind": "thought",
+        "life": "active",
+        "kept": true,
+        "createdAt": 1793198332016,
+        "updatedAt": 1793199934758,
+        "touchedAt": 1793199934758,
+        "attentionDebt": 0
+      },
+      "t_0d881018-ab51-46ad-aca8-ee899ffe9c40": {
+        "id": "t_0d881018-ab51-46ad-aca8-ee899ffe9c40",
+        "text": "n中文验收记录",
+        "x": 566.4092189542878,
+        "y": 529.2939926168392,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1793199581317,
+        "updatedAt": 1793199688975,
+        "touchedAt": 1793199688975,
+        "attentionDebt": 0
+      },
+      "ghost_3715821f-ce56-4d84-878c-f057e60a5855": {
+        "id": "ghost_3715821f-ce56-4d84-878c-f057e60a5855",
+        "text": "也许真正稀缺的不是这个选择，而是一段“选错了也还来得及”的时间。",
+        "x": 740,
+        "y": 337,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1793200024166,
+        "updatedAt": 1793200024166,
+        "touchedAt": 1793200024166,
+        "origin": {
+          "projectId": "recovered_6f4e0a15-3f06-45ab-93c7-531b4d753cb1",
+          "note": "Demo / deterministic, not a live model"
+        },
+        "generatedBy": "ai",
+        "derivedFrom": [
+          "manual"
+        ],
+        "generationAction": "angle"
+      },
+      "t_c3c2d4d9-9451-4dcc-9931-0de57309d28f": {
+        "id": "t_c3c2d4d9-9451-4dcc-9931-0de57309d28f",
+        "text": "验收用手写长文。我的原话必须保持完整，分支功能只负责复制和比较，不应该因为内容较长就把它自动当成模型写作。我会在分支里补充一个想法，再把选中的内容带回主线。整个过程中，所有改动都应该可理解，也可以通过撤销恢复。我希望检查的不是华丽效果，而是普通使用者能否始终知道自己在哪里、哪些内容已经留下、哪些内容只是临时建议，以及下一步按钮究竟会做什么。这里的每一句话都是公开合成测试数据，不来自私人课程记录，也不来自用户已有项目。 分支补充：先做一个小例子再决定。",
+        "x": 472.33333587646484,
+        "y": 335.6469963084196,
+        "kind": "thought",
+        "life": "active",
+        "kept": true,
+        "createdAt": 1793200098852,
+        "updatedAt": 1793200098852,
+        "touchedAt": 1793200098852,
+        "attentionDebt": 0,
+        "origin": {
+          "projectId": "fork_f1b84323-b676-4a02-b85e-6e1c3545c697",
+          "thoughtId": "manual",
+          "note": "Explicitly brought as a separate thought; no Main wording was overwritten."
+        }
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [
+      {
+        "id": "h_6a77baa9-1f9a-4e7c-b8db-a3c45a1418af",
+        "kind": "world.restore",
+        "summary": "Restored from native-public-fixture-8f9d621 as a new project. Existing projects were not overwritten.",
+        "thoughtIds": [],
+        "at": 1793199520011
+      },
+      {
+        "id": "h_24b660ff-d80d-4ab6-839b-043e3ade1d86",
+        "kind": "thought.create",
+        "summary": "Placed a thought: ",
+        "thoughtIds": [
+          "t_0d881018-ab51-46ad-aca8-ee899ffe9c40"
+        ],
+        "at": 1793199581317
+      },
+      {
+        "id": "h_51d86291-2228-4282-ab10-015b92c5e769",
+        "kind": "thought.edit",
+        "summary": "Reframed: n",
+        "thoughtIds": [
+          "t_0d881018-ab51-46ad-aca8-ee899ffe9c40"
+        ],
+        "at": 1793199618298
+      },
+      {
+        "id": "h_730925ec-f931-44cb-8d1d-5e69e35db61a",
+        "kind": "thought.edit",
+        "summary": "Reframed: n中文验收记录",
+        "thoughtIds": [
+          "t_0d881018-ab51-46ad-aca8-ee899ffe9c40"
+        ],
+        "at": 1793199688975
+      },
+      {
+        "id": "h_cd12fcec-86bf-413d-9485-39d997242f72",
+        "kind": "thought.edit",
+        "summary": "Reframed: 验收用合成原文，非真实模型输出。我们准备研究大学生如何安排一周的学习任务。第一步是列出课程、作业和截止日期，再给每项任务估计需要的时间。第二步是把需要集中思考的内容放在精力较好的时段，同时保留休息与机动时间。第三步是在每天结束时记录实际进度，解释计划和现实之间的差异，并据此调整下一天安排。不能因为某一天没有完成全部目标就推断整个计划无效，也不能只看任务数量而忽略任务难度。验收时需要确认这一整段原文在阅读、编辑、导出和恢复后仍然完整。 实机编辑追加：每周复盘一次。",
+        "thoughtIds": [
+          "ai"
+        ],
+        "at": 1793199716463
+      },
+      {
+        "id": "h_1327a6a5-9aea-43cc-aa0a-d29780c0760d",
+        "kind": "undo",
+        "summary": "Reconsidered the last deliberate change",
+        "thoughtIds": [
+          "ai"
+        ],
+        "at": 1793199722721
+      },
+      {
+        "id": "h_5966aee7-2062-476f-baaa-2039bf17cf0d",
+        "kind": "undo",
+        "summary": "Restored the reconsidered change",
+        "thoughtIds": [
+          "ai"
+        ],
+        "at": 1793199728279
+      },
+      {
+        "id": "h_c54be24e-c486-44b4-b0dc-0f39f1df7060",
+        "kind": "ghost.claim",
+        "summary": "Made a possibility my own: 也许真正稀缺的不是这个选择，而是一段“选错了也还来得及”的时间。",
+        "thoughtIds": [
+          "ghost_3715821f-ce56-4d84-878c-f057e60a5855"
+        ],
+        "at": 1793200024166
+      },
+      {
+        "id": "h_d3989697-9e0c-42b2-b5de-4b4ffbba93d7",
+        "kind": "fork.bring",
+        "summary": "Brought a chosen thought from a fork: 验收用手写长文。我的原话必须保持完整，分支功能只负责复制和比较，不应该因为内容较长就把它自动当成模型写作。我会在分支里补充一个想法，再把选中的内容带回主线。整个过程中，所有改动都应该可理解，也可以通过撤销恢复。我希望检查的不是华丽效果，而是普通使用者能否始终知道自己在哪里、哪些内容已经留下、哪些内容只是临时建议，以及下一步按钮究竟会做什么。这里的每一句话都是公开合成测试数据，不来自私人课程记录，也不来自用户已有项目。 分支补充：先做一个小例子再决定。",
+        "thoughtIds": [
+          "t_c3c2d4d9-9451-4dcc-9931-0de57309d28f"
+        ],
+        "at": 1793200098852
+      }
+    ],
+    "camera": {
+      "x": 122.66666412353516,
+      "y": 74.82696266069661,
+      "zoom": 1
+    },
+    "createdAt": 1793199520011,
+    "updatedAt": 1793200098852
+  }
+}

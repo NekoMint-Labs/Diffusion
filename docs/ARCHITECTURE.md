@@ -61,6 +61,13 @@ The reader shows related current question text, not a frozen request context or 
 Manual extraction is explicit, bounded and cancellable. See
 [`experiments/role-b-focus/IN_FIELD_TRIAL.md`](../experiments/role-b-focus/IN_FIELD_TRIAL.md).
 
+The additional opt-in `plainAnswerTrial=1` flag, used together with the reading trial, appends
+wording guidance to the same Field-answer request. It asks for everyday language, a relevant concrete
+example, and separation of user constraints from model suggestions. It adds no request, tool,
+permission or persistent field, and does not change provider budgets. Prompt isolation and mounted
+Read/Keep/reload checks do not establish live model quality. See
+[`plain answer trial`](../experiments/role-b-comparison/PLAIN_ANSWER_TRIAL.zh-CN.md).
+
 ## Commands and history
 
 One command model (`src/ui/commands`) defines every semantic action once: id, localized label, aliases, platform-neutral shortcuts, contextual availability and one `run`. Menus, the palette, the keyboard router and the shortcut reference are projections of that registry, so no presentation owns business logic. An action may be reachable from the Field title, right-click, the Scope Hub, the palette and a shortcut while remaining a single definition.

@@ -3,8 +3,9 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { parseArgs } from 'node:util';
+import { validateBudgetResume } from './budget-resume.mjs';
 import { budgetRequest, budgetSchedule, promptFingerprint, assertRequestLimit, TOTAL_OUTPUT_CAP } from './budget-policy.mjs';
-const { values } = parseArgs({ strict: true, options: { out:{type:'string'},session:{type:'string'},port:{type:'string',default:'9239'},execute:{type:'boolean',default:false},injected:{type:'boolean',default:false} } });
+const { values } = parseArgs({ strict: true, options: { out:{type:'string'},resume:{type:'string'},session:{type:'string'},port:{type:'string',default:'9239'},execute:{type:'boolean',default:false},injected:{type:'boolean',default:false} } });
 if(!values.out)throw new Error('New output directory required');
 if(!/^\d+$/.test(values.port)||Number(values.port)<1||Number(values.port)>65535)throw new Error('Invalid port');
 if(values.execute&&!values.session)throw new Error('Execution needs a launcher receipt');
@@ -14,7 +15,16 @@ const plan={toolSource,productSource:'5e4f979c5c210246577280ac91fd58d2631d8920',
  officialReferences:['https://api-docs.deepseek.com/guides/thinking_mode','https://api-docs.deepseek.com/api/create-chat-completion/'],scope:'Parameters modified only by experiment network route; production build and defaults unchanged. No model output is silently retried.'};
 console.log(JSON.stringify(plan,null,2));
 if(!values.execute)process.exit(0);
-fs.mkdirSync(out);fs.writeFileSync(path.join(out,'plan.json'),JSON.stringify(plan,null,2)+'\n');
+let inherited = null, resumeState = null;
+if(values.resume){
+ const previousDir=path.resolve(values.resume), read=name=>JSON.parse(fs.readFileSync(path.join(previousDir,name),'utf8'));
+ const previousPlan=read('plan.json'), previousSummary=read('summary.json');
+ const files=['plan.json','summary.json','loaded-build.json','build-manifest.json',...previousSummary.results.map(r=>r.scenario+'-'+r.arm+'.json')];
+ const records=previousSummary.results.map(r=>read(r.scenario+'-'+r.arm+'.json'));
+ resumeState=validateBudgetResume({plan:previousPlan,summary:previousSummary,records},plan);
+ inherited={directory:previousDir,files:Object.fromEntries(files.map(name=>[name,crypto.createHash('sha256').update(fs.readFileSync(path.join(previousDir,name))).digest('hex')])),sessionReceiptSha256:crypto.createHash('sha256').update(fs.readFileSync(values.session)).digest('hex'),consumedCap:resumeState.consumedCap,previousToolSource:previousPlan.toolSource};
+}
+fs.mkdirSync(out);if(inherited)fs.writeFileSync(path.join(out,'resume.json'),JSON.stringify(inherited,null,2)+'\n');fs.writeFileSync(path.join(out,'plan.json'),JSON.stringify(plan,null,2)+'\n');
 const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
 const manifest=await fetch(origin+'/comparison-source.json').then(r=>r.json());
 if(manifest.source!==plan.productSource||manifest.flags!==plan.flags)throw new Error('Source or flags mismatch');
@@ -39,6 +49,12 @@ const url=new URL(page.url());for(const field of plan.flags.split('&')){const[k,
 const scripts=await page.locator('script[src]').evaluateAll(nodes=>nodes.map(n=>new URL(n.src).pathname.slice(1)));if(!scripts.length||scripts.some(s=>!manifest.assets[s]))throw new Error('Loaded scripts mismatch');
 const settings=await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('diffusion-settings')||'{}');return{provider:s.provider,model:s.model,depth:s.thinkingDepth,locale:s.locale};});
 if(settings.provider!=='deepseek'||settings.model!==plan.model||settings.depth!=='standard'||settings.locale!=='en')throw new Error('Unexpected configuration');
+if(resumeState){
+ const previousBuild=JSON.parse(fs.readFileSync(path.join(inherited.directory,'loaded-build.json'),'utf8'));
+ const previousManifest=JSON.parse(fs.readFileSync(path.join(inherited.directory,'build-manifest.json'),'utf8'));
+ if(JSON.stringify(previousManifest)!==JSON.stringify(manifest)||JSON.stringify(previousBuild.settings)!==JSON.stringify(settings)||JSON.stringify(previousBuild.scripts)!==JSON.stringify(scripts))throw new Error('Resume loaded build differs');
+ await page.keyboard.press('Control+,');await page.locator('.settings-nav [data-section="ai"]').click();
+}
 if(!await page.locator('.settings-surface').isVisible())throw new Error('Leave AI settings open for saved-state verification');
 await expect(page.getByTestId('provider-key')).toHaveAttribute('placeholder',/Stored/);
 await page.locator('.settings-surface .surface-close').click();
@@ -53,8 +69,9 @@ async function store(project,replace=false){
  }),{project,replace});
 }
 async function saved(id){return page.evaluate(id=>new Promise((resolve,reject)=>{const open=indexedDB.open('diffusion-explorer-v1');open.onsuccess=()=>{const db=open.result;const get=db.transaction('projects').objectStore('projects').get(id);get.onsuccess=()=>{db.close();resolve(get.result);};get.onerror=()=>reject(get.error);};}),id);}
-await store(hold);for(const p of projects)await store(p);
-let active=null,totalSent=0,blocked=0,routeFailure=null;const canonical=new Map(),requests=new Map(),pending=new Set(),results=[];
+if(!resumeState){await store(hold);for(const p of projects)await store(p);}
+else {const existingHold=await saved(hold.id);if(JSON.stringify(existingHold)!==JSON.stringify(hold))throw new Error('Resume hold fixture changed');for(const p of projects)if(!await saved(p.id))throw new Error('Resume fixture missing');}
+let active=null,totalSent=resumeState?.totalSent??0,blocked=0,routeFailure=null;const canonical=new Map(Object.entries(resumeState?.fingerprints??{})),requests=new Map(),pending=new Set(),results=[...(resumeState?.completed??[])];
 const write=record=>fs.writeFileSync(path.join(out,record.scenario+'-'+record.arm.id+'.json'),JSON.stringify(record,null,2)+'\n');
 const routeHandler=async route=>{
  const request=route.request();if(request.method()!=='POST')return route.continue();
@@ -82,7 +99,7 @@ const responseHandler=response=>{
 const failureHandler=request=>{const found=requests.get(request);if(found){found.entry.done=true;found.entry.transportFailed=true;found.entry.finishedAt=new Date().toISOString();write(found.record);}};
 await page.route('https://api.deepseek.com/**',routeHandler);page.on('response',responseHandler);page.on('requestfailed',failureHandler);
 try{
- for(const {scenario,arm}of plan.schedule){
+ for(const {scenario,arm}of resumeState?.remaining??plan.schedule){
   const record={scenario,arm,productSource:plan.productSource,injected:values.injected,startedAt:new Date().toISOString(),requests:[],results:[]};active=record;write(record);
   try{
    await openField(page,hold.id);const fixture=projects.find(p=>p.id==='comparison-budget-'+scenario);await store(fixture,true);await openField(page,fixture.id);
@@ -100,5 +117,5 @@ try{
  }
 }finally{
  await page.unroute('https://api.deepseek.com/**',routeHandler);page.off('response',responseHandler);page.off('requestfailed',failureHandler);await Promise.all([...pending]);
- fs.writeFileSync(path.join(out,'summary.json'),JSON.stringify({injected:values.injected,totalSent,blocked,routeFailure,promptFingerprints:Object.fromEntries(canonical),results,productionDefaultsChanged:false},null,2)+'\n');await browser.close();
+ fs.writeFileSync(path.join(out,'summary.json'),JSON.stringify({injected:values.injected,totalSent,blocked,routeFailure,...(inherited?{inheritedFrom:inherited.directory,previousSent:resumeState.totalSent,previousCap:resumeState.consumedCap}:{}),promptFingerprints:Object.fromEntries(canonical),results,productionDefaultsChanged:false},null,2)+'\n');await browser.close();
 }

@@ -36,6 +36,18 @@ for (const enabled of [false, true]) test('wording trial is explicit and preserv
     const id = (await ghost.getAttribute('data-thought-id'))!;
     await ghost.click(); await page.getByTestId('ai-proposal-keep').click();
     const kept = page.locator('[data-thought-id="' + id + '"]'); await expect(kept).toHaveAttribute('data-kind', 'thought');
+    // Keep updates the rendered state before the asynchronous save commits. A reload test
+    // must observe persisted text first, rather than racing that write on a fast runner.
+    await expect.poll(() => page.evaluate(id => new Promise<string | undefined>((resolve, reject) => {
+        const opening = indexedDB.open('diffusion-explorer-v1');
+        opening.onerror = () => reject(opening.error);
+        opening.onsuccess = () => {
+            const db = opening.result;
+            const read = db.transaction('projects').objectStore('projects').get('main');
+            read.onsuccess = () => { db.close(); resolve(read.result?.thoughts[id]?.text); };
+            read.onerror = () => { db.close(); reject(read.error); };
+        };
+    }), id)).toBe(text);
     await page.reload(); await kept.click(); await kept.getByRole('button', { name: '阅读原文', exact: true }).click();
     await expect(page.getByTestId('reading-original')).toHaveText(text);
     await page.screenshot({ path: info.outputPath('plain-trial-kept-reader.png') });

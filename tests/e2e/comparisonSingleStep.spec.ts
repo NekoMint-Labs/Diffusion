@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { createProject, makeThought } from '../../src/core/model.ts';
-import { runScenario } from '../../experiments/role-b-comparison/flow.mjs';
+import { runScenario, openField } from '../../experiments/role-b-comparison/flow.mjs';
 
 for (const propositions of [false, true]) for (const action of ['angle', 'diffuse']) {
     test('comparison driver runs exactly one ' + action + ' request with propositions=' + propositions, async ({ page }) => {
@@ -37,3 +37,32 @@ for (const propositions of [false, true]) for (const action of ['angle', 'diffus
         expect(calls).toHaveLength(1);
     });
 }
+
+
+test('comparison switching waits for an asynchronously mounted Field entry', async ({ page }) => {
+    await page.addInitScript(() => {
+        localStorage.setItem('diffusion-settings', JSON.stringify({ provider: 'off', locale: 'en' }));
+        localStorage.setItem('diffusion-first-field-tutorial-v1', JSON.stringify({ status: 'complete' }));
+    });
+    await page.goto('/?locale=en&readingTrial=1'); await expect(page.getByTestId('field')).toBeVisible();
+    const project = createProject('comparison-late', '模型对照 · late', 1);
+    project.thoughts.question = makeThought('公开合成数据，仅验证切换等待。', { x: 300, y: 200 }, 1, 'question');
+    await page.evaluate(project => new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('diffusion-explorer-v1');
+        open.onsuccess = () => { const db = open.result; const tx = db.transaction('projects', 'readwrite'); tx.objectStore('projects').put(project); tx.oncomplete = () => { db.close(); resolve(); }; tx.onerror = () => reject(tx.error); };
+    }), project);
+    // Model the list's asynchronous mount, without changing persistence or product code.
+    await page.evaluate(() => {
+        const observer = new MutationObserver(() => {
+            const entry = document.querySelector('.field-list [data-field="comparison-late"]');
+            if (!entry) return;
+            observer.disconnect();
+            const row = entry.closest('li')!, parent = row.parentElement!;
+            row.remove(); setTimeout(() => parent.append(row), 250);
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    });
+    await openField(page, 'comparison-late');
+    await expect(page.getByTestId('field-title')).toHaveText('模型对照 · late');
+    await expect(page.locator('[data-thought-id="question"]')).toHaveText('公开合成数据，仅验证切换等待。');
+});

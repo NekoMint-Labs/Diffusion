@@ -60,9 +60,11 @@ export async function runScenario(page, name, provider, requestCount) {
 
 export async function openField(page, id) {
     await page.getByTestId('field-management').click();
-    const entry = page.locator('.field-list-button[data-field="' + id + '"]');
-    if (await entry.count()) await entry.click();
-    else await page.getByRole('dialog', { name: 'Open Field', exact: true }).locator('.surface-close').click();
+    const entry = page.locator('.field-list [data-field="' + id + '"]');
+    // The list is asynchronous; absence before loading never means this Field is current.
+    await expect(entry).toBeVisible();
+    if (await entry.getAttribute('aria-current') === 'true') await page.getByRole('dialog', { name: 'Open Field', exact: true }).locator('.surface-close').click();
+    else await entry.click();
     await expect.poll(() => page.evaluate(() => localStorage.getItem('diffusion-active-project'))).toBe(id);
     await expect(page.getByTestId('field-title')).toHaveText('模型对照 · ' + id.replace('comparison-', ''));
     await expect(page.getByTestId('field')).toBeVisible();

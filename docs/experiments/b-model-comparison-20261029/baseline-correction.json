@@ -1,0 +1,240 @@
+{
+  "scenario": "correction",
+  "source": "79a484483e882c0b252b46c09391f7a3cd84f027",
+  "flags": "readingTrial=1",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "requests": [
+    {
+      "startedAt": "2026-10-29T09:42:22.720Z",
+      "requestedModel": "deepseek-v4-pro",
+      "maxTokens": 1600,
+      "done": true,
+      "status": 200,
+      "actualModel": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 1939,
+        "completion_tokens": 1383,
+        "total_tokens": 3322,
+        "prompt_tokens_details": {
+          "cached_tokens": 640
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1324
+        },
+        "prompt_cache_hit_tokens": 640,
+        "prompt_cache_miss_tokens": 1299
+      },
+      "finishReasons": [
+        "stop"
+      ],
+      "responseContent": [
+        "{\"intents\":[{\"type\":\"surface_possibility\",\"text\":\"若把“考前复习”定义为学生按知识清单自评薄弱点，两小时访谈可在不接触作业和成绩的情况下收集需求；但这还只是一种待验证的访谈口径，不是已有发现。\"}]}"
+      ],
+      "finishedAt": "2026-10-29T09:42:50.099Z"
+    }
+  ],
+  "results": [
+    {
+      "id": "ghost_c8d857cf-1706-4743-8e13-4ec1f5993026",
+      "fullText": "若把“考前复习”定义为学生按知识清单自评薄弱点，两小时访谈可在不接触作业和成绩的情况下收集需求；但这还只是一种待验证的访谈口径，不是已有发现。",
+      "cardText": "若把“考前复习”定义为学生按知识清单自评薄弱点，两小时访谈可在不接触作业和成绩的情况下收集需求；但这还只是一种待验证的访谈口径，不是已有发现。",
+      "focus": null,
+      "label": [],
+      "readerText": "若把“考前复习”定义为学生按知识清单自评薄弱点，两小时访谈可在不接触作业和成绩的情况下收集需求；但这还只是一种待验证的访谈口径，不是已有发现。",
+      "afterKeepCard": "若把“考前复习”定义为学生按知识清单自评薄弱点，两小时访谈可在不接触作业和成绩的情况下收集需求；但这还只是一种待验证的访谈口径，不是已有发现。",
+      "afterRecoveryCard": "若把“考前复习”定义为学生按知识清单自评薄弱点，两小时访谈可在不接触作业和成绩的情况下收集需求；但这还只是一种待验证的访谈口径，不是已有发现。",
+      "originalPreserved": true
+    }
+  ],
+  "startedAt": "2026-10-29T09:42:20.701Z",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "comparison-correction",
+    "title": "模型对照 · correction",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "更正：现在每周只有两小时，改为考前复习，不做作业辅助；不接触学生私人作业、成绩或身份资料的限制保持不变。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 2,
+        "updatedAt": 2,
+        "touchedAt": 2,
+        "derivedFrom": [
+          "prior"
+        ],
+        "generationAction": "continue",
+        "origin": {
+          "projectId": "comparison-correction",
+          "thoughtId": "prior",
+          "inputId": "correction",
+          "ranges": [
+            {
+              "inputId": "correction",
+              "start": 0,
+              "end": 52
+            }
+          ]
+        }
+      },
+      "prior": {
+        "id": "prior",
+        "text": "我想验证学生是否需要一个作业辅助工具。每周只有四小时，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 40,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {
+      "correction": {
+        "id": "correction",
+        "text": "更正：现在每周只有两小时，改为考前复习，不做作业辅助；不接触学生私人作业、成绩或身份资料的限制保持不变。",
+        "createdAt": 2
+      }
+    },
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "ec1c7672b41e6846166197003385f0a1bd8a7ad26729fa99914852bc9394811f",
+  "runConfig": {
+    "configuredCandidates": 1,
+    "fieldSources": false,
+    "web": false
+  },
+  "requestSummary": {
+    "actualRequests": 1,
+    "completed": 1,
+    "singleRequest": true,
+    "providerSuccess": true
+  },
+  "notices": [
+    "Possibilities returned. No commitment was made on your behalf.Close"
+  ],
+  "status": "observed-output",
+  "recoveredProject": {
+    "schemaVersion": 1,
+    "id": "recovered_c6311d1a-22a9-4f45-a068-50a0d0d8ada1",
+    "title": "模型对照 · correction (restored)",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "更正：现在每周只有两小时，改为考前复习，不做作业辅助；不接触学生私人作业、成绩或身份资料的限制保持不变。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 2,
+        "updatedAt": 1793266942034,
+        "touchedAt": 1793266942034,
+        "derivedFrom": [
+          "prior"
+        ],
+        "generationAction": "continue",
+        "origin": {
+          "projectId": "comparison-correction",
+          "thoughtId": "prior",
+          "inputId": "correction",
+          "ranges": [
+            {
+              "inputId": "correction",
+              "start": 0,
+              "end": 52
+            }
+          ]
+        },
+        "attentionDebt": 0
+      },
+      "prior": {
+        "id": "prior",
+        "text": "我想验证学生是否需要一个作业辅助工具。每周只有四小时，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 40,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      },
+      "ghost_c8d857cf-1706-4743-8e13-4ec1f5993026": {
+        "id": "ghost_c8d857cf-1706-4743-8e13-4ec1f5993026",
+        "text": "若把“考前复习”定义为学生按知识清单自评薄弱点，两小时访谈可在不接触作业和成绩的情况下收集需求；但这还只是一种待验证的访谈口径，不是已有发现。",
+        "x": 300,
+        "y": 496,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1793266973248,
+        "updatedAt": 1793266973248,
+        "touchedAt": 1793266973248,
+        "origin": {
+          "projectId": "comparison-correction",
+          "note": "DeepSeek - deepseek-v4-pro"
+        },
+        "derivedFrom": [
+          "question"
+        ],
+        "generationAction": "continue"
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {
+      "correction": {
+        "id": "correction",
+        "text": "更正：现在每周只有两小时，改为考前复习，不做作业辅助；不接触学生私人作业、成绩或身份资料的限制保持不变。",
+        "createdAt": 2
+      }
+    },
+    "threads": {},
+    "history": [
+      {
+        "id": "h_b039c0eb-1fd8-45c4-a74e-d1ab1d0761de",
+        "kind": "ghost.claim",
+        "summary": "Made a possibility my own: 若把“考前复习”定义为学生按知识清单自评薄弱点，两小时访谈可在不接触作业和成绩的情况下收集需求；但这还只是一种待验证的访谈口径，不是已有发现。",
+        "thoughtIds": [
+          "ghost_c8d857cf-1706-4743-8e13-4ec1f5993026"
+        ],
+        "at": 1793266973248
+      },
+      {
+        "id": "h_f410d61d-677b-406a-b696-d7ebe6b5bc17",
+        "kind": "world.restore",
+        "summary": "Restored from comparison-correction as a new project. Existing projects were not overwritten.",
+        "thoughtIds": [],
+        "at": 1793266974985
+      }
+    ],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1793266974985,
+    "updatedAt": 1793266974985
+  },
+  "singleStepVerified": true,
+  "finishedAt": "2026-10-29T09:42:57.299Z"
+}

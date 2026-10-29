@@ -1,0 +1,241 @@
+{
+  "scenario": "uncertainty",
+  "source": "5e4f979c5c210246577280ac91fd58d2631d8920",
+  "flags": "readingTrial=1&propositionTrial=1",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "requests": [
+    {
+      "startedAt": "2026-10-29T09:47:45.516Z",
+      "requestedModel": "deepseek-v4-pro",
+      "maxTokens": 1600,
+      "done": true,
+      "status": 200,
+      "actualModel": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 2027,
+        "completion_tokens": 516,
+        "total_tokens": 2543,
+        "prompt_tokens_details": {
+          "cached_tokens": 1536
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 461
+        },
+        "prompt_cache_hit_tokens": 1536,
+        "prompt_cache_miss_tokens": 491
+      },
+      "finishReasons": [
+        "stop"
+      ],
+      "responseContent": [
+        "{\"intents\":[{\"type\":\"surface_possibility\",\"text\":\"如果要把这个设想变成可检验的判断，可以先让学生在不涉及私人作业或成绩的前提下自评“考前是否需要复习工具”；这一步只能得到主观需求报告，不能证明实际问题存在。\"}]}"
+      ],
+      "finishedAt": "2026-10-29T09:47:57.235Z"
+    }
+  ],
+  "results": [
+    {
+      "id": "ghost_63e9bf81-04a0-45d5-b556-adca3d66b2cc",
+      "fullText": "如果要把这个设想变成可检验的判断，可以先让学生在不涉及私人作业或成绩的前提下自评“考前是否需要复习工具”；这一步只能得到主观需求报告，不能证明实际问题存在。",
+      "cardText": "如果要把这个设想变成可检验的判断，可以先让学生在不涉及私人作业或成绩的前提下自评“考前是否需要复习工具”；这一步只能得到主观需求报告，不能证明实际问题存在。",
+      "focus": null,
+      "label": [],
+      "readerText": "如果要把这个设想变成可检验的判断，可以先让学生在不涉及私人作业或成绩的前提下自评“考前是否需要复习工具”；这一步只能得到主观需求报告，不能证明实际问题存在。",
+      "afterKeepCard": "如果要把这个设想变成可检验的判断，可以先让学生在不涉及私人作业或成绩的前提下自评“考前是否需要复习工具”；这一步只能得到主观需求报告，不能证明实际问题存在。",
+      "afterRecoveryCard": "如果要把这个设想变成可检验的判断，可以先让学生在不涉及私人作业或成绩的前提下自评“考前是否需要复习工具”；这一步只能得到主观需求报告，不能证明实际问题存在。",
+      "originalPreserved": true
+    }
+  ],
+  "startedAt": "2026-10-29T09:47:43.417Z",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "comparison-uncertainty",
+    "title": "模型对照 · uncertainty",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我刚才只是设想，还没有确认学生存在这个问题。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 2,
+        "updatedAt": 2,
+        "touchedAt": 2,
+        "derivedFrom": [
+          "prior"
+        ],
+        "generationAction": "continue",
+        "origin": {
+          "projectId": "comparison-uncertainty",
+          "thoughtId": "prior",
+          "inputId": "correction",
+          "ranges": [
+            {
+              "inputId": "correction",
+              "start": 0,
+              "end": 22
+            }
+          ]
+        }
+      },
+      "prior": {
+        "id": "prior",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 40,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {
+      "correction": {
+        "id": "correction",
+        "text": "我刚才只是设想，还没有确认学生存在这个问题。",
+        "createdAt": 2
+      }
+    },
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "18ead0b069b1a3158162344b4ba5342c830e8ba3be5d90f9d94c642c77f8560f",
+  "runConfig": {
+    "configuredCandidates": 1,
+    "fieldSources": false,
+    "web": false
+  },
+  "requestSummary": {
+    "actualRequests": 1,
+    "completed": 1,
+    "singleRequest": true,
+    "providerSuccess": true
+  },
+  "notices": [
+    "Possibilities returned. No commitment was made on your behalf.Close"
+  ],
+  "status": "observed-output",
+  "recoveredProject": {
+    "schemaVersion": 1,
+    "id": "recovered_eb813a3f-f473-4cce-8439-32ab785ae1ca",
+    "title": "模型对照 · uncertainty (restored)",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我刚才只是设想，还没有确认学生存在这个问题。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 2,
+        "updatedAt": 1793267264750,
+        "touchedAt": 1793267264750,
+        "derivedFrom": [
+          "prior"
+        ],
+        "generationAction": "continue",
+        "origin": {
+          "projectId": "comparison-uncertainty",
+          "thoughtId": "prior",
+          "inputId": "correction",
+          "ranges": [
+            {
+              "inputId": "correction",
+              "start": 0,
+              "end": 22
+            }
+          ]
+        },
+        "attentionDebt": 0
+      },
+      "prior": {
+        "id": "prior",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 40,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      },
+      "ghost_63e9bf81-04a0-45d5-b556-adca3d66b2cc": {
+        "id": "ghost_63e9bf81-04a0-45d5-b556-adca3d66b2cc",
+        "text": "如果要把这个设想变成可检验的判断，可以先让学生在不涉及私人作业或成绩的前提下自评“考前是否需要复习工具”；这一步只能得到主观需求报告，不能证明实际问题存在。",
+        "x": 300,
+        "y": 442,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1793267279715,
+        "updatedAt": 1793267279715,
+        "touchedAt": 1793267279715,
+        "origin": {
+          "projectId": "comparison-uncertainty",
+          "note": "DeepSeek - deepseek-v4-pro"
+        },
+        "generatedBy": "ai",
+        "derivedFrom": [
+          "question"
+        ],
+        "generationAction": "continue"
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {
+      "correction": {
+        "id": "correction",
+        "text": "我刚才只是设想，还没有确认学生存在这个问题。",
+        "createdAt": 2
+      }
+    },
+    "threads": {},
+    "history": [
+      {
+        "id": "h_743f3ac7-a0a7-48da-9eb9-e343c063f399",
+        "kind": "ghost.claim",
+        "summary": "Made a possibility my own: 如果要把这个设想变成可检验的判断，可以先让学生在不涉及私人作业或成绩的前提下自评“考前是否需要复习工具”；这一步只能得到主观需求报告，不能证明实际问题存在。",
+        "thoughtIds": [
+          "ghost_63e9bf81-04a0-45d5-b556-adca3d66b2cc"
+        ],
+        "at": 1793267279715
+      },
+      {
+        "id": "h_b4df9b2b-e43a-4891-9352-59591eac7ed8",
+        "kind": "world.restore",
+        "summary": "Restored from comparison-uncertainty as a new project. Existing projects were not overwritten.",
+        "thoughtIds": [],
+        "at": 1793267281856
+      }
+    ],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1793267281856,
+    "updatedAt": 1793267281856
+  },
+  "singleStepVerified": true,
+  "finishedAt": "2026-10-29T09:48:04.506Z"
+}

@@ -1,0 +1,395 @@
+{
+  "date": "2026-10-29",
+  "timezone": "Asia/Shanghai",
+  "productSources": {
+    "baseline": "79a484483e882c0b252b46c09391f7a3cd84f027",
+    "candidate": "5e4f979c5c210246577280ac91fd58d2631d8920"
+  },
+  "toolSourceAtStart": "9c8cba529a7d0eea0e524cb0367418a4cf291479",
+  "toolRepair": "During capture, openField was changed to await target entry before inferring current Field; baseline/diffuse setup failure had zero requests. Remaining unattempted scenarios resumed once in a new directory.",
+  "flags": {
+    "baseline": "readingTrial=1",
+    "candidate": "readingTrial=1&propositionTrial=1"
+  },
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "effectiveModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "maxTokens": 1600,
+  "scope": "Browser production builds in isolated Chromium and separate origins; not native Windows acceptance",
+  "counts": {
+    "requests": 12,
+    "outputCases": 8,
+    "emptyCases": 4,
+    "promptTokens": 23584,
+    "completionTokens": 14749,
+    "reasoningTokens": 14315,
+    "baselineOutputs": 5,
+    "candidateOutputs": 3,
+    "manualExtractionRequests": 0,
+    "automaticRetries": 0,
+    "providerWarmupRequests": 0,
+    "setupFailuresWithoutProviderRequest": 1
+  },
+  "limitations": [
+    "one sample per version and scenario; no statistical superiority",
+    "no causal attribution to one instruction or module",
+    "all eight surfaced originals at most 120 Unicode characters, so persistent long proposition display was not exercised",
+    "no latency/cost comparison; token usage is provider-reported, not a billing receipt",
+    "no native installer, physical IME, touchpad or OS reboot acceptance"
+  ],
+  "pairs": [
+    {
+      "scenario": "ask",
+      "label": "直接提问",
+      "baseline": {
+        "source": "79a484483e882c0b252b46c09391f7a3cd84f027",
+        "file": "baseline-ask.json",
+        "fileSha256": "28c7ddbad464c6c1737aca7b967d896dab31cb2b9f6a2e8fbfcd7ae5c49d94f4",
+        "fixtureSha256": "fd1b5642d8b1ac2a6b8441f7936153c83b01e5fa2d7652aafcac09c6fa5cd810",
+        "status": "empty-or-failed",
+        "requests": 1,
+        "outputs": 0,
+        "finishReasons": [
+          "length"
+        ],
+        "usage": {
+          "prompt_tokens": 1873,
+          "completion_tokens": 1600,
+          "total_tokens": 3473,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 1600
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 1873
+        },
+        "fullTextCharacters": []
+      },
+      "candidate": {
+        "source": "5e4f979c5c210246577280ac91fd58d2631d8920",
+        "file": "candidate-ask.json",
+        "fileSha256": "150c47754063c2a945d853123470c62c159ee377b2de67bd2039deeecc3199be",
+        "fixtureSha256": "fd1b5642d8b1ac2a6b8441f7936153c83b01e5fa2d7652aafcac09c6fa5cd810",
+        "status": "empty-or-failed",
+        "requests": 1,
+        "outputs": 0,
+        "finishReasons": [
+          "length"
+        ],
+        "usage": {
+          "prompt_tokens": 1974,
+          "completion_tokens": 1600,
+          "total_tokens": 3574,
+          "prompt_tokens_details": {
+            "cached_tokens": 256
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 1600
+          },
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 1718
+        },
+        "fullTextCharacters": []
+      }
+    },
+    {
+      "scenario": "continue",
+      "label": "继续想",
+      "baseline": {
+        "source": "79a484483e882c0b252b46c09391f7a3cd84f027",
+        "file": "baseline-continue.json",
+        "fileSha256": "395d142e361552f69ff309fe534b4baa8473a7bbbf6df809f2d69208deb0a68a",
+        "fixtureSha256": "ddbf39675aeb05692917243da150bf619794ab68bc48848106e094cc0ea9fee1",
+        "status": "observed-output",
+        "requests": 1,
+        "outputs": 1,
+        "finishReasons": [
+          "stop"
+        ],
+        "usage": {
+          "prompt_tokens": 1874,
+          "completion_tokens": 1353,
+          "total_tokens": 3227,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 1295
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 1874
+        },
+        "fullTextCharacters": [
+          66
+        ]
+      },
+      "candidate": {
+        "source": "5e4f979c5c210246577280ac91fd58d2631d8920",
+        "file": "candidate-continue.json",
+        "fileSha256": "545729ab721856e7af1637b09cdaf48b9c8af2ba87dd700bfda5f15585deaaf8",
+        "fixtureSha256": "ddbf39675aeb05692917243da150bf619794ab68bc48848106e094cc0ea9fee1",
+        "status": "empty-or-failed",
+        "requests": 1,
+        "outputs": 0,
+        "finishReasons": [
+          "length"
+        ],
+        "usage": {
+          "prompt_tokens": 1980,
+          "completion_tokens": 1600,
+          "total_tokens": 3580,
+          "prompt_tokens_details": {
+            "cached_tokens": 640
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 1600
+          },
+          "prompt_cache_hit_tokens": 640,
+          "prompt_cache_miss_tokens": 1340
+        },
+        "fullTextCharacters": []
+      }
+    },
+    {
+      "scenario": "angle",
+      "label": "换个角度",
+      "baseline": {
+        "source": "79a484483e882c0b252b46c09391f7a3cd84f027",
+        "file": "baseline-angle.json",
+        "fileSha256": "1ed34629b2074db83ef96d975587a07bc03e16fe5f112e2d24c0b8b121f51a85",
+        "fixtureSha256": "005218c32cc20be95ad60e37bbf47d39c609f6baff1170986e813398ebf0c701",
+        "status": "observed-output",
+        "requests": 1,
+        "outputs": 1,
+        "finishReasons": [
+          "stop"
+        ],
+        "usage": {
+          "prompt_tokens": 1955,
+          "completion_tokens": 814,
+          "total_tokens": 2769,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 763
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 1955
+        },
+        "fullTextCharacters": [
+          55
+        ]
+      },
+      "candidate": {
+        "source": "5e4f979c5c210246577280ac91fd58d2631d8920",
+        "file": "candidate-angle.json",
+        "fileSha256": "1acc837e53fd521e4eafabbc37ebe1e2ed4faf0da6a80727c5aaa7cd59c8cfe8",
+        "fixtureSha256": "005218c32cc20be95ad60e37bbf47d39c609f6baff1170986e813398ebf0c701",
+        "status": "empty-or-failed",
+        "requests": 1,
+        "outputs": 0,
+        "finishReasons": [
+          "length"
+        ],
+        "usage": {
+          "prompt_tokens": 2054,
+          "completion_tokens": 1600,
+          "total_tokens": 3654,
+          "prompt_tokens_details": {
+            "cached_tokens": 640
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 1600
+          },
+          "prompt_cache_hit_tokens": 640,
+          "prompt_cache_miss_tokens": 1414
+        },
+        "fullTextCharacters": []
+      }
+    },
+    {
+      "scenario": "diffuse",
+      "label": "Diffuse 单步",
+      "baseline": {
+        "source": "79a484483e882c0b252b46c09391f7a3cd84f027",
+        "file": "baseline-diffuse.json",
+        "fileSha256": "52c190893ebd9b82116b6a539dcd97f220c4276acc8b23e9a2a6ff552951ee8c",
+        "fixtureSha256": "0cf14258c19464fe3ee3533f9433c9beff8cc5f45f0178c1a3dec107401b88b5",
+        "status": "observed-output",
+        "requests": 1,
+        "outputs": 1,
+        "finishReasons": [
+          "stop"
+        ],
+        "usage": {
+          "prompt_tokens": 1912,
+          "completion_tokens": 1253,
+          "total_tokens": 3165,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 1212
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 1912
+        },
+        "fullTextCharacters": [
+          40
+        ]
+      },
+      "candidate": {
+        "source": "5e4f979c5c210246577280ac91fd58d2631d8920",
+        "file": "candidate-diffuse.json",
+        "fileSha256": "dd32dff55c86193219c2321c158a032382799a77acc72c71e1641b66ecb886b9",
+        "fixtureSha256": "0cf14258c19464fe3ee3533f9433c9beff8cc5f45f0178c1a3dec107401b88b5",
+        "status": "observed-output",
+        "requests": 1,
+        "outputs": 1,
+        "finishReasons": [
+          "stop"
+        ],
+        "usage": {
+          "prompt_tokens": 2024,
+          "completion_tokens": 819,
+          "total_tokens": 2843,
+          "prompt_tokens_details": {
+            "cached_tokens": 256
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 763
+          },
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 1768
+        },
+        "fullTextCharacters": [
+          64
+        ]
+      }
+    },
+    {
+      "scenario": "correction",
+      "label": "修改前提",
+      "baseline": {
+        "source": "79a484483e882c0b252b46c09391f7a3cd84f027",
+        "file": "baseline-correction.json",
+        "fileSha256": "81ebcdb8295744f28d5e2a90ad5d2ac062cc6a686fc349b8a191d44f25fdb492",
+        "fixtureSha256": "ec1c7672b41e6846166197003385f0a1bd8a7ad26729fa99914852bc9394811f",
+        "status": "observed-output",
+        "requests": 1,
+        "outputs": 1,
+        "finishReasons": [
+          "stop"
+        ],
+        "usage": {
+          "prompt_tokens": 1939,
+          "completion_tokens": 1383,
+          "total_tokens": 3322,
+          "prompt_tokens_details": {
+            "cached_tokens": 640
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 1324
+          },
+          "prompt_cache_hit_tokens": 640,
+          "prompt_cache_miss_tokens": 1299
+        },
+        "fullTextCharacters": [
+          71
+        ]
+      },
+      "candidate": {
+        "source": "5e4f979c5c210246577280ac91fd58d2631d8920",
+        "file": "candidate-correction.json",
+        "fileSha256": "649611da4077c3c21b8ed8214411b1276473baad626228777cfc524ba39c3009",
+        "fixtureSha256": "ec1c7672b41e6846166197003385f0a1bd8a7ad26729fa99914852bc9394811f",
+        "status": "observed-output",
+        "requests": 1,
+        "outputs": 1,
+        "finishReasons": [
+          "stop"
+        ],
+        "usage": {
+          "prompt_tokens": 2046,
+          "completion_tokens": 1443,
+          "total_tokens": 3489,
+          "prompt_tokens_details": {
+            "cached_tokens": 1152
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 1392
+          },
+          "prompt_cache_hit_tokens": 1152,
+          "prompt_cache_miss_tokens": 894
+        },
+        "fullTextCharacters": [
+          54
+        ]
+      }
+    },
+    {
+      "scenario": "uncertainty",
+      "label": "尚未确认问题存在",
+      "baseline": {
+        "source": "79a484483e882c0b252b46c09391f7a3cd84f027",
+        "file": "baseline-uncertainty.json",
+        "fileSha256": "0255e006f37e31f2fbf7948ad47013a3a7b18f2e9508331b67159e1d1d071964",
+        "fixtureSha256": "18ead0b069b1a3158162344b4ba5342c830e8ba3be5d90f9d94c642c77f8560f",
+        "status": "observed-output",
+        "requests": 1,
+        "outputs": 1,
+        "finishReasons": [
+          "stop"
+        ],
+        "usage": {
+          "prompt_tokens": 1926,
+          "completion_tokens": 768,
+          "total_tokens": 2694,
+          "prompt_tokens_details": {
+            "cached_tokens": 1408
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 705
+          },
+          "prompt_cache_hit_tokens": 1408,
+          "prompt_cache_miss_tokens": 518
+        },
+        "fullTextCharacters": [
+          79
+        ]
+      },
+      "candidate": {
+        "source": "5e4f979c5c210246577280ac91fd58d2631d8920",
+        "file": "candidate-uncertainty.json",
+        "fileSha256": "d8a77bc3159be7e750fb7284ad46aee24e208350dde162aebd94829fddaa9bd0",
+        "fixtureSha256": "18ead0b069b1a3158162344b4ba5342c830e8ba3be5d90f9d94c642c77f8560f",
+        "status": "observed-output",
+        "requests": 1,
+        "outputs": 1,
+        "finishReasons": [
+          "stop"
+        ],
+        "usage": {
+          "prompt_tokens": 2027,
+          "completion_tokens": 516,
+          "total_tokens": 2543,
+          "prompt_tokens_details": {
+            "cached_tokens": 1536
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 461
+          },
+          "prompt_cache_hit_tokens": 1536,
+          "prompt_cache_miss_tokens": 491
+        },
+        "fullTextCharacters": [
+          78
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "directory": "D:\\DiffusionWork\\reviews\\20261029-b\\budget-adaptation-20261029\\live-v1",
+  "files": {
+    "plan.json": "aa95901cad23a38e905b5f705b7cc279ce2fa6386d228e4cf294315a413e9e95",
+    "summary.json": "25af231c999bd2eb02fcc58515458ff8d4eb3d33fe6f45f180d55e73d9f463c9",
+    "loaded-build.json": "7e60bcebe66778810dc320e0bff27bbc296eaca8cabda950c2dab38213adc811",
+    "build-manifest.json": "a045524de77e09483a44e105669f1ea20ee04ed9c5a52fe9cbe0e53fd1523532",
+    "ask-high-1600.json": "772585e6d2a8adc14b1ff42b44e038ec5225bcb2b55a90026862993b384465d1",
+    "ask-high-4000.json": "9cebdf44d294a4c05022ebd4c7a9d5f2215a58fb420df4f5729ce827a15bbcad"
+  },
+  "sessionReceiptSha256": "b221fdc234fcd2cc508779ed1973ac0f34f986ed3ac0cdb8e93652f69f30fa2c",
+  "consumedCap": 1600,
+  "previousToolSource": "d7808d5193d84536090a76be9961e38dcf13246f"
+}

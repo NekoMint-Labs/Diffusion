@@ -65,6 +65,9 @@ export async function openField(page, id) {
     await expect(entry).toBeVisible();
     if (await entry.getAttribute('aria-current') === 'true') await page.getByRole('dialog', { name: 'Open Field', exact: true }).locator('.surface-close').click();
     else await entry.click();
+    // Switching includes save + load + React commit. Observe its UI completion first;
+    // polling storage immediately can expire while the successful handoff is still pending.
+    await expect(page.getByRole('dialog', { name: 'Open Field', exact: true })).toBeHidden();
     await expect.poll(() => page.evaluate(() => localStorage.getItem('diffusion-active-project'))).toBe(id);
     await expect(page.getByTestId('field-title')).toHaveText('模型对照 · ' + id.replace('comparison-', ''));
     await expect(page.getByTestId('field')).toBeVisible();

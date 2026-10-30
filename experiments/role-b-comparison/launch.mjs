@@ -3,11 +3,12 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { chromium, expect } from '@playwright/test';
 import { fixtures } from './fixtures.mjs';
-const {values}=parseArgs({options:{profile:{type:'string'},receipt:{type:'string'},executable:{type:'string'},port:{type:'string',default:'9239'}}});
+const {values}=parseArgs({options:{profile:{type:'string'},receipt:{type:'string'},executable:{type:'string'},port:{type:'string',default:'9239'},role:{type:'string',default:'both'}}});
 if(!values.profile||!values.receipt||!values.executable)throw new Error('profile/receipt/executable required');
 if(fs.existsSync(values.profile))throw new Error('Use a new isolated browser profile; existing profiles are refused');
+if(!['both','candidate','baseline'].includes(values.role))throw new Error('role must be both, candidate or baseline');
 const versions=[{role:'candidate',origin:'http://127.0.0.1:4191',source:'5e4f979c5c210246577280ac91fd58d2631d8920',flags:'readingTrial=1&propositionTrial=1'},
-{role:'baseline',origin:'http://127.0.0.1:4192',source:'79a484483e882c0b252b46c09391f7a3cd84f027',flags:'readingTrial=1'}];
+{role:'baseline',origin:'http://127.0.0.1:4192',source:'79a484483e882c0b252b46c09391f7a3cd84f027',flags:'readingTrial=1'}].filter(v=>values.role==='both'||v.role===values.role);
 for(const v of versions){const m=await fetch(v.origin+'/comparison-source.json').then(r=>r.json());if(m.source!==v.source||m.flags!==v.flags)throw new Error('Served source manifest mismatch');}
 const context=await chromium.launchPersistentContext(values.profile,{headless:false,executablePath:values.executable,viewport:{width:1440,height:960},args:['--remote-debugging-port='+values.port,'--remote-debugging-address=127.0.0.1'],reducedMotion:'reduce'});
 const projects=fixtures();

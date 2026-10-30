@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import type { FocusReadingResult } from '../../ai/readingFocus.ts';
 
 export const propositionTrialEnabled = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('propositionTrial') === '1';
+export const plainAnswerTrialEnabled = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plainAnswerTrial') === '1';
 export const readingTrialEnabled = () => typeof location !== 'undefined' && (new URLSearchParams(location.search).get('readingTrial') === '1' || propositionTrialEnabled());
 interface Entry { text: string; result: FocusReadingResult; }
 const entries = new Map<string, Entry>();

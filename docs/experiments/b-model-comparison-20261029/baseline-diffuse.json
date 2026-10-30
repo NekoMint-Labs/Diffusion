@@ -1,0 +1,171 @@
+{
+  "scenario": "diffuse",
+  "source": "79a484483e882c0b252b46c09391f7a3cd84f027",
+  "flags": "readingTrial=1",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "requests": [
+    {
+      "startedAt": "2026-10-29T09:41:48.799Z",
+      "requestedModel": "deepseek-v4-pro",
+      "maxTokens": 1600,
+      "done": true,
+      "status": 200,
+      "actualModel": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 1912,
+        "completion_tokens": 1253,
+        "total_tokens": 3165,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1212
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1912
+      },
+      "finishReasons": [
+        "stop"
+      ],
+      "responseContent": [
+        "{\"intents\":[{\"type\":\"surface_possibility\",\"text\":\"缺一个问题：“需要”的可观察定义是什么？没有它，访谈容易把“想要”当成“需要”。\"}]}"
+      ],
+      "finishedAt": "2026-10-29T09:42:13.298Z"
+    }
+  ],
+  "results": [
+    {
+      "id": "ghost_af45f237-e3b1-4001-b02f-cfff084c1902",
+      "fullText": "缺一个问题：“需要”的可观察定义是什么？没有它，访谈容易把“想要”当成“需要”。",
+      "cardText": "缺一个问题：“需要”的可观察定义是什么？没有它，访谈容易把“想要”当成“需要”。",
+      "focus": null,
+      "label": [],
+      "readerText": "缺一个问题：“需要”的可观察定义是什么？没有它，访谈容易把“想要”当成“需要”。",
+      "afterKeepCard": "缺一个问题：“需要”的可观察定义是什么？没有它，访谈容易把“想要”当成“需要”。",
+      "afterRecoveryCard": "缺一个问题：“需要”的可观察定义是什么？没有它，访谈容易把“想要”当成“需要”。",
+      "originalPreserved": true
+    }
+  ],
+  "startedAt": "2026-10-29T09:41:44.834Z",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "comparison-diffuse",
+    "title": "模型对照 · diffuse",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "0cf14258c19464fe3ee3533f9433c9beff8cc5f45f0178c1a3dec107401b88b5",
+  "runConfig": {
+    "setup": "AI-Off scope/count priming; no provider warmup",
+    "setupRequests": 0,
+    "configuredSteps": 1,
+    "fieldSources": false,
+    "web": false
+  },
+  "requestSummary": {
+    "actualRequests": 1,
+    "completed": 1,
+    "singleRequest": true,
+    "providerSuccess": true
+  },
+  "notices": [
+    "Found 1 angleDetailsDismiss",
+    "Possibilities returned. No commitment was made on your behalf.Close"
+  ],
+  "status": "observed-output",
+  "recoveredProject": {
+    "schemaVersion": 1,
+    "id": "recovered_41332d8b-fb84-4d68-9259-c0a289781d3e",
+    "title": "模型对照 · diffuse (restored)",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1793266907047,
+        "touchedAt": 1793266907047,
+        "attentionDebt": 0
+      },
+      "ghost_af45f237-e3b1-4001-b02f-cfff084c1902": {
+        "id": "ghost_af45f237-e3b1-4001-b02f-cfff084c1902",
+        "text": "缺一个问题：“需要”的可观察定义是什么？没有它，访谈容易把“想要”当成“需要”。",
+        "x": 300,
+        "y": 460,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1793266936335,
+        "updatedAt": 1793266936335,
+        "touchedAt": 1793266936335,
+        "origin": {
+          "projectId": "comparison-diffuse",
+          "note": "DeepSeek - deepseek-v4-pro"
+        }
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [
+      {
+        "id": "h_c31c5c25-4d05-4007-90d5-0978d95b1e72",
+        "kind": "ghost.claim",
+        "summary": "Made a possibility my own: 缺一个问题：“需要”的可观察定义是什么？没有它，访谈容易把“想要”当成“需要”。",
+        "thoughtIds": [
+          "ghost_af45f237-e3b1-4001-b02f-cfff084c1902"
+        ],
+        "at": 1793266936335
+      },
+      {
+        "id": "h_ba786d10-bbf2-43e1-a285-4860b9dd4c21",
+        "kind": "world.restore",
+        "summary": "Restored from comparison-diffuse as a new project. Existing projects were not overwritten.",
+        "thoughtIds": [],
+        "at": 1793266938152
+      }
+    ],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1793266938152,
+    "updatedAt": 1793266938152
+  },
+  "singleStepVerified": true,
+  "finishedAt": "2026-10-29T09:42:20.699Z"
+}

@@ -1,0 +1,91 @@
+{
+  "scenario": "ask",
+  "source": "79a484483e882c0b252b46c09391f7a3cd84f027",
+  "flags": "readingTrial=1",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "requests": [
+    {
+      "startedAt": "2026-10-29T09:38:12.148Z",
+      "requestedModel": "deepseek-v4-pro",
+      "maxTokens": 1600,
+      "done": true,
+      "status": 200,
+      "actualModel": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 1873,
+        "completion_tokens": 1600,
+        "total_tokens": 3473,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1600
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1873
+      },
+      "finishReasons": [
+        "length"
+      ],
+      "responseContent": [
+        ""
+      ],
+      "finishedAt": "2026-10-29T09:38:47.510Z"
+    }
+  ],
+  "results": [],
+  "startedAt": "2026-10-29T09:38:10.961Z",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "comparison-ask",
+    "title": "模型对照 · ask",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "fd1b5642d8b1ac2a6b8441f7936153c83b01e5fa2d7652aafcac09c6fa5cd810",
+  "runConfig": {
+    "explicitInput": "在这些条件下，先做什么？请给我一个方向。",
+    "configuredCandidates": 1,
+    "fieldSources": false,
+    "web": false
+  },
+  "requestSummary": {
+    "actualRequests": 1,
+    "completed": 1,
+    "singleRequest": true,
+    "providerSuccess": true
+  },
+  "notices": [
+    "DeepSeek returned an incomplete answer. Try again or increase the output budget.RetryClose"
+  ],
+  "status": "empty-or-failed",
+  "singleStepVerified": true,
+  "finishedAt": "2026-10-29T09:38:49.939Z"
+}

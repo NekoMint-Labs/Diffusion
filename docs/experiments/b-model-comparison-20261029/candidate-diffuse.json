@@ -1,0 +1,172 @@
+{
+  "scenario": "diffuse",
+  "source": "5e4f979c5c210246577280ac91fd58d2631d8920",
+  "flags": "readingTrial=1&propositionTrial=1",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "requests": [
+    {
+      "startedAt": "2026-10-29T09:46:41.640Z",
+      "requestedModel": "deepseek-v4-pro",
+      "maxTokens": 1600,
+      "done": true,
+      "status": 200,
+      "actualModel": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 2024,
+        "completion_tokens": 819,
+        "total_tokens": 2843,
+        "prompt_tokens_details": {
+          "cached_tokens": 256
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 763
+        },
+        "prompt_cache_hit_tokens": 256,
+        "prompt_cache_miss_tokens": 1768
+      },
+      "finishReasons": [
+        "stop"
+      ],
+      "responseContent": [
+        "{\"intents\":[{\"type\":\"surface_possibility\",\"text\":\"在还没有访谈或试用结果之前，先定义一个不依赖私人作业/成绩的“需要”信号：学生是否会主动来问这个复习工具，或试用后是否愿意再用？\"}]}"
+      ],
+      "finishedAt": "2026-10-29T09:46:59.575Z"
+    }
+  ],
+  "results": [
+    {
+      "id": "ghost_9d71aedf-462c-4b78-b718-617328dcc3dd",
+      "fullText": "在还没有访谈或试用结果之前，先定义一个不依赖私人作业/成绩的“需要”信号：学生是否会主动来问这个复习工具，或试用后是否愿意再用？",
+      "cardText": "在还没有访谈或试用结果之前，先定义一个不依赖私人作业/成绩的“需要”信号：学生是否会主动来问这个复习工具，或试用后是否愿意再用？",
+      "focus": null,
+      "label": [],
+      "readerText": "在还没有访谈或试用结果之前，先定义一个不依赖私人作业/成绩的“需要”信号：学生是否会主动来问这个复习工具，或试用后是否愿意再用？",
+      "afterKeepCard": "在还没有访谈或试用结果之前，先定义一个不依赖私人作业/成绩的“需要”信号：学生是否会主动来问这个复习工具，或试用后是否愿意再用？",
+      "afterRecoveryCard": "在还没有访谈或试用结果之前，先定义一个不依赖私人作业/成绩的“需要”信号：学生是否会主动来问这个复习工具，或试用后是否愿意再用？",
+      "originalPreserved": true
+    }
+  ],
+  "startedAt": "2026-10-29T09:46:37.818Z",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "comparison-diffuse",
+    "title": "模型对照 · diffuse",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "0cf14258c19464fe3ee3533f9433c9beff8cc5f45f0178c1a3dec107401b88b5",
+  "runConfig": {
+    "setup": "AI-Off scope/count priming; no provider warmup",
+    "setupRequests": 0,
+    "configuredSteps": 1,
+    "fieldSources": false,
+    "web": false
+  },
+  "requestSummary": {
+    "actualRequests": 1,
+    "completed": 1,
+    "singleRequest": true,
+    "providerSuccess": true
+  },
+  "notices": [
+    "Found 1 angleDetailsDismiss",
+    "Possibilities returned. No commitment was made on your behalf.Close"
+  ],
+  "status": "observed-output",
+  "recoveredProject": {
+    "schemaVersion": 1,
+    "id": "recovered_00dbae78-ea84-406f-810f-02ed134bca52",
+    "title": "模型对照 · diffuse (restored)",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1793267199924,
+        "touchedAt": 1793267199924,
+        "attentionDebt": 0
+      },
+      "ghost_9d71aedf-462c-4b78-b718-617328dcc3dd": {
+        "id": "ghost_9d71aedf-462c-4b78-b718-617328dcc3dd",
+        "text": "在还没有访谈或试用结果之前，先定义一个不依赖私人作业/成绩的“需要”信号：学生是否会主动来问这个复习工具，或试用后是否愿意再用？",
+        "x": 300,
+        "y": 460,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1793267222152,
+        "updatedAt": 1793267222152,
+        "touchedAt": 1793267222152,
+        "origin": {
+          "projectId": "comparison-diffuse",
+          "note": "DeepSeek - deepseek-v4-pro"
+        },
+        "generatedBy": "ai"
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [
+      {
+        "id": "h_bc0735b2-31ff-4f45-bb61-90ec14d528d9",
+        "kind": "ghost.claim",
+        "summary": "Made a possibility my own: 在还没有访谈或试用结果之前，先定义一个不依赖私人作业/成绩的“需要”信号：学生是否会主动来问这个复习工具，或试用后是否愿意再用？",
+        "thoughtIds": [
+          "ghost_9d71aedf-462c-4b78-b718-617328dcc3dd"
+        ],
+        "at": 1793267222152
+      },
+      {
+        "id": "h_6440cb95-4e59-4156-916d-295939d407ce",
+        "kind": "world.restore",
+        "summary": "Restored from comparison-diffuse as a new project. Existing projects were not overwritten.",
+        "thoughtIds": [],
+        "at": 1793267223991
+      }
+    ],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1793267223991,
+    "updatedAt": 1793267223991
+  },
+  "singleStepVerified": true,
+  "finishedAt": "2026-10-29T09:47:06.740Z"
+}

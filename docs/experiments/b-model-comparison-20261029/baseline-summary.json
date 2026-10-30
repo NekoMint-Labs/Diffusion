@@ -1,0 +1,36 @@
+{
+  "source": "79a484483e882c0b252b46c09391f7a3cd84f027",
+  "results": [
+    {
+      "scenario": "ask",
+      "status": "empty-or-failed",
+      "requests": 1,
+      "results": 0,
+      "singleStepVerified": true
+    },
+    {
+      "scenario": "continue",
+      "status": "observed-output",
+      "requests": 1,
+      "results": 1,
+      "singleStepVerified": true
+    },
+    {
+      "scenario": "angle",
+      "status": "observed-output",
+      "requests": 1,
+      "results": 1,
+      "singleStepVerified": true
+    },
+    {
+      "scenario": "diffuse",
+      "status": "execution-failed",
+      "requests": 0,
+      "results": 0,
+      "singleStepVerified": false
+    }
+  ],
+  "observedRequests": 3,
+  "realQualityAcceptance": "pending independent reading",
+  "nativeWindowsAcceptance": false
+}

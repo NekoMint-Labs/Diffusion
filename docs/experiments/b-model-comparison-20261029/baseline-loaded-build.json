@@ -1,0 +1,14 @@
+{
+  "source": "79a484483e882c0b252b46c09391f7a3cd84f027",
+  "loadedScripts": [
+    "assets/index-BYSVttzr.js"
+  ],
+  "settings": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "depth": "standard",
+    "locale": "en"
+  },
+  "isolatedBrowserProfileConfirmed": true,
+  "profile": "b-model-comparison-20261029-user"
+}

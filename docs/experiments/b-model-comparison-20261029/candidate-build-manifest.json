@@ -1,0 +1,30 @@
+{
+  "source": "5e4f979c5c210246577280ac91fd58d2631d8920",
+  "tree": "b3e00cc943edbdb0610a285ab510a21ca4febd61",
+  "role": "candidate",
+  "flags": "readingTrial=1&propositionTrial=1",
+  "sealedAt": "2026-10-29T09:07:43.489Z",
+  "scope": "Browser production bundle; source matches recorded checkout, not a native installer",
+  "assets": {
+    "assets/ExplorationTrial-DKO0WDBd.css": "76245696e4feeaf7e00e1b1edef616a2d16cc239b6c9d93887c6651a674cb0b9",
+    "assets/ExplorationTrial-HHbueOOw.js": "e96d8cc236e6eeb26c18d4a2b0fec94ce00850d25dc88fed4c6035feb77ab521",
+    "assets/PaperTextureBackground-DX6kokBJ.js": "e6572f2ff15f1f1e6326be65e7eac9e2b9db819dd009229e877e0cc3539fabdb",
+    "assets/SilkBackground-DQNfwDWQ.js": "3ebb9e8e807b7407ab15a04188044b4ed60c96f99d8c44bdcdf1bfe39e66046c",
+    "assets/ThreadsBackground-DN_Ed8np.js": "e5994b1bd47e5bcbd362367160e7477d1bc80d9a4b719d62ff8bb4af1b3d7495",
+    "assets/TopographyBackground-BgoG5JWH.js": "eebcbcdd09da588f1d8dd4c9c7e364f613fbd9600ae270cd2867b53d96908d26",
+    "assets/Triangle-DfWMHKQ0.js": "ae5e068e7dac043216540cdd3c389a436da02612e840b69cc70e5e27cd4d395d",
+    "assets/WavesBackground-BvjoHgNe.js": "d68a17b643745581dce04662e227d0d6add9643c5f4a61d8fd73c67209474bc5",
+    "assets/core-JWsgwi7z.js": "1d0da30f652d91a337aedb98b62baa4809b7abe778dabd8af56e93996b74ee57",
+    "assets/index-3rTpz8Es.js": "63fa6efa39307f841889f72175b7c0a3258ffa0a514567a3eca03b7e9382d088",
+    "assets/index-4edpyyHy.js": "fce176a6347ad721993315f1948031266378c68fc5ba55a30461cd51a4160a24",
+    "assets/index-BC83AvKD.js": "4fc40f3e3dd5f8a868e9071c4f081a202edd8b656d1b5e68574d6bf71ba4395b",
+    "assets/index-m-C7LP2v.js": "57b05ee01619345c0196e0211aeed5956bfec55af839c3841b173d4d29d52395",
+    "assets/index-uJtmPijd.css": "338cdbb0b68c37254b9e52c621fb6734464685c38f2e54f314b357537c7746ac",
+    "assets/ingestion-C1fAVS93.js": "8bae2283c239317687307489eda78bbc6aaf80fbb0bdd2b6e83d18777b81650b",
+    "assets/native-CV0lMAJ6.js": "f36cdfadf82e9bb871a96076d2962d2820685aab800fa689350b5974c4d2c8ac",
+    "assets/recovery.worker-cRkRmsgQ.js": "d014fb4d42c67e35c4cae9adfc11fd53415633107cff5ba79d7a4cbc8c98305f",
+    "assets/source.worker-PbagS7KL.js": "3ebc89b2b2e1f1a440e17636a243e3181961e070f4056a7019bbeda001cd8f4d",
+    "assets/tauri-BRb6_p7w.js": "00de09536653ee5f6d3a960f82149f4bce5bb6aa32fb4611484c300fbd56717f",
+    "index.html": "e174f2a3197854ee821dcfff1f407c1efe416f07304623055ccfa75ebd5f1555"
+  }
+}

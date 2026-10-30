@@ -1,0 +1,174 @@
+{
+  "scenario": "angle",
+  "source": "79a484483e882c0b252b46c09391f7a3cd84f027",
+  "flags": "readingTrial=1",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "requests": [
+    {
+      "startedAt": "2026-10-29T09:39:33.322Z",
+      "requestedModel": "deepseek-v4-pro",
+      "maxTokens": 1600,
+      "done": true,
+      "status": 200,
+      "actualModel": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 1955,
+        "completion_tokens": 814,
+        "total_tokens": 2769,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 763
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1955
+      },
+      "finishReasons": [
+        "stop"
+      ],
+      "responseContent": [
+        "{\"intents\":[{\"type\":\"surface_possibility\",\"text\":\"换成失败视角：若两周内连一个不依赖作业、成绩的模糊需求信号都收集不到，可能说明不是工具问题，而是需求本身太弱。\"}]}"
+      ],
+      "finishedAt": "2026-10-29T09:39:50.160Z"
+    }
+  ],
+  "results": [
+    {
+      "id": "ghost_85c4b958-c49e-48d0-9fde-e08ad9c35ca3",
+      "fullText": "换成失败视角：若两周内连一个不依赖作业、成绩的模糊需求信号都收集不到，可能说明不是工具问题，而是需求本身太弱。",
+      "cardText": "换成失败视角：若两周内连一个不依赖作业、成绩的模糊需求信号都收集不到，可能说明不是工具问题，而是需求本身太弱。",
+      "focus": null,
+      "label": [],
+      "readerText": "换成失败视角：若两周内连一个不依赖作业、成绩的模糊需求信号都收集不到，可能说明不是工具问题，而是需求本身太弱。",
+      "afterKeepCard": "换成失败视角：若两周内连一个不依赖作业、成绩的模糊需求信号都收集不到，可能说明不是工具问题，而是需求本身太弱。",
+      "afterRecoveryCard": "换成失败视角：若两周内连一个不依赖作业、成绩的模糊需求信号都收集不到，可能说明不是工具问题，而是需求本身太弱。",
+      "originalPreserved": true
+    }
+  ],
+  "startedAt": "2026-10-29T09:39:30.954Z",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "comparison-angle",
+    "title": "模型对照 · angle",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "005218c32cc20be95ad60e37bbf47d39c609f6baff1170986e813398ebf0c701",
+  "runConfig": {
+    "configuredCandidates": 1,
+    "configuredSteps": 1,
+    "fieldSources": false,
+    "web": false
+  },
+  "requestSummary": {
+    "actualRequests": 1,
+    "completed": 1,
+    "singleRequest": true,
+    "providerSuccess": true
+  },
+  "notices": [
+    "Found 1 angleDetailsDismiss",
+    "Possibilities returned. No commitment was made on your behalf.Close"
+  ],
+  "status": "observed-output",
+  "recoveredProject": {
+    "schemaVersion": 1,
+    "id": "recovered_de17bfeb-70e2-4a20-8159-a5a08ad5033c",
+    "title": "模型对照 · angle (restored)",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1793266772557,
+        "touchedAt": 1793266772557,
+        "attentionDebt": 0
+      },
+      "ghost_85c4b958-c49e-48d0-9fde-e08ad9c35ca3": {
+        "id": "ghost_85c4b958-c49e-48d0-9fde-e08ad9c35ca3",
+        "text": "换成失败视角：若两周内连一个不依赖作业、成绩的模糊需求信号都收集不到，可能说明不是工具问题，而是需求本身太弱。",
+        "x": 764,
+        "y": 333,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1793266793111,
+        "updatedAt": 1793266793111,
+        "touchedAt": 1793266793111,
+        "origin": {
+          "projectId": "comparison-angle",
+          "note": "DeepSeek - deepseek-v4-pro"
+        },
+        "derivedFrom": [
+          "question"
+        ],
+        "generationAction": "angle"
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [
+      {
+        "id": "h_724b7d59-746e-4119-9281-36337efdaa0f",
+        "kind": "ghost.claim",
+        "summary": "Made a possibility my own: 换成失败视角：若两周内连一个不依赖作业、成绩的模糊需求信号都收集不到，可能说明不是工具问题，而是需求本身太弱。",
+        "thoughtIds": [
+          "ghost_85c4b958-c49e-48d0-9fde-e08ad9c35ca3"
+        ],
+        "at": 1793266793111
+      },
+      {
+        "id": "h_ac2c6d74-b323-4902-90af-59c7a523ded7",
+        "kind": "world.restore",
+        "summary": "Restored from comparison-angle as a new project. Existing projects were not overwritten.",
+        "thoughtIds": [],
+        "at": 1793266795035
+      }
+    ],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1793266795035,
+    "updatedAt": 1793266795035
+  },
+  "singleStepVerified": true,
+  "finishedAt": "2026-10-29T09:39:57.590Z"
+}

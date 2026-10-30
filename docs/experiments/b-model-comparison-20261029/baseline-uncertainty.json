@@ -1,0 +1,240 @@
+{
+  "scenario": "uncertainty",
+  "source": "79a484483e882c0b252b46c09391f7a3cd84f027",
+  "flags": "readingTrial=1",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "requests": [
+    {
+      "startedAt": "2026-10-29T09:42:59.343Z",
+      "requestedModel": "deepseek-v4-pro",
+      "maxTokens": 1600,
+      "done": true,
+      "status": 200,
+      "actualModel": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 1926,
+        "completion_tokens": 768,
+        "total_tokens": 2694,
+        "prompt_tokens_details": {
+          "cached_tokens": 1408
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 705
+        },
+        "prompt_cache_hit_tokens": 1408,
+        "prompt_cache_miss_tokens": 518
+      },
+      "finishReasons": [
+        "stop"
+      ],
+      "responseContent": [
+        "{\"intents\":[{\"type\":\"surface_possibility\",\"text\":\"在尚未确认学生存在该问题的前提下，可先问一个不涉及隐私的探测题：考前是否常感到“不知道该优先复习哪部分”；得到的肯定回答仍只是学生自述，不能当作需求已经成立。\"}]}"
+      ],
+      "finishedAt": "2026-10-29T09:43:16.020Z"
+    }
+  ],
+  "results": [
+    {
+      "id": "ghost_1d56d6da-bbd4-482d-8bd3-41e7980fd461",
+      "fullText": "在尚未确认学生存在该问题的前提下，可先问一个不涉及隐私的探测题：考前是否常感到“不知道该优先复习哪部分”；得到的肯定回答仍只是学生自述，不能当作需求已经成立。",
+      "cardText": "在尚未确认学生存在该问题的前提下，可先问一个不涉及隐私的探测题：考前是否常感到“不知道该优先复习哪部分”；得到的肯定回答仍只是学生自述，不能当作需求已经成立。",
+      "focus": null,
+      "label": [],
+      "readerText": "在尚未确认学生存在该问题的前提下，可先问一个不涉及隐私的探测题：考前是否常感到“不知道该优先复习哪部分”；得到的肯定回答仍只是学生自述，不能当作需求已经成立。",
+      "afterKeepCard": "在尚未确认学生存在该问题的前提下，可先问一个不涉及隐私的探测题：考前是否常感到“不知道该优先复习哪部分”；得到的肯定回答仍只是学生自述，不能当作需求已经成立。",
+      "afterRecoveryCard": "在尚未确认学生存在该问题的前提下，可先问一个不涉及隐私的探测题：考前是否常感到“不知道该优先复习哪部分”；得到的肯定回答仍只是学生自述，不能当作需求已经成立。",
+      "originalPreserved": true
+    }
+  ],
+  "startedAt": "2026-10-29T09:42:57.301Z",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "comparison-uncertainty",
+    "title": "模型对照 · uncertainty",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我刚才只是设想，还没有确认学生存在这个问题。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 2,
+        "updatedAt": 2,
+        "touchedAt": 2,
+        "derivedFrom": [
+          "prior"
+        ],
+        "generationAction": "continue",
+        "origin": {
+          "projectId": "comparison-uncertainty",
+          "thoughtId": "prior",
+          "inputId": "correction",
+          "ranges": [
+            {
+              "inputId": "correction",
+              "start": 0,
+              "end": 22
+            }
+          ]
+        }
+      },
+      "prior": {
+        "id": "prior",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 40,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {
+      "correction": {
+        "id": "correction",
+        "text": "我刚才只是设想，还没有确认学生存在这个问题。",
+        "createdAt": 2
+      }
+    },
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "18ead0b069b1a3158162344b4ba5342c830e8ba3be5d90f9d94c642c77f8560f",
+  "runConfig": {
+    "configuredCandidates": 1,
+    "fieldSources": false,
+    "web": false
+  },
+  "requestSummary": {
+    "actualRequests": 1,
+    "completed": 1,
+    "singleRequest": true,
+    "providerSuccess": true
+  },
+  "notices": [
+    "Possibilities returned. No commitment was made on your behalf.Close"
+  ],
+  "status": "observed-output",
+  "recoveredProject": {
+    "schemaVersion": 1,
+    "id": "recovered_906d361d-47b0-46e7-ac17-0a51f71f0058",
+    "title": "模型对照 · uncertainty (restored)",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我刚才只是设想，还没有确认学生存在这个问题。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 2,
+        "updatedAt": 1793266978679,
+        "touchedAt": 1793266978679,
+        "derivedFrom": [
+          "prior"
+        ],
+        "generationAction": "continue",
+        "origin": {
+          "projectId": "comparison-uncertainty",
+          "thoughtId": "prior",
+          "inputId": "correction",
+          "ranges": [
+            {
+              "inputId": "correction",
+              "start": 0,
+              "end": 22
+            }
+          ]
+        },
+        "attentionDebt": 0
+      },
+      "prior": {
+        "id": "prior",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 40,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      },
+      "ghost_1d56d6da-bbd4-482d-8bd3-41e7980fd461": {
+        "id": "ghost_1d56d6da-bbd4-482d-8bd3-41e7980fd461",
+        "text": "在尚未确认学生存在该问题的前提下，可先问一个不涉及隐私的探测题：考前是否常感到“不知道该优先复习哪部分”；得到的肯定回答仍只是学生自述，不能当作需求已经成立。",
+        "x": 300,
+        "y": 442,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1793266998818,
+        "updatedAt": 1793266998818,
+        "touchedAt": 1793266998818,
+        "origin": {
+          "projectId": "comparison-uncertainty",
+          "note": "DeepSeek - deepseek-v4-pro"
+        },
+        "derivedFrom": [
+          "question"
+        ],
+        "generationAction": "continue"
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {
+      "correction": {
+        "id": "correction",
+        "text": "我刚才只是设想，还没有确认学生存在这个问题。",
+        "createdAt": 2
+      }
+    },
+    "threads": {},
+    "history": [
+      {
+        "id": "h_4052a05d-6896-4e84-b740-bbc7afa5415d",
+        "kind": "ghost.claim",
+        "summary": "Made a possibility my own: 在尚未确认学生存在该问题的前提下，可先问一个不涉及隐私的探测题：考前是否常感到“不知道该优先复习哪部分”；得到的肯定回答仍只是学生自述，不能当作需求已经成立。",
+        "thoughtIds": [
+          "ghost_1d56d6da-bbd4-482d-8bd3-41e7980fd461"
+        ],
+        "at": 1793266998818
+      },
+      {
+        "id": "h_010242fb-f59e-41d7-9bf0-739c52d292e1",
+        "kind": "world.restore",
+        "summary": "Restored from comparison-uncertainty as a new project. Existing projects were not overwritten.",
+        "thoughtIds": [],
+        "at": 1793267000572
+      }
+    ],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1793267000572,
+    "updatedAt": 1793267000572
+  },
+  "singleStepVerified": true,
+  "finishedAt": "2026-10-29T09:43:22.865Z"
+}

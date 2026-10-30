@@ -1,0 +1,31 @@
+{
+  "typecheck": "PASS",
+  "offlineSyntax": "PASS",
+  "coreTypecheck": "PASS",
+  "locales": "PASS",
+  "contracts": {
+    "passed": 342,
+    "failed": 0
+  },
+  "unit": {
+    "files": 83,
+    "passed": 777,
+    "failed": 0
+  },
+  "sourceSize": "PASS",
+  "productionBuild": "PASS; existing large chunks warning retained",
+  "injectedFullFlows": [
+    {
+      "name": "injected-v1",
+      "calls": 8,
+      "realProviderRequests": 0
+    },
+    {
+      "name": "injected-settings-v2",
+      "calls": 8,
+      "realProviderRequests": 0
+    }
+  ],
+  "nativeAcceptance": "NOT_RUN",
+  "productionDefaultsChanged": false
+}

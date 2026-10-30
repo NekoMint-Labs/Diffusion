@@ -2,6 +2,7 @@ import type { Phenomenon, Relation } from '../../core/model.ts';
 import type { Gesture } from '../spatial/gesture.ts';
 import type { Bounds } from '../spatial/geometry.ts';
 import { describeRelations, type GeometryLookup } from './describe.ts';
+import { paintManualLinks } from '../freeLinks/dragPreview.ts';
 
 /** Mirrors a selection drag into confirmed relation SVG without committing geometry.
  *
@@ -15,7 +16,10 @@ export function paintConfirmedDragRelations(
     geometry: GeometryLookup,
     gesture: Gesture | null,
     zoom: number,
+    manualWorld?: HTMLElement | null,
+    manualRelations: Record<string, Relation> = {},
 ): void {
+    paintManualLinks(manualWorld ?? null, manualRelations, geometry, gesture, zoom);
     if (!layer)
         return;
     const dx = gesture ? (gesture.last.x - gesture.start.x) / zoom : 0;

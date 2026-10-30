@@ -1,0 +1,20 @@
+.free-link-world { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
+.free-link-wires { position: absolute; width: 1px; height: 1px; overflow: visible; pointer-events: none; }
+.free-link-ink, .free-link-preview { fill: none; stroke: color-mix(in srgb, var(--ink-secondary) 55%, transparent); stroke-width: 1.15; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; pointer-events: none; }
+.free-link-hit { fill: none; stroke: transparent; stroke-width: 20; vector-effect: non-scaling-stroke; pointer-events: stroke; cursor: pointer; }
+.free-link-hit:focus-visible { stroke: var(--attention); stroke-width: 3; outline: none; }
+.free-link-world [data-selected="true"] .free-link-ink { stroke: var(--attention); stroke-width: 1.8; }
+.free-link-preview { stroke: var(--attention); stroke-width: 1.3; stroke-dasharray: 3 6; }
+.free-link-halo { fill: none; stroke: var(--attention); stroke-width: 1; vector-effect: non-scaling-stroke; pointer-events: none; }
+.free-link-port { position: absolute; width: 22px; height: 22px; min-width: 0; padding: 0; border: 7px solid var(--surface-1); border-radius: 50%; background: color-mix(in srgb, var(--ink-secondary) 65%, transparent); pointer-events: auto; touch-action: none; cursor: crosshair; transform: translate(-50%, -50%) scale(var(--inverse-zoom)); }
+.free-link-port:hover, .free-link-port:focus-visible { background: var(--attention); outline: 2px solid var(--attention); outline-offset: 2px; }
+.free-link-tip { position: absolute; top: 90px; left: 50%; transform: translateX(-50%); pointer-events: none; background: var(--surface-1); padding: 10px 16px; border-radius: 8px; z-index: 20; }
+.surface.window.free-link-manager { width: min(380px, calc(100vw - 28px)); height: auto; max-height: calc(100dvh - 110px); left: auto; right: 20px; top: 80px; bottom: auto; translate: none; background: var(--surface-raised); }
+.free-link-manager p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.free-link-entry { border-top: 1px solid var(--ink-helper); padding: 12px 0; }
+.free-link-entry[data-selected="true"] { border-color: var(--attention); }
+.free-link-entry p { max-height: 100px; overflow: auto; }
+.free-link-manager .surface-choice { flex-wrap: wrap; gap: 6px; }
+.free-link-new { margin: 14px 0; }
+.free-link-new select { display: block; width: 100%; margin-top: 8px; padding: 8px; background: var(--surface-1); color: var(--ink-primary); }
+.free-link-picker > div { padding: 10px 0; border-bottom: 1px solid var(--ink-helper); }

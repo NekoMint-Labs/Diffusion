@@ -1,4 +1,5 @@
 import type { DiffusionCommand, SurfaceDeps } from './types.ts';
+import { freeLinksEnabled } from '../../field/freeLinks/geometry.ts';
 export interface FieldDeps extends SurfaceDeps {
     beginRename(): void;
     createField(): void;
@@ -9,6 +10,7 @@ export interface FieldDeps extends SurfaceDeps {
 /** FIELD: ownership of the whole Field. Supported by the canonical data model and repository. */
 export function fieldCommands(deps: FieldDeps): DiffusionCommand[] {
     return [
+        { id: 'manage-links', group: 'field', label: 'Manage connections', keywords: ['link', 'connect', '连线'], available: () => freeLinksEnabled(), run: () => deps.openSurface('links') },
         { id: 'rename-field', group: 'field', label: 'Rename Field', keywords: ['title', 'name', '重命名'], run: () => deps.beginRename() },
         { id: 'new-field', group: 'field', label: 'New Field', keywords: ['create', '新建'], run: () => deps.createField() },
         { id: 'open-field', group: 'field', label: 'Open Field...', keywords: ['recent', 'switch', '打开'], run: () => deps.openSurface('fields') },

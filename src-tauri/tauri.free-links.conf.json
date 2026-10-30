@@ -1,0 +1,10 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Diffusion Free Links",
+  "mainBinaryName": "diffusion-free-links",
+  "identifier": "app.diffusion.explorer.freelinks",
+  "app": {
+    "windows": [{ "label": "main", "title": "Diffusion 自由连线试用版", "url": "index.html?locale=zh&readingTrial=1&propositionTrial=1&freeLinksTrial=1", "width": 1440, "height": 960, "minWidth": 900, "minHeight": 640, "dragDropEnabled": false }]
+  },
+  "bundle": { "windows": { "nsis": { "installMode": "currentUser", "startMenuFolder": "Diffusion Free Links" } } }
+}

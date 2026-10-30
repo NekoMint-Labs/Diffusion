@@ -1,4 +1,5 @@
 import { validProposition } from './proposition.ts';
+import { validManualLink } from './manualLinks.ts';
 import { id, type ProjectState, type SourceRecord } from './model.ts';
 import { DomainError } from './errors.ts';
 type Dict = Record<string, unknown>;
@@ -191,6 +192,7 @@ export function validateProject(value: unknown): ProjectState {
     for (const [k, v] of Object.entries(sources)) validateSourceRecord(v, k);
     for (const [k, v] of Object.entries(relations)) {
         const r = object(v, 'relation');
+        if (r.manual !== undefined && (!validManualLink(r.manual) || r.kind !== 'bridge')) fail('invalid manual connection');
         if (r.id !== k)
             fail('relation identity mismatch');
         key(r.a);

@@ -8,6 +8,8 @@ import { subtreeIds } from './spatial/subtree.ts';
 import { useProposalArrivals } from './useProposalArrivals.ts';
 import { thoughtHierarchy } from '../core/hierarchy.ts';
 import { t } from '../shared/i18n.ts';
+import { FreeLinks } from './freeLinks/FreeLinks.tsx';
+import { freeLinksEnabled } from './freeLinks/geometry.ts';
 import { activeFrontiers } from './spatial/regions.ts';
 import { type PointerEvent as ReactPointerEvent, type MouseEvent as ReactMouseEvent, forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { type AIProposalKind, type Camera, type Point, type Ghost, type Thought } from '../core/model.ts';
@@ -326,10 +328,10 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ onInteracti
         anchorPath.current?.setAttribute('d', worldAnchorPath(projection.current.roots, liveItems.current, c.get().zoom, g.positions, { x: dx / c.get().zoom, y: dy / c.get().zoom }));
         // The Thought transform above is only a preview until pointer-up. Keep confirmed topology
         // spatially honest against that preview without touching canonical coordinates.
-        paintConfirmedDragRelations(relationLayer.current, activeRelations, geometry, g, c.get().zoom);
+        paintConfirmedDragRelations(relationLayer.current, activeRelations, geometry, g, c.get().zoom, freeLinksEnabled() ? world.current : null, project.relations);
         paintCausalDragTraces(causalTraceLayer.current, causalTraces, geometry, g, c.get().zoom);
         const key = g.probeSource;
-        if (!key || controller.getSnapshot().session.ghosts[key])
+        if (freeLinksEnabled() || !key || controller.getSnapshot().session.ghosts[key])
             return;
         const original = geometry.get(key);
         if (!original)
@@ -427,7 +429,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ onInteracti
             correctSingleDraggedThought(positions, e.altKey, geometry, Object.keys(liveItems.current), c.get(), rect.current);
             const committed = commitDraggedItems(controller, positions);
             if (committed.canonical.length) onObserve(committed.canonical);
-            if (g.probeSource && g.probe && performance.now() - g.probe.since >= PROBE_HOLD)
+            if (!freeLinksEnabled() && g.probeSource && g.probe && performance.now() - g.probe.since >= PROBE_HOLD)
                 onProbeRelation([g.probeSource, g.probe.id]);
         }
         else if (g.target) {
@@ -457,7 +459,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ onInteracti
             if (g.kind === 'pan')
                 camera.current?.set(g.camera);
             if (g.kind === 'selection') {
-                paintConfirmedDragRelations(relationLayer.current, activeRelations, geometry, null, camera.current?.get().zoom ?? 1);
+                paintConfirmedDragRelations(relationLayer.current, activeRelations, geometry, null, camera.current?.get().zoom ?? 1, freeLinksEnabled() ? world.current : null, project.relations);
                 paintCausalDragTraces(causalTraceLayer.current, causalTraces, geometry, null, camera.current?.get().zoom ?? 1);
             }
         }
@@ -552,7 +554,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ onInteracti
     const visibleRelation = (p: typeof focus.activeRelations[number]) => visibleSet.has(p.a) && visibleSet.has(p.b) && !!geometry.get(p.a) && !!geometry.get(p.b) && !ui.carry.includes(p.a) && !ui.carry.includes(p.b);
     const activeRelations = level === 'local' ? focus.activeRelations.filter(visibleRelation) : [];
     // Semantic relation existence is independent from transient focus.
-    const visibleRelations = level === 'local' ? [...Object.values(project.relations), ...Object.values(session.phenomena)].filter(visibleRelation) : [];
+    const visibleRelations = level === 'local' ? [...Object.values(project.relations).filter(relation => !freeLinksEnabled() || !relation.manual), ...Object.values(session.phenomena)].filter(visibleRelation) : [];
     const activeRelationIds = new Set(activeRelations.map(relation => relation.id));
     // Both tentative and kept relations stay reopenable while their endpoints are visible.
     const tokenRelations = visibleRelations;
@@ -640,6 +642,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ onInteracti
    {level === 'atlas' && frontiers.filter(key => disclosedLandmarks.has('frontier:' + key)).map(key => { const t = project.thoughts[key]; return <button className="frontier-label" key={'frontier-' + key} onClick={() => { controller.wake(key); ui.patch({ selection: [key] }); revealThought(key); }} style={{ transform: `translate(${t.x}px,${t.y}px) scale(var(--inverse-zoom))` }}><span aria-hidden="true">&#9671;</span> {semanticExcerpt(t.text, 'atlas', 'thought')}</button>; })}
   </div>
    <FieldOverlays ref={overlays} viewport={viewport} camera={() => camera.current?.get() ?? project.camera} geometry={geometry} actionBounds={actionBounds} visibleIds={visible} selection={ui.selection} operation={ui.operation} enabled={ui.surface === 'none'} dragging={ui.dragging} onScopeBounds={onScopeBounds} suggestions={Object.values(session.ghosts)} thoughts={project.thoughts} roots={rootAnchors.map(key => project.thoughts[key]).filter(Boolean)} onRevealRoot={onNavigate} onReturnView={onReturnView} hasHierarchy={hierarchy.children.size > 0} hasRelations={Object.keys(project.relations).length > 0 || Object.keys(session.phenomena).length > 0} localRelations={level === 'local'} reviewNeeded={true} onSuggestionAction={onAIProposalAction} scope={showScopeHub ? { count: activeSelection.length, actions: scopeActions, probing, proposalReview, aiProposalKind, onAction: onScopeAction, onKeepAll: () => onKeepAllProposals([...activeSelection]), onKeepOriginal: () => onKeepOriginalProposal([...activeSelection]), onAIProposalAction: action => onAIProposalAction([...activeSelection], action), onMore } : null} />
+  {freeLinksEnabled() && <FreeLinks controller={controller} geometry={geometry} world={world.current} viewport={viewport} camera={() => camera.current?.get() ?? project.camera} visible={visible} local={level === 'local'} reveal={ids => frameIds(ids, 120, 1)} />}
   {ui.carry.length > 0 && <div className="carry-preview">{project.thoughts[ui.carry[0]]?.text.slice(0, 180)}</div>}
   {ui.carry.length > 0 && <div className="carry-banner">{t('Carrying {count} thoughts. Click to place; Escape cancels.', { count: ui.carry.length })}</div>}
     {session.recalls.filter(k => !visibleSet.has(k) && !!project.thoughts[k]).map((k, index) => { const edge = recallEdge(project.thoughts[k], stableCamera, rect.current.width, rect.current.height, index); return <button className="recall-edge" key={k} style={{ left: edge.x, top: edge.y }} onClick={() => { controller.wake(k); ui.patch({ selection: [k], notice: t('Earlier thought awakened. Use Find / Take me there to travel.') }); }} title={project.thoughts[k].text}><span aria-hidden="true" style={{ display: 'inline-block', transform: `rotate(${edge.angle}deg)` }}>&#8594;</span> {t('Earlier thought')}</button>; })}

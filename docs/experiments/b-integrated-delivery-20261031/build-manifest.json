@@ -1,0 +1,27 @@
+{
+  "source": "4998b41d76756ef3f10154b6bc597100d155719e",
+  "origin": "http://127.0.0.1:4196",
+  "assets": {
+    "assets/core-JWsgwi7z.js": "1d0da30f652d91a337aedb98b62baa4809b7abe778dabd8af56e93996b74ee57",
+    "assets/ExplorationTrial-DKO0WDBd.css": "76245696e4feeaf7e00e1b1edef616a2d16cc239b6c9d93887c6651a674cb0b9",
+    "assets/ExplorationTrial-DM0tXnAS.js": "f7411adc9c9743d1e74f659a8bdbcedf1d6b2c60aea116ff4b056e38d316e63a",
+    "assets/index-3rTpz8Es.js": "63fa6efa39307f841889f72175b7c0a3258ffa0a514567a3eca03b7e9382d088",
+    "assets/index-4edpyyHy.js": "fce176a6347ad721993315f1948031266378c68fc5ba55a30461cd51a4160a24",
+    "assets/index-BC83AvKD.js": "4fc40f3e3dd5f8a868e9071c4f081a202edd8b656d1b5e68574d6bf71ba4395b",
+    "assets/index-uJtmPijd.css": "338cdbb0b68c37254b9e52c621fb6734464685c38f2e54f314b357537c7746ac",
+    "assets/index-ycEp0UPr.js": "f98c90c08c68272eb606fb62814c82a583f04135dc29f5f5f8addda390749a7a",
+    "assets/ingestion-CbD0pXi4.js": "9506cd81dbfb68a8c6b027db68dda18d4c4d1b42681ca1d1450a0895d1c9e4c8",
+    "assets/native-Cbvj8XhI.js": "b08ec7818b3916598cd74dd81ad5be65d7b46b1edc1441d68196ae7192f47e1a",
+    "assets/PaperTextureBackground-C8oYzc_W.js": "8cc7b63f189ef0e5da89f4dfc09b6351148d5eb6925ad7bafeef8ce067be02f8",
+    "assets/recovery.worker-cRkRmsgQ.js": "d014fb4d42c67e35c4cae9adfc11fd53415633107cff5ba79d7a4cbc8c98305f",
+    "assets/SilkBackground-XDr7c8Ix.js": "6a0ba7c593c06c76da75918fc8a7aacf535fd53a8b454e0cacfcbb24301ae763",
+    "assets/source.worker-PbagS7KL.js": "3ebc89b2b2e1f1a440e17636a243e3181961e070f4056a7019bbeda001cd8f4d",
+    "assets/tauri-BHL147ih.js": "ac2b6dc60cdc3ccc5f5f4a19f61601e6f071ad50e62a4b3ba9da9ef3085b3338",
+    "assets/ThreadsBackground-iEJssqUO.js": "d954f8ae9e9bbfc946a8324a5f276078c8f13057041893c4352998f7d4c350a7",
+    "assets/TopographyBackground-CPZI0Zz4.js": "bc6f1f012c3632050fedf14b5d965203f66ed4bc1d923356750e87fb2ab4c452",
+    "assets/Triangle-DfWMHKQ0.js": "ae5e068e7dac043216540cdd3c389a436da02612e840b69cc70e5e27cd4d395d",
+    "assets/WavesBackground-Dz5GU-jf.js": "32138c89d0c8560e703973c559414049f14fccb0d4dfe205a0b04214a230c0aa",
+    "favicon.ico": "58308da0995a5e06ea3dd94c80b10a22979ade6011319fb36fda404a93c8bbe5",
+    "index.html": "95e75e7437c213a09574a023eacc607a477daf5c6d7fbc425b7a584b56221fd8"
+  }
+}

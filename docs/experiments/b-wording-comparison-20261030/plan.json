@@ -1,0 +1,72 @@
+{
+  "productSource": "e5f6703495db311cb19ff718dd4785876565301d",
+  "toolSource": "72bd4491c548971b6e32991a58c8a137e6d85a8d",
+  "origin": "http://127.0.0.1:4194",
+  "flags": "locale=en&readingTrial=1&propositionTrial=1&plainAnswerTrial=1",
+  "model": "deepseek-v4-pro",
+  "depth": "deep",
+  "maxRequests": 8,
+  "maxTokens": 4000,
+  "totalCap": 32000,
+  "automaticRetries": 0,
+  "injected": false,
+  "schedule": [
+    {
+      "index": 0,
+      "case": "polite-agreement",
+      "arm": "control",
+      "action": "ask",
+      "fixtureSha": "aef36afb93b7f610f36892e17e50f34fddd0059faf9d131e603f7757e24ec910"
+    },
+    {
+      "index": 1,
+      "case": "polite-agreement",
+      "arm": "candidate",
+      "action": "ask",
+      "fixtureSha": "aef36afb93b7f610f36892e17e50f34fddd0059faf9d131e603f7757e24ec910"
+    },
+    {
+      "index": 2,
+      "case": "authored-correction",
+      "arm": "candidate",
+      "action": "continue",
+      "fixtureSha": "31fa95e7e4c4fb1bce3adeca6124b38442e688223bcf8f1b18742ee0a4491179"
+    },
+    {
+      "index": 3,
+      "case": "authored-correction",
+      "arm": "control",
+      "action": "continue",
+      "fixtureSha": "31fa95e7e4c4fb1bce3adeca6124b38442e688223bcf8f1b18742ee0a4491179"
+    },
+    {
+      "index": 4,
+      "case": "explicit-teacher",
+      "arm": "control",
+      "action": "continue",
+      "fixtureSha": "727af2558bb7bf0cc38661464f4ac4adfcad92bb72362c6213194e55368bb057"
+    },
+    {
+      "index": 5,
+      "case": "explicit-teacher",
+      "arm": "candidate",
+      "action": "continue",
+      "fixtureSha": "727af2558bb7bf0cc38661464f4ac4adfcad92bb72362c6213194e55368bb057"
+    },
+    {
+      "index": 6,
+      "case": "no-public-evidence",
+      "arm": "candidate",
+      "action": "ask",
+      "fixtureSha": "4d4629b4e369db7a443513bd13cb11794ce621dd086b2bb2ff3422d336fcd158"
+    },
+    {
+      "index": 7,
+      "case": "no-public-evidence",
+      "arm": "control",
+      "action": "ask",
+      "fixtureSha": "4d4629b4e369db7a443513bd13cb11794ce621dd086b2bb2ff3422d336fcd158"
+    }
+  ],
+  "scope": "Same frozen product; control removes only the exact opt-in wording block in browser route. Existing provider defaults and 45s product timeout. No search, summary or warmup."
+}

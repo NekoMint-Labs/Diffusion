@@ -1,0 +1,80 @@
+{
+  "injected": false,
+  "totalSent": 8,
+  "blocked": 0,
+  "routeFailure": null,
+  "fingerprints": {
+    "polite-agreement": "ccfe15069e91b188b0f7f3aff552594a32ea187cf7298df55d86683fed1b30b8",
+    "authored-correction": "aeba05267d51bacf802c80c71718952c62f9c4e5cadc638d1a3b4e22d483037c",
+    "explicit-teacher": "3f44342540c0fdc77665a7e5b097c1a1016361f0077c876e4cc0975964749bb5",
+    "no-public-evidence": "a24c12e88935a8e7d04a9197043d7afb8e80ee79d0899ff6d5e4cfa66c1a270c"
+  },
+  "results": [
+    {
+      "index": 0,
+      "case": "polite-agreement",
+      "arm": "control",
+      "status": "observed-output",
+      "requests": 1,
+      "outputs": 1
+    },
+    {
+      "index": 1,
+      "case": "polite-agreement",
+      "arm": "candidate",
+      "status": "observed-output",
+      "requests": 1,
+      "outputs": 1
+    },
+    {
+      "index": 2,
+      "case": "authored-correction",
+      "arm": "candidate",
+      "status": "observed-output",
+      "requests": 1,
+      "outputs": 1
+    },
+    {
+      "index": 3,
+      "case": "authored-correction",
+      "arm": "control",
+      "status": "observed-output",
+      "requests": 1,
+      "outputs": 1
+    },
+    {
+      "index": 4,
+      "case": "explicit-teacher",
+      "arm": "control",
+      "status": "observed-output",
+      "requests": 1,
+      "outputs": 1
+    },
+    {
+      "index": 5,
+      "case": "explicit-teacher",
+      "arm": "candidate",
+      "status": "observed-output",
+      "requests": 1,
+      "outputs": 1
+    },
+    {
+      "index": 6,
+      "case": "no-public-evidence",
+      "arm": "candidate",
+      "status": "observed-output",
+      "requests": 1,
+      "outputs": 1
+    },
+    {
+      "index": 7,
+      "case": "no-public-evidence",
+      "arm": "control",
+      "status": "observed-output",
+      "requests": 1,
+      "outputs": 1
+    }
+  ],
+  "totalCap": 32000,
+  "productionDefaultsChanged": false
+}

@@ -1,0 +1,10 @@
+{
+  "stage": "saved-marker settings visibility",
+  "directory": "live-v1",
+  "status": "preflight-failed",
+  "realRequests": 0,
+  "evidence": "Driver failed before route installation, fixture creation or runScenario; only plan.json and build-manifest.json exist",
+  "failure": "settings-surface missing; timeout 5000ms",
+  "repair": "Open AI settings via UI before checking Stored marker; no key value or headers read",
+  "verification": "injected-settings-v2: 8/8, zero real requests"
+}

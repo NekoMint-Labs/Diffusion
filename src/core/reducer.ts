@@ -1,4 +1,5 @@
 import { validProposition } from './proposition.ts';
+import { validManualLink, requireManualPair } from './manualLinks.ts';
 import { DomainError } from './errors.ts';
 export { DomainError } from './errors.ts';
 import { validateSourceRecord } from './validation.ts';
@@ -185,6 +186,8 @@ export function reduceProject(state: ProjectState, event: DomainEvent): ProjectS
         }
         case 'relation.confirm': {
             const r = event.relation;
+            if (r.manual !== undefined && (!validManualLink(r.manual) || r.kind !== 'bridge')) throw new DomainError('Invalid manual connection');
+            if (r.manual) requireManualPair(s, r.a, r.b, r.id);
             get(r.a);
             get(r.b);
             if (r.a === r.b || !['resonance', 'tension', 'gap', 'support', 'bridge'].includes(r.kind))

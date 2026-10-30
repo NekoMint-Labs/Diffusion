@@ -12,7 +12,7 @@ export const commandGroupLabel: Record<CommandGroup, string> = { think: 'Think',
 /** Which command appears where, and where the dividers fall, is a presentation decision.
  * Semantics are defined once. Sections are separated in the menu, not derived from groups.
  */
-export const APP_MENU: string[][] = [['palette', 'find'], ['shortcuts', 'settings'], ['help']];
+export const APP_MENU: string[][] = [['palette', 'find'], ['manage-links'], ['shortcuts', 'settings'], ['help']];
 export const FIELD_MENU: string[][] = [['rename-field', 'new-field', 'open-field']];
 export const FIELD_MORE_MENU: string[][] = [
     ['duplicate-field', 'import'],

@@ -1,5 +1,9 @@
 # Local storage and migrations
 
+## Optional manual connection trial
+
+Relation.manual optionally records aPort/bPort as left/right for an explicitly user-created bridge association. Project validation and Core reject malformed port records. Existing snapshots, JSON and Dexie retain the optional metadata; Undo/Redo use existing relation events. No schema/table/version bump or automatic rewrite is introduced. Old clients have not been qualified to retain these endpoints; use the independent Free Links app and project copies for acceptance. See [trial](experiments/FREE_LINKS_TRIAL.zh-CN.md).
+
 ## Optional AI generation origin (PR #83 review fix)
 
 `Thought.generatedBy?: 'ai'` records the explicit Keep of a non-ingestion AI candidate.

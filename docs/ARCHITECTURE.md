@@ -1,5 +1,9 @@
 # Architecture and preserved boundaries
 
+## Opt in manual connection trial
+
+At `freeLinksTrial=1`, `field/freeLinks/` provides explicit user-drawn associations and a non-modal manager. The command registry owns entry; existing user relation.confirm/remove own persistence and history. Optional Relation.manual stores selected left/right display ports only. Neither causal lineage nor organization is changed. Pointer previews stay in refs and the Field gesture frame. Proximity Probe is disabled only under this opt-in flag. See [trial scope](experiments/FREE_LINKS_TRIAL.zh-CN.md). This user-requested experiment is separate from default adoption and from source/evidence confirmation.
+
 Diffusion is a quiet thinking medium for ideas before commitment. This document is the authority on
 current implementation ownership and on the boundaries that presentation, AI and platform code must
 not cross; product semantics are in

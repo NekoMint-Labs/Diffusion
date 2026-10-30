@@ -52,6 +52,8 @@ export interface Thought extends Point {
     generationAction?: AIProposalAction;
 }
 export interface Relation {
+    /** Optional explicit user-drawn association and its chosen display ports. */
+    manual?: import('./manualLinks.ts').ManualLink;
     id: string;
     a: string;
     b: string;

@@ -39,7 +39,7 @@ export function useWorkspaceSurfaces({ controller, field, diffuse, runtime }: {
             setDiffuseScope(diffuse.getSnapshot().config?.scopeIds ?? [...selection]);
         useUI.getState().patch({
             surface, relationId: null, anchor: origin ?? null,
-            returnPoint: surface === 'find' || surface === 'thought-reader' && propositionTrialEnabled() ? null : surface === 'thread-focus' && state.returnPoint
+            returnPoint: surface === 'links' || surface === 'find' || surface === 'thought-reader' && propositionTrialEnabled() ? null : surface === 'thread-focus' && state.returnPoint
                 ? { ...state.returnPoint, camera: field.current?.camera() ?? controller.getSnapshot().project.camera }
                 : state.returnPoint ?? { camera: field.current?.camera() ?? controller.getSnapshot().project.camera, selection: [...state.selection] },
         });
@@ -55,7 +55,7 @@ export function useWorkspaceSurfaces({ controller, field, diffuse, runtime }: {
         if (state.surface === 'thought-reader' && propositionTrialEnabled()) {
             yieldReader(); transient.restore(); return;
         }
-        if (state.surface === 'find') {
+        if (state.surface === 'find' || state.surface === 'links') {
             state.patch({ surface: 'none', returnPoint: null, relationId: null });
             transient.restore();
             return;

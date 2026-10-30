@@ -1,0 +1,29 @@
+{
+  "typecheck": "PASS (session 9975)",
+  "offline": "PASS",
+  "core": "PASS",
+  "locales": "PASS",
+  "contracts": {
+    "pass": 339,
+    "fail": 0
+  },
+  "unit": {
+    "files": 82,
+    "pass": 769,
+    "fail": 0
+  },
+  "sourceSize": "PASS",
+  "build": {
+    "status": "PASS",
+    "outDir": ".tmp/budget-validation-build",
+    "knownWarning": "Existing large chunks >500kB"
+  },
+  "injected": {
+    "firstPassArms": 8,
+    "continuationArms": 7,
+    "realRequests": 0,
+    "spentFirstArmSkipped": true,
+    "readKeepExportNewProjectRecovery": true
+  },
+  "nativeAcceptance": "NOT_RUN"
+}

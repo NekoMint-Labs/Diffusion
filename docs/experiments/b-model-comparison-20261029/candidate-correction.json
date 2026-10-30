@@ -1,0 +1,241 @@
+{
+  "scenario": "correction",
+  "source": "5e4f979c5c210246577280ac91fd58d2631d8920",
+  "flags": "readingTrial=1&propositionTrial=1",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "requests": [
+    {
+      "startedAt": "2026-10-29T09:47:09.197Z",
+      "requestedModel": "deepseek-v4-pro",
+      "maxTokens": 1600,
+      "done": true,
+      "status": 200,
+      "actualModel": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 2046,
+        "completion_tokens": 1443,
+        "total_tokens": 3489,
+        "prompt_tokens_details": {
+          "cached_tokens": 1152
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1392
+        },
+        "prompt_cache_hit_tokens": 1152,
+        "prompt_cache_miss_tokens": 894
+      },
+      "finishReasons": [
+        "stop"
+      ],
+      "responseContent": [
+        "{\"intents\":[{\"type\":\"surface_possibility\",\"text\":\"若只做考前复习且不接触私人作业/成绩，下一步需确认复习内容只能来自考纲或学生当场提问，而不能用成绩错题定位。\"}]}"
+      ],
+      "finishedAt": "2026-10-29T09:47:35.779Z"
+    }
+  ],
+  "results": [
+    {
+      "id": "ghost_c3609b45-5601-4294-9818-d340dfeed5a2",
+      "fullText": "若只做考前复习且不接触私人作业/成绩，下一步需确认复习内容只能来自考纲或学生当场提问，而不能用成绩错题定位。",
+      "cardText": "若只做考前复习且不接触私人作业/成绩，下一步需确认复习内容只能来自考纲或学生当场提问，而不能用成绩错题定位。",
+      "focus": null,
+      "label": [],
+      "readerText": "若只做考前复习且不接触私人作业/成绩，下一步需确认复习内容只能来自考纲或学生当场提问，而不能用成绩错题定位。",
+      "afterKeepCard": "若只做考前复习且不接触私人作业/成绩，下一步需确认复习内容只能来自考纲或学生当场提问，而不能用成绩错题定位。",
+      "afterRecoveryCard": "若只做考前复习且不接触私人作业/成绩，下一步需确认复习内容只能来自考纲或学生当场提问，而不能用成绩错题定位。",
+      "originalPreserved": true
+    }
+  ],
+  "startedAt": "2026-10-29T09:47:06.741Z",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "comparison-correction",
+    "title": "模型对照 · correction",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "更正：现在每周只有两小时，改为考前复习，不做作业辅助；不接触学生私人作业、成绩或身份资料的限制保持不变。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 2,
+        "updatedAt": 2,
+        "touchedAt": 2,
+        "derivedFrom": [
+          "prior"
+        ],
+        "generationAction": "continue",
+        "origin": {
+          "projectId": "comparison-correction",
+          "thoughtId": "prior",
+          "inputId": "correction",
+          "ranges": [
+            {
+              "inputId": "correction",
+              "start": 0,
+              "end": 52
+            }
+          ]
+        }
+      },
+      "prior": {
+        "id": "prior",
+        "text": "我想验证学生是否需要一个作业辅助工具。每周只有四小时，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 40,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {
+      "correction": {
+        "id": "correction",
+        "text": "更正：现在每周只有两小时，改为考前复习，不做作业辅助；不接触学生私人作业、成绩或身份资料的限制保持不变。",
+        "createdAt": 2
+      }
+    },
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "ec1c7672b41e6846166197003385f0a1bd8a7ad26729fa99914852bc9394811f",
+  "runConfig": {
+    "configuredCandidates": 1,
+    "fieldSources": false,
+    "web": false
+  },
+  "requestSummary": {
+    "actualRequests": 1,
+    "completed": 1,
+    "singleRequest": true,
+    "providerSuccess": true
+  },
+  "notices": [
+    "Possibilities returned. No commitment was made on your behalf.Close"
+  ],
+  "status": "observed-output",
+  "recoveredProject": {
+    "schemaVersion": 1,
+    "id": "recovered_44c94182-459b-40a9-8f28-3baffd766d33",
+    "title": "模型对照 · correction (restored)",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "更正：现在每周只有两小时，改为考前复习，不做作业辅助；不接触学生私人作业、成绩或身份资料的限制保持不变。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 2,
+        "updatedAt": 1793267228355,
+        "touchedAt": 1793267228355,
+        "derivedFrom": [
+          "prior"
+        ],
+        "generationAction": "continue",
+        "origin": {
+          "projectId": "comparison-correction",
+          "thoughtId": "prior",
+          "inputId": "correction",
+          "ranges": [
+            {
+              "inputId": "correction",
+              "start": 0,
+              "end": 52
+            }
+          ]
+        },
+        "attentionDebt": 0
+      },
+      "prior": {
+        "id": "prior",
+        "text": "我想验证学生是否需要一个作业辅助工具。每周只有四小时，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 40,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      },
+      "ghost_c3609b45-5601-4294-9818-d340dfeed5a2": {
+        "id": "ghost_c3609b45-5601-4294-9818-d340dfeed5a2",
+        "text": "若只做考前复习且不接触私人作业/成绩，下一步需确认复习内容只能来自考纲或学生当场提问，而不能用成绩错题定位。",
+        "x": 300,
+        "y": 496,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1793267258727,
+        "updatedAt": 1793267258727,
+        "touchedAt": 1793267258727,
+        "origin": {
+          "projectId": "comparison-correction",
+          "note": "DeepSeek - deepseek-v4-pro"
+        },
+        "generatedBy": "ai",
+        "derivedFrom": [
+          "question"
+        ],
+        "generationAction": "continue"
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {
+      "correction": {
+        "id": "correction",
+        "text": "更正：现在每周只有两小时，改为考前复习，不做作业辅助；不接触学生私人作业、成绩或身份资料的限制保持不变。",
+        "createdAt": 2
+      }
+    },
+    "threads": {},
+    "history": [
+      {
+        "id": "h_c9d0b64c-c5e2-4201-a032-6442170f2886",
+        "kind": "ghost.claim",
+        "summary": "Made a possibility my own: 若只做考前复习且不接触私人作业/成绩，下一步需确认复习内容只能来自考纲或学生当场提问，而不能用成绩错题定位。",
+        "thoughtIds": [
+          "ghost_c3609b45-5601-4294-9818-d340dfeed5a2"
+        ],
+        "at": 1793267258728
+      },
+      {
+        "id": "h_5de6a08a-f9c0-477a-8f7c-dd84e9109fe0",
+        "kind": "world.restore",
+        "summary": "Restored from comparison-correction as a new project. Existing projects were not overwritten.",
+        "thoughtIds": [],
+        "at": 1793267260729
+      }
+    ],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1793267260729,
+    "updatedAt": 1793267260729
+  },
+  "singleStepVerified": true,
+  "finishedAt": "2026-10-29T09:47:43.415Z"
+}

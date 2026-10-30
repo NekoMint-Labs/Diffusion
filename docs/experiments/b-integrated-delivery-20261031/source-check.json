@@ -1,0 +1,31 @@
+{
+  "productSource": "4998b41d76756ef3f10154b6bc597100d155719e",
+  "referenceProduct": "e5f6703495db311cb19ff718dd4785876565301d",
+  "paths": [
+    "src",
+    "src-tauri",
+    "server",
+    "package.json",
+    "pnpm-lock.yaml",
+    "vite.config.ts"
+  ],
+  "sameProductTree": true,
+  "evidenceTrees": [
+    {
+      "dir": "b-model-comparison-20261029",
+      "old": "09a75df",
+      "identical": true
+    },
+    {
+      "dir": "b-deepseek-budget-20261029",
+      "old": "864dcb8",
+      "identical": true
+    },
+    {
+      "dir": "b-wording-comparison-20261030",
+      "old": "339fd20",
+      "identical": true
+    }
+  ],
+  "realModelCalls": 0
+}

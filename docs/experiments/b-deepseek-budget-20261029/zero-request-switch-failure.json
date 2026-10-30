@@ -1,0 +1,17 @@
+{
+  "scenario": "ask",
+  "arm": {
+    "id": "high-4000",
+    "maxTokens": 4000,
+    "thinking": "enabled",
+    "effort": "high"
+  },
+  "productSource": "5e4f979c5c210246577280ac91fd58d2631d8920",
+  "injected": false,
+  "startedAt": "2026-10-29T10:52:56.025Z",
+  "requests": [],
+  "results": [],
+  "status": "execution-failed",
+  "failure": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"comparison-budget-hold\"\nReceived: \"comparison-budget-ask\"\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate",
+  "finishedAt": "2026-10-29T10:53:06.704Z"
+}

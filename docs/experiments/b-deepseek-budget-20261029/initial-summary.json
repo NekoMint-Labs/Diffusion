@@ -1,0 +1,26 @@
+{
+  "injected": false,
+  "totalSent": 1,
+  "blocked": 0,
+  "routeFailure": null,
+  "promptFingerprints": {
+    "ask": "9a6d05b7fcdc6b09006e3c72c5c95e175ceaa49756fea8a0a96a7cd013324d35"
+  },
+  "results": [
+    {
+      "scenario": "ask",
+      "arm": "high-1600",
+      "status": "empty-or-failed",
+      "requests": 1,
+      "outputs": 0
+    },
+    {
+      "scenario": "ask",
+      "arm": "high-4000",
+      "status": "execution-failed",
+      "requests": 0,
+      "outputs": 0
+    }
+  ],
+  "productionDefaultsChanged": false
+}

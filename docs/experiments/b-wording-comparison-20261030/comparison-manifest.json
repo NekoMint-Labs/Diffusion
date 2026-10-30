@@ -1,0 +1,204 @@
+{
+  "date": "2026-10-30",
+  "productSource": "e5f6703495db311cb19ff718dd4785876565301d",
+  "toolSource": "72bd4491c548971b6e32991a58c8a137e6d85a8d",
+  "realRequests": 8,
+  "aggregateMaxTokens": 32000,
+  "usage": {
+    "promptTokens": 19198,
+    "completionTokens": 10082,
+    "reasoningTokens": 9367
+  },
+  "rows": [
+    {
+      "index": 0,
+      "case": "polite-agreement",
+      "arm": "control",
+      "model": "deepseek-v4-pro",
+      "finish": "stop",
+      "promptTokens": 1982,
+      "completionTokens": 1625,
+      "reasoningTokens": 1548,
+      "characters": 96,
+      "focus": null,
+      "canonicalSha": "ccfe15069e91b188b0f7f3aff552594a32ea187cf7298df55d86683fed1b30b8",
+      "fixtureSha": "aef36afb93b7f610f36892e17e50f34fddd0059faf9d131e603f7757e24ec910"
+    },
+    {
+      "index": 1,
+      "case": "polite-agreement",
+      "arm": "candidate",
+      "model": "deepseek-v4-pro",
+      "finish": "stop",
+      "promptTokens": 2718,
+      "completionTokens": 1549,
+      "reasoningTokens": 1422,
+      "characters": 140,
+      "focus": "true",
+      "canonicalSha": "ccfe15069e91b188b0f7f3aff552594a32ea187cf7298df55d86683fed1b30b8",
+      "fixtureSha": "aef36afb93b7f610f36892e17e50f34fddd0059faf9d131e603f7757e24ec910"
+    },
+    {
+      "index": 2,
+      "case": "authored-correction",
+      "arm": "candidate",
+      "model": "deepseek-v4-pro",
+      "finish": "stop",
+      "promptTokens": 2824,
+      "completionTokens": 1791,
+      "reasoningTokens": 1636,
+      "characters": 114,
+      "focus": null,
+      "canonicalSha": "aeba05267d51bacf802c80c71718952c62f9c4e5cadc638d1a3b4e22d483037c",
+      "fixtureSha": "31fa95e7e4c4fb1bce3adeca6124b38442e688223bcf8f1b18742ee0a4491179"
+    },
+    {
+      "index": 3,
+      "case": "authored-correction",
+      "arm": "control",
+      "model": "deepseek-v4-pro",
+      "finish": "stop",
+      "promptTokens": 2088,
+      "completionTokens": 875,
+      "reasoningTokens": 813,
+      "characters": 73,
+      "focus": null,
+      "canonicalSha": "aeba05267d51bacf802c80c71718952c62f9c4e5cadc638d1a3b4e22d483037c",
+      "fixtureSha": "31fa95e7e4c4fb1bce3adeca6124b38442e688223bcf8f1b18742ee0a4491179"
+    },
+    {
+      "index": 4,
+      "case": "explicit-teacher",
+      "arm": "control",
+      "model": "deepseek-v4-pro",
+      "finish": "stop",
+      "promptTokens": 2085,
+      "completionTokens": 620,
+      "reasoningTokens": 552,
+      "characters": 57,
+      "focus": null,
+      "canonicalSha": "3f44342540c0fdc77665a7e5b097c1a1016361f0077c876e4cc0975964749bb5",
+      "fixtureSha": "727af2558bb7bf0cc38661464f4ac4adfcad92bb72362c6213194e55368bb057"
+    },
+    {
+      "index": 5,
+      "case": "explicit-teacher",
+      "arm": "candidate",
+      "model": "deepseek-v4-pro",
+      "finish": "stop",
+      "promptTokens": 2817,
+      "completionTokens": 986,
+      "reasoningTokens": 936,
+      "characters": 48,
+      "focus": null,
+      "canonicalSha": "3f44342540c0fdc77665a7e5b097c1a1016361f0077c876e4cc0975964749bb5",
+      "fixtureSha": "727af2558bb7bf0cc38661464f4ac4adfcad92bb72362c6213194e55368bb057"
+    },
+    {
+      "index": 6,
+      "case": "no-public-evidence",
+      "arm": "candidate",
+      "model": "deepseek-v4-pro",
+      "finish": "stop",
+      "promptTokens": 2709,
+      "completionTokens": 1545,
+      "reasoningTokens": 1426,
+      "characters": 131,
+      "focus": "true",
+      "canonicalSha": "a24c12e88935a8e7d04a9197043d7afb8e80ee79d0899ff6d5e4cfa66c1a270c",
+      "fixtureSha": "4d4629b4e369db7a443513bd13cb11794ce621dd086b2bb2ff3422d336fcd158"
+    },
+    {
+      "index": 7,
+      "case": "no-public-evidence",
+      "arm": "control",
+      "model": "deepseek-v4-pro",
+      "finish": "stop",
+      "promptTokens": 1975,
+      "completionTokens": 1091,
+      "reasoningTokens": 1034,
+      "characters": 71,
+      "focus": null,
+      "canonicalSha": "a24c12e88935a8e7d04a9197043d7afb8e80ee79d0899ff6d5e4cfa66c1a270c",
+      "fixtureSha": "4d4629b4e369db7a443513bd13cb11794ce621dd086b2bb2ff3422d336fcd158"
+    }
+  ],
+  "rawFiles": [
+    {
+      "file": "0-polite-agreement-control.json",
+      "sha256": "d4ef8f2cd767b2aff491558bec5f2b1b45276237ec2f3c6bdf4f26bddd613380",
+      "bytes": 33360
+    },
+    {
+      "file": "1-polite-agreement-candidate.json",
+      "sha256": "43c07a73dbfb22ff5e73b1922355ca69389b92ab07eda7096662f119023ee789",
+      "bytes": 39010
+    },
+    {
+      "file": "2-authored-correction-candidate.json",
+      "sha256": "9096274e91ecddc274c02e14a838f893b8233acc25a5bca233b4ba9335632686",
+      "bytes": 43308
+    },
+    {
+      "file": "3-authored-correction-control.json",
+      "sha256": "291ce2687beb6f7ccd6221e2589bd1d5e28fa4d62e6afa513faa88d79135e1c5",
+      "bytes": 37916
+    },
+    {
+      "file": "4-explicit-teacher-control.json",
+      "sha256": "fd7d1a2eeeb31856ab98d5b4d8c5cb7099a83ddd855a02542e724fed58269ccc",
+      "bytes": 37267
+    },
+    {
+      "file": "5-explicit-teacher-candidate.json",
+      "sha256": "d2843798f0326642086ecf7172592f816b5a19d488ebd859e8198f16e373f786",
+      "bytes": 40865
+    },
+    {
+      "file": "6-no-public-evidence-candidate.json",
+      "sha256": "957c368bcaab3dc38f3f88ceae5d4db0044cb392066d5f08462306f8aac41fb3",
+      "bytes": 38705
+    },
+    {
+      "file": "7-no-public-evidence-control.json",
+      "sha256": "6819789146633bd609d9ee204cf16e385a2b0eb4dcba83754043fd4b6a2f9b79",
+      "bytes": 32494
+    },
+    {
+      "file": "plan.json",
+      "sha256": "93ea22083f492ac5239462d03b567f5d465014b7967780fa4f3b65517d916b7d",
+      "bytes": 2234
+    },
+    {
+      "file": "summary.json",
+      "sha256": "30de30c09cc73087e8360f0ee79720ce6824ef8033a5f3d803d3cb52605af769",
+      "bytes": 1887
+    },
+    {
+      "file": "build-manifest.json",
+      "sha256": "7e3fd28b8dfb65e9c36d868bbf0d600285b6fcba1740d2c5a63ec823150802ea",
+      "bytes": 2339
+    },
+    {
+      "file": "loaded-build.json",
+      "sha256": "e60e9419bc22ba3750fabba88b2af2624a0aea94e136902fd80f46da77439a05",
+      "bytes": 258
+    },
+    {
+      "file": "preflight-failure.json",
+      "sha256": "cb7903c07bebad4c676dea08fa980dd3e1a551cfe786579c4ba9f3d994d721de",
+      "bytes": 488
+    },
+    {
+      "file": "preflight-plan.json",
+      "sha256": "08f6d30de77b4ed0464f7c8a704db55c7e85fc05f3d061e4556fd3daab8a6dbe",
+      "bytes": 2234
+    },
+    {
+      "file": "preflight-build-manifest.json",
+      "sha256": "7e3fd28b8dfb65e9c36d868bbf0d600285b6fcba1740d2c5a63ec823150802ea",
+      "bytes": 2339
+    }
+  ],
+  "productionDefaultsChanged": false
+}

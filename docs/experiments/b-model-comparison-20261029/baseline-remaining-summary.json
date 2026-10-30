@@ -1,0 +1,29 @@
+{
+  "source": "79a484483e882c0b252b46c09391f7a3cd84f027",
+  "results": [
+    {
+      "scenario": "diffuse",
+      "status": "observed-output",
+      "requests": 1,
+      "results": 1,
+      "singleStepVerified": true
+    },
+    {
+      "scenario": "correction",
+      "status": "observed-output",
+      "requests": 1,
+      "results": 1,
+      "singleStepVerified": true
+    },
+    {
+      "scenario": "uncertainty",
+      "status": "observed-output",
+      "requests": 1,
+      "results": 1,
+      "singleStepVerified": true
+    }
+  ],
+  "observedRequests": 3,
+  "realQualityAcceptance": "pending independent reading",
+  "nativeWindowsAcceptance": false
+}

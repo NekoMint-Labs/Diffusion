@@ -188,3 +188,33 @@ test('source verification requires the exact full SHA and rejects tracked change
   fs.appendFileSync(path.join(directory, 'tracked.txt'), 'changed while building\n');
   assert.throws(() => verifySource(directory, source), /Tracked source files changed during packaging/);
 });
+
+test('Windows checkout keeps Cargo.toml clean after Tauri newline rewriting only with its LF attribute', t => {
+  const attributes = fs.readFileSync(path.join(root, '.gitattributes'), 'utf8');
+  const cargoText = '[package]\nname = "package-fixture"\nversion = "0.1.0"\n';
+  for (const pinned of [false, true]) {
+    const directory = fixture(t);
+    const git = (...args) => execFileSync('git', args, { cwd: directory, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+    git('init', '--quiet');
+    git('config', 'core.autocrlf', 'true');
+    fs.writeFileSync(path.join(directory, '.gitattributes'), pinned ? attributes : attributes.split(/\r?\n/).filter(line => !/^\/src-tauri\/Cargo\.toml\s/.test(line)).join('\n'));
+    const cargo = path.join(directory, 'src-tauri/Cargo.toml');
+    fs.writeFileSync(cargo, cargoText);
+    git('add', '.gitattributes', 'src-tauri/Cargo.toml');
+    git('-c', 'user.name=Package Test', '-c', 'user.email=package-test@example.invalid', '-c', 'commit.gpgsign=false', 'commit', '--quiet', '-m', 'Windows checkout fixture');
+    const source = git('rev-parse', 'HEAD');
+    // Force Git to materialize its Windows checkout bytes, rather than inspect
+    // the original file written by this test before adding it to the index.
+    fs.unlinkSync(cargo);
+    git('checkout', '--', 'src-tauri/Cargo.toml');
+    const checkedOut = fs.readFileSync(cargo, 'utf8');
+    assert.equal(checkedOut, pinned ? cargoText : cargoText.replaceAll('\n', '\r\n'));
+    assert.equal(verifySource(directory, source), source);
+    fs.writeFileSync(cargo, checkedOut.replaceAll('\r\n', '\n'));
+    if (pinned) {
+      assert.equal(verifySource(directory, source), source);
+    } else {
+      assert.throws(() => verifySource(directory, source), /Tracked source files changed during packaging/);
+    }
+  }
+});

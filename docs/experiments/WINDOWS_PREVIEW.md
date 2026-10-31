@@ -43,6 +43,9 @@ Download and extract the artifact from the run's Summary before installing.
 profile, config hashes, entry, identifier, run URL, installer size and SHA-256.
 Missing, empty or multiple installers fail the recording step. CI uses a fresh
 bundle directory; local users must move any previous installer out first.
+`Cargo.toml` is checked out with LF even on Windows because Tauri rewrites that
+manifest with LF. This keeps the strict tracked-source check in place without
+reporting a CRLF-only rewrite as a source change.
 
 Verify the `.exe` with `Get-FileHash -LiteralPath '.\<installer>.exe' -Algorithm SHA256`
 and compare with both receipt files. Check that `sourceCommit` equals the

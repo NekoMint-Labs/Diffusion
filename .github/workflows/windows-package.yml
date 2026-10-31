@@ -3,6 +3,7 @@ name: Windows Package
 on:
   pull_request:
     paths:
+      - .gitattributes
       - src-tauri/**
       - .github/workflows/windows-package.yml
       - scripts/windows-package.mjs

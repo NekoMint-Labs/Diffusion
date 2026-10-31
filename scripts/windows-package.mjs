@@ -55,7 +55,7 @@ export function verifySource(root, expectedSource) {
     const source = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
     if (!/^[a-f0-9]{40}$/.test(expectedSource ?? '') || source !== expectedSource) throw new Error('Checkout SHA does not match PACKAGE_SOURCE');
     const changed = execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd: root, encoding: 'utf8' }).trim();
-    if (changed) throw new Error('Tracked source files changed during packaging');
+    if (changed) throw new Error(`Tracked source files changed during packaging:\n${changed}`);
     return source;
 }
 

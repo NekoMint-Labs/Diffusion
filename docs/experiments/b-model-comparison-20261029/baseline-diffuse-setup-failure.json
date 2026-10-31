@@ -1,0 +1,20 @@
+{
+  "scenario": "diffuse",
+  "source": "79a484483e882c0b252b46c09391f7a3cd84f027",
+  "flags": "readingTrial=1",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "requests": [],
+  "results": [],
+  "startedAt": "2026-10-29T09:39:57.591Z",
+  "status": "execution-failed",
+  "failure": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"comparison-diffuse\"\nReceived: \"recovered_de17bfeb-70e2-4a20-8159-a5a08ad5033c\"\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate",
+  "requestSummary": {
+    "actualRequests": 0,
+    "completed": 0,
+    "singleRequest": false,
+    "providerSuccess": false
+  },
+  "finishedAt": "2026-10-29T09:40:03.015Z"
+}

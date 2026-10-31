@@ -46,7 +46,7 @@ export function compareWorlds(main: ProjectState, fork: ProjectState): Compariso
     });
 }
 /** Selective Bring to Main copies chosen wording; it never overwrites Main or merges relations. */
-export function bringToMain(main: ProjectState, fork: ProjectState, selected: string[], point: Point, now = Date.now()): {
+export function bringToMain(main: ProjectState, fork: ProjectState, selected: string[], point: Point, now = Date.now(), place?: (project: ProjectState, thought: Thought) => Point): {
     project: ProjectState;
     count: number;
     ids: string[];
@@ -66,6 +66,12 @@ export function bringToMain(main: ProjectState, fork: ProjectState, selected: st
             continue;
         const survivingParents = t.derivedFrom?.filter(parentId => !!result.thoughts[parentId]) ?? [];
         const next = { ...t, id: id(t.kind === 'crystal' ? 'crystal' : 't'), x: point.x + (inserted.length % 3) * 300, y: point.y + Math.floor(inserted.length / 3) * 180, createdAt: now, updatedAt: now, touchedAt: now, life: 'active' as const, ...(survivingParents.length ? { derivedFrom: survivingParents } : { derivedFrom: undefined, generationAction: undefined }) };
+        // Presentation chooses only the new card's point against the latest Main, including this batch.
+        if (place) {
+            const location = place(result, next);
+            next.x = location.x;
+            next.y = location.y;
+        }
         const sourceIds = new Set([t.sourceId, t.origin?.sourceId].filter((x): x is string => !!x));
         const sources: SourceRecord[] = [...sourceIds].map(k => fork.sources[k]).filter(Boolean);
         result = reduceProject(result, userEvent({ type: 'fork.bring', thought: next, sources, origin: { ...t.origin, projectId: fork.id, thoughtId: key, note: 'Explicitly brought as a separate thought; no Main wording was overwritten.' } }, now));

@@ -1,0 +1,50 @@
+{
+  "source": "5e4f979c5c210246577280ac91fd58d2631d8920",
+  "results": [
+    {
+      "scenario": "ask",
+      "status": "empty-or-failed",
+      "requests": 1,
+      "results": 0,
+      "singleStepVerified": true
+    },
+    {
+      "scenario": "continue",
+      "status": "empty-or-failed",
+      "requests": 1,
+      "results": 0,
+      "singleStepVerified": true
+    },
+    {
+      "scenario": "angle",
+      "status": "empty-or-failed",
+      "requests": 1,
+      "results": 0,
+      "singleStepVerified": true
+    },
+    {
+      "scenario": "diffuse",
+      "status": "observed-output",
+      "requests": 1,
+      "results": 1,
+      "singleStepVerified": true
+    },
+    {
+      "scenario": "correction",
+      "status": "observed-output",
+      "requests": 1,
+      "results": 1,
+      "singleStepVerified": true
+    },
+    {
+      "scenario": "uncertainty",
+      "status": "observed-output",
+      "requests": 1,
+      "results": 1,
+      "singleStepVerified": true
+    }
+  ],
+  "observedRequests": 6,
+  "realQualityAcceptance": "pending independent reading",
+  "nativeWindowsAcceptance": false
+}

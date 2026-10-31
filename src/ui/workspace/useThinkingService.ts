@@ -1,5 +1,5 @@
 import { bindProposition } from '../../core/proposition.ts';
-import { propositionTrialEnabled, readingTrialEnabled, rememberReadingFocus } from '../thought/readingFocusStore.ts';
+import { plainAnswerTrialEnabled, propositionTrialEnabled, readingTrialEnabled, rememberReadingFocus } from '../thought/readingFocusStore.ts';
 import { summarizeReading } from '../../ai/readingFocus.ts';
 import { respondWithReading } from '../../ai/readingResponse.ts';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
@@ -51,7 +51,7 @@ export function useThinkingService({ controller, repository, settings, credentia
     // long-lived object that reads the current selection when a request is made.
     const runtime = useMemo(() => new AIRuntime(controller, () => createThinkingProvider(selection.current, credentials), {
         ...(readingTrialEnabled() ? { respondWithPresentation: async (provider, packet, intent, signal) => {
-            const { response, readings, emptyReason } = await respondWithReading(provider, packet, intent, signal, { propositions: propositionTrialEnabled() });
+            const { response, readings, emptyReason } = await respondWithReading(provider, packet, intent, signal, { propositions: propositionTrialEnabled(), plainAnswer: plainAnswerTrialEnabled() });
             return { response, emptyReason, presentText: (text: string, key: string) => {
                 const result = readings.get(text);
                 if (result) {

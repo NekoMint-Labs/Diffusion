@@ -1,0 +1,29 @@
+{
+  "rows": [
+    {
+      "id": "comparison-budget-ask",
+      "elapsedMs": 746,
+      "state": {
+        "visibility": "visible",
+        "focus": true,
+        "title": "模型对照 · budget-ask",
+        "notices": [
+          "Field opened.Close"
+        ]
+      }
+    },
+    {
+      "id": "comparison-budget-hold",
+      "elapsedMs": 727,
+      "state": {
+        "visibility": "visible",
+        "focus": true,
+        "title": "模型对照 · budget-hold",
+        "notices": [
+          "Field opened.Close"
+        ]
+      }
+    }
+  ],
+  "providerRequestsBlocked": 0
+}

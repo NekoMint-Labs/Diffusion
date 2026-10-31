@@ -1,0 +1,72 @@
+{
+  "injected": false,
+  "totalSent": 8,
+  "blocked": 0,
+  "routeFailure": null,
+  "inheritedFrom": "D:\\DiffusionWork\\reviews\\20261029-b\\budget-adaptation-20261029\\live-v1",
+  "previousSent": 1,
+  "previousCap": 1600,
+  "promptFingerprints": {
+    "ask": "9a6d05b7fcdc6b09006e3c72c5c95e175ceaa49756fea8a0a96a7cd013324d35",
+    "continue": "535fb47ea3cd3d8996f4a023fba0e1929989dd7bccecac0f9c65f6b341d7d6c6"
+  },
+  "results": [
+    {
+      "scenario": "ask",
+      "arm": "high-1600",
+      "status": "empty-or-failed",
+      "requests": 1,
+      "outputs": 0
+    },
+    {
+      "scenario": "ask",
+      "arm": "high-4000",
+      "status": "observed-output",
+      "requests": 1,
+      "outputs": 1
+    },
+    {
+      "scenario": "ask",
+      "arm": "low-1600",
+      "status": "observed-output",
+      "requests": 1,
+      "outputs": 1
+    },
+    {
+      "scenario": "ask",
+      "arm": "off-1600",
+      "status": "observed-output",
+      "requests": 1,
+      "outputs": 1
+    },
+    {
+      "scenario": "continue",
+      "arm": "off-1600",
+      "status": "observed-output",
+      "requests": 1,
+      "outputs": 1
+    },
+    {
+      "scenario": "continue",
+      "arm": "low-1600",
+      "status": "observed-output",
+      "requests": 1,
+      "outputs": 1
+    },
+    {
+      "scenario": "continue",
+      "arm": "high-4000",
+      "status": "observed-output",
+      "requests": 1,
+      "outputs": 1
+    },
+    {
+      "scenario": "continue",
+      "arm": "high-1600",
+      "status": "observed-output",
+      "requests": 1,
+      "outputs": 1
+    }
+  ],
+  "productionDefaultsChanged": false
+}

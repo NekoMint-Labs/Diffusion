@@ -1,0 +1,172 @@
+{
+  "scenario": "continue",
+  "source": "79a484483e882c0b252b46c09391f7a3cd84f027",
+  "flags": "readingTrial=1",
+  "provider": "deepseek",
+  "requestedModel": "deepseek-v4-pro",
+  "thinkingDepth": "standard",
+  "requests": [
+    {
+      "startedAt": "2026-10-29T09:38:52.098Z",
+      "requestedModel": "deepseek-v4-pro",
+      "maxTokens": 1600,
+      "done": true,
+      "status": 200,
+      "actualModel": "deepseek-v4-pro",
+      "usage": {
+        "prompt_tokens": 1874,
+        "completion_tokens": 1353,
+        "total_tokens": 3227,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1295
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1874
+      },
+      "finishReasons": [
+        "stop"
+      ],
+      "responseContent": [
+        "{\"intents\":[{\"type\":\"surface_possibility\",\"text\":\"在还没有访谈或试用结果、每周只有两小时且不接触个人资料的前提下，下一步可先把“需要”拆成“自述需要”和“可观察的使用行为”两类信号。\"}]}"
+      ],
+      "finishedAt": "2026-10-29T09:39:20.991Z"
+    }
+  ],
+  "results": [
+    {
+      "id": "ghost_a794dd46-8ab5-4d2a-bdbe-686288946c22",
+      "fullText": "在还没有访谈或试用结果、每周只有两小时且不接触个人资料的前提下，下一步可先把“需要”拆成“自述需要”和“可观察的使用行为”两类信号。",
+      "cardText": "在还没有访谈或试用结果、每周只有两小时且不接触个人资料的前提下，下一步可先把“需要”拆成“自述需要”和“可观察的使用行为”两类信号。",
+      "focus": null,
+      "label": [],
+      "readerText": "在还没有访谈或试用结果、每周只有两小时且不接触个人资料的前提下，下一步可先把“需要”拆成“自述需要”和“可观察的使用行为”两类信号。",
+      "afterKeepCard": "在还没有访谈或试用结果、每周只有两小时且不接触个人资料的前提下，下一步可先把“需要”拆成“自述需要”和“可观察的使用行为”两类信号。",
+      "afterRecoveryCard": "在还没有访谈或试用结果、每周只有两小时且不接触个人资料的前提下，下一步可先把“需要”拆成“自述需要”和“可观察的使用行为”两类信号。",
+      "originalPreserved": true
+    }
+  ],
+  "startedAt": "2026-10-29T09:38:49.940Z",
+  "fixture": {
+    "schemaVersion": 1,
+    "id": "comparison-continue",
+    "title": "模型对照 · continue",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "touchedAt": 1
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1,
+    "updatedAt": 1
+  },
+  "fixtureSha256": "ddbf39675aeb05692917243da150bf619794ab68bc48848106e094cc0ea9fee1",
+  "runConfig": {
+    "configuredCandidates": 1,
+    "fieldSources": false,
+    "web": false
+  },
+  "requestSummary": {
+    "actualRequests": 1,
+    "completed": 1,
+    "singleRequest": true,
+    "providerSuccess": true
+  },
+  "notices": [
+    "Possibilities returned. No commitment was made on your behalf.Close"
+  ],
+  "status": "observed-output",
+  "recoveredProject": {
+    "schemaVersion": 1,
+    "id": "recovered_941650fd-ae61-4d1d-844a-1414a681904c",
+    "title": "模型对照 · continue (restored)",
+    "thoughts": {
+      "question": {
+        "id": "question",
+        "text": "我想验证学生是否需要一个考前复习工具。每周只有两小时可以投入，不接触学生的私人作业、成绩或身份资料。目前还没有访谈或试用结果。",
+        "x": 300,
+        "y": 200,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1,
+        "updatedAt": 1793266731498,
+        "touchedAt": 1793266731498,
+        "attentionDebt": 0
+      },
+      "ghost_a794dd46-8ab5-4d2a-bdbe-686288946c22": {
+        "id": "ghost_a794dd46-8ab5-4d2a-bdbe-686288946c22",
+        "text": "在还没有访谈或试用结果、每周只有两小时且不接触个人资料的前提下，下一步可先把“需要”拆成“自述需要”和“可观察的使用行为”两类信号。",
+        "x": 756,
+        "y": 193,
+        "kind": "thought",
+        "life": "active",
+        "kept": false,
+        "createdAt": 1793266764451,
+        "updatedAt": 1793266764451,
+        "touchedAt": 1793266764451,
+        "origin": {
+          "projectId": "comparison-continue",
+          "note": "DeepSeek - deepseek-v4-pro"
+        },
+        "derivedFrom": [
+          "question"
+        ],
+        "generationAction": "continue"
+      }
+    },
+    "relations": {},
+    "regions": {},
+    "sources": {},
+    "inputs": {},
+    "threads": {},
+    "history": [
+      {
+        "id": "h_b0b834d9-abc9-46ac-bee1-4e9adb8ea3fa",
+        "kind": "ghost.claim",
+        "summary": "Made a possibility my own: 在还没有访谈或试用结果、每周只有两小时且不接触个人资料的前提下，下一步可先把“需要”拆成“自述需要”和“可观察的使用行为”两类信号。",
+        "thoughtIds": [
+          "ghost_a794dd46-8ab5-4d2a-bdbe-686288946c22"
+        ],
+        "at": 1793266764451
+      },
+      {
+        "id": "h_6ca483fa-0df5-4753-84e4-2ec68c7bc5ad",
+        "kind": "world.restore",
+        "summary": "Restored from comparison-continue as a new project. Existing projects were not overwritten.",
+        "thoughtIds": [],
+        "at": 1793266767606
+      }
+    ],
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    },
+    "createdAt": 1793266767606,
+    "updatedAt": 1793266767606
+  },
+  "singleStepVerified": true,
+  "finishedAt": "2026-10-29T09:39:30.953Z"
+}

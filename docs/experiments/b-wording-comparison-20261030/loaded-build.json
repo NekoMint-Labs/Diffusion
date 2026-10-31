@@ -1,0 +1,13 @@
+{
+  "source": "e5f6703495db311cb19ff718dd4785876565301d",
+  "scripts": [
+    "assets/index-ycEp0UPr.js"
+  ],
+  "settings": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "depth": "deep",
+    "locale": "en"
+  },
+  "profileVerified": true
+}

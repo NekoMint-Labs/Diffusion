@@ -1,0 +1,91 @@
+{
+  "toolSource": "a6f36f1c3c17802e12222c7ef0b89852a5d09d91",
+  "productSource": "5e4f979c5c210246577280ac91fd58d2631d8920",
+  "flags": "readingTrial=1&propositionTrial=1",
+  "origin": "http://127.0.0.1:4191",
+  "provider": "deepseek",
+  "model": "deepseek-v4-pro",
+  "injected": false,
+  "maxRequests": 8,
+  "aggregateOutputCap": 17600,
+  "automaticRetries": 0,
+  "schedule": [
+    {
+      "scenario": "ask",
+      "arm": {
+        "id": "high-1600",
+        "maxTokens": 1600,
+        "thinking": "enabled",
+        "effort": "high"
+      }
+    },
+    {
+      "scenario": "ask",
+      "arm": {
+        "id": "high-4000",
+        "maxTokens": 4000,
+        "thinking": "enabled",
+        "effort": "high"
+      }
+    },
+    {
+      "scenario": "ask",
+      "arm": {
+        "id": "low-1600",
+        "maxTokens": 1600,
+        "thinking": "enabled",
+        "effort": "low"
+      }
+    },
+    {
+      "scenario": "ask",
+      "arm": {
+        "id": "off-1600",
+        "maxTokens": 1600,
+        "thinking": "disabled",
+        "effort": null
+      }
+    },
+    {
+      "scenario": "continue",
+      "arm": {
+        "id": "off-1600",
+        "maxTokens": 1600,
+        "thinking": "disabled",
+        "effort": null
+      }
+    },
+    {
+      "scenario": "continue",
+      "arm": {
+        "id": "low-1600",
+        "maxTokens": 1600,
+        "thinking": "enabled",
+        "effort": "low"
+      }
+    },
+    {
+      "scenario": "continue",
+      "arm": {
+        "id": "high-4000",
+        "maxTokens": 4000,
+        "thinking": "enabled",
+        "effort": "high"
+      }
+    },
+    {
+      "scenario": "continue",
+      "arm": {
+        "id": "high-1600",
+        "maxTokens": 1600,
+        "thinking": "enabled",
+        "effort": "high"
+      }
+    }
+  ],
+  "officialReferences": [
+    "https://api-docs.deepseek.com/guides/thinking_mode",
+    "https://api-docs.deepseek.com/api/create-chat-completion/"
+  ],
+  "scope": "Parameters modified only by experiment network route; production build and defaults unchanged. No model output is silently retried."
+}

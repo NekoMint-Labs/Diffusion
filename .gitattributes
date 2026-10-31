@@ -1,4 +1,5 @@
 # Byte-pinned reviewed texts and canonical distribution resources must survive Windows checkout unchanged.
+/src-tauri/Cargo.toml text eol=lf
 /LICENSE text eol=lf
 /internal/discovery-engine/LICENSE.smartsearch text eol=lf
 /docs/third_party/REACT_BITS_MATERIALS_LICENSE.md text eol=lf

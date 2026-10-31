@@ -1,0 +1,28 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Diffusion Preview",
+  "mainBinaryName": "diffusion-preview",
+  "identifier": "app.diffusion.explorer.preview",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Diffusion Preview — Field trial",
+        "url": "index.html?locale=zh&readingTrial=1&propositionTrial=1",
+        "width": 1440,
+        "height": 960,
+        "minWidth": 900,
+        "minHeight": 640,
+        "dragDropEnabled": false
+      }
+    ]
+  },
+  "bundle": {
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "startMenuFolder": "Diffusion Preview"
+      }
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import type { AttentionPressure } from './attention.ts';
+import type { Proposition } from './proposition.ts';
 import type { Camera, Point, SourceRecord, Thought, Relation, Thread, ThreadMessage, Capsule, Region, Provenance, InputRecord } from './model.ts';
 type Payload = {
     type: 'input.record';
@@ -10,6 +11,10 @@ type Payload = {
     type: 'thought.edit';
     id: string;
     text: string;
+} | {
+    type: 'thought.proposition';
+    id: string;
+    proposition: Proposition;
 } | {
     type: 'thought.move';
     positions: Record<string, Point>;

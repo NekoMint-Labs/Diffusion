@@ -38,15 +38,22 @@ export function useWorkspaceSurfaces({ controller, field, diffuse, runtime }: {
             setDiffuseScope(diffuse.getSnapshot().config?.scopeIds ?? [...selection]);
         useUI.getState().patch({
             surface, relationId: null, anchor: origin ?? null,
-            returnPoint: surface === 'find' ? null : surface === 'thread-focus' && state.returnPoint
+            returnPoint: surface === 'find' || surface === 'thought-reader' ? null : surface === 'thread-focus' && state.returnPoint
                 ? { ...state.returnPoint, camera: field.current?.camera() ?? controller.getSnapshot().project.camera }
                 : state.returnPoint ?? { camera: field.current?.camera() ?? controller.getSnapshot().project.camera, selection: [...state.selection] },
         });
     }
     /** Closing is an ownership change, not an exit animation: the place stops owning input
      * immediately and the Field comes back to exactly the camera and selection it left. */
+    function yieldReader() {
+        if (useUI.getState().surface !== 'thought-reader') return;
+        useUI.getState().patch({ surface: 'none', returnPoint: null, relationId: null });
+    }
     function closeSurface(cancelRequest = true) {
         const state = useUI.getState();
+        if (state.surface === 'thought-reader') {
+            yieldReader(); transient.restore(); return;
+        }
         if (state.surface === 'find') {
             state.patch({ surface: 'none', returnPoint: null, relationId: null });
             transient.restore();
@@ -65,5 +72,5 @@ export function useWorkspaceSurfaces({ controller, field, diffuse, runtime }: {
         // textarea owns the next gesture; forced restoration would blur and close it.
         transient.restore();
     }
-    return { transient, draft, setDraft, openSurface, closeSurface, historyScope, lineageId, diffuseScope, setDiffuseScope };
+    return { transient, draft, setDraft, openSurface, closeSurface, yieldReader, historyScope, lineageId, diffuseScope, setDiffuseScope };
 }

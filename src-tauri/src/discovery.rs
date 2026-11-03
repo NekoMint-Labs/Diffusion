@@ -69,7 +69,7 @@ pub async fn discovery_run(app: AppHandle, args: Vec<String>, sources: Vec<Strin
     if !args_valid(&args) {
         return Err("The discovery engine was asked for an unsupported operation.".into());
     }
-    let environment = child_environment_with_access(&sources, tavily_keyless.unwrap_or(false), read_secret)?;
+    let environment = child_environment_with_access(&sources, tavily_keyless.unwrap_or(false), |id| read_secret(&app, id))?;
     let program = engine_path(&app)?;
     let operation = args[0].clone();
     tauri::async_runtime::spawn_blocking(move || run(&program, &args, &environment, &operation))

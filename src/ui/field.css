@@ -125,6 +125,10 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .field[data-level] .thought.ghost .ghost-label { display: block; }
 .suggestion-review { position: fixed; z-index: var(--layer-scope); width: min(560px, calc(100vw - 32px)); padding: 4px 10px; border: 1px solid var(--boundary); border-radius: var(--radius-control); background: var(--surface-1); color: var(--ink-primary); font: var(--type-ui-size)/1.5 var(--ui-font); }
 .suggestion-review-list { max-height: min(30vh, 240px); overflow-y: auto; overscroll-behavior: contain; }
+.answer-preview { white-space: pre-wrap; overflow-wrap: anywhere; }
+.answer-disclosure summary { cursor: pointer; color: var(--ink-secondary); font-size: 13px; padding: 6px 0; }
+.answer-disclosure summary:focus-visible { outline: 2px solid var(--ink-primary); outline-offset: 2px; }
+.answer-disclosure [data-testid="answer-full-text"] { overflow-wrap: anywhere; }
 .suggestion-review section { padding: 10px 4px; border-top: 1px solid var(--boundary); }
 .suggestion-review p { white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0; }
 .suggestion-review small { display: block; color: var(--ink-secondary); overflow-wrap: anywhere; }
@@ -404,3 +408,19 @@ html[lang^="zh"] .identity h1 { letter-spacing: .015em; }
 .relation-token-wording { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .relation-token-hint { display: block; font-size: var(--type-hint-size); color: var(--ink-tertiary); }
 .relation-label-overlay[data-just-kept="true"] { border-color: var(--attention); background: var(--attention-soft); color: var(--ink-primary); }
+
+/* Propositions and compact originals are complete at local zoom; zoomed-out views keep normal budgets. */
+.field[data-level="local"] .thought:is([data-reading-focus="true"], [data-compact-original="true"]):not(.editing) .thought-preview { display: block; -webkit-line-clamp: unset; line-clamp: unset; max-height: none; overflow: visible; }
+
+.reading-focus-card-label { display: block; margin-bottom: 8px; color: var(--ink-helper); font: calc(var(--type-helper-size) * var(--inverse-zoom))/1.4 var(--ui-font); }
+
+/* Fixed reader only changes the right edge; world origin and camera stay owned by Field. */
+.app[data-proposition-reader="true"] > .field { right: 360px; }
+.app[data-proposition-reader="true"] > .global-actions { right: 384px; }
+.app[data-proposition-reader="true"] .speak-positioner { right: 360px; }
+@media (max-width: 760px) {
+  .app[data-proposition-reader="true"] > .field,
+  .app[data-proposition-reader="true"] > .identity,
+  .app[data-proposition-reader="true"] > .global-actions,
+  .app[data-proposition-reader="true"] .speak-positioner { visibility: hidden; pointer-events: none; }
+}

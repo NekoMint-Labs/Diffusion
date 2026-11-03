@@ -1,3 +1,4 @@
+import { fieldAnswerRequest, parseFieldAnswer, supportsFieldAnswer } from '../src/ai/readingResponse.ts';
 import { EVIDENCE_REASONING_INSTRUCTIONS } from '../src/evidence/reasoning.ts';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
@@ -109,6 +110,12 @@ export function createGateway(config: GatewaySettings, fetcher: typeof fetch = f
         // An operator-declared allow-list is authoritative: a model is only forwarded when overrides
         // are enabled and, when a list exists, the model is on it.
         const override = model && config.aiAllowModelOverride && (config.aiModels.length === 0 || config.aiModels.includes(model)) ? model : undefined;
+        if (supportsFieldAnswer(packet, intent)) {
+            const task = fieldAnswerRequest(packet, intent);
+            const value = await callModel(task.instructions, task.input, c.req.raw.signal, { model: override, depth });
+            const { response, readings, emptyReason } = parseFieldAnswer({ value, providerLabel: config.aiModel.slice(0, 200), mock: false }, packet, intent);
+            return c.json({ ...response, presentation: { points: [...readings].map(([text, result]) => [text, result.focus.point]), ...(emptyReason ? { emptyReason } : {}) } });
+        }
         const intents = parseSemantics(await callModel(CORE_CONTRACT + '\n' + semanticInstructions(intent, packet.maxCandidates), { intent, context: { ...packet, contract: CORE_CONTRACT } }, c.req.raw.signal, { model: override, depth }), intent.kind);
         return c.json({ intents, providerLabel: config.aiModel.slice(0, 200), mock: false });
     });

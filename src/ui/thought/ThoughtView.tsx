@@ -1,6 +1,9 @@
+import { validProposition } from '../../core/proposition.ts';
+import { generatedReading } from './generatedReading.ts';
+import { isCompactReading } from '../../ai/readingFocus.ts';
 import { t } from '../../shared/i18n.ts';
 import { useLocale } from '../useLocale.ts';
-import { memo, useLayoutEffect, useRef, useState } from 'react';
+import { memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Ghost, Thought } from '../../core/model.ts';
 import { isAuthoredExample } from '../../core/demo.ts';
 import type { GeometryCache } from '../../field/spatial/index.ts';
@@ -8,6 +11,7 @@ import { thoughtSizeClass } from '../../field/spatial/collision.ts';
 import { hierarchyStyle } from '../../field/spatial/hierarchyDisclosure.ts';
 import type { Bounds } from '../../field/spatial/geometry.ts';
 import { semanticExcerpt } from '../../field/spatial/representation.ts';
+import { answerPreview } from '../../shared/answerPreview.ts';
 import { isQuestion } from '../workspace/response.ts';
 import { TransientTextPresence } from '../motion/TransientTextPresence.tsx';
 interface Props {
@@ -48,6 +52,9 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
     const wasEditing = useRef(false);
     const focusOnDraft = useRef(false);
     const [draft, setDraft] = useState(item.text);
+    const generated = generatedReading(item);
+    const readingFocus = useMemo(() => generated && validProposition(item.proposition, item.text)
+        ? { focus: { point: item.proposition.text } } : undefined, [item, generated]);
     const kind = 'kind' in item ? item.kind : 'ghost';
     const proposal = ghost && 'proposal' in item ? item.proposal : undefined;
     const proposalKind = ghost && 'proposalKind' in item ? item.proposalKind : undefined;
@@ -66,7 +73,7 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
         const observer = new ResizeObserver(() => measure());
         observer.observe(el);
         return () => observer.disconnect();
-    }, [item.id, item.text, editing, geometry, level, onMeasure]);
+    }, [item.id, item.text, readingFocus, editing, geometry, level, onMeasure]);
     useLayoutEffect(() => {
         const actions = localActions.current;
         if (!actions || !onActionsMeasure) return;
@@ -76,7 +83,7 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
         observer.observe(actions);
         if (ref.current) observer.observe(ref.current);
         return () => { observer.disconnect(); onActionsMeasure(item.id, null); };
-    }, [item.id, item.text, selected, editing, truncated, level, onActionsMeasure]);
+    }, [item.id, item.text, readingFocus, selected, editing, truncated, level, onActionsMeasure]);
     useLayoutEffect(() => {
         const entering = editing && !wasEditing.current;
         wasEditing.current = editing;
@@ -124,7 +131,12 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
     // Canonical wording fixes the width class throughout an edit. CSS also owns the semantic-zoom
     // compensation; a cached pre-mount world width must not override it for a new editor.
     const size = kind === 'thought' || kind === 'ghost' ? thoughtSizeClass(text) : undefined;
-    const short = semanticExcerpt(text, editing || find === 'current' ? 'local' : level, kind);
+    const compactOriginal = isCompactReading(text);
+    const focused = !compactOriginal && !!readingFocus;
+    const previewText = focused ? readingFocus.focus.point : generated && !compactOriginal ? answerPreview(text) : text;
+    const short = (focused || compactOriginal) && level === 'local' ? previewText : semanticExcerpt(previewText, editing || find === 'current' ? 'local' : level, kind);
+    // Reading is an explicit action, including a short original after Keep or a cache-clearing reload.
+    const canRead = generated || truncated || short !== text;
     useLayoutEffect(() => {
         if (!selected || editing || ghost || !localActions.current || !('showPopover' in localActions.current)) return;
         if (!localActions.current.matches(':popover-open')) {
@@ -132,11 +144,12 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
         }
     }, [selected, editing, ghost, item.id, truncated, short, level]);
 
-    return <article ref={ref} data-thought-id={item.id} data-kind={kind} data-depth={depth} data-depth-style={hierarchyStyle(depth ?? 0)} data-original-root={root || undefined} data-size={size} data-life={'life' in item ? item.life : 'active'} data-emphasis={emphasis} data-selected={selected} data-material-settling={settling || undefined} data-recalled={recalled} data-causal={'scopeIds' in item ? item.scopeIds.length ? 'true' : undefined : 'derivedFrom' in item && item.derivedFrom?.length ? 'true' : undefined} data-origin-scope={'scopeIds' in item ? item.scopeIds.join(' ') : 'derivedFrom' in item ? item.derivedFrom?.join(' ') : undefined} data-proposal-kind={proposalKind} data-proposal-action={proposalAction} data-generation-action={'generationAction' in item ? item.generationAction : undefined} className={`thought ${kind} ${editing ? 'editing' : ''} ${ghost ? 'ghost' : ''} ${recalled ? 'recall' : ''}`} data-find={find} style={{ transform: `translate(${item.x}px, ${item.y}px)` }} tabIndex={0} aria-label={`${t(kind)}: ${text || t('New thought')}`} aria-current={selected ? 'true' : undefined} onPointerEnter={() => onHover?.(item.id)} onPointerLeave={() => onHover?.(null)}>
+    return <article ref={ref} data-reading-focus={focused && level === 'local' || undefined} data-compact-original={compactOriginal && level === 'local' || undefined} data-thought-id={item.id} data-kind={kind} data-depth={depth} data-depth-style={hierarchyStyle(depth ?? 0)} data-original-root={root || undefined} data-size={size} data-life={'life' in item ? item.life : 'active'} data-emphasis={emphasis} data-selected={selected} data-material-settling={settling || undefined} data-recalled={recalled} data-causal={'scopeIds' in item ? item.scopeIds.length ? 'true' : undefined : 'derivedFrom' in item && item.derivedFrom?.length ? 'true' : undefined} data-origin-scope={'scopeIds' in item ? item.scopeIds.join(' ') : 'derivedFrom' in item ? item.derivedFrom?.join(' ') : undefined} data-proposal-kind={proposalKind} data-proposal-action={proposalAction} data-generation-action={'generationAction' in item ? item.generationAction : undefined} className={`thought ${kind} ${editing ? 'editing' : ''} ${ghost ? 'ghost' : ''} ${recalled ? 'recall' : ''}`} data-find={find} style={{ transform: `translate(${item.x}px, ${item.y}px)` }} tabIndex={0} aria-label={`${t(kind)}: ${text || t('New thought')}`} aria-current={selected ? 'true' : undefined} onPointerEnter={() => onHover?.(item.id)} onPointerLeave={() => onHover?.(null)}>
     {!editing && (level === 'local' || find === 'current' || editing) && (parentText !== undefined || hasChildren) && <div className="hierarchy-context" data-testid="hierarchy-context" title={parentText}>
         <span className="hierarchy-level">{depth ? t('Level {level}', { level: depth + 1 }) : t('Top level')}</span>
         {parentText !== undefined && <span className="hierarchy-parent">{t('Parent: {parent}', { parent: parentText })}</span>}
     </div>}
+   {!compactOriginal && level === 'local' && !editing && (focused || generated) && <span className="reading-focus-card-label">{t(focused ? 'Proposition · original preserved' : 'Original preview · not summarized')}</span>}
    <div ref={preview} className="thought-preview">{editing ? <textarea ref={input} aria-label={t('Edit thought')} value={draft} maxLength={20000} onChange={e => setDraft(e.target.value)} onBlur={save} onKeyDown={e => {
                 e.stopPropagation();
                 if (e.nativeEvent.isComposing || e.keyCode === 229)
@@ -154,9 +167,9 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
                 ? <TransientTextPresence phase={ghost ? 'ghost' : 'recall'}>{short || t('A thought, not yet in words...')}</TransientTextPresence>
                 : <p>{short || t('A thought, not yet in words...')}</p>}</div>
     {!editing && hasChildren && (collapsedCount > 0 || selected) && <button type="button" className="branch-expand" data-testid="branch-expand" aria-expanded={collapsedCount === 0} onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); onExpand?.(item.id); }}><span aria-hidden="true">{collapsedCount ? '▸ ' : '▾ '}</span>{collapsedCount ? t('Show {count} children', { count: collapsedCount }) : t('Collapse branch')}</button>}
-    {selected && !editing && (!ghost && kind === 'thought' || truncated || short !== text) && <div ref={localActions} className="thought-local-actions" popover={ghost ? undefined : 'manual'} onPointerDown={event => event.stopPropagation()}>
+    {selected && !editing && (!ghost && kind === 'thought' || canRead) && <div ref={localActions} className="thought-local-actions" popover={ghost ? undefined : 'manual'} onPointerDown={event => event.stopPropagation()}>
         {!ghost && kind === 'thought' && <button type="button" className="thought-respond" data-testid="thought-respond" onClick={event => { event.stopPropagation(); onRespond(item.id); }}>{t(isQuestion(item) ? 'Respond to this question' : 'Add my thoughts')}</button>}
-        {(truncated || short !== text) && <button type="button" className="thought-read" aria-haspopup="dialog" onClick={event => { event.stopPropagation(); onRead(item.id); }}>{t('Read full text')}</button>}
+        {canRead && <button type="button" className="thought-read" aria-haspopup="dialog" onClick={event => { event.stopPropagation(); onRead(item.id); }}>{t(generated ? 'Read original' : 'Read full text')}</button>}
     </div>}
     {selected && <span className="thought-selected-dot" aria-hidden="true"/>}
     {kind === 'source' && <span className="thought-meta">{t('Source')}</span>}

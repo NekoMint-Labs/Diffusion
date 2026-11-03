@@ -3,6 +3,7 @@ import type { Ghost, Thought } from '../../core/model.ts';
 import { t } from '../../shared/i18n.ts';
 import { Button } from '../primitives/Button.tsx';
 import { isComposing } from '../commands/shortcuts.ts';
+import { AnswerText } from '../thought/AnswerText.tsx';
 
 /** A bounded screen-space reading entry for pending results, including culled/offscreen ones.
  * Its sources come from each frozen request scope, never from the current selection. */
@@ -29,7 +30,7 @@ export function SuggestionReview({ suggestions, pending, thoughts, onAction, ope
             <div className="suggestion-review-list">
             {entries.map(ghost => <section key={ghost.id} data-suggestion-id={ghost.id} data-origin-scope={ghost.scopeIds.join(' ')} data-kept={!live.has(ghost.id) || undefined}>
                 <small>{live.has(ghost.id) ? t('AI suggestion · not kept') : t('Kept')}</small>
-                <p>{thoughts[ghost.id]?.text ?? ghost.text}</p>
+                {ghost.proposal ? <p>{thoughts[ghost.id]?.text ?? ghost.text}</p> : <AnswerText text={thoughts[ghost.id]?.text ?? ghost.text} />}
                 {ghost.scopeIds.length > 0 && <small>{t('From')}{': '}{ghost.scopeIds.map(id => thoughts[id]?.text ?? t('Missing thought')).join(' / ')}</small>}
                 {live.has(ghost.id) && <div><Button variant="ghost" size="sm" data-testid="suggestion-keep" onClick={() => { setSession(entries); closeButton.current?.focus({ preventScroll: true }); onAction([ghost.id], 'keep'); }}>{t('Keep this')}</Button><Button variant="ghost" size="sm" data-testid="suggestion-ignore" onClick={() => { closeButton.current?.focus({ preventScroll: true }); onAction([ghost.id], 'ignore'); }}>{t('Ignore')}</Button></div>}
             </section>)}

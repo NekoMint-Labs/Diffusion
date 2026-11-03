@@ -68,3 +68,25 @@ Ask answers keep their actual `ask` action and surviving causal `derivedFrom` ID
 Explicit Field context preserves selection as the subject and supplies up to four direct background parents, then at most two ancestors. Traversal follows only `derivedFrom`, at most four edges deep and 32 visited subject/node pairs, with at most four outgoing parents considered per node. Authored ancestors with a surviving Input identity (or plain authored roots without model/source provenance) take priority, nearest first; unknown/model material is fallback background. `authored` is an authorship hint, never a truth/endorsement flag.
 
 The six-thought local budget stays at 6400 characters. Each ancestor uses at most 800 characters, reserved before allocating the remaining budget evenly across direct background parents (each at most 1600). Optional `ancestry` paths record selected ID → direct parent → ancestor; they neither fetch omitted text nor expand source permissions. In-flight changes to supplied ancestor wording, existence or path edges invalidate the response. Current selected wording and explicit intent take priority; nearer user-authored redirection overrides an older goal. These are bounded prompt/context rules, not a guarantee of live-model quality. Frozen Threads and unselected Field context retain their existing contracts. No extra provider request is introduced.
+
+## Field response presentation
+
+Field Ask/Continue/Angle/Diffuse use the same `AIProvider.respond` entry as other
+thinking. Direct requests retain the user's selected depth via `field-answer`;
+the gateway continues to use `/api/respond` and shares the same Field
+instruction builder and parser. There is exactly one generation per action,
+with no summary repair or automatic second model request.
+
+An upstream Field answer may add optional `reading: { point }` to an answer or
+possibility. Full semantic validation precedes candidate-count limiting.
+Display points are validated independently, preserve explicit uncertainty, and
+never grant Core permissions. The normalized gateway response may add
+`presentation: { points: [[original, point]], emptyReason? }`; older responses
+without this field remain valid. Invalid optional presentation falls back to
+full original text. Runtime binds a point only after its normal cancellation,
+scope, permission and quality checks.
+
+Manual extraction is the separate explicit `field-reading` purpose with the
+existing representation-depth ceiling. The discarded Next `exploration-step`
+purpose is not accepted. No paid-model quality or real native credential
+acceptance follows from injected gateway tests.

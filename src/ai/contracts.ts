@@ -25,7 +25,7 @@ export const UNKNOWN_CAPABILITIES: ThinkingCapabilities = {
     depth: { supported: false, mode: 'none', levels: THINKING_DEPTHS },
 };
 
-export type StructuredPurpose = 'thought-extraction' | 'thought-extraction-recheck' | 'relation-inference' | 'ingestion-repair' | 'evidence-assessment';
+export type StructuredPurpose = 'thought-extraction' | 'thought-extraction-recheck' | 'relation-inference' | 'ingestion-repair' | 'evidence-assessment' | 'field-reading' | 'field-answer';
 export interface StructuredRequest {
     purpose: StructuredPurpose;
     instructions: string;
@@ -38,10 +38,14 @@ export interface StructuredResponse {
     model?: { requested: string; effective: string | null };
 }
 
+export interface ThinkingResponse extends AIResponse {
+    presentation?: { points: ReadonlyMap<string, string>; emptyReason?: string };
+}
+
 export interface AIProvider {
     readonly label: string;
     readonly mock: boolean;
-    respond(packet: ContextPacket, intent: UserIntent, signal?: AbortSignal): Promise<AIResponse>;
+    respond(packet: ContextPacket, intent: UserIntent, signal?: AbortSignal): Promise<ThinkingResponse>;
     /** A bounded product-owned structured task. Its Zod contract lives with the task, not in SemanticIntent. */
     structured(request: StructuredRequest, signal?: AbortSignal): Promise<StructuredResponse>;
     /** Optional native progressive path. Semantic events must represent complete provider data, never partial JSON guesses. */

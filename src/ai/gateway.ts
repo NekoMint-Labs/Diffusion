@@ -1,5 +1,6 @@
+import type { ThinkingResponse } from './contracts.ts';
 import { boundedJSON } from '../shared/http.ts';
-import { UNKNOWN_CAPABILITIES, type AIProvider, type AIResponse, type ContextPacket, type GatewayConfig, type ThinkingCapabilities, type UserIntent, type StructuredRequest, type StructuredResponse } from './contracts.ts';
+import { UNKNOWN_CAPABILITIES, type AIProvider, type ContextPacket, type GatewayConfig, type ThinkingCapabilities, type UserIntent, type StructuredRequest, type StructuredResponse } from './contracts.ts';
 import { capabilitiesSchema, responseSchema, structuredResponseSchema } from './schemas.ts';
 import { structuredDepth } from './providers.ts';
 export function gatewayURL(config: GatewayConfig, path: string): string {
@@ -39,9 +40,9 @@ export class GatewayAIProvider implements AIProvider {
     }
     async structured(task: StructuredRequest, signal?: AbortSignal): Promise<StructuredResponse> {
         const model = this.config.model ?? '';
-        // The same bound the direct path applies: a bounded structured task never inherits the
-        // deepest setting, whichever end of the connection turns it into a provider parameter.
-        const depth = structuredDepth(this.config.depth ?? 'auto');
+        // Match the direct path: a complete Field answer keeps the selected thinking depth,
+        // while representation-only tasks retain their existing ceiling.
+        const depth = task.purpose === 'field-answer' ? this.config.depth ?? 'auto' : structuredDepth(this.config.depth ?? 'auto');
         const override = model && (await this.capabilities(signal)).allowModelOverride ? model : '';
         const response = await fetch(gatewayURL(this.config, '/api/structured'), { method: 'POST', headers: { 'Content-Type': 'application/json', ...(this.config.token ? { Authorization: `Bearer ${this.config.token}` } : {}) }, body: JSON.stringify({ ...task, depth, ...(override ? { model: override } : {}) }), signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(45000)]) : AbortSignal.timeout(45000) });
         const data = structuredResponseSchema.parse(await boundedJSON(response));
@@ -49,7 +50,7 @@ export class GatewayAIProvider implements AIProvider {
             throw new Error('Structured response is missing value');
         return { ...data, value: data.value, providerLabel: data.providerLabel || this.label };
     }
-    async respond(packet: ContextPacket, intent: UserIntent, signal?: AbortSignal): Promise<AIResponse> {
+    async respond(packet: ContextPacket, intent: UserIntent, signal?: AbortSignal): Promise<ThinkingResponse> {
         const model = this.config.model ?? '';
         const depth = this.config.depth ?? 'auto';
         // The gateway is the authority on whether an override is allowed; this only avoids sending
@@ -57,6 +58,7 @@ export class GatewayAIProvider implements AIProvider {
         const override = model && (await this.capabilities(signal)).allowModelOverride ? model : '';
         const response = await fetch(gatewayURL(this.config, '/api/respond'), { method: 'POST', headers: { 'Content-Type': 'application/json', ...(this.config.token ? { Authorization: `Bearer ${this.config.token}` } : {}) }, body: JSON.stringify({ packet, intent, depth, ...(override ? { model: override } : {}) }), signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(45000)]) : AbortSignal.timeout(45000) });
         const data = responseSchema.parse(await boundedJSON(response));
-        return { ...data, mock: data.mock, providerLabel: data.providerLabel || this.label };
+        const { presentation, ...semantic } = data;
+        return { ...semantic, ...(presentation ? { presentation: { ...presentation, points: new Map(presentation.points) } } : {}), mock: data.mock, providerLabel: data.providerLabel || this.label };
     }
 }

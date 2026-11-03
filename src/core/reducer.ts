@@ -1,3 +1,4 @@
+import { validProposition } from './proposition.ts';
 import { DomainError } from './errors.ts';
 export { DomainError } from './errors.ts';
 import { validateSourceRecord } from './validation.ts';
@@ -11,6 +12,8 @@ const textLimit = 20000;
 function finite(n: number): boolean { return Number.isFinite(n) && Math.abs(n) <= 1e7; }
 function validateThought(t: Thought): void {
     if (t.organizingParentId !== undefined && t.organizingParentId !== null && (typeof t.organizingParentId !== 'string' || !t.organizingParentId || t.organizingParentId.length > 200 || t.organizingParentId === t.id || ['__proto__', 'constructor', 'prototype'].includes(t.organizingParentId))) throw new DomainError('Invalid organizing parent');
+    if (t.proposition !== undefined && !validProposition(t.proposition, t.text)) throw new DomainError('Invalid proposition');
+    if (t.generatedBy !== undefined && t.generatedBy !== 'ai') throw new DomainError('Invalid generation origin');
     const lineage = t.derivedFrom;
     const lineageValid = lineage === undefined || Array.isArray(lineage) && lineage.length > 0 && lineage.length <= 32 && lineage.every(parentId => typeof parentId === 'string' && !!parentId && parentId.length <= 200 && parentId !== t.id) && new Set(lineage).size === lineage.length;
     const actionValid = lineage === undefined
@@ -80,8 +83,16 @@ export function reduceProject(state: ProjectState, event: DomainEvent): ProjectS
                 throw new DomainError('Thought is too long');
             if (get(event.id).kind === 'source')
                 throw new DomainError('Source excerpts are not editable thoughts');
-            update(event.id, { text: event.text, life: 'active', attentionDebt: 0, touchedAt: event.at });
+            update(event.id, { proposition: undefined, text: event.text, life: 'active', attentionDebt: 0, touchedAt: event.at });
             summary = `Reframed: ${event.text.slice(0, 500)}`;
+            affected = [event.id];
+            break;
+        }
+        case 'thought.proposition': {
+            const thought = get(event.id);
+            if (thought.kind !== 'thought' || !validProposition(event.proposition, thought.text)) throw new DomainError('Proposition no longer matches the original');
+            update(event.id, { proposition: event.proposition });
+            summary = 'Chose a card proposition; original preserved';
             affected = [event.id];
             break;
         }
@@ -155,7 +166,7 @@ export function reduceProject(state: ProjectState, event: DomainEvent): ProjectS
         case 'crystal.form': {
             if (get(event.id).kind !== 'thought' || !event.text.trim())
                 throw new DomainError('Select a thought and confirm its wording');
-            update(event.id, { kind: 'crystal', text: event.text, kept: true, life: 'active', attentionDebt: 0, touchedAt: event.at });
+            update(event.id, { kind: 'crystal', proposition: undefined, text: event.text, kept: true, life: 'active', attentionDebt: 0, touchedAt: event.at });
             summary = `Committed to a Crystal: ${event.text.slice(0, 500)}`;
             affected = [event.id];
             break;

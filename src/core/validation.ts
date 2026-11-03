@@ -1,3 +1,4 @@
+import { validProposition } from './proposition.ts';
 import { id, type ProjectState, type SourceRecord } from './model.ts';
 import { DomainError } from './errors.ts';
 type Dict = Record<string, unknown>;
@@ -148,6 +149,7 @@ export function validateProject(value: unknown): ProjectState {
         if (t.id !== k)
             fail('thought identity mismatch');
         text(t.text, 'thought text');
+        if (t.generatedBy !== undefined) choices(t.generatedBy, ['ai'], 'generation origin');
         number(t.x, 'thought x');
         number(t.y, 'thought y');
         choices(t.kind, ['thought', 'crystal', 'source'], 'thought kind');
@@ -279,7 +281,16 @@ export function validateProject(value: unknown): ProjectState {
             for (const v of Object.values(map(f.baseKinds, 'base kinds', 20000)))
                 choices(v, ['thought', 'crystal', 'source'], 'base kind');
     }
-    return p as unknown as ProjectState;
+    const project = p as unknown as ProjectState;
+    let thoughtsCopy: ProjectState['thoughts'] | undefined;
+    for (const [key, thought] of Object.entries(project.thoughts)) {
+        if (thought.proposition !== undefined && !validProposition(thought.proposition, thought.text)) {
+            thoughtsCopy ??= { ...project.thoughts };
+            const { proposition: _invalid, ...original } = thought;
+            thoughtsCopy[key] = original;
+        }
+    }
+    return thoughtsCopy ? { ...project, thoughts: thoughtsCopy } : project;
 }
 export function parseProjectExport(textValue: string): ProjectState {
     if (textValue.length > 10 * 1024 * 1024)

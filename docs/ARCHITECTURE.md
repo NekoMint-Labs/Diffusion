@@ -53,8 +53,8 @@ The EN/ZH dictionary is small and reactive. User text, fetched passages and mode
 
 ## Reading and authored responses
 
-Selecting a bounded Thought reveals read-only full-text disclosure through the existing anchored
-Surface. Selected read/respond controls have a separate measured UI footprint for Hub placement;
+Explicit Read opens full-text disclosure in the fixed Field reader; selection alone does not
+open it. Selected read/respond controls have a separate measured UI footprint for Hub placement;
 they never resize a Thought or enter collision, lasso, or canonical geometry. This does not edit,
 claim, or rewrite the material. A person's explicit response creates an
 InputRecord and a separate canonical Thought using the existing continuation lineage; it never

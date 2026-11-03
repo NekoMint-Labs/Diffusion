@@ -131,11 +131,11 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
     // Canonical wording fixes the width class throughout an edit. CSS also owns the semantic-zoom
     // compensation; a cached pre-mount world width must not override it for a new editor.
     const size = kind === 'thought' || kind === 'ghost' ? thoughtSizeClass(text) : undefined;
-    const compactOriginal = isCompactReading(text);
+    const compactOriginal = generated && isCompactReading(text);
     const focused = !compactOriginal && !!readingFocus;
     const previewText = focused ? readingFocus.focus.point : generated && !compactOriginal ? answerPreview(text) : text;
     const short = (focused || compactOriginal) && level === 'local' ? previewText : semanticExcerpt(previewText, editing || find === 'current' ? 'local' : level, kind);
-    // Reading is an explicit action, including a short original after Keep or a cache-clearing reload.
+    // Reading is an explicit action, including a short original after Keep or a reload.
     const canRead = generated || truncated || short !== text;
     useLayoutEffect(() => {
         if (!selected || editing || ghost || !localActions.current || !('showPopover' in localActions.current)) return;

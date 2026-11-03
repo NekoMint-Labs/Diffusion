@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { fieldAnswerRequest, parseFieldAnswer } from '../../src/ai/readingResponse.ts';
+import { test, expect, type Page, type Route } from '@playwright/test';
 import type { ContextPacket } from '../../src/core/semantics.ts';
 import { createProject, makeThought, type ProjectState } from '../../src/core/model.ts';
 import { parseProjectExport, recoveredProject } from '../../src/core/validation.ts';
@@ -14,7 +15,13 @@ async function saved(page: Page): Promise<ProjectState> {
         opening.onsuccess = () => { const db = opening.result; const read = db.transaction('projects').objectStore('projects').get('main'); read.onsuccess = () => { db.close(); resolve(read.result); }; read.onerror = () => { db.close(); reject(read.error); }; };
     }));
 }
-async function boot(page: Page, theme: 'light' | 'dark' = 'light', text = answer, reading: unknown = { point }, _propositions = false, action: 'continue' | 'diffuse' = 'continue') {
+async function replyField(route: Route, value: unknown, label = 'Injected generation fixture, not live') {
+    const { packet, intent } = route.request().postDataJSON();
+    const parsed = parseFieldAnswer({ value, providerLabel: label, mock: false }, packet, intent);
+    await route.fulfill({ json: { ...parsed.response, presentation: { points: [...parsed.readings].map(([text, result]) => [text, result.focus.point]), ...(parsed.emptyReason ? { emptyReason: parsed.emptyReason } : {}) } } });
+    return fieldAnswerRequest(packet, intent).input;
+}
+async function boot(page: Page, theme: 'light' | 'dark' = 'light', text = answer, reading: unknown = { point }, action: 'continue' | 'diffuse' = 'continue') {
     const calls = { primary: 0, manual: 0, respond: 0 };
     const contexts: ContextPacket[] = [];
     await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: theme });
@@ -32,8 +39,7 @@ async function boot(page: Page, theme: 'light' | 'dark' = 'light', text = answer
         const input = route.request().postDataJSON();
         calls.primary++; contexts.push(input.packet);
         if (action === 'diffuse' && input.intent.kind === 'angle') return route.fulfill({ json: { intents: [], mock: false, providerLabel: 'Injected warmup fixture, not live' } });
-        const valid = !!reading && typeof reading === 'object' && 'point' in reading && typeof reading.point === 'string' && Array.from(reading.point).length <= 120;
-        return route.fulfill({ json: { intents: [{ type: 'surface_possibility', text }], presentation: { points: valid ? [[text, reading.point]] : [] }, mock: false, providerLabel: 'Injected generation fixture, not live' } });
+        return replyField(route, { intents: [{ type: 'surface_possibility', text, ...(reading === null ? {} : { reading }) }] });
     });
     await page.goto('/?locale=zh'); await expect(page.getByTestId('field')).toBeVisible();
     const project = createProject('main', '重点原界面试用，人工注入模型响应');
@@ -177,11 +183,13 @@ for (const theme of ['light', 'dark'] as const) test('saved correction survives 
     await page.reload();
     let calls = 0;
     const requests: { context: ContextPacket; guidance: { candidateLimit: number; branches: { selectedId: string; authored: { id: string; distance: number }[] }[] } }[] = [];
-    await page.unroute('**/api/structured');
+    await page.unroute('**/api/respond');
     const revised = '改为两小时的考前复习后，可以先观察一道练习的复盘过程；这仍需学生同意，不接触私人资料，原先的真实作业观察建议需重新考虑。';
-    await page.route('**/api/structured', route => {
-        calls++; requests.push(route.request().postDataJSON().input);
-        return route.fulfill({ json: { value: { intents: [revised, '备用方向二。', '备用方向三。'].map(text => ({ type: 'surface_possibility', text })) }, mock: false, providerLabel: 'Correction fixture, not live' } });
+    await page.route('**/api/respond', async route => {
+        calls++;
+        const { packet, intent } = route.request().postDataJSON();
+        requests.push(fieldAnswerRequest(packet, intent).input);
+        await replyField(route, { intents: [revised, '备用方向二。', '备用方向三。'].map(text => ({ type: 'surface_possibility', text })) }, 'Correction fixture, not live');
     });
     await page.locator('[data-thought-id="' + correctionId + '"]').click();
     await page.getByTestId('scope-continue').click(); await page.getByTestId('action-preview-run').click();
@@ -211,8 +219,8 @@ test('an empty next step explains why it stopped and preserves kept material', a
     const keptId = (await ghost.getAttribute('data-thought-id'))!;
     await ghost.click(); await page.getByTestId('ai-proposal-keep').click();
     let calls = 0; const reason = '还缺少学生实际遇到的问题，继续展开会重复当前建议。';
-    await page.unroute('**/api/structured');
-    await page.route('**/api/structured', route => { calls++; return route.fulfill({ json: { value: { intents: [], pause: { reason } }, mock: false, providerLabel: 'Empty fixture, not live' } }); });
+    await page.unroute('**/api/respond');
+    await page.route('**/api/respond', route => { calls++; return replyField(route, { intents: [], pause: { reason } }, 'Empty fixture, not live'); });
     await page.locator('[data-thought-id="' + keptId + '"]').click();
     await page.getByTestId('scope-continue').click(); await page.getByTestId('action-preview-run').click();
     const notice = page.locator('.notice[role="status"]');
@@ -222,8 +230,8 @@ test('an empty next step explains why it stopped and preserves kept material', a
     expect((await saved(page)).thoughts[keptId].text).toBe(answer); expect(calls).toBe(1);
 });
 
-for (const theme of ['light', 'dark'] as const) test('proposition trial persists the original/point pair and yields its fixed reader to a drag: ' + theme, async ({ page }, info) => {
-    const { ghost, calls } = await boot(page, theme, answer, { point }, true);
+for (const theme of ['light', 'dark'] as const) test('Field propositions persist the original/point pair and yields its fixed reader to a drag: ' + theme, async ({ page }, info) => {
+    const { ghost, calls } = await boot(page, theme, answer, { point });
     const id = (await ghost.getAttribute('data-thought-id'))!;
     await ghost.click(); await page.getByTestId('ai-proposal-keep').click();
     await expect.poll(async () => (await saved(page)).thoughts[id]?.proposition?.text).toBe(point);
@@ -261,7 +269,7 @@ for (const theme of ['light', 'dark'] as const) test('proposition trial persists
     await page.screenshot({ path: info.outputPath('fixed-proposition-reader-' + theme + '.png') });
 });
 test('reader pan/wheel dismissal preserves the new view and does not reopen on release', async ({ page }) => {
-    const { ghost } = await boot(page, 'light', answer, { point }, true);
+    const { ghost } = await boot(page, 'light', answer, { point });
     await read(page);
     const reader = page.getByTestId('proposition-reader');
     const world = page.locator('.world'); const before = await world.getAttribute('style');
@@ -276,7 +284,7 @@ test('reader pan/wheel dismissal preserves the new view and does not reopen on r
     await expect(reader).toHaveCount(0); await expect(world).not.toHaveAttribute('style', moved!);
 });
 test('narrow fixed reader scrolls internally and returns to the same view; IME Escape does not close it', async ({ page }, info) => {
-    const { calls } = await boot(page, 'dark', answer, { point }, true);
+    const { calls } = await boot(page, 'dark', answer, { point });
     await read(page); const reader = page.getByTestId('proposition-reader');
     await page.setViewportSize({ width: 390, height: 844 });
     const camera = await page.locator('.world').getAttribute('style');
@@ -294,7 +302,7 @@ test('narrow fixed reader scrolls internally and returns to the same view; IME E
     expect(calls).toEqual({ primary: 1, manual: 0, respond: 0 });
 });
 test('manual point survives Keep and reload, while a later user edit removes it', async ({ page }) => {
-    const { ghost, calls } = await boot(page, 'light', answer, null, true);
+    const { ghost, calls } = await boot(page, 'light', answer, null);
     const id = (await ghost.getAttribute('data-thought-id'))!;
     const reader = await read(page);
     await reader.getByTestId('reading-focus-run').click();
@@ -311,7 +319,7 @@ test('manual point survives Keep and reload, while a later user edit removes it'
 });
 
 for (const suppliedPoint of [true, false]) test('ordinary Diffuse keeps reading eligibility through Keep and JSON recovery: point=' + suppliedPoint, async ({ page }) => {
-    const { ghost, calls } = await boot(page, 'light', answer, suppliedPoint ? { point } : null, true, 'diffuse');
+    const { ghost, calls } = await boot(page, 'light', answer, suppliedPoint ? { point } : null, 'diffuse');
     const id = (await ghost.getAttribute('data-thought-id'))!;
     await ghost.click(); await page.getByTestId('ai-proposal-keep').click();
     const kept = page.locator('[data-thought-id="' + id + '"]');
@@ -346,7 +354,7 @@ for (const suppliedPoint of [true, false]) test('ordinary Diffuse keeps reading 
 });
 
 test('selecting another card yields the reader without stealing the new selection or starting another request', async ({ page }) => {
-    const { ghost, calls } = await boot(page, 'light', answer, { point }, true);
+    const { ghost, calls } = await boot(page, 'light', answer, { point });
     await read(page);
     await page.locator('[data-thought-id="question"]').click();
     await expect(page.getByTestId('proposition-reader')).toHaveCount(0);
@@ -358,7 +366,7 @@ test('selecting another card yields the reader without stealing the new selectio
 });
 
 test('hand-written canvas text stays original through Fork, reload, Bring and JSON recovery', async ({ page }) => {
-    const { ghost, calls } = await boot(page, 'light', answer, { point }, true);
+    const { ghost, calls } = await boot(page, 'light', answer, { point });
     await ghost.click(); await page.getByTestId('ai-proposal-ignore').click();
     const manualText = '这是我在画布上亲手写的长想法，必须保留我的全部措辞，不应被当成模型建议。'.repeat(5);
     await page.getByTestId('field').dblclick({ position: { x: 120, y: 540 } });
@@ -378,7 +386,7 @@ test('hand-written canvas text stays original through Fork, reload, Bring and JS
         const card = page.locator('article.thought').filter({ hasText: text });
         await expect(card.locator('.thought-preview')).toHaveText(text);
         await expect(card.locator('.reading-focus-card-label')).toHaveCount(0);
-        await card.click(); await card.getByRole('button', { name: '阅读原文', exact: true }).click();
+        await card.click(); await card.getByRole('button', { name: '阅读全文', exact: true }).click();
         await expect(page.getByTestId('reading-original')).toHaveText(text);
         await expect(page.getByTestId('reading-focus-run')).toHaveCount(0);
         await page.getByTestId('proposition-reader').locator('.surface-close').click();
@@ -405,7 +413,7 @@ test('hand-written canvas text stays original through Fork, reload, Bring and JS
 });
 
 test('a pending Ghost can be dragged out of reading without accepting it or losing its original', async ({ page }) => {
-    const { ghost, calls } = await boot(page, 'light', answer, { point }, true);
+    const { ghost, calls } = await boot(page, 'light', answer, { point });
     const id = (await ghost.getAttribute('data-thought-id'))!;
     const before = (await ghost.boundingBox())!; const camera = await page.locator('.world').getAttribute('style');
     await read(page);

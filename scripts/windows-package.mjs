@@ -14,6 +14,20 @@ const profiles = {
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const sha256 = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 
+export function releaseVersion(root) {
+    const version = readJson(path.join(root, 'package.json')).version;
+    const tauri = readJson(path.join(root, 'src-tauri/tauri.conf.json')).version;
+    const cargo = fs.readFileSync(path.join(root, 'src-tauri/Cargo.toml'), 'utf8')
+        .match(/\[package\][\s\S]*?^version\s*=\s*"([^"]+)"/m)?.[1];
+    const locked = fs.readFileSync(path.join(root, 'src-tauri/Cargo.lock'), 'utf8')
+        .match(/\[\[package\]\]\r?\nname = "diffusion-explorer"\r?\nversion = "([^"]+)"/)?.[1];
+    if (typeof version !== 'string' || !/^\d+\.\d+\.\d+$/.test(version)
+        || [tauri, cargo, locked].some(value => value !== version)) {
+        throw new Error('Release versions must agree in package.json, Tauri, Cargo.toml and Cargo.lock');
+    }
+    return version;
+}
+
 export function selectProfile(root, eventName, requestedProfile = 'stable') {
     let profile = requestedProfile || 'stable';
     if (eventName === 'pull_request') {
@@ -29,6 +43,7 @@ export function selectProfile(root, eventName, requestedProfile = 'stable') {
 
 export function resolveProfile(root, profile) {
     if (typeof profile !== 'string' || !Object.hasOwn(profiles, profile)) throw new Error('Unknown Windows package profile');
+    const version = releaseVersion(root);
     const fixed = profiles[profile];
     const basePath = 'src-tauri/tauri.conf.json';
     const base = readJson(path.join(root, basePath));
@@ -38,6 +53,10 @@ export function resolveProfile(root, profile) {
     if (config.identifier !== fixed.identifier || config.productName !== fixed.productName || entryPoint !== fixed.entryPoint) {
         throw new Error('Package identity or entry point does not match the selected profile');
     }
+    if (config.version !== version) throw new Error('Package profile must inherit the release version');
+    if (profile === 'stable' && (config.mainBinaryName ?? 'diffusion-explorer') !== 'diffusion-explorer') {
+        throw new Error('Stable executable does not match the selected profile');
+    }
     if (profile !== 'stable') {
         const binary = profile === 'free-links' ? 'diffusion-free-links' : 'diffusion-preview';
         if (config.mainBinaryName !== binary || config.bundle?.windows?.nsis?.installMode !== 'currentUser') {
@@ -45,7 +64,7 @@ export function resolveProfile(root, profile) {
         }
     }
     return {
-        profile, configPath: fixed.config || basePath, overrideConfig: fixed.config,
+        profile, version, configPath: fixed.config || basePath, overrideConfig: fixed.config,
         appIdentifier: config.identifier, productName: config.productName, entryPoint,
         configs: [basePath, ...(fixed.config ? [fixed.config] : [])].map(file => ({ path: file, sha256: sha256(fs.readFileSync(path.join(root, file))) })),
     };
@@ -68,13 +87,16 @@ export function recordPackage(root, plan, sourceCommit, run = null) {
         if (!bytes.length) throw new Error('NSIS installer is empty');
         return { name, bytes: bytes.length, sha256: sha256(bytes) };
     });
+    const notesPath = plan.profile === 'stable' ? 'docs/WINDOWS_INSTALL.md' : 'docs/WINDOWS_PREVIEW.md';
+    const notes = fs.readFileSync(path.join(root, notesPath));
     const receipt = {
         sourceCommit, ...plan, preview: plan.profile !== 'stable', run, platform: process.platform, architecture: process.arch, installers,
+        installationNotes: { path: notesPath, sha256: sha256(notes) },
         acceptance: { packaging: 'passed', installedWindows: 'not-run', feature: 'not-run', liveModel: 'not-run' },
     };
     fs.writeFileSync(path.join(bundle, 'SHA256SUMS.txt'), installers.map(item => `${item.sha256}  ${item.name}\n`).join(''));
     fs.writeFileSync(path.join(bundle, 'source.json'), JSON.stringify(receipt, null, 2) + '\n');
-    fs.copyFileSync(path.join(root, 'docs/WINDOWS_PREVIEW.md'), path.join(bundle, 'INSTALL.md'));
+    fs.writeFileSync(path.join(bundle, 'INSTALL.md'), notes);
     return receipt;
 }
 

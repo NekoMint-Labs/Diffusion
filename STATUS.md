@@ -1,63 +1,57 @@
 # Diffusion — current status
 
-## Repository baseline — October 26, 2026
+## Release preparation — November 4, 2026
 
-The cleanup was originally based on main `59f1e28c24d9965b756b3a6988bae7635def0f9b` and is now
-synchronized with `e0097df20c2f7dc2a1983a0b56c4565e4f9e0291`, including merged #71, #72, #73, #78 and #79.
-Source manifests declare `0.3.16`. GitHub published
-[v0.3.16 stable](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16)
-on October 16, 2026, without a pre-release flag. This records publication status; this cleanup
-does not rebuild or requalify that installer. The newer
-[#78/#79 Windows preview](https://github.com/NekoMint-Labs/Diffusion/releases/tag/pr78-79-preview-20261026-882a1a7)
-was published on October 26 from `882a1a7`; it does not contain the subsequent #72/#73 changes.
-The subsequent merged #71/#72/#73 changes still need a newly built and qualified installation package.
+Main includes [Field consolidation #96](https://github.com/NekoMint-Labs/Diffusion/pull/96),
+merge commit `5b6be7dbbdc5747c435d886cf9dba0ed2ecaf14e`. This focused follow-up
+prepares source version **0.3.17** for final review and Windows acceptance under
+[issue #97](https://github.com/NekoMint-Labs/Diffusion/issues/97).
 
-[Field acceptance #11](https://github.com/NekoMint-Labs/Diffusion/issues/11) and
-[Windows / real-task acceptance #12](https://github.com/NekoMint-Labs/Diffusion/issues/12)
-were closed as completed on October 15. The previous status and acceptance journals are preserved
-unchanged in the [history index](docs/history/README.md), including their original failures,
-unverified items and then-current issue states.
+**v0.3.17 is not published.** The latest published stable remains
+[v0.3.16](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16), October 16,
+2026. Internal Preview builds are not the intended stable deliverable.
 
-## Scope of this baseline
+The [previous status](docs/history/checkpoints/STATUS_BEFORE_V0_3_17_2026_11_04.md)
+is retained unchanged as a dated record. Its candidate states and test results
+must not be treated as current release acceptance.
 
-- Remove unused helpers, an unused evidence adapter and relation-glyph table, obsolete motion
-  aliases, unused CSS/localization entries, and dead Python provider interfaces.
-- Enforce unused TypeScript locals/parameters in the normal typecheck; run Python discovery and
-  source-export tests in a separate CI job.
-- Repair source checking on Windows and exclude generated evidence/build trees. Make appearance
-  captures independent of a private local image; archive the obsolete visual-capture script.
-- Export source snapshots from Git's tracked-file list and current working-tree contents, with
-  version-derived names and the existing integrity/restore proofs.
-- Separate current documentation from dated delivery journals. No dependencies or data schemas
-  are changed by this cleanup.
+## Included source and preparation
 
-The audit covered application/Core/Field/UI/storage/provider/discovery code, native and Python
-boundaries, maintenance scripts, workflows, and current documentation. Only confirmed unused
-code and demonstrated tooling defects were changed. Compatibility interfaces, migrations,
-third-party notices and historical evidence remain.
+- Existing Field: optional compact points plus full originals, fixed reading,
+  explicit Keep/Ignore/Fork/Bring, durable provenance and edit invalidation,
+  persistence/JSON recovery, Undo/Redo and Bring clearance.
+- One provider response entry and independent `field-reading` extraction;
+  120-character opening guidance is scoped to Field, not Thread/Deep Dive.
+- Historical AI origin is preserved after a user edit; current wording is
+  marked as edited. Handwritten Fork/Bring remains handwritten.
+- Release manifests agree on 0.3.17. Stable packaging retains the stable app,
+  data and credential identity and includes stable installation instructions.
+  PR builds still use isolated Preview. No schema migration or feature expansion.
 
-## Verification
+The standalone Next workflow and plain-answer experiment are excluded. Free
+Links [#94](https://github.com/NekoMint-Labs/Diffusion/pull/94) remains a separate
+Draft; issues #75/#76 remain deferred. Superseded stacked PRs close without being
+merged. [Historical closeout recommendations](docs/releases/v0.3.17-closeout.md)
+preserve useful material from #84–#86 and earlier B experiments.
 
-Commands and layer boundaries are documented in [TESTING.md](docs/TESTING.md).
-This branch's local results and exact-head CI links are recorded in its pull request.
-The required gates are application/Core types, locales, offline contracts, unit tests, production
-build, Python discovery/tooling tests, and the full production-browser suite.
+## Verification and remaining release blockers
 
-TypeScript now rejects unused locals and parameters. This is not an exhaustive dead-export or
-CSS usage detector; dynamically constructed references still require review. The Vite main-chunk
-size warning remains visible.
+Exact final-commit commands, results, CI links and package receipt/checksum belong
+in the release-preparation PR and #97. Do not reuse #96 or historical branch test
+counts as proof for a changed release-preparation commit. Verification commands
+and their scope are in [TESTING.md](docs/TESTING.md).
 
-## Separate changes and acceptance limits
+1. Final-commit CI, full production E2E, native tests and Windows packaging must
+   pass. A successful build is not actual installation or feature acceptance.
+2. The exact stable-identity candidate needs Windows install/upgrade acceptance:
+   retained Fields and credentials, restart, JSON recovery, reading/Keep,
+   Fork/Bring, Undo/Redo, Chinese IME and a bounded live-provider workflow. The
+   generated receipt leaves installed/feature/liveModel as `not-run`.
+3. Final review, separate merge approval, a rebuild from final main and separate
+   publication approval remain required. No release or stable qualification is
+   implied by source version numbers or Ready for Review.
 
-At this checkpoint, [PR #71](https://github.com/NekoMint-Labs/Diffusion/pull/71) (Field deletion),
-[PR #72](https://github.com/NekoMint-Labs/Diffusion/pull/72)
-(Undo for an unkept generation) and [PR #73](https://github.com/NekoMint-Labs/Diffusion/pull/73)
-(native discovery arguments and Python retrieval defaults) are merged into main and inherited
-through this synchronization; their behavior changes are not introduced by the cleanup diff.
-[PR #77](https://github.com/NekoMint-Labs/Diffusion/pull/77) and its stacked answer-preview
-[PR #80](https://github.com/NekoMint-Labs/Diffusion/pull/80) remain separate review work.
-
-This pass uses fixture data and does not exercise stored credentials, live providers, a packaged
-sidecar, installation/upgrade, physical input, or long-session native use. Issue closure and a
-published stable label do not make this branch's browser/unit checks evidence for those paths.
-See the [acceptance map](docs/ACCEPTANCE_MAP.md) for the relevant verification layers.
+Historical semantic limitations, earlier upgrade/search reports, large-bundle
+warnings and untested physical-input/DPI/long-session paths remain visible; this
+preparation does not claim to solve them. See the [draft release notes](docs/releases/v0.3.17.md)
+and [Windows acceptance checklist](docs/WINDOWS_INSTALL.md).

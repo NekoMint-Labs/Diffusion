@@ -21,8 +21,10 @@ thinking, proximity Probe and Core authority remain in place.
 
 Excluded: `src/next/**`, Next route/startup scripts, separate Next sessions and
 storage, `experiments/**`, historical model outputs from #84/#89–#93, and Free
-Links #94 implementation. Those remain available on their original branches;
-no experimental PR is closed or treated as merged by this integration.
+Links #94 implementation. Those remain available on their original branches.
+The integration itself did not close or merge experimental PRs; subsequent
+[#97 closeout](releases/v0.3.17-closeout.md) closes superseded PRs without merging
+their stacks and preserves useful historical evidence.
 
 Deterministic acceptance covers one-call generation and gateway compatibility,
 full-original preservation, optional metadata fallback, legacy projects,
@@ -31,4 +33,5 @@ stale results, reader focus/gesture behavior and packaging contracts. Browser
 checks use injected models and disposable profiles. Installed Windows,
 physical-input/DPI, real native credential operations and live model quality
 require separate evidence tied to the exact package; packaging alone does not
-complete them. See [Windows instructions](WINDOWS_PREVIEW.md).
+complete them. See [stable Windows acceptance](WINDOWS_INSTALL.md) or, for
+internal isolated builds only, [Preview instructions](WINDOWS_PREVIEW.md).

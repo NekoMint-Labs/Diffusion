@@ -386,7 +386,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
   {ui.surface === 'action-preview' && actionPreview && <ActionPreviewSurface action={actionPreview.action} anchor={ui.anchor ?? undefined} allowSources={true} allowWeb={actionPreview.action === 'angle' && !!evidence} onRun={options => void runPreviewAction(actionPreview, options)} onClose={() => { setActionPreview(null); surfaces.closeSurface(false); }}/>}
   {ui.surface === 'organize' && organizeScope.length >= 3 && <OrganizeSurface controller={controller} runtime={runtime} scopeIds={organizeScope} anchor={ui.anchor ?? undefined} onClose={() => { setOrganizeScope([]); surfaces.closeSurface(false); }}/>}
 
-  {ui.surface === 'thought-reader' && readingThought && <ThoughtReader allowExtraction={generatedReading(readingThought)} projectId={project.id} proposition={readingThought.proposition} providerLabel={readingThought.origin?.note} onExtracted={result => {
+  {ui.surface === 'thought-reader' && readingThought && <ThoughtReader editedAIOrigin={'generatedBy' in readingThought && readingThought.generatedBy === 'ai' && readingThought.userEdited === true} allowExtraction={generatedReading(readingThought)} projectId={project.id} proposition={readingThought.proposition} providerLabel={readingThought.origin?.note} onExtracted={result => {
       if (!readingThoughtId) return;
       const record = bindProposition(result.focus.point, readingThought.text); if (!record) return;
       const current = controller.getSnapshot();

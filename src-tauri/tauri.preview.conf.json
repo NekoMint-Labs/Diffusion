@@ -7,7 +7,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Diffusion Preview — Next trial",
+        "title": "Diffusion Preview",
         "url": "index.html?locale=zh",
         "width": 1440,
         "height": 960,

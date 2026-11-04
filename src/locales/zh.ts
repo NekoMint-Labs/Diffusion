@@ -1046,6 +1046,8 @@ export const zh: Record<string, string> = {
     "Proposition · original preserved": "观点 · 原文保留",
     "Card key point": "卡片重点",
     "Read original": "阅读原文",
+    "AI origin": "源自 AI",
+    "AI origin · edited by you": "源自 AI · 你已修改",
     "No new suggestion: {reason}": "本轮没有新增建议：{reason}",
     "Original preview · not summarized": "正文预览 · 尚未提炼",
 };

@@ -61,3 +61,14 @@ crystallisation invalidate the proposition; Undo/Redo restore a matching record.
 Database version/name and portable schemaVersion stay unchanged; no automatic
 migration or model backfill is introduced. Older clients may drop optional
 metadata on rewrite and have not been qualified to preserve it.
+
+### User edits of AI-origin wording
+
+`generatedBy: 'ai'` records historical origin. A changed `thought.edit` adds the
+optional `userEdited: true` flag while preserving that origin and its provenance.
+It invalidates the prior proposition. Undo/Redo restores the matching wording,
+proposition and edit flag; the flag survives repository reopen, JSON recovery,
+Fork and Bring. A user manually retyping the earlier text remains an edit.
+Unchanged edits and manual/legacy cards do not acquire AI origin. Older edits
+cannot be reconstructed, so absence of this flag is not proof of untouched AI
+wording. No database, export version, migration or model call is added.

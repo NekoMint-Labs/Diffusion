@@ -136,7 +136,7 @@ export const ThoughtView = memo(function ThoughtView({ item, ghost, recalled, se
     const previewText = focused ? readingFocus.focus.point : generated && !compactOriginal ? answerPreview(text) : text;
     const short = (focused || compactOriginal) && level === 'local' ? previewText : semanticExcerpt(previewText, editing || find === 'current' ? 'local' : level, kind);
     // Reading is an explicit action, including a short original after Keep or a reload.
-    const canRead = generated || truncated || short !== text;
+    const canRead = generated || ('generatedBy' in item && item.generatedBy === 'ai') || truncated || short !== text;
     useLayoutEffect(() => {
         if (!selected || editing || ghost || !localActions.current || !('showPopover' in localActions.current)) return;
         if (!localActions.current.matches(':popover-open')) {

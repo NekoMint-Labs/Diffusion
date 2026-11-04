@@ -6,6 +6,7 @@ export const LINEAGE_LIMITS = { depth: 4, visited: 32, direct: 4, ancestors: 2, 
  * without an input identity stay unknown rather than being promoted to a user decision. */
 export function authoredContext(project: ProjectState, key: string): boolean {
     const thought = project.thoughts[key];
+    if (thought?.generatedBy === 'ai') return thought.kind === 'thought' && thought.userEdited === true;
     return !!thought && thought.kind === 'thought' && (!!(thought.origin?.inputId && project.inputs[thought.origin.inputId])
         || !thought.generationAction && !thought.origin?.note && !thought.sourceId && !thought.origin?.sourceId);
 }

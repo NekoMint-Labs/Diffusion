@@ -6,5 +6,5 @@ export function generatedReading(item: Thought | Ghost | undefined): boolean {
     if (!item || item.origin?.inputId || item.origin?.ranges?.length || item.origin?.sourceId || item.origin?.url) return false;
     if (!('kind' in item)) return !item.proposal && !!item.proposalKind;
     return item.kind === 'thought' && !item.sourceId
-        && item.generatedBy === 'ai';
+        && item.generatedBy === 'ai' && !item.userEdited;
 }

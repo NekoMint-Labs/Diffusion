@@ -13,6 +13,7 @@ test('the Windows preview has its own install identity and opens the packaged Fi
     assert.equal(preview.mainBinaryName, 'diffusion-preview');
     assert.equal(preview.app.windows[0].url, 'index.html?locale=zh');
     assert.equal(preview.app.windows[0].label, 'main');
+    assert.equal(preview.app.windows[0].title, 'Diffusion Preview');
     assert.equal(preview.bundle.windows.nsis.installMode, 'currentUser');
     assert.ok(stable.bundle.resources['resources/discovery/']);
     assert.equal(preview.bundle.resources, undefined, 'preview must inherit the bundled engine and license resources');

@@ -32,6 +32,7 @@ export function LineageSurface({ controller, project, thoughtId, onClose }: { co
     return <Surface title={t('settings.lineage.title')} level="anchored" onClose={onClose}>
         {!thought ? <p role="alert">{t('Thought not found')}</p> : <>
             <p>{thought.text}</p>
+            {thought.generatedBy === 'ai' && <p className="muted">{t(thought.userEdited ? 'AI origin · edited by you' : 'AI origin')}</p>}
             <h3>{t('Original sources')}</h3>
             {thought.derivedFrom?.length ? <ul>{thought.derivedFrom.map(id => <li key={id}>{project.thoughts[id]?.text ?? t('Missing thought')}</li>)}</ul> : <p className="muted">{t('Written independently')}</p>}
             <label id="lineage-parent-label">{t('settings.lineage.parent')}</label>

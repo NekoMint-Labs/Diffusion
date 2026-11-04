@@ -301,8 +301,8 @@ test('narrow fixed reader scrolls internally and returns to the same view; IME E
     await expect(page.getByTestId('proposition-reader')).toHaveCount(0);
     expect(calls).toEqual({ primary: 1, manual: 0, respond: 0 });
 });
-test('manual point survives Keep and reload, while a later user edit removes it', async ({ page }) => {
-    const { ghost, calls } = await boot(page, 'light', answer, null);
+for (const theme of ['light', 'dark'] as const) test('manual point survives Keep; edits preserve AI origin through Undo/Redo and reopen: ' + theme, async ({ page }, info) => {
+    const { ghost, calls } = await boot(page, theme, answer, null);
     const id = (await ghost.getAttribute('data-thought-id'))!;
     const reader = await read(page);
     await reader.getByTestId('reading-focus-run').click();
@@ -315,6 +315,21 @@ test('manual point survives Keep and reload, while a later user edit removes it'
     await editor.fill('我还没有确认这个问题存在，先保留为假设。'); await editor.press('Enter');
     await expect.poll(async () => (await saved(page)).thoughts[id]?.proposition).toBeUndefined();
     await expect(kept.locator('.thought-preview')).toHaveText('我还没有确认这个问题存在，先保留为假设。');
+    await expect.poll(async () => (await saved(page)).thoughts[id]?.userEdited).toBe(true);
+    expect((await saved(page)).thoughts[id].generatedBy).toBe('ai');
+    await expect(kept.locator('.reading-focus-card-label')).toHaveCount(0);
+    await page.keyboard.press('Control+z');
+    await expect.poll(async () => (await saved(page)).thoughts[id]?.proposition?.text).toBe(point);
+    expect((await saved(page)).thoughts[id].userEdited).toBeUndefined();
+    await expect(kept.locator('.thought-preview')).toHaveText(point);
+    await page.keyboard.press('Control+Shift+z');
+    await expect.poll(async () => (await saved(page)).thoughts[id]?.userEdited).toBe(true);
+    await page.reload();
+    await kept.click(); await kept.getByRole('button', { name: '阅读全文', exact: true }).click();
+    await expect(page.getByTestId('edited-ai-origin')).toHaveText('源自 AI · 你已修改');
+    await expect(page.getByTestId('reading-focus-run')).toHaveCount(0);
+    await expect(page.getByTestId('reading-original')).toHaveText('我还没有确认这个问题存在，先保留为假设。');
+    await page.screenshot({ path: info.outputPath('edited-ai-origin-' + theme + '.png') });
     expect(calls).toEqual({ primary: 1, manual: 1, respond: 0 });
 });
 

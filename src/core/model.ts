@@ -35,6 +35,8 @@ export interface Thought extends Point {
     proposition?: Proposition;
     /** Explicit origin of a claimed AI candidate; Fork/Bring provenance never creates it. */
     generatedBy?: 'ai';
+    /** Current wording has been edited by the user since this AI-origin card was claimed. */
+    userEdited?: true;
     kind: ThoughtKind;
     life: Life;
     kept: boolean;

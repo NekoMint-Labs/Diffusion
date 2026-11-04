@@ -304,3 +304,12 @@ The standalone Next workspace, its storage/session loop and historical model
 experiments are not dependencies. Experimental plain-answer instructions are
 not enabled or imported. Preview packaging and credential isolation are
 specified in [WINDOWS_PREVIEW.md](WINDOWS_PREVIEW.md).
+
+The 120-character opening instructions live in `fieldAnswerRequest`, not the
+shared language contract; Thread, Deep Dive and other semantic actions do not
+receive Field's opening structure. `generatedBy` remains historical origin.
+After a changed user edit, `userEdited: true` distinguishes current wording;
+it is shown as user-edited in the reader and source inspector rather than as
+untouched generated content. Its old proposition is invalidated and automatic
+AI-card presentation/extraction eligibility ends. Undo/Redo and portable/storage
+round trips preserve both facts without a separate provenance history model.

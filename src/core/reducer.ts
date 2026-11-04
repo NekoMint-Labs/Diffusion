@@ -14,6 +14,7 @@ function validateThought(t: Thought): void {
     if (t.organizingParentId !== undefined && t.organizingParentId !== null && (typeof t.organizingParentId !== 'string' || !t.organizingParentId || t.organizingParentId.length > 200 || t.organizingParentId === t.id || ['__proto__', 'constructor', 'prototype'].includes(t.organizingParentId))) throw new DomainError('Invalid organizing parent');
     if (t.proposition !== undefined && !validProposition(t.proposition, t.text)) throw new DomainError('Invalid proposition');
     if (t.generatedBy !== undefined && t.generatedBy !== 'ai') throw new DomainError('Invalid generation origin');
+    if (t.userEdited !== undefined && (t.userEdited !== true || t.generatedBy !== 'ai')) throw new DomainError('Invalid edited AI wording');
     const lineage = t.derivedFrom;
     const lineageValid = lineage === undefined || Array.isArray(lineage) && lineage.length > 0 && lineage.length <= 32 && lineage.every(parentId => typeof parentId === 'string' && !!parentId && parentId.length <= 200 && parentId !== t.id) && new Set(lineage).size === lineage.length;
     const actionValid = lineage === undefined
@@ -83,7 +84,8 @@ export function reduceProject(state: ProjectState, event: DomainEvent): ProjectS
                 throw new DomainError('Thought is too long');
             if (get(event.id).kind === 'source')
                 throw new DomainError('Source excerpts are not editable thoughts');
-            update(event.id, { proposition: undefined, text: event.text, life: 'active', attentionDebt: 0, touchedAt: event.at });
+            const thought = get(event.id);
+            update(event.id, { proposition: undefined, ...(thought.generatedBy === 'ai' && thought.text !== event.text ? { userEdited: true as const } : {}), text: event.text, life: 'active', attentionDebt: 0, touchedAt: event.at });
             summary = `Reframed: ${event.text.slice(0, 500)}`;
             affected = [event.id];
             break;

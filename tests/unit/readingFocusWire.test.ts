@@ -88,3 +88,20 @@ describe('unified respond entry preserves originals across direct and gateway tr
         }
     });
 });
+
+describe('compact opening guidance is scoped to Field requests', () => {
+    it.each(['ask', 'thread', 'deep', 'probe', 'organize'] as const)('%s keeps its own response contract', async kind => {
+        const { compileContext } = await import('../../src/ai/context.ts');
+        const { createProject } = await import('../../src/core/model.ts');
+        const send = vi.fn(async () => ({ choices: [{ finish_reason: 'stop', message: { content: '{"intents":[]}' } }] }));
+        const provider = new DirectAIProvider({ providerId: 'deepseek', apiKey: 'fixture', model: 'chosen', depth: 'deep' }, { kind: 'webview', send });
+        await provider.respond(compileContext(createProject('opening', 'Fixture'), []), { kind, text: 'Fixture request', requestId: 'opening-' + kind });
+        expect(send).toHaveBeenCalledTimes(1);
+        const request = send.mock.calls[0] as unknown as [{ body: { messages: { role: string; content: string }[] } }];
+        const instructions = request[0].body.messages.find(message => message.role === 'system')!.content;
+        const guidance = 'Begin each text answer with a self-contained key point in at most 120 Unicode characters';
+        if (kind === 'ask') expect(instructions).toContain(guidance);
+        else expect(instructions).not.toContain(guidance);
+        expect(instructions).toContain('Write in the user');
+    });
+});

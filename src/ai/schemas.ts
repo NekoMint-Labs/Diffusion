@@ -15,7 +15,7 @@ export const semanticIntentSchema = z.discriminatedUnion('type', [
     z.object({ type: z.literal('request_crystal_preview'), text }).strict(),
     z.object({ type: z.literal('surface_evidence'), sourceId: key, outcome: z.enum(['support', 'challenge', 'partial', 'prior-art', 'inconclusive', 'conflicting']), text }).strict(),
 ]);
-export const responseSchema = z.object({ intents: z.array(semanticIntentSchema).max(8), providerLabel: z.string().max(200), mock: z.boolean() }).strict();
+export const responseSchema = z.object({ intents: z.array(semanticIntentSchema).max(8), providerLabel: z.string().max(200), mock: z.boolean(), presentation: z.object({ points: z.array(z.tuple([text, z.string().min(1).max(240)])).max(5), emptyReason: z.string().max(240).optional() }).strict().optional().catch(undefined) }).strict();
 const thought = z.object({ authored: z.boolean().optional(), id: key, text: z.string().max(1600), kind: z.enum(['thought', 'crystal', 'source']) }).strict();
 const capsule = z.object({ goal: z.string().max(800), confirmed: z.array(z.string().max(500)).max(8), tentative: z.array(z.string().max(500)).max(8), openQuestions: z.array(z.string().max(500)).max(4), sources: z.array(key).max(24), rebuiltAt: z.number() }).strict();
 export const packetSchema = z.object({ contract: z.string().max(2000), projectId: key, scopeMode: z.enum(['selection', 'field']), scope: z.array(thought).max(24), local: z.array(thought).max(12),
@@ -53,7 +53,7 @@ export const capabilitiesSchema = z.object({
     depth: z.object({ supported: z.boolean(), mode: z.enum(['output-budget', 'none']), levels: z.array(thinkingDepthSchema).max(8) }).strict(),
 }).strict();
 
-const structuredPurpose = z.enum(['thought-extraction', 'thought-extraction-recheck', 'relation-inference', 'ingestion-repair', 'evidence-assessment']);
+const structuredPurpose = z.enum(['thought-extraction', 'thought-extraction-recheck', 'relation-inference', 'ingestion-repair', 'evidence-assessment', 'field-reading', 'field-answer']);
 export const structuredRequestSchema = z.object({
     purpose: structuredPurpose,
     instructions: z.string().min(1).max(16000),

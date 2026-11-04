@@ -176,3 +176,10 @@ export function correctVisibleGhosts(controller: ProjectController, geometry: Ge
     }
     correctMeasuredProposalBatch(controller, geometry, ids, camera, viewport, reserved, arrivals);
 }
+
+/** Cursor feedback is an imperative projection, independent of reader or React state. */
+export function paintPanningCursor(element: HTMLElement | null, panning: boolean) {
+    if (!element) return;
+    if (panning) element.dataset.panning = 'true';
+    else delete element.dataset.panning;
+}

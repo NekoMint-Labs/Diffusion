@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ProjectState, Point } from '../../core/model.ts';
 import type { ProjectRepository } from '../../storage/repository.ts';
 import { forkProject, compareWorlds, bringToMain, type ComparisonKind } from '../../core/world.ts';
+import { placeBroughtThought } from '../../field/spatial/bringPlacement.ts';
 import { Surface } from './Surface.tsx';
 import { Button } from '../primitives/Button.tsx';
 import { Checkbox } from '../primitives/Checkbox.tsx';
@@ -21,12 +22,13 @@ const COMPARISON_LABEL: Record<ComparisonKind, string> = {
     conflict: 'Changed in both, differently',
 };
 
-export function ForkSurface({ project, repository, flush, onSwitch, point, onClose }: {
+export function ForkSurface({ project, repository, flush, onSwitch, point, thoughtSize = 18, onClose }: {
     project: ProjectState;
     repository: ProjectRepository;
     flush: () => Promise<void>;
     onSwitch: (projectId: string) => Promise<void>;
     point: Point;
+    thoughtSize?: number;
     onClose: () => void;
 }) {
     const [title, setTitle] = useState(msg('Another way to think'));
@@ -85,7 +87,7 @@ export function ForkSurface({ project, repository, flush, onSwitch, point, onClo
                 setMessage(msg('Main could not be loaded. Nothing was copied.'));
                 return;
             }
-            const result = bringToMain(latest, project, chosen, point);
+            const result = bringToMain(latest, project, chosen, point, Date.now(), (target, thought) => placeBroughtThought(target, thought, thoughtSize));
             await repository.saveProject(result.project);
             setMain(result.project);
             setChosen([]);

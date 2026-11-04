@@ -1,3 +1,6 @@
+import { faithfulReadingPoint, isCompactReading } from './readingFocus.ts';
+import type { Proposition } from '../core/proposition.ts';
+import { bindProposition, validProposition } from '../core/proposition.ts';
 import { t } from '../shared/i18n.ts';
 import { id, type Ghost, type InputRange, type Point, type ThinkingActivityKind, type ThinkingOperation, type ThinkingOperationKind } from '../core/model.ts';
 import { permissionFor, type ContextPacket, type SemanticIntent, type UserIntent } from '../core/semantics.ts';
@@ -268,7 +271,8 @@ export class AIRuntime {
             // retain their authored prompt. A batch prefers previously unattempted unknown types.
             const questionFocus = kind === 'question' && trackSuggestions ? this.suggestions.nextQuestionFocus(packet.maxCandidates, 12000 - text.length - 2) : '';
             const focusedText = questionFocus ? `${text}\n\n${questionFocus}` : text;
-            const response = await provider.respond(packet, { kind, text: focusedText, requestId: started.requestId }, started.abort.signal);
+            const intent = { kind, text: focusedText, requestId: started.requestId };
+            const response = await provider.respond(packet, intent, started.abort.signal);
             if (started.abort.signal.aborted || started.ticket !== this.serial) {
                 if (started.ticket === this.serial && deadline(started.abort.signal)) throw new ThinkingError('timeout', subject);
                 if (started.ticket === this.serial) this.settle(started, 'cancelled');
@@ -343,8 +347,12 @@ export class AIRuntime {
                     }
                     if (!validScope() || !validContinuation()) throw new Error(t('The scope changed during reveal. Remaining possibilities were discarded.'));
                     const candidate = accepted[index];
+                    const point = (candidate.type === 'respond_in_field' || candidate.type === 'surface_possibility')
+                        ? response.presentation?.points.get(candidate.text) : undefined;
+                    const proposition = point && 'text' in candidate && !isCompactReading(candidate.text) && faithfulReadingPoint(candidate.text, point)
+                        ? bindProposition(point, candidate.text) : undefined;
                     const beforeGhosts = this.controller.getSnapshot().session.ghosts;
-                    this.emit(candidate, packet, provenance, emissionOptions, kind, index);
+                    this.emit(candidate, packet, provenance, emissionOptions, kind, index, proposition);
                     if (undoableGeneration) {
                         const after = this.controller.getSnapshot();
                         displaced.push(...Object.values(beforeGhosts).filter(ghost => !after.session.ghosts[ghost.id] && !after.project.thoughts[ghost.id] && !generationIds.includes(ghost.id)));
@@ -356,7 +364,8 @@ export class AIRuntime {
                 }
             }
             if (kind === 'probe') this.hooks.notice(emitted && relationLabel ? t('Found a candidate relation: {label}. You decide whether to keep it.', { label: relationLabel }) : t(emitted ? 'A relation candidate is ready. Nothing was confirmed.' : 'No clear relation found.'));
-            else if (!emitted) this.hooks.notice(t('No new suggestion was surfaced this time.'));
+            else if (!emitted) this.hooks.notice(!response.intents.length && response.presentation?.emptyReason
+                ? t('No new suggestion: {reason}', { reason: response.presentation?.emptyReason }) : t('No new suggestion was surfaced this time.'));
             else if (kind === 'question') this.hooks.notice(t(response.mock ? 'Demo questions / no live model was used.' : 'Questions returned. Nothing was committed.'));
             else if (kind === 'organize') this.hooks.notice(t(response.mock ? 'Demo structure / no live model was used.' : 'A structure proposal is ready. Nothing was changed yet.'));
             else this.hooks.notice(t(response.mock ? 'Demo possibilities / no live model was used.' : 'Possibilities returned. No commitment was made on your behalf.'));
@@ -395,7 +404,7 @@ export class AIRuntime {
         finally { stopTrackingKeep(); this.cleanup(started); }
     }
 
-    private emit(candidate: SemanticIntent, packet: ContextPacket, provider: string, options: RunOptions, action: UserIntent['kind'], index: number) {
+    private emit(candidate: SemanticIntent, packet: ContextPacket, provider: string, options: RunOptions, action: UserIntent['kind'], index: number, proposition?: Proposition) {
         const { project, session } = this.controller.getSnapshot();
         const scopeIds = packet.scope.map(item => item.id);
         const source = 'sourceId' in candidate ? packet.retrieved.sources.find(item => item.id === candidate.sourceId) : undefined;
@@ -409,7 +418,7 @@ export class AIRuntime {
                 const proposalAction = action === 'continue' || action === 'angle' || action === 'ask' ? action : undefined;
                 const mode = candidate.type === 'surface_evidence' ? 'evidence' : action === 'continue' ? 'continue' : action === 'angle' ? 'branch' : 'default';
                 const point = placePossibility(project, session, this.hooks.anchor(), index, scopeIds, this.hooks.bounds?.(), text, mode, this.hooks.visibleIds?.(), this.hooks.measurements?.());
-                this.controller.addGhost({ id: key, text, ...point, createdAt: Date.now(), scopeIds, runId: options.runId, origin: provenance, proposalKind: 'thought' as const, ...(proposalAction ? { proposalAction } : {}) });
+                this.controller.addGhost({ id: key, text, ...(validProposition(proposition, text) ? { proposition } : {}), ...point, createdAt: Date.now(), scopeIds, runId: options.runId, origin: provenance, proposalKind: 'thought' as const, ...(proposalAction ? { proposalAction } : {}) });
                 options.onEmission?.(key);
                 break;
             }

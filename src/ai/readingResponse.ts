@@ -1,0 +1,75 @@
+import { z } from 'zod';
+import { CORE_CONTRACT, type AIResponse, type ContextPacket, type UserIntent } from '../core/semantics.ts';
+import type { AIProvider } from './contracts.ts';
+import { ThinkingError } from './errors.ts';
+import { parseSemantics, semanticInstructions } from './prompt.ts';
+import { thinkingGuidance, THINKING_GUIDANCE_INSTRUCTIONS } from './thinkingGuidance.ts';
+import { isCompactReading, COMPACT_READING_LIMIT, faithfulReadingPoint, type FocusReadingResult } from './readingFocus.ts';
+
+const envelope = z.object({ intents: z.array(z.record(z.unknown())).max(5), pause: z.unknown().optional() }).strict();
+const pauseSchema = z.object({ reason: z.string().trim().min(1).refine(text => Array.from(text).length <= 240) }).strict();
+const readingSchema = z.object({ point: z.string().trim().min(1)
+    .refine(text => Array.from(text).length <= COMPACT_READING_LIMIT) }).strict();
+const readableTypes = new Set(['respond_in_field', 'surface_possibility']);
+const fieldActions = new Set(['ask', 'continue', 'angle', 'diffuse']);
+
+/** Field answer generation. The extra field never enters Core or persistence.
+ * The normal semantic policy and runtime gates still decide which candidates may surface. */
+export function supportsFieldAnswer(packet: ContextPacket, intent: UserIntent) {
+    return !packet.thread && fieldActions.has(intent.kind);
+}
+
+export async function respondWithReading(provider: AIProvider, packet: ContextPacket, intent: UserIntent, signal: AbortSignal) {
+    signal.throwIfAborted();
+    const readings = new Map<string, FocusReadingResult>();
+    if (provider.mock || packet.thread || !fieldActions.has(intent.kind))
+        return { response: await provider.respond(packet, intent, signal), readings };
+    const task = fieldAnswerRequest(packet, intent);
+    const raw = await provider.structured({ purpose: 'field-answer', ...task }, signal);
+    signal.throwIfAborted();
+    return parseFieldAnswer(raw, packet, intent, provider.label);
+}
+
+export function fieldAnswerRequest(packet: ContextPacket, intent: UserIntent) {
+    const guidance = thinkingGuidance(packet, intent);
+    const instructions = CORE_CONTRACT + '\n' + semanticInstructions(intent, guidance.candidateLimit)
+        + '\n' + THINKING_GUIDANCE_INSTRUCTIONS
+        + `\nBegin each text answer with a self-contained key point in at most ${COMPACT_READING_LIMIT} Unicode characters, including its essential condition or uncertainty. Where a next step helps, put one concrete next step in that opening, not a plan with multiple tasks. Put optional detail after a blank line; do not start with a preamble or a heading alone. Never hide a qualification that changes the meaning in the later detail. Keep source quotations exact, and do not compress code or a requested document to satisfy the preview.`
+        + ('\nProposition card: the card must express one independently meaningful idea, observation, question or hypothesis in natural language, not a heading or a mechanically shortened article. The complete text explains that same proposition, including its reasoning, conditions and limitations. The proposition must not become stronger than that explanation. Keep directly answered questions direct; Continue adds an implication; Another Angle changes the lens; Diffuse may stop without padding. When an independent faithful proposition cannot fit, omit reading rather than inventing certainty or claiming the preview is a complete proposition.')
+        + `\nOptional reading metadata: the semantic shapes above still apply, with ONE optional display field: reading: {"point":"one complete card key point"} on respond_in_field or surface_possibility only. Keep text as the complete original answer. For text of at most ${COMPACT_READING_LIMIT} Unicode characters, omit reading: the card shows the complete text. For longer text, also return reading.point, at most ${COMPACT_READING_LIMIT} Unicode characters, significantly shorter than text. Incorporate every premise, negation and uncertainty essential to its meaning in this one sentence. Retain qualifying language such as 更像是, 可能, 尚不能 or may; never turn 更像是 into 说明, proves or a categorical verdict. Do not append a separate conditions list. If a faithful short point cannot be given, omit reading. Never shorten requested code, exact quotations or a document in text to meet the card budget. This display field grants no permission to mutate a Field. Return {"intents":[...]} as JSON only; an empty intents array may also carry the optional pause object described above.`;
+    return { instructions, input: { intent, context: { ...packet, contract: CORE_CONTRACT, maxCandidates: guidance.candidateLimit }, guidance } };
+}
+
+export function parseFieldAnswer(raw: import('./contracts.ts').StructuredResponse, packet: ContextPacket, intent: UserIntent, label = raw.providerLabel) {
+    if (raw.mock) throw new ThinkingError('semantic-validation-failure', label);
+    const readings = new Map<string, FocusReadingResult>();
+    const guidance = thinkingGuidance(packet, intent);
+    const parsed = envelope.safeParse(raw.value);
+    if (!parsed.success) throw new ThinkingError('semantic-validation-failure', label);
+    const modelLabel = raw.model?.requested ? raw.model.effective && raw.model.effective !== raw.model.requested
+        ? `${raw.model.requested} → ${raw.model.effective}` : raw.model.requested : '';
+    const credit = (raw.providerLabel || label) + (modelLabel ? ' / ' + modelLabel : '');
+    const semantics = parsed.data.intents.map(({ reading: _reading, ...semantic }) => semantic);
+    const allIntents = parseSemantics({ intents: semantics }, intent.kind);
+    // Validate the whole response before imposing the authored count ceiling.
+    const intents = allIntents.slice(0, guidance.candidateLimit);
+    const pause = !allIntents.length ? pauseSchema.safeParse(parsed.data.pause) : undefined;
+    parsed.data.intents.forEach((item, index) => {
+        const candidate = intents[index];
+        if (!candidate || !readableTypes.has(candidate.type) || !('text' in candidate) || isCompactReading(candidate.text)) return;
+        const reading = readingSchema.safeParse(item.reading);
+        // A missing/invalid display field preserves the answer. Never make a repair request.
+        if (!reading.success || !faithfulReadingPoint(candidate.text, reading.data.point)) return;
+        readings.set(candidate.text, { focus: { point: reading.data.point, conditions: [], highlights: [] },
+            provider: credit, mock: false });
+    });
+    const response: AIResponse = { intents, mock: false, providerLabel: raw.providerLabel || label,
+        ...(raw.model ? { model: raw.model } : {}) };
+    return { response, readings, ...(pause?.success ? { emptyReason: pause.data.reason } : {}) };
+}
+
+
+export async function respondInField(provider: AIProvider, packet: ContextPacket, intent: UserIntent, signal: AbortSignal): Promise<import('./contracts.ts').ThinkingResponse> {
+    const { response, readings, emptyReason } = await respondWithReading(provider, packet, intent, signal);
+    return { ...response, presentation: { points: new Map([...readings].map(([text, result]) => [text, result.focus.point])), emptyReason } };
+}

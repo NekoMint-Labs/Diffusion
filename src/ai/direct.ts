@@ -1,5 +1,7 @@
+import { respondInField, supportsFieldAnswer } from './readingResponse.ts';
+import type { ThinkingResponse } from './contracts.ts';
 import { CORE_CONTRACT } from '../core/semantics.ts';
-import type { AIResponse, ContextPacket, UserIntent } from '../core/semantics.ts';
+import type { ContextPacket, UserIntent } from '../core/semantics.ts';
 import { THINKING_DEPTHS, type AIProvider, type ConnectionCheck, type ThinkingCapabilities, type ThinkingDepth, type StructuredRequest, type StructuredResponse } from './contracts.ts';
 import { ThinkingError, classifyFailure } from './errors.ts';
 import { semanticInstructions, parseSemanticText } from './prompt.ts';
@@ -123,9 +125,9 @@ export class DirectAIProvider implements AIProvider {
         const model = this.config.model.trim();
         if (!model) throw new ThinkingError('model-not-found', this.label);
         if (this.descriptor.requiresKey && !this.hasCredential()) throw new ThinkingError('authentication-failed', this.label);
-        // Structured extraction is bounded representation work, so it never inherits the deepest
-        // deliberation the person chose for their own thinking. Same mappings, lower ceiling.
-        const depth = structuredDepth(this.config.depth);
+        // Field answers are deliberation with optional display metadata. Extraction-only tasks
+        // retain their representation ceiling; an answer retains the person's chosen depth.
+        const depth = task.purpose === 'field-answer' ? this.config.depth : structuredDepth(this.config.depth);
         const request = buildRequest(this.descriptor, {
             baseUrl: this.baseUrl(), model, instructions: task.instructions, input: JSON.stringify(task.input),
             budget: outputBudget(depth, this.descriptor),
@@ -144,7 +146,8 @@ export class DirectAIProvider implements AIProvider {
             throw new ThinkingError('malformed-provider-response', this.label);
         }
     }
-    async respond(packet: ContextPacket, intent: UserIntent, signal?: AbortSignal): Promise<AIResponse> {
+    async respond(packet: ContextPacket, intent: UserIntent, signal?: AbortSignal): Promise<ThinkingResponse> {
+        if (supportsFieldAnswer(packet, intent)) return respondInField(this, packet, intent, signal ?? new AbortController().signal);
         const model = this.config.model.trim();
         if (!model) throw new ThinkingError('model-not-found', this.label);
         if (this.descriptor.requiresKey && !this.hasCredential()) throw new ThinkingError('authentication-failed', this.label);

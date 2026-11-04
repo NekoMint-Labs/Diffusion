@@ -37,12 +37,13 @@ import { FieldBackgroundLayer } from '../ui/fieldBackgrounds/FieldBackgroundLaye
 import { SpatialActivityLayer } from '../ui/motion/SpatialActivityLayer.tsx';
 import { claimWithSettle, dismissGhostWithDissolve, presentMaterialSettle } from '../ui/motion/spatialGrammar.ts';
 import type { ConnectionStyle, FieldStyleId } from '../ui/appearance.ts';
-import { ownsWheelInput, paintDraggedItems, commitDraggedItems, correctVisibleGhosts, correctSingleDraggedThought, deleteFieldSelection, ignoreRelationCandidate, keepRelationCandidate, relationPlacementObstacles } from './interactionHygiene.ts';
+import { paintPanningCursor, ownsWheelInput, paintDraggedItems, commitDraggedItems, correctVisibleGhosts, correctSingleDraggedThought, deleteFieldSelection, ignoreRelationCandidate, keepRelationCandidate, relationPlacementObstacles } from './interactionHygiene.ts';
 import type { FieldHandle, FieldFind } from './contracts.ts';
 export type { FieldHandle, FieldFind } from './contracts.ts';
 interface Props {
     onNavigate: (id: string) => void;
     onReturnView?: () => void;
+    onInteractionStart?: () => void;
     controller: ProjectController;
     onProbeRelation: (ids: string[]) => void;
     scopeActions: ContextualAction[];
@@ -67,8 +68,9 @@ interface Props {
     connectionStyle: ConnectionStyle;
     interfaceScale?: number;
 }
-export const Field = forwardRef<FieldHandle, Props>(function Field({ onNavigate, onReturnView, controller, fieldStyle, connectionStyle, interfaceScale = 1, onProbeRelation, scopeActions, onScopeAction, onKeepAllProposals, onKeepOriginalProposal, onAIProposalAction, onMore, onRegion, onRelation, onDropText, onSource, onReadThought, onRespondThought, onDropFiles, onObserve, onCreateThought, onContextMenu, onRevealMatch, find }, forwardedRef) {
+export const Field = forwardRef<FieldHandle, Props>(function Field({ onInteractionStart, onNavigate, onReturnView, controller, fieldStyle, connectionStyle, interfaceScale = 1, onProbeRelation, scopeActions, onScopeAction, onKeepAllProposals, onKeepOriginalProposal, onAIProposalAction, onMore, onRegion, onRelation, onDropText, onSource, onReadThought, onRespondThought, onDropFiles, onObserve, onCreateThought, onContextMenu, onRevealMatch, find }, forwardedRef) {
     const { project, session } = useProject(controller);
+    const interactionStart = useRef(onInteractionStart); interactionStart.current = onInteractionStart;
     const arrivals = useProposalArrivals(controller);
     const ui = useUI();
     const viewport = useRef<HTMLDivElement>(null);
@@ -90,12 +92,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ onNavigate,
     const lastClickTarget = useRef<string | undefined>(undefined);
     const space = useRef(false);
     const frame = useRef<number | null>(null);
-    const syncPanningCursor = useCallback(() => {
-        const element = viewport.current;
-        if (!element) return;
-        if (space.current || gesture.current?.kind === 'pan') element.dataset.panning = 'true';
-        else delete element.dataset.panning;
-    }, []);
+    const syncPanningCursor = useCallback(() => paintPanningCursor(viewport.current, space.current || gesture.current?.kind === 'pan'), []);
     const probeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastCull = useRef(0);
     const [visible, setVisible] = useState<string[]>([]);
@@ -168,6 +165,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ onNavigate,
             e.preventDefault();
             if (gesture.current)
                 return;
+            if (e.deltaY) interactionStart.current?.();
             viewport.current?.setAttribute('data-camera-moving', 'true');
             const resolved = resolveWheelZoom(wheelZoom.current, { point: { x: e.clientX - rect.current.left, y: e.clientY - rect.current.top }, deltaY: e.deltaY, deltaMode: e.deltaMode, viewportHeight: rect.current.height, ctrlKey: e.ctrlKey, timeStamp: e.timeStamp });
             wheelZoom.current = resolved.gesture;
@@ -385,6 +383,7 @@ export const Field = forwardRef<FieldHandle, Props>(function Field({ onNavigate,
         g.last = localPoint(e);
         if (!g.moved && Math.hypot(g.last.x - g.start.x, g.last.y - g.start.y) > DRAG_THRESHOLD) {
             g.moved = true;
+            interactionStart.current?.();
             useUI.getState().patch({ dragging: true });
             viewport.current?.setAttribute('data-dragging', 'true');
             viewport.current?.setAttribute('data-drag-kind', g.kind);

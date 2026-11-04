@@ -1,3 +1,4 @@
+import type { Proposition } from './proposition.ts';
 export type Point = {
     x: number;
     y: number;
@@ -31,6 +32,11 @@ export type Provenance = {
 export interface Thought extends Point {
     id: string;
     text: string;
+    proposition?: Proposition;
+    /** Explicit origin of a claimed AI candidate; Fork/Bring provenance never creates it. */
+    generatedBy?: 'ai';
+    /** Current wording has been edited by the user since this AI-origin card was claimed. */
+    userEdited?: true;
     kind: ThoughtKind;
     life: Life;
     kept: boolean;
@@ -149,6 +155,7 @@ export type AIProposalAction = 'continue' | 'angle' | 'question' | 'ask';
 export interface Ghost extends Point {
     id: string;
     text: string;
+    proposition?: Proposition;
     createdAt: number;
     scopeIds: string[];
     origin?: Provenance;

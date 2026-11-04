@@ -1,3 +1,5 @@
+import { bindProposition } from '../core/proposition.ts';
+import { generatedReading } from './thought/generatedReading.ts';
 import { discoveryUnavailableText } from '../discovery/contracts.ts';
 import { t } from '../shared/i18n.ts';
 import { useLocale } from './useLocale.ts';
@@ -14,7 +16,7 @@ import { OpenFieldSurface } from './surfaces/OpenFieldSurface.tsx';
 import { ShortcutsSurface } from './surfaces/ShortcutsSurface.tsx';
 import { Surface } from './surfaces/Surface.tsx';
 import { RestoreSurface } from './surfaces/RestoreSurface.tsx';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, LayoutGroup } from 'motion/react';
 import { fieldSwitchSequence, settingsEnterSequence, settingsRecedeSequence, useSignature } from './motion/signature.ts';
 import { asPickedFile, type PlatformAdapter } from '../platform/contracts.ts';
@@ -44,6 +46,7 @@ import { thinkingServiceChanged, type Settings } from './settings.ts';
 import { isGlobalModal } from './transient.ts';
 import { atmosphereRole, Atmosphere } from './atmosphere.tsx';
 import { isAuthoredExample } from '../core/demo.ts';
+import { clearReaderPositions } from './thought/PropositionReader.tsx';
 import { ThoughtReader } from './thought/ThoughtReader.tsx';
 import { isQuestion } from './workspace/response.ts';
 import { Speak } from './workspace/Speak.tsx';
@@ -130,7 +133,10 @@ export function Workspace({ controller, repository, platform, startupError, onSw
     const [actionPreview, setActionPreview] = useState<{ action: PreviewAction; ids: string[] } | null>(null);
     const [organizeScope, setOrganizeScope] = useState<string[]>([]);
     const [readingThoughtId, setReadingThoughtId] = useState<string | null>(null);
+    useEffect(() => { clearReaderPositions(); return clearReaderPositions; }, [project.id]);
     const readingThought = readingThoughtId ? project.thoughts[readingThoughtId] ?? session.ghosts[readingThoughtId] : undefined;
+    const readingScope = readingThoughtId ? session.ghosts[readingThoughtId]?.scopeIds ?? project.thoughts[readingThoughtId]?.derivedFrom ?? [] : [];
+    const readingContext = readingScope.map(key => project.thoughts[key]?.text).filter(Boolean).map(text => text).join(' / ');
     const platformKind = useMemo(detectPlatform, []);
 
     const { settings, settingsRef, apply } = useWorkspaceSettings();
@@ -144,12 +150,16 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         keyPresent: capabilities.storedAIKeys[settings.provider] === true,
         credentialRevision: capabilities.credentialRevision,
     });
-    const { runtime, diffuse, evidence, importer, hooks, stopDiffuseForIntent } = useThinkingService({
+    const { runtime, diffuse, evidence, importer, hooks, stopDiffuseForIntent, focusReading } = useThinkingService({
         controller, repository, settings,
         credentials: capabilities.credentials,
         runTimes: { builtIn: capabilities.builtIn },
         discovery: capabilities.status,
     });
+    useLayoutEffect(() => {
+        if (ui.surface === 'thought-reader'
+            && (!readingThought || ui.editing || !ui.selection.includes(readingThoughtId!))) surfaces.yieldReader();
+    }, [ui.surface, ui.selection, ui.editing, readingThought, readingThoughtId]);
     const navigation = useNavigationReturn(controller, field);
     const find = useFindInField({ project, reveal: ids => navigation.reveal(ids) });
     const surfaces = useWorkspaceSurfaces({ controller, field, diffuse, runtime });
@@ -207,7 +217,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         stopDiffuseForIntent();
         const action = preview.action === 'continue' ? 'continue' : 'question';
         const prompt = preview.action === 'continue'
-            ? `Continue this line of thought. Return ${options.count} distinct continuation proposal${options.count === 1 ? '' : 's'}.`
+            ? `Continue this line of thought. Return up to ${options.count} distinct continuation proposal${options.count === 1 ? '' : 's'}. Fewer or none are valid when no useful new contribution remains; an explicit request in the selected authored wording may set a lower count.`
             : `Ask up to ${options.count} distinct question${options.count === 1 ? '' : 's'} that could move this thinking. Fewer questions or no questions are valid when no useful new unknown remains.`;
         await runtime.run(action, prompt, preview.ids, { maxCandidates: options.count, projectSources: options.fieldSources, activity: preview.action === 'continue' ? 'unfold' : 'radiate' });
     };
@@ -335,7 +345,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
         else
             intents.openThread(ids, kind === 'deep', text, provider); },
     };
-    return <main className="app" data-active-surface={ui.surface} data-menu-open={ui.menu ? true : undefined} ref={root}>
+    return <main className="app" data-active-surface={ui.surface} data-proposition-reader={ui.surface === 'thought-reader' && !!readingThought || undefined} data-menu-open={ui.menu ? true : undefined} ref={root}>
     <ConnectionFailureDialog/>
   {/* Atmosphere is presentation state, never semantic state: the Field's material is lit by
       what is transiently happening, not by what the Field means. A selection is a scope, and a
@@ -358,7 +368,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
   </header>
   {arrival && <div className="field-arrival" data-testid="field-arrival" aria-hidden="true"/>}
   <nav className="global-actions"><Button variant="ghost" size="sm" ref={globalMore} data-testid="global-more" aria-label={t('Field menu')} aria-haspopup="menu" aria-expanded={ui.menu?.scope === 'global'} aria-controls={ui.menu?.scope === 'global' ? 'global-command-menu' : undefined} onClick={event => surfaces.transient.deferMenu(event.currentTarget, 'global')}><span aria-hidden="true">{'···'}</span></Button></nav>
-  <Field onNavigate={id => navigation.reveal([id], true)} onReturnView={navigation.available ? navigation.restore : undefined} interfaceScale={settings.interfaceSize / 100} ref={field} fieldStyle={settings.appearance.fieldStyle} connectionStyle={settings.appearance.connectionStyle} controller={controller} onProbeRelation={intents.findRelation} scopeActions={actionModel.primary} onScopeAction={runScopeAction} onKeepAllProposals={intents.keepAllProposals} onKeepOriginalProposal={intents.keepOriginalProposal} onAIProposalAction={handleAIProposalAction} onMore={trigger => surfaces.transient.openMenu(trigger, 'thought', { mode: 'secondary' })} onSource={actions.openSource} onReadThought={key => { setReadingThoughtId(key); surfaces.openSurface('thought-reader', selectionAnchor([key])); }} onRespondThought={key => intents.respond([key])} onRegion={actions.openRegion} onRelation={(relationId, point) => { surfaces.openSurface('relation'); ui.patch({ relationId, anchor: field.current?.screenPoint(point) ?? null }); }} onDropFiles={(files, point) => void importer.files(files.map(asPickedFile), point).catch(error => deviceFailureNotice('import', error))} onDropText={actions.dropText} onObserve={actions.observe} onCreateThought={actions.createThoughtAt} onContextMenu={openContextMenu} onRevealMatch={find.focusMatch} find={findOpen ? { matches: find.matchSet, current: find.current } : null}/>
+  <Field onInteractionStart={surfaces.yieldReader} onNavigate={id => navigation.reveal([id], true)} onReturnView={navigation.available ? navigation.restore : undefined} interfaceScale={settings.interfaceSize / 100} ref={field} fieldStyle={settings.appearance.fieldStyle} connectionStyle={settings.appearance.connectionStyle} controller={controller} onProbeRelation={intents.findRelation} scopeActions={actionModel.primary} onScopeAction={runScopeAction} onKeepAllProposals={intents.keepAllProposals} onKeepOriginalProposal={intents.keepOriginalProposal} onAIProposalAction={handleAIProposalAction} onMore={trigger => surfaces.transient.openMenu(trigger, 'thought', { mode: 'secondary' })} onSource={actions.openSource} onReadThought={key => { setReadingThoughtId(key); surfaces.openSurface('thought-reader', selectionAnchor([key])); }} onRespondThought={key => intents.respond([key])} onRegion={actions.openRegion} onRelation={(relationId, point) => { surfaces.openSurface('relation'); ui.patch({ relationId, anchor: field.current?.screenPoint(point) ?? null }); }} onDropFiles={(files, point) => void importer.files(files.map(asPickedFile), point).catch(error => deviceFailureNotice('import', error))} onDropText={actions.dropText} onObserve={actions.observe} onCreateThought={actions.createThoughtAt} onContextMenu={openContextMenu} onRevealMatch={find.focusMatch} find={findOpen ? { matches: find.matchSet, current: find.current } : null}/>
   <LayoutGroup id="global-transient-surfaces">
   <AnimatePresence initial={false}>
   {ui.menu && <CommandMenu key={`menu-${ui.transientEpoch}`} anchor={ui.menu.anchor} point={ui.menu.point} rows={menuItems} moreRows={menuMoreItems} scope={ui.menu.scope} note={ui.menu.scope === 'field' ? t('Saved on this device as you work.') : undefined} placement={ui.menu.mode === 'secondary' ? 'right-start' : ui.menu.point ? 'bottom-start' : 'bottom-end'} onClose={() => surfaces.transient.closeMenu(ui.menu!)}/>}
@@ -376,7 +386,13 @@ export function Workspace({ controller, repository, platform, startupError, onSw
   {ui.surface === 'action-preview' && actionPreview && <ActionPreviewSurface action={actionPreview.action} anchor={ui.anchor ?? undefined} allowSources={true} allowWeb={actionPreview.action === 'angle' && !!evidence} onRun={options => void runPreviewAction(actionPreview, options)} onClose={() => { setActionPreview(null); surfaces.closeSurface(false); }}/>}
   {ui.surface === 'organize' && organizeScope.length >= 3 && <OrganizeSurface controller={controller} runtime={runtime} scopeIds={organizeScope} anchor={ui.anchor ?? undefined} onClose={() => { setOrganizeScope([]); surfaces.closeSurface(false); }}/>}
 
-  {ui.surface === 'thought-reader' && readingThought && <ThoughtReader text={'origin' in readingThought && isAuthoredExample(readingThought) ? t(readingThought.text) : readingThought.text} anchor={ui.anchor ?? undefined} responseLabel={readingThoughtId && session.ghosts[readingThoughtId] ? 'Keep and respond' : isQuestion(readingThought) ? 'Respond to this question' : 'Add my thoughts'} onClose={() => surfaces.closeSurface(false)} onRespond={() => { const key = readingThoughtId!; surfaces.closeSurface(false); if (session.ghosts[key]) handleAIProposalAction([key], 'answer'); else intents.respond([key]); }}/>}
+  {ui.surface === 'thought-reader' && readingThought && <ThoughtReader editedAIOrigin={'generatedBy' in readingThought && readingThought.generatedBy === 'ai' && readingThought.userEdited === true} allowExtraction={generatedReading(readingThought)} projectId={project.id} proposition={readingThought.proposition} providerLabel={readingThought.origin?.note} onExtracted={result => {
+      if (!readingThoughtId) return;
+      const record = bindProposition(result.focus.point, readingThought.text); if (!record) return;
+      const current = controller.getSnapshot();
+      if (current.project.thoughts[readingThoughtId]?.text === record.original) controller.dispatch({ type: 'thought.proposition', id: readingThoughtId, proposition: record });
+      else if (current.session.ghosts[readingThoughtId]?.text === record.original) controller.setGhostProposition(readingThoughtId, record);
+  }} itemId={readingThoughtId ?? undefined} focusReading={focusReading} contextLabel={readingContext} text={'origin' in readingThought && isAuthoredExample(readingThought) ? t(readingThought.text) : readingThought.text} responseLabel={readingThoughtId && session.ghosts[readingThoughtId] ? 'Keep and respond' : isQuestion(readingThought) ? 'Respond to this question' : 'Add my thoughts'} onClose={() => surfaces.closeSurface(false)} onRespond={() => { const key = readingThoughtId!; surfaces.closeSurface(false); if (session.ghosts[key]) handleAIProposalAction([key], 'answer'); else intents.respond([key]); }}/>}
   {ui.surface === 'relation' && ui.relationId && <RelationSurface controller={controller} relationId={ui.relationId} anchor={ui.anchor ?? undefined} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'source' && ui.sourceId && project.sources[ui.sourceId] && <SourceSurface source={project.sources[ui.sourceId]} repository={repository} platform={platform} anchor={ui.anchor ?? undefined} onRead={evidence ? signal => importer.read(ui.sourceId!, evidence, '', signal) : undefined} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'evidence' && <EvidenceSurface onOpen={url => void platform.openExternal(url).catch(error => deviceFailureNotice('link', error))} provider={evidence} unavailableReason={discoveryUnavailableText(settings.discovery, capabilities.status)} initial={activeSelection.map(k => project.thoughts[k]?.text ?? '').join(' ').slice(0, 1000)} scopeIds={[...activeSelection]} onBring={intents.bringEvidence} onConfigure={() => runNoticeAction('search-settings')} onConfigureAI={() => runNoticeAction('ai-settings')} onClose={() => surfaces.closeSurface()}/>}
@@ -389,7 +405,7 @@ export function Workspace({ controller, repository, platform, startupError, onSw
   {ui.surface === 'region' && ui.regionId && project.regions[ui.regionId] && <RegionSurface region={project.regions[ui.regionId]} anchor={ui.anchor ?? undefined} onRename={name => controller.dispatch({ type: 'region.rename', id: ui.regionId!, name })} onAsk={() => intents.openThread(project.regions[ui.regionId!].members)} onCrystal={() => intents.previewCrystal(project.regions[ui.regionId!].members)} onDiffuse={() => startDiffuse(project.regions[ui.regionId!].members)} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'lineage' && surfaces.lineageId && <LineageSurface key={surfaces.lineageId} controller={controller} project={project} thoughtId={surfaces.lineageId} onClose={() => surfaces.closeSurface(false)}/>}
   {ui.surface === 'handoff' && ui.handoffId && <HandoffSurface project={project} crystalId={ui.handoffId} platform={platform} onClose={() => surfaces.closeSurface()}/>}
-  {ui.surface === 'fork' && <ForkSurface project={project} repository={repository} flush={fields.ensureSaved} onSwitch={async key => { diffuse.stop('Switching worlds.'); runtime.cancel(); await onSwitchProject(key); }} point={actions.anchor()} onClose={() => surfaces.closeSurface()}/>}
+  {ui.surface === 'fork' && <ForkSurface project={project} repository={repository} flush={fields.ensureSaved} onSwitch={async key => { diffuse.stop('Switching worlds.'); runtime.cancel(); await onSwitchProject(key); }} point={actions.anchor()} thoughtSize={settings.thoughtSize} onClose={() => surfaces.closeSurface()}/>}
   {ui.surface === 'diffuse' && <DiffuseSurface session={diffuse} project={project} scopeIds={surfaces.diffuseScope} canWeb={!!evidence} onBring={intents.bringEvidence} onClose={() => surfaces.closeSurface(false)}/>}
   <AnimatePresence initial={false}>{ui.surface === 'restore' && <RestoreSurface key="restore" platform={platform} repository={repository} onSwitch={onSwitchProject} onClose={() => surfaces.closeSurface()}/>}</AnimatePresence>
   <DiffuseIndicator session={diffuse} onReview={() => surfaces.openSurface('diffuse')}/>

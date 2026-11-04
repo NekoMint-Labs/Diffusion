@@ -1,0 +1,25 @@
+.focus-reading { overflow-wrap: anywhere; }
+.focus-reading-context { margin: 0 0 14px; color: var(--ink-helper); font: var(--type-helper-size)/1.6 var(--ui-font); }
+.focus-reading-hint, .focus-reading-credit { color: var(--ink-helper); font: var(--type-helper-size)/1.6 var(--ui-font); }
+.focus-reading-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0; }
+.focus-reading-controls [role="status"] { color: var(--ink-helper); font: var(--type-helper-size)/1.6 var(--ui-font); }
+.focus-reading-summary { margin: 18px 0; }
+.focus-reading-point { white-space: pre-wrap; font: 500 var(--thought-size)/1.75 var(--thought-font); color: var(--ink-primary); }
+.focus-reading-conditions { padding: 12px 16px; background: color-mix(in srgb, var(--trace) 12%, var(--surface-1)); border-radius: var(--radius-control); color: var(--ink-primary); font: var(--type-label-size)/1.7 var(--ui-font); }
+.focus-reading-conditions span { font-weight: 500; }
+.focus-reading-conditions ul { margin: 6px 0 0; padding-left: 1.3em; }
+.focus-reading summary { width: fit-content; cursor: pointer; color: var(--attention); font: var(--type-label-size)/1.6 var(--ui-font); }
+.focus-reading .thought-reader-text { margin-block: 16px; }
+
+/* Fixed reading region, independent of card geometry. */
+.surface.proposition-reader { inset: 0 0 0 auto; width: 360px; max-height: 100dvh; border-radius: 0; border-width: 0 0 0 1px; box-shadow: none; }
+.proposition-reader .surface-header { padding: 18px 16px; }
+.proposition-reader .surface-header h2 { margin: 0; font: 500 var(--type-label-size)/1.6 var(--ui-font); }
+.proposition-reader .surface-body { overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+.proposition-reader .thought-reader-text { font-size: var(--thought-size); line-height: 1.8; }
+@media (max-width: 760px) {
+  .surface.proposition-reader { width: 100%; border: 0; }
+}
+
+.proposition-reader .reader-return { display: none; }
+@media (max-width: 760px) { .proposition-reader .reader-return { display: inline-flex; } }

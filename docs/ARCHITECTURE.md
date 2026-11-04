@@ -53,8 +53,8 @@ The EN/ZH dictionary is small and reactive. User text, fetched passages and mode
 
 ## Reading and authored responses
 
-Selecting a bounded Thought reveals read-only full-text disclosure through the existing anchored
-Surface. Selected read/respond controls have a separate measured UI footprint for Hub placement;
+Explicit Read opens full-text disclosure in the fixed Field reader; selection alone does not
+open it. Selected read/respond controls have a separate measured UI footprint for Hub placement;
 they never resize a Thought or enter collision, lasso, or canonical geometry. This does not edit,
 claim, or rewrite the material. A person's explicit response creates an
 InputRecord and a separate canonical Thought using the existing continuation lineage; it never
@@ -275,3 +275,41 @@ Historical material is kept, never mixed into current truth: `docs/history/READM
 ## Continuation rule
 
 Consult the current product and architecture contracts under [`docs/specs/`](specs/01_PRODUCT_ARCHITECTURE_AND_BOUNDARIES.md) — indexed in [`docs/README.md`](README.md) — before changing a shared seam. Historical material in `docs/history/` never overrides them. Preserve the imperative hot path, semantic ownership, evidence honesty and verified source checkpoints. Generic library behavior may be reused; whiteboard, graph, file-desk, task-manager or chatbot semantics must not replace Diffusion's model.
+
+## Consolidated Field reading
+
+`AIProvider.respond` is the single response entry used by `AIRuntime`. Direct
+Field answers use a single structured generation internally; the gateway keeps
+`/api/respond`. Both use `readingResponse.ts` to assemble and validate the same
+bounded answer contract. Thread and non-Field actions keep their existing
+semantic paths. Optional presentation points travel separately from semantic
+intents and are attached only after cancellation, permission, quality and scope
+gates. Missing/invalid points preserve the full original without a repair call.
+
+`ThoughtReader` uses one fixed `PropositionReader`, including ordinary authored
+text. Explicit reading never moves the camera or selects/claims a proposal.
+Dragging, panning, wheel travel, editing or a different selection yields the
+reader without restoring a stale camera. Narrow windows use a full-width reader.
+Thread/Deep Dive retain their own existing disclosure and return contracts.
+
+A valid optional proposition is bound to its exact original. It survives Keep,
+JSON recovery and repository reopen; editing or crystallisation invalidates it,
+and Undo/Redo restores the matching state. There is no parallel session-summary
+cache or reading/proposition URL strategy. Manual extraction uses the explicit
+`field-reading` structured task, only for eligible generated content; it never
+backfills legacy cards automatically. `generatedBy: 'ai'` is explicit generation
+metadata, not inferred from Fork/Bring notes or causal action names.
+
+The standalone Next workspace, its storage/session loop and historical model
+experiments are not dependencies. Experimental plain-answer instructions are
+not enabled or imported. Preview packaging and credential isolation are
+specified in [WINDOWS_PREVIEW.md](WINDOWS_PREVIEW.md).
+
+The 120-character opening instructions live in `fieldAnswerRequest`, not the
+shared language contract; Thread, Deep Dive and other semantic actions do not
+receive Field's opening structure. `generatedBy` remains historical origin.
+After a changed user edit, `userEdited: true` distinguishes current wording;
+it is shown as user-edited in the reader and source inspector rather than as
+untouched generated content. Its old proposition is invalidated and automatic
+AI-card presentation/extraction eligibility ends. Undo/Redo and portable/storage
+round trips preserve both facts without a separate provenance history model.

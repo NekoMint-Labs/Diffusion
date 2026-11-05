@@ -90,6 +90,6 @@ This starts the **web development environment**, not a packaged desktop installe
 
 ## Release and project status
 
-Checked on October 21, 2026: [Diffusion v0.3.16](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16) was published as a **stable release** on October 16, 2026. Source manifests at the `main` baseline `59f1e28` also declare `0.3.16`. Use the [Releases page](https://github.com/NekoMint-Labs/Diffusion/releases) for downloadable artifacts and their release notes.
+Checked November 4, 2026: [v0.3.16](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16) remains the published stable release. The source prepares **v0.3.17**, including the merged [Field consolidation #96](https://github.com/NekoMint-Labs/Diffusion/pull/96); **v0.3.17 is not published**. See the [draft release notes](docs/releases/v0.3.17.md), [Windows installation/acceptance instructions](docs/WINDOWS_INSTALL.md) and [current status](STATUS.md). Use the [Releases page](https://github.com/NekoMint-Labs/Diffusion/releases) for published downloads.
 
 Contributions and reproducible bug reports are welcome: [CONTRIBUTING.md](CONTRIBUTING.md). Diffusion-owned code is licensed under [Apache-2.0](LICENSE); third-party assets and code retain their own terms ([attribution](docs/ATTRIBUTION.md)).

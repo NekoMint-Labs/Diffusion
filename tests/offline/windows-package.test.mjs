@@ -6,7 +6,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { selectProfile, resolveProfile, verifySource, recordPackage } from '../../scripts/windows-package.mjs';
+import { selectProfile, resolveProfile, verifySource, recordPackage, releaseVersion } from '../../scripts/windows-package.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const script = path.join(root, 'scripts/windows-package.mjs');
@@ -18,6 +18,10 @@ function fixture(t) {
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   fs.mkdirSync(path.join(directory, 'src-tauri'), { recursive: true });
   for (const file of configFiles) {
+    fs.copyFileSync(path.join(root, 'src-tauri', file), path.join(directory, 'src-tauri', file));
+  }
+  fs.copyFileSync(path.join(root, 'package.json'), path.join(directory, 'package.json'));
+  for (const file of ['Cargo.toml', 'Cargo.lock']) {
     fs.copyFileSync(path.join(root, 'src-tauri', file), path.join(directory, 'src-tauri', file));
   }
   return directory;
@@ -34,6 +38,7 @@ function installerFixture(t) {
   const docs = path.join(directory, 'docs');
   fs.mkdirSync(docs, { recursive: true });
   fs.writeFileSync(path.join(docs, 'WINDOWS_PREVIEW.md'), 'Install the selected preview.\n');
+  fs.writeFileSync(path.join(docs, 'WINDOWS_INSTALL.md'), 'Upgrade the stable application after exporting JSON.\n');
   return { directory, bundle, plan: resolveProfile(directory, 'field') };
 }
 
@@ -43,6 +48,30 @@ test('manual dispatch selects each named profile and defaults to stable', t => {
     assert.equal(selectProfile(directory, 'workflow_dispatch', profile), profile);
   }
   assert.equal(selectProfile(directory, 'workflow_dispatch'), 'stable');
+});
+
+test('release manifests agree and each independent version drift prevents packaging', t => {
+  assert.equal(releaseVersion(root), JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version);
+  for (const file of ['package.json', 'src-tauri/tauri.conf.json', 'src-tauri/Cargo.toml', 'src-tauri/Cargo.lock']) {
+    const directory = fixture(t);
+    const target = path.join(directory, file);
+    const original = fs.readFileSync(target, 'utf8');
+    fs.writeFileSync(target, original.replace(releaseVersion(directory), '99.0.0'));
+    assert.throws(() => resolveProfile(directory, 'stable'), /Release versions must agree/);
+    assert.throws(() => resolveProfile(directory, 'field'), /Release versions must agree/);
+  }
+});
+
+test('Preview cannot override the release version and stable cannot change its executable', t => {
+  const directory = fixture(t);
+  const previewPath = path.join(directory, 'src-tauri/tauri.preview.conf.json');
+  const preview = JSON.parse(fs.readFileSync(previewPath, 'utf8'));
+  fs.writeFileSync(previewPath, JSON.stringify({ ...preview, version: '99.0.0' }));
+  assert.throws(() => resolveProfile(directory, 'preview'), /must inherit the release version/);
+  const stablePath = path.join(directory, 'src-tauri/tauri.conf.json');
+  const stable = JSON.parse(fs.readFileSync(stablePath, 'utf8'));
+  fs.writeFileSync(stablePath, JSON.stringify({ ...stable, mainBinaryName: 'diffusion-preview' }));
+  assert.throws(() => resolveProfile(directory, 'stable'), /Stable executable/);
 });
 
 test('PR packaging defaults to preview and uses the committed Field manifest', t => {
@@ -155,7 +184,7 @@ test('recording rejects multiple installers and an empty installer', t => {
 
 test('receipt, checksum list and install note describe the actual artifact without claiming feature acceptance', t => {
   const { directory, bundle, plan } = installerFixture(t);
-  const name = 'Diffusion Preview_0.3.16_x64-setup.exe';
+  const name = `Diffusion Preview_${plan.version}_x64-setup.exe`;
   const bytes = Buffer.from([0x4d, 0x5a, 0, 255, 10, 13, 42]);
   fs.writeFileSync(path.join(bundle, name), bytes);
   const source = 'a'.repeat(40);
@@ -165,10 +194,37 @@ test('receipt, checksum list and install note describe the actual artifact witho
   assert.equal(receipt.sourceCommit, source);
   assert.equal(receipt.run, run);
   assert.equal(receipt.preview, true);
+  assert.equal(receipt.version, releaseVersion(directory));
+  assert.deepEqual(receipt.installationNotes, { path: 'docs/WINDOWS_PREVIEW.md', sha256: digest(Buffer.from('Install the selected preview.\n')) });
   assert.deepEqual(receipt.acceptance, { packaging: 'passed', installedWindows: 'not-run', feature: 'not-run', liveModel: 'not-run' });
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(bundle, 'source.json'), 'utf8')), receipt);
   assert.equal(fs.readFileSync(path.join(bundle, 'SHA256SUMS.txt'), 'utf8'), `${digest(bytes)}  ${name}\n`);
   assert.equal(fs.readFileSync(path.join(bundle, 'INSTALL.md'), 'utf8'), 'Install the selected preview.\n');
+});
+
+test('stable receipts include stable identity and stable INSTALL bytes, with acceptance still pending', t => {
+  const { directory, bundle } = installerFixture(t);
+  const plan = resolveProfile(directory, 'stable');
+  fs.writeFileSync(path.join(bundle, `Diffusion Explorer_${plan.version}_x64-setup.exe`), 'installer fixture');
+  const receipt = recordPackage(directory, plan, 'b'.repeat(40));
+  const notes = fs.readFileSync(path.join(bundle, 'INSTALL.md'));
+  assert.equal(receipt.preview, false);
+  assert.equal(receipt.appIdentifier, 'app.diffusion.explorer');
+  assert.equal(receipt.productName, 'Diffusion Explorer');
+  assert.equal(receipt.entryPoint, 'index.html');
+  assert.equal(receipt.overrideConfig, '');
+  assert.equal(notes.toString(), 'Upgrade the stable application after exporting JSON.\n');
+  assert.deepEqual(receipt.installationNotes, { path: 'docs/WINDOWS_INSTALL.md', sha256: digest(notes) });
+  assert.equal(receipt.acceptance.installedWindows, 'not-run');
+  assert.equal(receipt.acceptance.liveModel, 'not-run');
+});
+
+test('stable packaging never falls back to Preview notes when stable instructions are missing', t => {
+  const { directory, bundle } = installerFixture(t);
+  fs.writeFileSync(path.join(bundle, 'stable.exe'), 'installer fixture');
+  fs.unlinkSync(path.join(directory, 'docs/WINDOWS_INSTALL.md'));
+  assert.throws(() => recordPackage(directory, resolveProfile(directory, 'stable'), 'c'.repeat(40)), /ENOENT.*WINDOWS_INSTALL/);
+  assert.equal(fs.existsSync(path.join(bundle, 'source.json')), false);
 });
 
 test('source verification requires the exact full SHA and rejects tracked changes while permitting generated files', t => {

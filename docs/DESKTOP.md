@@ -1,5 +1,13 @@
 # Desktop verification and native boundary
 
+## Current Windows release preparation — November 4, 2026
+
+The v0.3.17 source includes merged Field consolidation #96. Use
+[stable installation and acceptance](WINDOWS_INSTALL.md) for the stable identity,
+[Preview instructions](WINDOWS_PREVIEW.md) only for internal isolated builds, and
+[STATUS.md](../STATUS.md) for current verification limits. v0.3.17 is not published.
+The dated observations below are historical; they do not qualify the current package.
+
 ## 2026-10-12 repair candidate: search is not accepted
 
 The Windows repair candidate restores the bundled search process's minimal runtime
@@ -13,7 +21,8 @@ This mode is experimental. The operator has no usable search API key for the
 current key-based configuration and reports that keyless answers are almost
 entirely garbled. A successful three-candidate packaged-engine smoke request does
 not resolve that report or establish usable installed-desktop search. See
-[current candidate status](../STATUS.md#desktop-repair-candidate-and-unresolved-search-acceptance-2026-10-12).
+[historical records](history/README.md). The search-quality limitation above is
+a dated report, not a newly repeated live test.
 
 ## Desktop setup and boundary
 
@@ -30,7 +39,7 @@ pnpm run tauri -- dev
 pnpm run tauri -- build
 ```
 
-The repository tracks both `pnpm-lock.yaml` and `src-tauri/Cargo.lock`. During the current stabilization pass, Rust 1.97.1 and Cargo 1.97.1 were available, but `cargo test --manifest-path src-tauri/Cargo.toml` stopped before compiling the application because this Linux/WSL2 environment lacks the required `glib-2.0` and `gobject-2.0` development packages. A Linux discovery sidecar was built and checked separately; that is not a Tauri runtime or Windows package pass. Native runtime, package, and Windows behavior remain **UNVERIFIED**. Run the commands above on a machine with the platform's Tauri prerequisites, then record the OS and actual result.
+The repository tracks both `pnpm-lock.yaml` and `src-tauri/Cargo.lock`. During an earlier Linux stabilization pass, Rust 1.97.1 and Cargo 1.97.1 were available, but `cargo test --manifest-path src-tauri/Cargo.toml` stopped before compiling the application because this Linux/WSL2 environment lacks the required `glib-2.0` and `gobject-2.0` development packages. A Linux discovery sidecar was built and checked separately; that is not a Tauri runtime or Windows package pass. That historical pass did not verify native runtime, packaging or Windows behavior. Current exact-package acceptance remains separately required. Run the commands above on a machine with the platform's Tauri prerequisites, then record the OS and actual result.
 
 The file dialog has no artificial file-type filter. The adapter uses asynchronous reads and explicit size budgets. The file-system plugin relies on its app-data scope plus access granted by an explicit file dialog; no `$HOME/**` or filesystem-root grant is added. Verify open/save dialog scope behavior on Windows, macOS and Linux before release. If access is denied, the UI reports Unavailable/Limited or a save error, rather than pretending extraction succeeded.
 

@@ -1,0 +1,761 @@
+{
+  "prepared": "2026-11-04",
+  "purpose": "Historical preservation, not current release acceptance. Original branches retained; no model scripts executed.",
+  "fieldMerge": "5b6be7dbbdc5747c435d886cf9dba0ed2ecaf14e",
+  "sources": [
+    {
+      "pr": 84,
+      "title": "docs: A 方向第一轮真实模型对比与复现材料",
+      "sourceCommit": "26943792abf7d5c25d6f4b25944e8c6cbf8d3328",
+      "reviewBase": "86b072bba153526350d0c4f1d481d21ef727b65a",
+      "branch": "docs/a-model-comparison-20261028",
+      "scope": "PR changed files",
+      "files": [
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/A真实模型对比报告.md",
+          "gitBlob": "86960d6d636e089c5f2011f63b51d91cb472bc77",
+          "bytes": 7866,
+          "sha256": "fca06dab0239fa05cea1cf01b78fbb7a919ae1139f28240802b41c62f5be7110"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/README.md",
+          "gitBlob": "5a799d8373f11a8847e3d53d9eee354fe3f9a9a5",
+          "bytes": 2481,
+          "sha256": "083c6924afd034604a260dae3be8eb1157e1c339062008cebf128532ddc93381"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/comparison-manifest.json",
+          "gitBlob": "c31457f45d121626507481ec5fe1a9505f89e4df",
+          "bytes": 3042,
+          "sha256": "337fbfbb72acba3cbaabc6a4bb67698ca8a4348d9a19631cfbfe2ac826f3e87a"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/diffuse-keep-repro-result.json",
+          "gitBlob": "810c4af5ea2ef2652e70cb5ad7b875f5d81252cf",
+          "bytes": 343,
+          "sha256": "fc097cb110dbca54df04adb2201b957117db2226da7fc697270ece409961d1b0"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v1-instrumentation-failure/candidate-ask.json",
+          "gitBlob": "4cb3c177ad82d000b221b290a6f04c5d880dadff",
+          "bytes": 1604,
+          "sha256": "9df196f5aecb047b8abe36643a3b444e0aa93d0c5acdd93e86c69c665ee893af"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v1-instrumentation-failure/candidate-continue.json",
+          "gitBlob": "21f1878398b5a952b280a065602206e489f29b81",
+          "bytes": 1526,
+          "sha256": "3b32a77d0de545da479b331c8adb4bc455e18bf06233b39c472e0e2878c71d72"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v2/candidate-angle.json",
+          "gitBlob": "527d387065d2a7710d3a6b68ee43899c1c5c0fd0",
+          "bytes": 2564,
+          "sha256": "80af8be7c0a5ae1a23aeb03b8a0b379c9c8cd73acc633414ae71b23064f64b0b"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v2/candidate-ask.json",
+          "gitBlob": "4240756ab0cf491bb2acfbd41a338345a0943144",
+          "bytes": 7252,
+          "sha256": "32a33303e2d890946e660f414b6ffc0ad8cafc5fea7909c19e0788f598527b60"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v2/candidate-continue.json",
+          "gitBlob": "acb42e9839fd4844458853a5901ad62c2ef56dee",
+          "bytes": 6230,
+          "sha256": "575c4901387e54f04521af610851e4ce96021ecbfce9fd76bb65694342bbd5aa"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v2/candidate-correction.json",
+          "gitBlob": "a070da58b96d540f35053453588c51af763fc7ef",
+          "bytes": 2526,
+          "sha256": "dc1d848b944d548ee0583a17ec44bac9aa17167d0d22ef49bbcbd5016e6319d5"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v2/candidate-diffuse.json",
+          "gitBlob": "d1aa7bd6d3b6264f87eacefc0ff20ada5996093a",
+          "bytes": 3943,
+          "sha256": "5511ad163f03fce350932baf9cbe0925e0b88b81053e39379536ef13cd0f6f5e"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v2/candidate-uncertainty.json",
+          "gitBlob": "86de53d08296177fd69711e58b5228614e10c447",
+          "bytes": 2359,
+          "sha256": "0574cce71bc793940ba72df696c3dc51fe16958ec281125425f7ab981a840540"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v3/baseline-angle.json",
+          "gitBlob": "764c79c0d46f778f0b3deaa3af6de98403c1117f",
+          "bytes": 2534,
+          "sha256": "1976a824344af2220222ffa09b887dd3c5a2af1ab18d250c0929b7cc58e3aead"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v3/baseline-ask.json",
+          "gitBlob": "bd32879a03f209edfd30026cfc3f261d9482515e",
+          "bytes": 6335,
+          "sha256": "b5f4413e8a729d306e80e7cec13a04da17ab6d325193c771eebb8f40ffc253dd"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v3/baseline-continue.json",
+          "gitBlob": "01da3e21b5757803ee123907ee3b73bae058f2e3",
+          "bytes": 6130,
+          "sha256": "6f0e43c17baa302c3e9d81a5dd6cccaa77b2440c91054d13db138b8acac3387b"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v3/baseline-correction.json",
+          "gitBlob": "6633e6aec092a20190e9b46b5e8f3b49a8c2c145",
+          "bytes": 8037,
+          "sha256": "72fbc79cc848e246df7a136ef2e37f922b47e6771a67267859503d617fad6d52"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v3/baseline-diffuse.json",
+          "gitBlob": "ca5c5b70341638c47aa2c53c4b41222e32800e16",
+          "bytes": 3974,
+          "sha256": "d86cc9c9dd241f0c0d18da9e2064e97fc02166438b14b46dcbb134a76275e843"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v3/baseline-uncertainty.json",
+          "gitBlob": "5ce811907ff8f55b757795e876e7fa4138d81428",
+          "bytes": 7527,
+          "sha256": "3bdd6c2027f491dac516e8a21fd2ae73e3a65cdda415176d5a707feb5a4a118f"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v3/candidate-correction.json",
+          "gitBlob": "96b5650a1221d0739c9e72d1b9dd4064629702c6",
+          "bytes": 5282,
+          "sha256": "3c876dc774b95915f795e9ab5c0820452c96cba8e3e000ca11bd117ac93d8a2b"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v3/candidate-diffuse.json",
+          "gitBlob": "258b059c0697757baa5186192971ba36bb18f0c6",
+          "bytes": 3938,
+          "sha256": "11b3a8a9137d5949f17451a1b2deffcd49dc689f7e82042d6d915ed12a6e2b9f"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/live-v3/candidate-uncertainty.json",
+          "gitBlob": "7127670684900018ce4b0cdfe3c539172c211721",
+          "bytes": 7758,
+          "sha256": "3f744b78b330414fccac0e0308c3073d4abb258a7114603e082cf7f09106b626"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/native-build-hashes.json",
+          "gitBlob": "6b6a95976068b9715a395bf022b7002436ba3ade",
+          "bytes": 262,
+          "sha256": "42e44c13035cc235bab2fa9d3ab63b0663d95089646285825fdbca90cfaa5fd3"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/targeted-unit-tests.txt",
+          "gitBlob": "46ad7cd20f3896d7eccd67ae940041ad40c2ebbd",
+          "bytes": 447,
+          "sha256": "35e9b5617bf920f86dfc5c3fa66e29a9ce47b998adf12a692fece3f5c252f1bb"
+        },
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/完整对照原文.md",
+          "gitBlob": "9a438585eb3c744fbc6a0c70a70557ed301bb1ee",
+          "bytes": 12997,
+          "sha256": "2ee0d133a94427ae99bbe5df252a1a990291ffc166838064a7e099e4940378fe"
+        },
+        {
+          "path": "experiments/role-a-audit/diffuse-keep-repro.tsx",
+          "gitBlob": "3beedac86e39cb5922898d35964a45c55d398baf",
+          "bytes": 2606,
+          "sha256": "71e68922a34f23bd3ba24c651b73d5b2c2e925b212ac645a3ad925a26547a576"
+        },
+        {
+          "path": "experiments/role-a-audit/native-comparison.ts",
+          "gitBlob": "4d29bd1b19fed75c9aa4710813e1b8b5215b3e8f",
+          "bytes": 10455,
+          "sha256": "fc1ad039584fc425463e169fa63b7e865dbaf7ba526cf0ee48d9b15f45bf9488"
+        }
+      ]
+    },
+    {
+      "pr": 85,
+      "title": "chore(ci): retain E2E reports and C native acceptance evidence",
+      "sourceCommit": "a3403244f2a965f4cff63a64cd85ccb2c93f38ea",
+      "reviewBase": "8f9d62130516201b0b6a471edb3312728cd1981f",
+      "branch": "chore/c-acceptance-evidence",
+      "scope": "PR changed files",
+      "files": [
+        {
+          "path": ".github/workflows/e2e.yml",
+          "gitBlob": "af2f4f9506f380abfe4bdfeef2c6e649934a2e09",
+          "bytes": 3317,
+          "sha256": "de950518d16a11e986b78f2df1ba71049b7925844c337c0ce8c0352e052f1729"
+        },
+        {
+          "path": "docs/TESTING.md",
+          "gitBlob": "0516ad43e74f7a0caa742d84190cb2fb7b2721a5",
+          "bytes": 10670,
+          "sha256": "1d993d3f8c63ddff91b10693f8b878f69a26ce2029b4fa8271b8c390ea070ace"
+        },
+        {
+          "path": "docs/experiments/c-native-20261028/README.zh-CN.md",
+          "gitBlob": "af3c5127c1477fd318bbe82b7b8502aefaed9e94",
+          "bytes": 8095,
+          "sha256": "75a9ec4937eda1dc4133fa5f55b8022d98bf7a26cb20256b718ed9da2322582c"
+        },
+        {
+          "path": "docs/experiments/c-native-20261028/native-export-final.json",
+          "gitBlob": "50d3d0ab88eed889ec8107338928a47ada92ea9f",
+          "bytes": 9938,
+          "sha256": "a773a9f75f882ec2e012315fa365beeeee0c7380aa559b45e0661582029f8d32"
+        },
+        {
+          "path": "docs/experiments/c-native-20261028/public-fixture.json",
+          "gitBlob": "18f91a615a9580b39be94a91bd8166648d8e56ba",
+          "bytes": 4131,
+          "sha256": "65a61ba676d3515be3f05806cdf2ba1c9f9446ff916c18a6ba927ed782fa6090"
+        },
+        {
+          "path": "docs/experiments/c-native-bring-fix-20261029/README.zh-CN.md",
+          "gitBlob": "2006c0d9bde73a9bd871085fc2ae7687e94dd9e9",
+          "bytes": 6467,
+          "sha256": "cee061591df202d690698d915520fbc87558433d87a8dcfc483482f2582eb4ea"
+        },
+        {
+          "path": "docs/experiments/c-native-bring-fix-20261029/native-bring-clear.png",
+          "gitBlob": "832b3141ffcf85eda1cb597630b09259ccac17b6",
+          "bytes": 85425,
+          "sha256": "73cc2dc0dfc19ad7ca9a60ae7c1264080e349d763a583527c5c6b8cd0d4a1ee4"
+        },
+        {
+          "path": "docs/experiments/c-native-bring-fix-20261029/native-export-bring.json",
+          "gitBlob": "b384e6687760d307b0f41aee87c511c7ecc27bc4",
+          "bytes": 7600,
+          "sha256": "e866829819936b538b9dcdfb3c01c4cc607f9a7f11a182de47663b2d98fd428f"
+        },
+        {
+          "path": "docs/experiments/c-native-bring-fix-20261029/native-export-final.json",
+          "gitBlob": "9906eb5e2741882f7e3aae39465efc67abb5bea1",
+          "bytes": 8464,
+          "sha256": "bf0457a8becdf0b4974279470a6c06c2417c4d7d375ad53b8a222766d4dda000"
+        },
+        {
+          "path": "docs/experiments/c-native-bring-fix-20261029/public-fixture.json",
+          "gitBlob": "5a6289d07ded9812ac0ecd1b738d0950f88e4d36",
+          "bytes": 4830,
+          "sha256": "3355b41cb9202be30a0aed9a42e89c9e3f6ccbda2e37484b6f0350517f40d23a"
+        },
+        {
+          "path": "docs/experiments/c-preflight-20261028/README.zh-CN.md",
+          "gitBlob": "6560ceacadda20a14fa88b306694cae5ce255c56",
+          "bytes": 8678,
+          "sha256": "dad2e473bc761606a951c334987c42713cc75cd609aac6dafb7bc55f7360cdf1"
+        },
+        {
+          "path": "docs/experiments/c-preflight-20261028/evidence.json",
+          "gitBlob": "6a9d929cf80e7ee57ab12f15798e82ceaa166b00",
+          "bytes": 12871,
+          "sha256": "dc416f3c812ab7d45a620684e54bfe6c9631248015951f1de0aaf4190663ece4"
+        }
+      ]
+    },
+    {
+      "pr": 86,
+      "title": "fix(tooling): guard model capture provenance and historical evidence",
+      "sourceCommit": "4ad0f338414b248f26c6f2ed5c81eec429075bf5",
+      "reviewBase": "26943792abf7d5c25d6f4b25944e8c6cbf8d3328",
+      "branch": "fix/capture-provenance-preflight",
+      "scope": "PR changed files",
+      "files": [
+        {
+          "path": "docs/experiments/a-model-comparison-20261028/README.md",
+          "gitBlob": "fa06c4bc3f18b96759ba1f6a8887844597c906ea",
+          "bytes": 5092,
+          "sha256": "6369fa8a078d92852e0bd62b03a247169ee087a6d9609bfa71c9457153ba7778"
+        },
+        {
+          "path": "experiments/role-a-audit/capture-options.mjs",
+          "gitBlob": "2f46d9a1e911321cbabf995f1bad3f0417c7f337",
+          "bytes": 4545,
+          "sha256": "02db997eff138078427d9796d0ecd9ac5ab6de2da9f4c703582933c124d42858"
+        },
+        {
+          "path": "experiments/role-a-audit/diffuse-keep-repro.tsx",
+          "gitBlob": "93f3381e7adf68bbb71207daffb2f89b1791d58d",
+          "bytes": 3535,
+          "sha256": "4175f94c3efc0994592bee0aa2dbf3194303060d27bb56929b89ff184da6c274"
+        },
+        {
+          "path": "experiments/role-a-audit/native-comparison.ts",
+          "gitBlob": "e106f4727ff6a707af8b430b4d17f947566e5549",
+          "bytes": 10791,
+          "sha256": "a526fcb98051a673797077b7a4bfa4d67d8688e6e5d5032de4bf2b6d977f323a"
+        },
+        {
+          "path": "tests/offline/capture-provenance.test.mjs",
+          "gitBlob": "5089b729d9aaa33357546b3584b3aace0312fc71",
+          "bytes": 6239,
+          "sha256": "b41c7bc5ffa29831ab65b3f7b68540fa94f010cbd09a770c4ab87ace9adafc46"
+        }
+      ]
+    },
+    {
+      "pr": 88,
+      "title": "feat(field): integrate Bring clearance and default-off wording trial",
+      "sourceCommit": "e5f203ddeb64973c067bfbf054de6f34926740b4",
+      "reviewBase": "8f9d62130516201b0b6a471edb3312728cd1981f",
+      "branch": "fix/bring-placement-clearance",
+      "scope": "Historical docs/experiments only; not a complete product inventory",
+      "files": [
+        {
+          "path": "docs/experiments/FIELD_ANSWER_PREVIEW.md",
+          "gitBlob": "e4d703f15a31bd8dd982c8f0898198da3745e2ab",
+          "bytes": 6644,
+          "sha256": "5845c65ec4e3319fcb628eddf8928707478f6d63a8cea8d38152315c4d886fd6"
+        },
+        {
+          "path": "docs/experiments/FIELD_DIFFUSE_READING_REVIEW_20261028.md",
+          "gitBlob": "e86c2e9ec98448d3daa34739d9923d90e8407a22",
+          "bytes": 4680,
+          "sha256": "689a0724b6527f623d8deb1bbe8ee58454689a69a6e9910e211df9db33b366e9"
+        },
+        {
+          "path": "docs/experiments/FIELD_FORK_READING_REVIEW_20261028.md",
+          "gitBlob": "e900573e317a2ec6daedbac8b9643b94ddc8dd6e",
+          "bytes": 5513,
+          "sha256": "f7ccf71a2718ad1c0aa10bd88661f0fd33efd1fec0018578f06f78892792c45c"
+        },
+        {
+          "path": "docs/experiments/FIELD_PROPOSITION_CONTENT_CONTRACT.zh-CN.md",
+          "gitBlob": "83d72890e2e4a2f46985ba9a00abffabb06cf32d",
+          "bytes": 9125,
+          "sha256": "bd3074c62b6d164f2cfd7f748f333aba9e2acee6329b7f0891293540a94496c6"
+        },
+        {
+          "path": "docs/experiments/FIELD_PROPOSITION_MODEL_COMPARISON.md",
+          "gitBlob": "c852aa2e36e39522e76b10d4d4cf271b3f9bf464",
+          "bytes": 4853,
+          "sha256": "80a0ddb6c8d63a5da783411b8b68b102f2a40f5acd0b13c7c81c3b57ddcf3a07"
+        },
+        {
+          "path": "docs/experiments/FIELD_PROPOSITION_READER_PROPOSAL.zh-CN.md",
+          "gitBlob": "f6b9ef8bff3dbf2fe43463dd7c47bec2707758b3",
+          "bytes": 20969,
+          "sha256": "92ce86bf95aff73d13786c9e9a6c809c83c517dddc2bfd100c6dbac8bd8fe1ee"
+        },
+        {
+          "path": "docs/experiments/FIELD_PROPOSITION_READER_TRIAL_20261027.md",
+          "gitBlob": "f9afd1a30ae68757cafe2fd5a2a3b4cdb421c54e",
+          "bytes": 7555,
+          "sha256": "0ae22a666a402a29ba25ce248f5bdaf0b41dacc322379d84c0cc29e62b719296"
+        },
+        {
+          "path": "docs/experiments/NEXT_EXPLORATION_TRIAL.md",
+          "gitBlob": "a45d19d52b871448bfa6b7b2ba4db0fb5adc0a4a",
+          "bytes": 7476,
+          "sha256": "d29c4d3702c00bc225861647303ca3443c6c8631d79a89d5b3ff5a406bce09a9"
+        },
+        {
+          "path": "docs/experiments/WINDOWS_PREVIEW.md",
+          "gitBlob": "72425c61f21f7a26c4abd529cad17b04177231e4",
+          "bytes": 6930,
+          "sha256": "81b41f017609b80e8b80a81092b27da17052518b7bedf55e4ad028af84e5b3cf"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/README.zh-CN.md",
+          "gitBlob": "cfccc90bc7cf626eb7a1f29c3b9262621c74aa1e",
+          "bytes": 8182,
+          "sha256": "b14c0271cc9b20c066bdb25dd0156f4de582fea8e05d7433b2c2fa182992ab42"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/ask-high-1600.json",
+          "gitBlob": "8e05ab1c9af6d74b8805ba3f483936aea5ab3f04",
+          "bytes": 22888,
+          "sha256": "772585e6d2a8adc14b1ff42b44e038ec5225bcb2b55a90026862993b384465d1"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/ask-high-4000.json",
+          "gitBlob": "16b7f8d0b65104a76ce1c20c448ce3b72c97e7bd",
+          "bytes": 28963,
+          "sha256": "b83bbdfc2fda5d08ce9d14c2acd7a1c3b30da0ec094051e64743f5f80c073a79"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/ask-low-1600.json",
+          "gitBlob": "bfb783fedfbf7dce5b9c964b77613cb261eefd4d",
+          "bytes": 29122,
+          "sha256": "ae51df5e3952324c1db0b1fd8a28c4e346585548636d1e5d0b3430b5216b3f68"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/ask-off-1600.json",
+          "gitBlob": "f76280f2f240d788e5686ac07f5fd9d8ee19dde7",
+          "bytes": 31128,
+          "sha256": "07e7af8c2b517b30f47c0c906757593da479aaf0bfa2cb726134ff48d6bb1caf"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/build-manifest.json",
+          "gitBlob": "61c62db939887c2a2e1f3bcfdceccb6aca519d9c",
+          "bytes": 2440,
+          "sha256": "a045524de77e09483a44e105669f1ea20ee04ed9c5a52fe9cbe0e53fd1523532"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/comparison-manifest.json",
+          "gitBlob": "a5f6a895da949fcbbf1a72953a3c20a5e3127a24",
+          "bytes": 6374,
+          "sha256": "34775646ac4dadf54f2df88cca6bb3f8b8f678cb761342fe5d830f10058a26df"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/continuation-plan.json",
+          "gitBlob": "798b3a84c05405333b2b1c78818f2ff8003dc239",
+          "bytes": 2063,
+          "sha256": "cce227668ae16e9c168c7f3fb1ea5183bd2521907d443a1e4956a9b1d8ff7e84"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/continue-high-1600.json",
+          "gitBlob": "2ee4032f3bff1ab60bfd5fe9f21c7ba1cec79a21",
+          "bytes": 30231,
+          "sha256": "0cd806021451df02478b3505e7cd6c53db5962b8bcfd7e587dc93b46fccb883d"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/continue-high-4000.json",
+          "gitBlob": "95f7892f3882c5d94da4ca2c872d9d0844a6bd96",
+          "bytes": 29766,
+          "sha256": "ab64b0e97f7112315ecd7c8ec845b9d6b078a516ddb1df5c8a951329e788d682"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/continue-low-1600.json",
+          "gitBlob": "d26364849ea1996d56ccd86b08a55c22ab59bfa8",
+          "bytes": 29917,
+          "sha256": "6061aecadca3251cc6a553c1ff7516f899b0ac96e9ae4510862b3f8c89e14bc4"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/continue-off-1600.json",
+          "gitBlob": "79a7c597b8a6bca274d35c596edd2d8916d4a3cb",
+          "bytes": 29612,
+          "sha256": "a40d6e45088f809865e76a886b50991c200d9de202280de52a9da5f346d7e630"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/initial-plan.json",
+          "gitBlob": "951a5ebd4420ca305f939cc45a203ca25f3173d3",
+          "bytes": 2063,
+          "sha256": "aa95901cad23a38e905b5f705b7cc279ce2fa6386d228e4cf294315a413e9e95"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/initial-summary.json",
+          "gitBlob": "d532100a54d25428a12cea7df1acc5d14f8db238",
+          "bytes": 527,
+          "sha256": "25af231c999bd2eb02fcc58515458ff8d4eb3d33fe6f45f180d55e73d9f463c9"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/loaded-build.json",
+          "gitBlob": "bc276ccc519e3cda8522bbe841717e379c4a8592",
+          "bytes": 262,
+          "sha256": "7e60bcebe66778810dc320e0bff27bbc296eaca8cabda950c2dab38213adc811"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/resume.json",
+          "gitBlob": "e500fdfb40f4d71bee20882b46e0bd4b8a2d320d",
+          "bytes": 848,
+          "sha256": "48434facce98f65a6434608b783bc16e42935314b37d50600b9695556416108b"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/summary.json",
+          "gitBlob": "207bfd9ae449bc11ae8799aac14135523fd2e343",
+          "bytes": 1602,
+          "sha256": "fa2620004be343dc5239122e9688e2dd48cdc203d61bd6728db6f184e7d04615"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/switch-diagnostic.json",
+          "gitBlob": "14e6572c9c89799f9504948ba74a45693c1ab495",
+          "bytes": 580,
+          "sha256": "909561b837c6e6aacdc1a053db05cef0914583c38a7a4ba95da7b15445f8b151"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/validation.json",
+          "gitBlob": "0f7fcefb5e795ae743f2c97562a1812d03371e93",
+          "bytes": 587,
+          "sha256": "a1ee9bf84a6c4d51e73d0dfc7eed387b977a95d46f354f9231c18f2c54184ff6"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/zero-request-switch-failure.json",
+          "gitBlob": "e927cf03e75a73536b1eddd87fdbea20f4a07fc9",
+          "bytes": 597,
+          "sha256": "9cebdf44d294a4c05022ebd4c7a9d5f2215a58fb420df4f5729ce827a15bbcad"
+        },
+        {
+          "path": "docs/experiments/b-deepseek-budget-20261029/逐字输出.md",
+          "gitBlob": "d8f84bfa4f16548340099a9eed62d2cce3e79acb",
+          "bytes": 5491,
+          "sha256": "f3eeccb2b161b5f77bb3fbe0ea6cb59593bcefe37bf61392ccaa1124bde94da1"
+        },
+        {
+          "path": "docs/experiments/b-integrated-delivery-20261031/README.zh-CN.md",
+          "gitBlob": "e42a7820a88b963ee2a69af6e10290898c178bcc",
+          "bytes": 7193,
+          "sha256": "9f3948f8f6b5f58fb776c9691e933abcad7f5d9797404b2e5b9f731821a005b5"
+        },
+        {
+          "path": "docs/experiments/b-integrated-delivery-20261031/acceptance.json",
+          "gitBlob": "ae42c6752db8ae4d2ee309d5b773eca2f900c3cd",
+          "bytes": 3385,
+          "sha256": "454bae5f3c6cdd231a7a0712779dd0ca29798681e73389ee67917dc8e7f24b21"
+        },
+        {
+          "path": "docs/experiments/b-integrated-delivery-20261031/build-manifest.json",
+          "gitBlob": "2dca053e50f4f5f377954ccc0d3a9e95cdfaba2d",
+          "bytes": 2299,
+          "sha256": "b2905f94326b88ba26b2c5971237252194a5b800d2827dff17b3a55bcf148e0a"
+        },
+        {
+          "path": "docs/experiments/b-integrated-delivery-20261031/source-check.json",
+          "gitBlob": "d865564aca6f4fbeecb81bf572c52b240829c829",
+          "bytes": 646,
+          "sha256": "9ddf19592f719159b69a705cfcf152ff1121cc630a94f615b712561c5f19ecb1"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/README.zh-CN.md",
+          "gitBlob": "5c2a095c9d2fe67853a014956966c35edf4a94b0",
+          "bytes": 6618,
+          "sha256": "13e28ab217b272fab08245da01bea888a420bda70d70e3425f92e7e8f7f12142"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/baseline-angle.json",
+          "gitBlob": "696af322d04dba9d0b99903cb95470d5f870cf43",
+          "bytes": 6082,
+          "sha256": "1ed34629b2074db83ef96d975587a07bc03e16fe5f112e2d24c0b8b121f51a85"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/baseline-ask.json",
+          "gitBlob": "aaebf36ad7558f842754ef5aab85d64da1a0753d",
+          "bytes": 2418,
+          "sha256": "28c7ddbad464c6c1737aca7b967d896dab31cb2b9f6a2e8fbfcd7ae5c49d94f4"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/baseline-build-manifest.json",
+          "gitBlob": "462b02b17950aeb21a508aac8a2ac0057c878812",
+          "bytes": 2420,
+          "sha256": "c8f7ea6d0f0789f14779e43e84268a8825b93b52b21ad039f976321443762052"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/baseline-continue.json",
+          "gitBlob": "d8e96a244768e441a9a1e2ba16c4dcf347cc3898",
+          "bytes": 6308,
+          "sha256": "395d142e361552f69ff309fe534b4baa8473a7bbbf6df809f2d69208deb0a68a"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/baseline-correction.json",
+          "gitBlob": "713fcac2dd88644c6d7da66ed9478a16de7b67f7",
+          "bytes": 8540,
+          "sha256": "81ebcdb8295744f28d5e2a90ad5d2ac062cc6a686fc349b8a191d44f25fdb492"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/baseline-diffuse-setup-failure.json",
+          "gitBlob": "546f2bfaa85a0c8401ec48ca0820ff56ea8be6a7",
+          "bytes": 738,
+          "sha256": "3cc8a19db6146961f487180318edbf876467ae0f9b8453c5f287e165391d8921"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/baseline-diffuse.json",
+          "gitBlob": "7d5f939abc6b4111505f707ad67f43f8997389d2",
+          "bytes": 5698,
+          "sha256": "52c190893ebd9b82116b6a539dcd97f220c4276acc8b23e9a2a6ff552951ee8c"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/baseline-loaded-build.json",
+          "gitBlob": "28bd6a5a3fbcae2ce9bd4a528f2f6374fd2b5329",
+          "bytes": 333,
+          "sha256": "a0c850fee0ca3700044001aaf5b023744fd30bdaf7479e21b5df893b7fd2008c"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/baseline-remaining-summary.json",
+          "gitBlob": "498f6b2dfbe80b3c8af9a927a0bb85b64c28bd58",
+          "bytes": 657,
+          "sha256": "8ddbdec343d7835cd92cd64df39d251961aef7a5b3ab29983f57b532a2423f4a"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/baseline-summary.json",
+          "gitBlob": "7ba97cd422673c264812b109db1bc0fe586982cb",
+          "bytes": 798,
+          "sha256": "442263f32d0ecad6e3a788dbfa7c8e31693ea218269e222a9e4a6e993ee7f4d4"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/baseline-uncertainty.json",
+          "gitBlob": "7c24a1867007c4a770a18dc6d26facc3f2df4858",
+          "bytes": 8403,
+          "sha256": "0255e006f37e31f2fbf7948ad47013a3a7b18f2e9508331b67159e1d1d071964"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/candidate-angle.json",
+          "gitBlob": "2139d95fc4c2035fe37dd0be7592b00e35bb78ca",
+          "bytes": 2412,
+          "sha256": "1acc837e53fd521e4eafabbc37ebe1e2ed4faf0da6a80727c5aaa7cd59c8cfe8"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/candidate-ask.json",
+          "gitBlob": "f551192f360ecec92187ed94241da5814a89929e",
+          "bytes": 2441,
+          "sha256": "150c47754063c2a945d853123470c62c159ee377b2de67bd2039deeecc3199be"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/candidate-build-manifest.json",
+          "gitBlob": "61c62db939887c2a2e1f3bcfdceccb6aca519d9c",
+          "bytes": 2440,
+          "sha256": "a045524de77e09483a44e105669f1ea20ee04ed9c5a52fe9cbe0e53fd1523532"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/candidate-continue.json",
+          "gitBlob": "03f55a3f684c726f91ac3197a1ba31553d94860a",
+          "bytes": 2366,
+          "sha256": "545729ab721856e7af1637b09cdaf48b9c8af2ba87dd700bfda5f15585deaaf8"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/candidate-correction.json",
+          "gitBlob": "d79304c8baeaf3b88653182d40e8280083831620",
+          "bytes": 8165,
+          "sha256": "649611da4077c3c21b8ed8214411b1276473baad626228777cfc524ba39c3009"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/candidate-diffuse.json",
+          "gitBlob": "c30aab79ed3ffc20cf278e8026de6cf8a62a61f6",
+          "bytes": 6308,
+          "sha256": "dd32dff55c86193219c2321c158a032382799a77acc72c71e1641b66ecb886b9"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/candidate-loaded-build.json",
+          "gitBlob": "3ab424b91354675e779685b4bfa050f9fd18a11e",
+          "bytes": 333,
+          "sha256": "32bb40953aa967406d23ee5a80899385c5b6c12754c66694102e4011d4042091"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/candidate-summary.json",
+          "gitBlob": "3e35be92084ef8d6c51eadc106dd35fc10a92c64",
+          "bytes": 1105,
+          "sha256": "af36200b9aa16cb8513fb82623cdfed086bc8d7daaf5c29aa51b2dd4866be8db"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/candidate-uncertainty.json",
+          "gitBlob": "5f76694a6bbbb1ba665ea08d59676245401c0886",
+          "bytes": 8427,
+          "sha256": "d8a77bc3159be7e750fb7284ad46aee24e208350dde162aebd94829fddaa9bd0"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/comparison-manifest.json",
+          "gitBlob": "f1437cc4f6ea2301478fc7fe78573bdbb3f1c001",
+          "bytes": 12918,
+          "sha256": "221e566171baf4118bacc8b7744d916c38d32b97853efa16869be6ea8660f6c2"
+        },
+        {
+          "path": "docs/experiments/b-model-comparison-20261029/逐字对照.md",
+          "gitBlob": "48ea63a53b8a567153655fc81e03a44d78e353f6",
+          "bytes": 3801,
+          "sha256": "e8b09c1b433ac11c7793687e20958d200ad6b1239d86f590c76d14beb42945bc"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/0-polite-agreement-control.json",
+          "gitBlob": "962477e758ba1522e8816d974f00936581eeca42",
+          "bytes": 33360,
+          "sha256": "d4ef8f2cd767b2aff491558bec5f2b1b45276237ec2f3c6bdf4f26bddd613380"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/1-polite-agreement-candidate.json",
+          "gitBlob": "f95c4fad4d1bb2990407a15bbed11b29a7eaf0a6",
+          "bytes": 39010,
+          "sha256": "43c07a73dbfb22ff5e73b1922355ca69389b92ab07eda7096662f119023ee789"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/2-authored-correction-candidate.json",
+          "gitBlob": "753d5d3d3c485d6d25b6e89d2cce2b3472e88b03",
+          "bytes": 43308,
+          "sha256": "9096274e91ecddc274c02e14a838f893b8233acc25a5bca233b4ba9335632686"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/3-authored-correction-control.json",
+          "gitBlob": "d6c5c4b3b3519c7d00cfeda43d13e40a300ddbbb",
+          "bytes": 37916,
+          "sha256": "291ce2687beb6f7ccd6221e2589bd1d5e28fa4d62e6afa513faa88d79135e1c5"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/4-explicit-teacher-control.json",
+          "gitBlob": "81a626748f301c6b2d8f56d75d3b3f8333812482",
+          "bytes": 37267,
+          "sha256": "fd7d1a2eeeb31856ab98d5b4d8c5cb7099a83ddd855a02542e724fed58269ccc"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/5-explicit-teacher-candidate.json",
+          "gitBlob": "fed22d5c9fd9a342caf912b1057f863c4606633d",
+          "bytes": 40865,
+          "sha256": "d2843798f0326642086ecf7172592f816b5a19d488ebd859e8198f16e373f786"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/6-no-public-evidence-candidate.json",
+          "gitBlob": "f66b478ee617260a3965fb27ffef88e1080cd55d",
+          "bytes": 38705,
+          "sha256": "957c368bcaab3dc38f3f88ceae5d4db0044cb392066d5f08462306f8aac41fb3"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/7-no-public-evidence-control.json",
+          "gitBlob": "fd01a6c5e02fe88afaec6d269cb150025ae6c709",
+          "bytes": 32494,
+          "sha256": "6819789146633bd609d9ee204cf16e385a2b0eb4dcba83754043fd4b6a2f9b79"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/README.zh-CN.md",
+          "gitBlob": "f258b5744c62b1658e2498809b25d7daaf63f830",
+          "bytes": 8226,
+          "sha256": "a96f0b33ea31ce556bf109721053d156e97c3b3d18c1c9fc92f66df63e6a284a"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/build-manifest.json",
+          "gitBlob": "27e97775d54b2905e771dad62ca4a1905846e74b",
+          "bytes": 2339,
+          "sha256": "7e3fd28b8dfb65e9c36d868bbf0d600285b6fcba1740d2c5a63ec823150802ea"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/comparison-manifest.json",
+          "gitBlob": "d23f2ae6ef2db30e34971ed4e0d72a0d2b383bdc",
+          "bytes": 6503,
+          "sha256": "60b75c551de2b9e365ec8ee1930fd3a3c2f9c802e742cfeecfd573c97e6e8fda"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/loaded-build.json",
+          "gitBlob": "aa1bb21606a3fe85d3db14ef855cb54d5d7ec88a",
+          "bytes": 258,
+          "sha256": "e60e9419bc22ba3750fabba88b2af2624a0aea94e136902fd80f46da77439a05"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/plan.json",
+          "gitBlob": "839f533ab73c15788da28bf27e6f4cb9570841dd",
+          "bytes": 2234,
+          "sha256": "93ea22083f492ac5239462d03b567f5d465014b7967780fa4f3b65517d916b7d"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/preflight-build-manifest.json",
+          "gitBlob": "27e97775d54b2905e771dad62ca4a1905846e74b",
+          "bytes": 2339,
+          "sha256": "7e3fd28b8dfb65e9c36d868bbf0d600285b6fcba1740d2c5a63ec823150802ea"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/preflight-failure.json",
+          "gitBlob": "6ac67ac8a5bad8698d792fc0f30b429604204f6f",
+          "bytes": 488,
+          "sha256": "cb7903c07bebad4c676dea08fa980dd3e1a551cfe786579c4ba9f3d994d721de"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/preflight-plan.json",
+          "gitBlob": "de1163e264a1a8ee0ef3deee8c9c2cc6a6cf08f3",
+          "bytes": 2234,
+          "sha256": "08f6d30de77b4ed0464f7c8a704db55c7e85fc05f3d061e4556fd3daab8a6dbe"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/summary.json",
+          "gitBlob": "156e90768d3ac1cfbd1170d8bf34878627dcde94",
+          "bytes": 1887,
+          "sha256": "30de30c09cc73087e8360f0ee79720ce6824ef8033a5f3d803d3cb52605af769"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/validation.json",
+          "gitBlob": "b50efe7c5da36085f9a0239b0eeb2559466b5796",
+          "bytes": 613,
+          "sha256": "25bd0ab7a9546c5732502d9b1ef1cedd0725bf9970523000cd7ef601d0cb423c"
+        },
+        {
+          "path": "docs/experiments/b-wording-comparison-20261030/逐字对照.md",
+          "gitBlob": "37262e9924fdf9a7a4d0e3d2a2e2415d01b49853",
+          "bytes": 7390,
+          "sha256": "9bfb5bc757bdd01b58a5513eb926876438aa568e022155106da1991944b3eb9d"
+        }
+      ]
+    }
+  ]
+}

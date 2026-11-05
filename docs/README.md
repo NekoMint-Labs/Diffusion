@@ -47,6 +47,9 @@ The user guides explain **what to click and why**. Technical documents below exp
 
 A passing browser E2E test is not proof of physical Windows acceptance, live-model availability, or safe migration from every old version. Do not turn dated success reports into a blanket claim.
 
+- [v0.3.17 draft release notes](releases/v0.3.17.md) and [stable Windows installation / acceptance](WINDOWS_INSTALL.md) — release preparation, not a published release.
+- [Historical PR closeout](releases/v0.3.17-closeout.md) — preserved evidence and recommendations for #84–#86.
+
 ## 4. Historical and exploratory records / 历史材料
 
 - [History index](history/README.md) preserves previous project phases.

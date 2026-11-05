@@ -90,6 +90,6 @@ pnpm run dev
 
 ## 项目与正式发版状态
 
-核查日期：2026 年 10 月 21 日。[Diffusion v0.3.16](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16) 已于 2026 年 10 月 16 日作为**稳定版**发布，`main` 基线 `59f1e28` 的源码版本字段也已统一为 `0.3.16`。可下载资源及对应发布说明见 [Releases](https://github.com/NekoMint-Labs/Diffusion/releases)。
+核查日期：2026 年 11 月 4 日。已发布的稳定版仍为 [v0.3.16](https://github.com/NekoMint-Labs/Diffusion/releases/tag/v0.3.16)。当前源码正在准备 **v0.3.17**，已包含合并后的 [Field 整合 #96](https://github.com/NekoMint-Labs/Diffusion/pull/96)；**v0.3.17 尚未发布**。请参阅[发布说明草稿](docs/releases/v0.3.17.md)、[Windows 安装与验收步骤](docs/WINDOWS_INSTALL.md)和[当前状态](STATUS.md)。正式安装包以 [Releases](https://github.com/NekoMint-Labs/Diffusion/releases) 为准。
 
 欢迎提交可复现的问题和改进建议，参阅 [CONTRIBUTING.md](CONTRIBUTING.md)。Diffusion 自有代码使用 [Apache-2.0](LICENSE)，第三方依赖与素材遵循各自许可，详见 [来源与致谢](docs/ATTRIBUTION.md)。
